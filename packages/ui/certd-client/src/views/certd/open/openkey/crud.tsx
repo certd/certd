@@ -77,7 +77,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           edit: { show: true },
           remove: { show: true },
           gen: {
-            text: t("certd.gen.text"),
+            text: t("certd.open.gen.text"),
             size: "mini",
             icon: "devicon-plain:vitest",
             type: "primary",
@@ -86,24 +86,24 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               const openApiUrl = `${window.location.origin}/api/v1`;
 
               model.success({
-                title: t("certd.gen.title"),
+                title: t("certd.open.gen.title"),
                 maskClosable: true,
-                okText: t("certd.gen.okText"),
+                okText: t("certd.open.gen.okText"),
                 width: 600,
                 content: () => {
                   return (
                     <div>
                       <div class={"m-10 p-10"}>
-                        {t("certd.gen.contentPart1")}
+                        {t("certd.open.gen.contentPart1")}
                         <a href={OPEN_API_DOC} target={"_blank"}>
-                          {t("certd.gen.openApi")}
+                          {t("certd.open.gen.openApi")}
                         </a>
-                        {t("certd.gen.contentPart2")}
+                        {t("certd.open.gen.contentPart2")}
                       </div>
                       <div class={"m-10 p-10"} style={{ border: "1px solid #333" }}>
                         <fs-copyable model-value={apiToken}></fs-copyable>
                       </div>
-                      <div class={"m-10 p-10"}>{t("certd.gen.apiAddress")}</div>
+                      <div class={"m-10 p-10"}>{t("certd.open.gen.apiAddress")}</div>
                       <div class={"m-10 p-10"} style={{ border: "1px solid #333" }}>
                         <fs-copyable model-value={openApiUrl}></fs-copyable>
                       </div>
@@ -176,19 +176,19 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         scope: {
-          title: t("certd.scope"),
+          title: t("certd.open.scope"),
           type: "dict-radio",
           dict: dict({
             data: [
-              { label: t("certd.scopeOpenApiOnly"), value: "open", color: "blue" },
-              { label: t("certd.scopeFullAccount"), value: "user", color: "red" },
+              { label: t("certd.open.scopeOpenApiOnly"), value: "open", color: "blue" },
+              { label: t("certd.open.scopeFullAccount"), value: "user", color: "red" },
             ],
           }),
           form: {
             value: "open",
             show: true,
-            rules: [{ required: true, message: t("certd.required") }],
-            helper: t("certd.scopeHelper"),
+            rules: [{ required: true, message: t("certd.common.required") }],
+            helper: t("certd.open.scopeHelper"),
             component: {
               vModel: "value",
             },
@@ -200,23 +200,23 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         returnCertPassword: {
-          title: t("certd.returnCertPassword"),
+          title: t("certd.open.returnCertPassword"),
           type: "dict-switch",
           form: {
             show: true,
             value: false,
-            helper: t("certd.returnCertPasswordHelper"),
+            helper: t("certd.open.returnCertPasswordHelper"),
           },
           dict: dict({
             data: [
-              { label: t("certd.yes"), value: true, color: "green" },
-              { label: t("certd.no"), value: false, color: "red" },
+              { label: t("certd.open.yes"), value: true, color: "green" },
+              { label: t("certd.open.no"), value: false, color: "red" },
             ],
           }),
           column: { width: 140, align: "center" },
         },
         remark: {
-          title: t("certd.keyRemark"),
+          title: t("certd.open.keyRemark"),
           type: "text",
           search: {
             show: true,
@@ -227,12 +227,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             show: true,
-            helper: t("certd.keyRemarkHelper"),
-            rules: [{ max: 512, message: t("certd.keyRemarkMaxChars") }],
+            helper: t("certd.open.keyRemarkHelper"),
+            rules: [{ max: 512, message: t("certd.open.keyRemarkMaxChars") }],
           },
         },
         projectId: {
-          title: t("certd.fields.projectName"),
+          title: t("certd.common.fields.projectName"),
           type: "dict-select",
           dict: myProjectDict,
           form: {
@@ -248,7 +248,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         createTime: {
-          title: t("certd.fields.createTime"),
+          title: t("certd.common.fields.createTime"),
           type: "datetime",
           search: {
             show: false,

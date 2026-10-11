@@ -57,7 +57,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       actionbar: {
         buttons: {
-          add: { text: t("certd.gift_package") },
+          add: { text: t("certd.suite.gift_package") },
         },
       },
 
@@ -98,20 +98,20 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         title: {
-          title: t("certd.package_name"),
+          title: t("certd.suite.package_name"),
           type: "text",
           search: {
             show: true,
           },
           form: {
-            rules: [{ required: true, message: t("certd.field_required") }],
+            rules: [{ required: true, message: t("certd.common.field_required") }],
           },
           column: {
             width: 200,
           },
         },
         userId: {
-          title: t("certd.usera"),
+          title: t("certd.common.usera"),
           type: "table-select",
           search: {
             show: true,
@@ -135,7 +135,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               crossPage: true,
               multiple: false,
               select: {
-                placeholder: t("certd.click_to_select"),
+                placeholder: t("certd.suite.click_to_select"),
               },
               createCrudOptions: createCrudOptionsUser,
               // crudOptionsOverride: crudOptionsOverride
@@ -144,7 +144,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
         //赠送
         presentSuiteId: {
-          title: t("certd.gift_package"),
+          title: t("certd.suite.gift_package"),
           type: "dict-select",
           column: { show: false },
           addForm: {
@@ -159,7 +159,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                   if (value && value.productId) {
                     return true;
                   }
-                  throw new Error(t("certd.please_select_package"));
+                  throw new Error(t("certd.suite.please_select_package"));
                 },
               },
             ],
@@ -173,12 +173,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           form: { show: false },
         },
         productType: {
-          title: t("certd.type"),
+          title: t("certd.common.type"),
           type: "dict-select",
           dict: dict({
             data: [
-              { label: t("certd.package"), value: "suite", color: "green" },
-              { label: t("certd.addon_package"), value: "addon", color: "blue" },
+              { label: t("certd.suite.package"), value: "suite", color: "green" },
+              { label: t("certd.suite.addon_package"), value: "addon", color: "blue" },
             ],
           }),
           form: {
@@ -203,7 +203,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         "content.maxDomainCount": {
-          title: t("certd.domain_count"),
+          title: t("certd.suite.domain_count"),
           type: "text",
           addForm: {
             show: false,
@@ -213,22 +213,22 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: t("certd.unit_count"),
+              unit: t("certd.suite.unit_count"),
             },
-            rules: [{ required: true, message: t("certd.field_required") }],
+            rules: [{ required: true, message: t("certd.common.field_required") }],
           },
           column: {
             width: 100,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: t("certd.unit_count"),
+              unit: t("certd.suite.unit_count"),
             },
             align: "center",
           },
         },
         "content.maxWildcardDomainCount": {
-          title: t("certd.wildcardDomainCountPart"),
+          title: t("certd.suite.wildcardDomainCountPart"),
           type: "text",
           addForm: {
             show: false,
@@ -238,22 +238,22 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: t("certd.unit_count"),
+              unit: t("certd.suite.unit_count"),
             },
-            rules: [{ required: true, message: t("certd.field_required") }],
+            rules: [{ required: true, message: t("certd.common.field_required") }],
           },
           column: {
             width: 120,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: t("certd.unit_count"),
+              unit: t("certd.suite.unit_count"),
             },
             align: "center",
           },
         },
         "content.maxPipelineCount": {
-          title: t("certd.pipeline_count"),
+          title: t("certd.suite.pipeline_count"),
           type: "text",
           addForm: {
             show: false,
@@ -263,22 +263,22 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: t("certd.unit_item"),
+              unit: t("certd.suite.unit_item"),
             },
-            rules: [{ required: true, message: t("certd.field_required") }],
+            rules: [{ required: true, message: t("certd.common.field_required") }],
           },
           column: {
             width: 100,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: t("certd.unit_item"),
+              unit: t("certd.suite.unit_item"),
             },
             align: "center",
           },
         },
         "content.maxDeployCount": {
-          title: t("certd.deploy_count"),
+          title: t("certd.suite.deploy_count"),
           type: "text",
           addForm: {
             show: false,
@@ -288,16 +288,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: t("certd.unit_times"),
+              unit: t("certd.suite.unit_times"),
             },
-            rules: [{ required: true, message: t("certd.field_required") }],
+            rules: [{ required: true, message: t("certd.common.field_required") }],
           },
           column: {
             width: 100,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: t("certd.unit_times"),
+              unit: t("certd.suite.unit_times"),
               used: compute(({ row }) => {
                 return row.deployCountUsed;
               }),
@@ -306,7 +306,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         "content.maxMonitorCount": {
-          title: t("certd.monitor_count"),
+          title: t("certd.suite.monitor_count"),
           type: "text",
           addForm: {
             show: false,
@@ -316,28 +316,28 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: t("certd.unit_count"),
+              unit: t("certd.suite.unit_count"),
             },
-            rules: [{ required: true, message: t("certd.field_required") }],
+            rules: [{ required: true, message: t("certd.common.field_required") }],
           },
           column: {
             width: 120,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: t("certd.unit_count"),
+              unit: t("certd.suite.unit_count"),
             },
             align: "center",
           },
         },
         duration: {
-          title: t("certd.duration"),
+          title: t("certd.suite.duration"),
           type: "number",
           addForm: {
             show: false,
           },
           form: {
-            rules: [{ required: true, message: t("certd.field_required") }],
+            rules: [{ required: true, message: t("certd.common.field_required") }],
           },
           column: {
             component: {
@@ -349,7 +349,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         status: {
-          title: t("certd.status"),
+          title: t("certd.common.status"),
           type: "text",
           form: { show: false },
           column: {
@@ -369,7 +369,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         activeTime: {
-          title: t("certd.active_time"),
+          title: t("certd.suite.active_time"),
           type: "date",
           column: {
             width: 150,
@@ -379,7 +379,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         expiresTime: {
-          title: t("certd.expires_time"),
+          title: t("certd.suite.expires_time"),
           type: "date",
           addForm: {
             show: false,
@@ -406,12 +406,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         isPresent: {
-          title: t("certd.is_present"),
+          title: t("certd.suite.is_present"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("certd.is_present_yes"), value: true, color: "success" },
-              { label: t("certd.is_present_no"), value: false, color: "blue" },
+              { label: t("certd.suite.is_present_yes"), value: true, color: "success" },
+              { label: t("certd.suite.is_present_no"), value: false, color: "blue" },
             ],
           }),
           addForm: {
@@ -426,26 +426,26 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         deployCountUsed: {
-          title: t("certd.deploy_count_used"),
+          title: t("certd.suite.deploy_count_used"),
           type: "number",
           addForm: {
             show: false,
           },
           form: {
             value: 0,
-            rules: [{ required: true, message: t("certd.field_required") }],
+            rules: [{ required: true, message: t("certd.common.field_required") }],
           },
           column: {
             show: false,
           },
         },
         disabled: {
-          title: t("certd.disabled"),
+          title: t("certd.common.disabled"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("certd.enabledLabel"), value: false, color: "success" },
-              { label: t("certd.disabledLabel"), value: true, color: "error" },
+              { label: t("certd.common.enabledLabel"), value: false, color: "success" },
+              { label: t("certd.common.disabledLabel"), value: true, color: "error" },
             ],
           }),
           form: {
@@ -457,12 +457,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         isEmpty: {
-          title: t("certd.status"),
+          title: t("certd.common.status"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("certd.normal"), value: false, color: "success" },
-              { label: t("certd.used_up"), value: true, color: "gray" },
+              { label: t("certd.common.normal"), value: false, color: "success" },
+              { label: t("certd.common.used_up"), value: true, color: "gray" },
             ],
           }),
           form: {
@@ -473,7 +473,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         createTime: {
-          title: t("certd.createTime"),
+          title: t("certd.common.createTime"),
           type: "datetime",
           form: {
             show: false,
@@ -485,7 +485,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         updateTime: {
-          title: t("certd.updateTime"),
+          title: t("certd.common.updateTime"),
           type: "datetime",
           form: {
             show: false,

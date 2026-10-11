@@ -4,8 +4,8 @@
       <div class="sweep-animation"></div>
       <div class="box-content">
         <div class="box-icon">✓</div>
-        <span v-if="modelValue == null" class="status-text">{{ t("certd.captcha.clickToVerify") }}</span>
-        <span v-else class="status-text">{{ t("certd.captcha.verifySuccess") }}</span>
+        <span v-if="modelValue == null" class="status-text">{{ t("certd.common.captcha.clickToVerify") }}</span>
+        <span v-else class="status-text">{{ t("certd.common.captcha.verifySuccess") }}</span>
       </div>
     </div>
   </div>
@@ -58,7 +58,7 @@ function callback(res: { ret: number; ticket: string; randstr: string; errorCode
 
   if (res.errorCode && res.errorCode > 0) {
     notification.error({
-      message: t("certd.captcha.verifyFailed", { message: res.errorMessage || res.errorCode }),
+      message: t("certd.common.captcha.verifyFailed", { message: res.errorMessage || res.errorCode }),
     });
   }
 
@@ -85,13 +85,13 @@ function loadErrorCallback(error: any) {
   //   errorMessage: "jsload_error",
   // });
   notification.error({
-    message: t("certd.captcha.loadFailed", { message: error?.message || error }),
+    message: t("certd.common.captcha.loadFailed", { message: error?.message || error }),
   });
 }
 async function triggerCaptcha() {
   if (!loaded.value) {
     notification.error({
-      message: t("certd.captcha.notLoaded"),
+      message: t("certd.common.captcha.notLoaded"),
     });
     return;
   }

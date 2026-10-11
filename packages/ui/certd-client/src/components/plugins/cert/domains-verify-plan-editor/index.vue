@@ -5,7 +5,7 @@
       <div class="plan-box bg-white dark:bg-neutral-700">
         <div class="fullscreen-button pointer flex-center" @click="fullscreen = !fullscreen">
           <span v-if="!fullscreen" style="font-size: 10px" class="flex-center">
-            {{ t("certd.verifyPlan.expandTip") }}
+            {{ t("certd.certdomain.verifyPlan.expandTip") }}
             <fs-icon icon="ion:arrow-forward-outline"></fs-icon>
           </span>
           <fs-icon :icon="fullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'"></fs-icon>
@@ -13,9 +13,9 @@
         <table class="plan-table">
           <thead>
             <tr>
-              <th style="min-width: 100px">{{ t("certd.verifyPlan.mainDomain") }}</th>
-              <th>{{ t("certd.verifyPlan.challengeType") }}</th>
-              <th>{{ t("certd.verifyPlan.challengePlan") }}</th>
+              <th style="min-width: 100px">{{ t("certd.certdomain.verifyPlan.mainDomain") }}</th>
+              <th>{{ t("certd.certdomain.verifyPlan.challengeType") }}</th>
+              <th>{{ t("certd.certdomain.verifyPlan.challengePlan") }}</th>
             </tr>
           </thead>
           <tbody>
@@ -30,13 +30,13 @@
                 <div class="plan">
                   <div v-if="item.type === 'dns'" class="plan-dns">
                     <div class="form-item">
-                      <span class="label">{{ t("certd.verifyPlan.dnsType") }}:</span>
+                      <span class="label">{{ t("certd.certdomain.verifyPlan.dnsType") }}:</span>
                       <span class="input">
                         <fs-dict-select
                           v-model:value="item.dnsProviderType"
                           size="small"
                           :dict="dnsProviderTypeDict"
-                          :placeholder="t('certd.verifyPlan.dnsProvider')"
+                          :placeholder="t('certd.certdomain.verifyPlan.dnsProvider')"
                           @change="onPlanChanged"
                           @selected-change="onDnsProviderChange(item, $event)"
                         ></fs-dict-select>
@@ -44,13 +44,13 @@
                     </div>
                     <a-divider type="vertical" />
                     <div class="form-item">
-                      <span class="label">{{ t("certd.verifyPlan.dnsAccess") }}:</span>
+                      <span class="label">{{ t("certd.certdomain.verifyPlan.dnsAccess") }}:</span>
                       <span class="input">
                         <access-selector
                           v-model="item.dnsProviderAccessId"
                           size="small"
                           :type="item.dnsProviderAccessType || item.dnsProviderType"
-                          :placeholder="t('certd.verifyPlan.pleaseSelect')"
+                          :placeholder="t('certd.certdomain.verifyPlan.pleaseSelect')"
                           @change="onPlanChanged"
                         ></access-selector>
                       </span>
@@ -70,7 +70,7 @@
                   </div>
                   <div v-if="item.type === 'http'" class="plan-http">
                     <http-verify-plan v-model="item.httpVerifyPlan" @change="onPlanChanged" />
-                    <div class="helper">{{ t("certd.verifyPlan.httpHelper") }}</div>
+                    <div class="helper">{{ t("certd.certdomain.verifyPlan.httpHelper") }}</div>
                   </div>
                 </div>
               </td>
@@ -105,7 +105,7 @@ const { t } = useI18n();
 
 const challengeTypeOptions = ref<any[]>([
   {
-    label: t("certd.verifyPlan.dnsChallenge"),
+    label: t("certd.certdomain.verifyPlan.dnsChallenge"),
     value: "dns",
   },
   {
@@ -113,11 +113,11 @@ const challengeTypeOptions = ref<any[]>([
     value: "dns-persist",
   },
   {
-    label: t("certd.verifyPlan.cnameChallenge"),
+    label: t("certd.certdomain.verifyPlan.cnameChallenge"),
     value: "cname",
   },
   {
-    label: t("certd.verifyPlan.httpChallenge"),
+    label: t("certd.certdomain.verifyPlan.httpChallenge"),
     value: "http",
   },
 ]);

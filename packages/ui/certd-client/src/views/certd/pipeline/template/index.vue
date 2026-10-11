@@ -2,9 +2,9 @@
   <fs-page>
     <template #header>
       <div class="title flex items-center">
-        {{ t("certd.template.title") }}
+        {{ t("certd.pipeline.template.title") }}
         <span class="ml-10 sub flex items-center">
-          <span>{{ t("certd.template.intro") }} </span>
+          <span>{{ t("certd.pipeline.template.intro") }} </span>
           <vip-button class="ml-10" mode="button" />
         </span>
       </div>

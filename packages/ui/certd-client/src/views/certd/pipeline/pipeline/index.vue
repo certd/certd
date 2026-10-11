@@ -322,7 +322,7 @@
                         <div class="flow-line"></div>
                       </div>
                       <div class="task">
-                        <a-button shape="round" :title="item.title || item.type" @click="viewNodeLogs(`afterTask.${item.id}`, t('certd.view_after_task_log'), item)">
+                        <a-button shape="round" :title="item.title || item.type" @click="viewNodeLogs(`afterTask.${item.id}`, t('certd.pipeline.view_after_task_log'), item)">
                           <div class="flex-o w-100">
                             <fs-icon icon="ion:flash-outline"></fs-icon>
                             <span class="ellipsis flex-1 step-title align-left"> 【后置】 {{ item.title || item.type }} </span>
@@ -336,7 +336,7 @@
                         <div class="flow-line"></div>
                       </div>
                       <div class="task">
-                        <a-button shape="round" :title="item.title || item.type" @click="viewNodeLogs(`notification.${item.id}`, t('certd.view_notification_log'), item)">
+                        <a-button shape="round" :title="item.title || item.type" @click="viewNodeLogs(`notification.${item.id}`, t('certd.pipeline.view_notification_log'), item)">
                           <div class="flex-o w-100">
                             <fs-icon icon="ion:notifications"></fs-icon>
                             <span class="ellipsis flex-1 step-title align-left"> 【通知】 {{ item.title || item.type }} </span>
@@ -986,13 +986,13 @@ export default defineComponent({
           });
         } else {
           // 非编辑模式：查看通知发送日志
-          viewNodeLogs(`notification.${notification.id}`, t("certd.view_notification_log"), notification);
+          viewNodeLogs(`notification.${notification.id}`, t("certd.pipeline.view_notification_log"), notification);
         }
       };
       const notificationDelete = (notification: any, index: any) => {
         Modal.confirm({
-          title: t("certd.confirm"),
-          content: t("certd.confirm_delete_trigger"),
+          title: t("certd.common.confirm"),
+          content: t("certd.pipeline.confirm_delete_trigger"),
           async onOk() {
             pipeline.value.notifications.splice(index, 1);
           },
@@ -1032,13 +1032,13 @@ export default defineComponent({
           });
         } else {
           // 非编辑模式：查看后置任务执行日志
-          viewNodeLogs(`afterTask.${afterTask.id}`, t("certd.view_after_task_log"), afterTask);
+          viewNodeLogs(`afterTask.${afterTask.id}`, t("certd.pipeline.view_after_task_log"), afterTask);
         }
       };
       const afterTaskDelete = (afterTask: any, index: any) => {
         Modal.confirm({
-          title: t("certd.confirm"),
-          content: t("certd.after_task_delete_confirm"),
+          title: t("certd.common.confirm"),
+          content: t("certd.pipeline.after_task_delete_confirm"),
           async onOk() {
             pipeline.value.afterTasks.splice(index, 1);
           },

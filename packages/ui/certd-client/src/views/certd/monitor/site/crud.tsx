@@ -45,9 +45,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const checkStatusDict = dict({
     data: [
-      { label: t("certd.checkStatus.success"), value: "ok", color: "green" },
-      { label: t("certd.checkStatus.checking"), value: "checking", color: "blue" },
-      { label: t("certd.checkStatus.error"), value: "error", color: "red" },
+      { label: t("certd.monitor.checkStatus.success"), value: "ok", color: "green" },
+      { label: t("certd.monitor.checkStatus.checking"), value: "checking", color: "blue" },
+      { label: t("certd.monitor.checkStatus.error"), value: "error", color: "red" },
     ],
   });
 
@@ -268,9 +268,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           importFromProvider: {
             show: hasActionPermission("write"),
-            title: t("certd.domain.importFromResolveRecords"),
-            text: t("certd.domain.importFromResolveRecords"),
-            tooltip: { title: t("certd.domain.importFromResolveRecordsTooltip") },
+            title: t("certd.certdomain.domain.importFromResolveRecords"),
+            text: t("certd.certdomain.domain.importFromResolveRecords"),
+            tooltip: { title: t("certd.certdomain.domain.importFromResolveRecordsTooltip") },
             type: "primary",
             // needPlus: true,
             color: "gold",
@@ -636,7 +636,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         groupId: {
-          title: t("certd.fields.group"),
+          title: t("certd.common.fields.group"),
           type: "dict-select",
           search: {
             show: true,
@@ -895,7 +895,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         projectId: {
-          title: t("certd.fields.projectName"),
+          title: t("certd.common.fields.projectName"),
           type: "dict-select",
           dict: myProjectDict,
           form: {

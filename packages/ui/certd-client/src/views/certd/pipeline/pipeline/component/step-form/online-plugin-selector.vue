@@ -7,7 +7,7 @@
           <template #icon>
             <fs-icon icon="material-symbols:sync" />
           </template>
-          {{ t("certd.onlinePluginSync") }}
+          {{ t("certd.sys.plugin.onlinePluginSync") }}
         </a-button>
       </a-space>
     </div>
@@ -152,7 +152,7 @@ async function syncOnlinePlugins() {
     onlineGroupLoaded.value = false;
     await loadPluginGroups();
     await loadOnlinePlugins(true);
-    notification.success({ message: t("certd.onlinePluginSyncSuccess") });
+    notification.success({ message: t("certd.sys.plugin.onlinePluginSyncSuccess") });
   } finally {
     onlineSyncLoading.value = false;
   }
@@ -303,7 +303,7 @@ const computedOnlinePluginGroups: any = computed(() => {
   const groups: any = {
     all: {
       key: "all",
-      title: t("certd.all"),
+      title: t("certd.common.all"),
       order: 0,
       icon: "material-symbols:border-all-rounded",
       plugins: getPagedOnlinePlugins("all"),

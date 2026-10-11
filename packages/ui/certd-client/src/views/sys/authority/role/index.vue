@@ -1,10 +1,10 @@
 <template>
   <fs-page>
     <template #header>
-      <div class="title">{{ t("certd.roleManagement") }}</div>
+      <div class="title">{{ t("certd.sys.authority.roleManagement") }}</div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding" />
-    <a-modal v-model:open="authzDialogVisible" width="860px" :title="t('certd.assignPermissions')" @ok="updatePermission">
+    <a-modal v-model:open="authzDialogVisible" width="860px" :title="t('certd.sys.authority.assignPermissions')" @ok="updatePermission">
       <fs-permission-tree ref="permissionTreeRef" v-model:checked-keys="checkedKeys" :tree="permissionTreeData" :editable="false" checkable :replace-fields="{ key: 'id', label: 'title' }"> </fs-permission-tree>
     </a-modal>
   </fs-page>

@@ -70,7 +70,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         domain: {
-          title: t("certd.subdomainHosted"),
+          title: t("certd.pipeline.subdomainHosted"),
           type: "text",
           search: {
             show: true,
@@ -81,12 +81,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 return (
                   <div>
                     <div>
-                      1. {t("certd.subdomainHelpText")}
+                      1. {t("certd.pipeline.subdomainHelpText")}
                       <a href={"https://help.aliyun.com/zh/dns/subdomain-management"} target={"_blank"}>
-                        {t("certd.subdomainManagement")}
+                        {t("certd.pipeline.subdomainManagement")}
                       </a>
                     </div>
-                    <div>2. {t("certd.subdomainHelpSupportStart")}</div>
+                    <div>2. {t("certd.pipeline.subdomainHelpSupportStart")}</div>
                   </div>
                 );
               },
@@ -99,12 +99,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         disabled: {
-          title: t("certd.isDisabled"),
+          title: t("certd.common.isDisabled"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { value: false, label: t("certd.enabled"), color: "green" },
-              { value: true, label: t("certd.disabled"), color: "gray" },
+              { value: false, label: t("certd.common.enabled"), color: "green" },
+              { value: true, label: t("certd.common.disabled"), color: "gray" },
             ],
           }),
           search: {
@@ -115,7 +115,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         createTime: {
-          title: t("certd.createTime"),
+          title: t("certd.common.createTime"),
           type: "datetime",
           form: {
             show: false,
@@ -127,7 +127,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         updateTime: {
-          title: t("certd.updateTime"),
+          title: t("certd.common.updateTime"),
           type: "datetime",
           form: {
             show: false,

@@ -32,7 +32,7 @@
           <div class="helper">{{ t("monitor.setting.domain.cronTrigger") }}</div>
         </a-form-item>
         <a-form-item label=" " :colon="false" :wrapper-col="{ span: 16 }">
-          <loading-button type="primary" html-type="button" :click="doSave" :disabled="!hasActionPermission('write')">{{ t("certd.save") }}</loading-button>
+          <loading-button type="primary" html-type="button" :click="doSave" :disabled="!hasActionPermission('write')">{{ t("certd.common.save") }}</loading-button>
         </a-form-item>
       </a-form>
     </div>
@@ -85,7 +85,7 @@ const doSave = async (form: any) => {
     ...formState,
   });
   notification.success({
-    message: t("certd.saveSuccess"),
+    message: t("certd.common.saveSuccess"),
   });
 };
 </script>

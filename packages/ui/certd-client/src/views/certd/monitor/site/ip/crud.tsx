@@ -37,9 +37,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const checkStatusDict = dict({
     data: [
-      { label: t("certd.statusSuccess"), value: "ok", color: "green" },
-      { label: t("certd.statusChecking"), value: "checking", color: "blue" },
-      { label: t("certd.statusError"), value: "error", color: "red" },
+      { label: t("certd.monitor.statusSuccess"), value: "ok", color: "green" },
+      { label: t("certd.monitor.statusChecking"), value: "checking", color: "blue" },
+      { label: t("certd.monitor.statusError"), value: "error", color: "red" },
     ],
   });
   const { openSiteIpImportDialog } = useSiteIpMonitor();
@@ -76,7 +76,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           import: {
             show: true,
-            text: t("certd.actionImportBatch"),
+            text: t("certd.monitor.actionImportBatch"),
             type: "primary",
             async click() {
               openSiteIpImportDialog({
@@ -88,34 +88,34 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           load: {
-            text: t("certd.actionSyncIp"),
+            text: t("certd.monitor.actionSyncIp"),
             type: "primary",
             async click() {
               Modal.confirm({
-                title: t("certd.modalTitleSyncIp"),
-                content: t("certd.modalContentSyncIp"),
+                title: t("certd.monitor.modalTitleSyncIp"),
+                content: t("certd.monitor.modalContentSyncIp"),
                 onOk: async () => {
                   await api.DoSync(context.props.siteId);
                   await crudExpose.doRefresh();
                   notification.success({
-                    message: t("certd.notificationSyncComplete"),
+                    message: t("certd.monitor.notificationSyncComplete"),
                   });
                 },
               });
             },
           },
           checkAll: {
-            text: t("certd.actionCheckAll"),
+            text: t("certd.monitor.actionCheckAll"),
             type: "primary",
             click: () => {
               Modal.confirm({
-                title: t("certd.modalTitleConfirm"),
-                content: t("certd.modalContentCheckAll"),
+                title: t("certd.monitor.modalTitleConfirm"),
+                content: t("certd.monitor.modalContentCheckAll"),
                 onOk: async () => {
                   await siteIpApi.CheckAll(context.props.siteId);
                   notification.success({
-                    message: t("certd.notificationCheckSubmitted"),
-                    description: t("certd.notificationCheckDescription"),
+                    message: t("certd.monitor.notificationCheckSubmitted"),
+                    description: t("certd.monitor.notificationCheckDescription"),
                   });
                 },
               });
@@ -132,14 +132,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             type: "link",
             text: null,
             tooltip: {
-              title: t("certd.tooltipCheckNow"),
+              title: t("certd.monitor.tooltipCheckNow"),
             },
             icon: "ion:play-sharp",
             click: async ({ row }) => {
               await api.DoCheck(row.id);
               await crudExpose.doRefresh();
               notification.success({
-                message: t("certd.notificationCheckSubmittedPleaseRefresh"),
+                message: t("certd.monitor.notificationCheckSubmittedPleaseRefresh"),
               });
             },
           },
@@ -147,7 +147,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       columns: {
         id: {
-          title: t("certd.columnId"),
+          title: t("certd.monitor.columnId"),
           key: "id",
           type: "number",
           search: {
@@ -162,21 +162,21 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         ipAddress: {
-          title: t("certd.columnIp"),
+          title: t("certd.monitor.columnIp"),
           search: {
             show: true,
           },
           type: "text",
           form: {
-            helper: t("certd.helperIpCname"),
-            rules: [{ required: true, message: t("certd.ruleIpRequired") }],
+            helper: t("certd.monitor.helperIpCname"),
+            rules: [{ required: true, message: t("certd.monitor.ruleIpRequired") }],
           },
           column: {
             width: 160,
           },
         },
         certDomains: {
-          title: t("certd.columnCertDomains"),
+          title: t("certd.monitor.columnCertDomains"),
           search: {
             show: false,
           },
@@ -198,7 +198,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certProvider: {
-          title: t("certd.columnCertProvider"),
+          title: t("certd.monitor.columnCertProvider"),
           search: {
             show: false,
           },
@@ -216,15 +216,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certStatus: {
-          title: t("certd.columnCertStatus"),
+          title: t("certd.monitor.columnCertStatus"),
           search: {
             show: true,
           },
           type: "dict-select",
           dict: dict({
             data: [
-              { label: t("certd.statusNormal"), value: "ok", color: "green" },
-              { label: t("certd.statusExpired"), value: "expired", color: "red" },
+              { label: t("certd.monitor.statusNormal"), value: "ok", color: "green" },
+              { label: t("certd.monitor.statusExpired"), value: "expired", color: "red" },
             ],
           }),
           form: {
@@ -238,7 +238,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certExpiresTime: {
-          title: t("certd.columnCertExpiresTime"),
+          title: t("certd.monitor.columnCertExpiresTime"),
           search: {
             show: false,
           },
@@ -256,12 +256,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               const leftDays = dayjs(value).diff(dayjs(), "day");
               const color = leftDays < 20 ? "red" : "#389e0d";
               const percent = (leftDays / 90) * 100;
-              return <a-progress title={expireDate + " " + t("certd.expired")} percent={percent} strokeColor={color} format={(percent: number) => `${leftDays} ${t("certd.days")}`} />;
+              return <a-progress title={expireDate + " " + t("certd.common.expired")} percent={percent} strokeColor={color} format={(percent: number) => `${leftDays} ${t("certd.common.days")}`} />;
             },
           },
         },
         checkStatus: {
-          title: t("certd.columnCheckStatus"),
+          title: t("certd.monitor.columnCheckStatus"),
           search: {
             show: false,
           },
@@ -284,7 +284,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         lastCheckTime: {
-          title: t("certd.columnLastCheckTime"),
+          title: t("certd.monitor.columnLastCheckTime"),
           search: {
             show: false,
           },
@@ -298,16 +298,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         from: {
-          title: t("certd.columnSource"),
+          title: t("certd.monitor.columnSource"),
           search: {
             show: false,
           },
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("certd.sourceSync"), value: "sync", color: "green" },
-              { label: t("certd.sourceManual"), value: "manual", color: "blue" },
-              { label: t("certd.sourceImport"), value: "import", color: "blue" },
+              { label: t("certd.monitor.sourceSync"), value: "sync", color: "green" },
+              { label: t("certd.monitor.sourceManual"), value: "manual", color: "blue" },
+              { label: t("certd.monitor.sourceImport"), value: "import", color: "blue" },
             ],
           }),
           form: {
@@ -320,15 +320,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         disabled: {
-          title: t("certd.columnDisabled"),
+          title: t("certd.monitor.columnDisabled"),
           search: {
             show: false,
           },
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("certd.enabled"), value: false, color: "green" },
-              { label: t("certd.disabled"), value: true, color: "red" },
+              { label: t("certd.common.enabled"), value: false, color: "green" },
+              { label: t("certd.common.disabled"), value: true, color: "red" },
             ],
           }),
           form: {
@@ -341,7 +341,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         remark: {
-          title: t("certd.columnRemark"),
+          title: t("certd.monitor.columnRemark"),
           search: {
             show: false,
           },

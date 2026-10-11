@@ -117,14 +117,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         name: {
-          title: t("certd.name"),
+          title: t("certd.common.name"),
           search: {
             show: true,
           },
           type: ["text"],
           form: {
-            rules: [{ required: true, message: t("certd.pleaseEnterName") }],
-            helper: t("certd.nameHelper"),
+            rules: [{ required: true, message: t("certd.common.pleaseEnterName") }],
+            helper: t("certd.access.nameHelper"),
             order: -2,
           },
           column: {
@@ -133,12 +133,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         from: {
-          title: t("certd.level"),
+          title: t("certd.access.level"),
           type: "dict-select",
           dict: dict({
             data: [
-              { label: t("certd.system"), value: "sys" },
-              { label: t("certd.usera"), value: "user" },
+              { label: t("certd.access.system"), value: "sys" },
+              { label: t("certd.common.usera"), value: "user" },
             ],
           }),
           search: {
@@ -161,7 +161,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
         ...commonColumnsDefine,
         projectId: {
-          title: t("certd.fields.projectName"),
+          title: t("certd.common.fields.projectName"),
           type: "dict-select",
           dict: myProjectDict,
           form: {

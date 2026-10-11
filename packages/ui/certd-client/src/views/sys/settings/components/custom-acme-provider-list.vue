@@ -1,8 +1,8 @@
 <template>
   <div class="custom-acme-provider-list">
     <div v-for="(provider, index) in props.modelValue" :key="index" class="custom-acme-provider-row">
-      <a-tag v-if="provider.builtIn" color="blue">{{ t("certd.sys.setting.customAcmeBuiltIn") }}</a-tag>
-      <a-tag v-else color="orange">{{ t("certd.sys.setting.customAcmeTag") }}</a-tag>
+      <a-tag v-if="provider.builtIn" color="blue">{{ t("certd.sys.settings.customAcmeBuiltIn") }}</a-tag>
+      <a-tag v-else color="orange">{{ t("certd.sys.settings.customAcmeTag") }}</a-tag>
       <span class="custom-acme-provider-title" :title="provider.directoryUrl">{{ provider.title }} 【{{ provider.sslProvider }}】</span>
       <span v-if="provider.reverseProxy" class="custom-acme-provider-proxy" :title="provider.reverseProxy">{{ provider.reverseProxy }}</span>
       <div class="custom-acme-provider-actions">
@@ -10,7 +10,7 @@
         <a-button v-if="!provider.builtIn" type="link" size="small" danger @click="removeProvider(index)">{{ t("common.delete") }}</a-button>
       </div>
     </div>
-    <a-button class="custom-acme-provider-add" type="dashed" block @click="openEditor()">+ {{ t("certd.sys.setting.customAcmeAdd") }}</a-button>
+    <a-button class="custom-acme-provider-add" type="dashed" block @click="openEditor()">+ {{ t("certd.sys.settings.customAcmeAdd") }}</a-button>
   </div>
 </template>
 
@@ -54,20 +54,20 @@ function buildColumns(editing: CustomAcmeProviderForm | null) {
   const hideForBuiltIn = computed(() => editing?.builtIn !== true);
   return {
     title: {
-      title: t("certd.sys.setting.customAcmeName"),
+      title: t("certd.sys.settings.customAcmeName"),
       type: "text",
       form: {
         show: hideForBuiltIn,
-        rules: [{ required: true, message: t("certd.sys.setting.customAcmeSaveCheck") }],
+        rules: [{ required: true, message: t("certd.sys.settings.customAcmeSaveCheck") }],
       },
     },
     sslProvider: {
-      title: t("certd.sys.setting.customAcmeSslProvider"),
+      title: t("certd.sys.settings.customAcmeSslProvider"),
       type: "text",
       form: {
         show: hideForBuiltIn,
-        rules: [{ required: true, message: t("certd.sys.setting.customAcmeSaveCheck") }],
-        helper: t("certd.sys.setting.customAcmeSslProviderHelper"),
+        rules: [{ required: true, message: t("certd.sys.settings.customAcmeSaveCheck") }],
+        helper: t("certd.sys.settings.customAcmeSslProviderHelper"),
         component: {
           disabled: computed(() => editing?.sslProvider),
         },
@@ -78,22 +78,22 @@ function buildColumns(editing: CustomAcmeProviderForm | null) {
       type: "text",
       form: {
         show: hideForBuiltIn,
-        rules: [{ required: true, message: t("certd.sys.setting.customAcmeSaveCheck") }],
+        rules: [{ required: true, message: t("certd.sys.settings.customAcmeSaveCheck") }],
         placeholder: "https://your-ca.example.com/directory",
         helper: "Directory URL of the ACME server (e.g., https://acme-v02.api.letsencrypt.org/directory)",
       },
     },
     reverseProxy: {
-      title: t("certd.sys.setting.customAcmeReverseProxy"),
+      title: t("certd.sys.settings.customAcmeReverseProxy"),
       type: "text",
       form: {
         required: false,
         placeholder: "myca-proxy.example.com",
-        helper: t("certd.sys.setting.customAcmeReverseProxyHelper"),
+        helper: t("certd.sys.settings.customAcmeReverseProxyHelper"),
       },
     },
     needEAB: {
-      title: t("certd.sys.setting.customAcmeNeedEab"),
+      title: t("certd.sys.settings.customAcmeNeedEab"),
       form: {
         show: hideForBuiltIn,
         value: false,
@@ -115,7 +115,7 @@ async function openEditor(index?: number) {
   const editing = index != null ? props.modelValue[index] : null;
   const isBuiltIn = editing?.builtIn === true;
   await openFormDialog({
-    title: isBuiltIn ? `${t("certd.sys.setting.customAcmeEdit")} - ${editing.title}` : editing ? t("certd.sys.setting.customAcmeEdit") : t("certd.sys.setting.customAcmeAdd"),
+    title: isBuiltIn ? `${t("certd.sys.settings.customAcmeEdit")} - ${editing.title}` : editing ? t("certd.sys.settings.customAcmeEdit") : t("certd.sys.settings.customAcmeAdd"),
     columns: buildColumns(editing),
     initialForm: editing ? { ...editing, needEAB: editing.needEAB ?? false } : { needEAB: false },
     onSubmit: async (form: any) => {
@@ -130,9 +130,9 @@ async function openEditor(index?: number) {
       const duplicated = props.modelValue.some((provider, i) => provider.sslProvider === form.sslProvider && i !== index);
       if (duplicated) {
         notification.warning({
-          message: t("certd.sys.setting.customAcmeSslProviderUnique"),
+          message: t("certd.sys.settings.customAcmeSslProviderUnique"),
         });
-        throw new Error(t("certd.sys.setting.customAcmeSslProviderUnique"));
+        throw new Error(t("certd.sys.settings.customAcmeSslProviderUnique"));
       }
       const list = [...props.modelValue];
       const bean: CustomAcmeProviderForm = {
@@ -160,8 +160,8 @@ function removeProvider(index: number) {
     return;
   }
   Modal.confirm({
-    title: t("certd.sys.setting.customAcmeDeleteConfirmTitle"),
-    content: t("certd.sys.setting.customAcmeDeleteConfirmContent", { title: provider.title }),
+    title: t("certd.sys.settings.customAcmeDeleteConfirmTitle"),
+    content: t("certd.sys.settings.customAcmeDeleteConfirmContent", { title: provider.title }),
     onOk() {
       const list = [...props.modelValue];
       list.splice(index, 1);

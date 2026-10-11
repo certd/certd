@@ -2,7 +2,7 @@
   <a-drawer v-model:open="triggerDrawerVisible" placement="right" :closable="true" width="650px" class="pi-trigger-form" @after-open-change="triggerDrawerOnAfterVisibleChange">
     <template #title>
       <div>
-        {{ t("certd.editTrigger") }}
+        {{ t("certd.pipeline.editTrigger") }}
         <a-button v-if="mode === 'edit'" danger @click="triggerDelete()">
           <template #icon>
             <DeleteOutlined />
@@ -16,7 +16,7 @@
           <fs-form-item
             :model-value="currentTrigger.type"
             :item="{
-              title: t('certd.type'),
+              title: t('certd.common.type'),
               key: 'type',
               value: 'timer',
               component: {
@@ -24,25 +24,25 @@
                 vModel: 'value',
                 disabled: !editMode,
                 options: [
-                  { value: 'timer', label: t('certd.schedule') },
-                  { value: 'webhook', label: t('certd.webhook') },
+                  { value: 'timer', label: t('certd.pipeline.schedule') },
+                  { value: 'webhook', label: t('certd.pipeline.webhook') },
                 ],
               },
-              rules: [{ required: true, message: t('certd.requiredField') }],
+              rules: [{ required: true, message: t('certd.common.requiredField') }],
             }"
             @update:model-value="typeValueChange($event)"
           />
           <fs-form-item
             v-model="currentTrigger.title"
             :item="{
-              title: t('certd.triggerName'),
+              title: t('certd.pipeline.triggerName'),
               key: 'title',
               component: {
                 name: 'a-input',
                 vModel: 'value',
                 disabled: !editMode,
               },
-              rules: [{ required: true, message: t('certd.requiredField') }],
+              rules: [{ required: true, message: t('certd.common.requiredField') }],
             }"
           />
 
@@ -100,7 +100,7 @@ export default {
           {
             type: "string",
             required: true,
-            message: t("certd.enterName"),
+            message: t("certd.common.enterName"),
           },
         ],
       });
@@ -125,7 +125,7 @@ export default {
 
       const triggerAdd = (triggerType, emit) => {
         mode.value = "add";
-        const trigger = { id: nanoid(), title: t("certd.timerTrigger"), type: "timer", props: {} };
+        const trigger = { id: nanoid(), title: t("certd.pipeline.timerTrigger"), type: "timer", props: {} };
         if (triggerType === "webhook") {
           trigger.type = "webhook";
           trigger.title = "Webhook触发";
@@ -158,8 +158,8 @@ export default {
 
       const triggerDelete = () => {
         Modal.confirm({
-          title: t("certd.confirm"),
-          content: t("certd.confirmDeleteTrigger"),
+          title: t("certd.common.confirm"),
+          content: t("certd.pipeline.confirmDeleteTrigger"),
           async onOk() {
             callback.value("delete");
             triggerDrawerClose();

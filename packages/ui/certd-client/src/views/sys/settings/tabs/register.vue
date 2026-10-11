@@ -1,70 +1,70 @@
 <template>
   <div class="sys-settings-form sys-settings-register">
     <a-form :model="formState" name="register" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
-      <a-form-item :label="t('certd.enableSelfRegistration')" :name="['public', 'registerEnabled']">
+      <a-form-item :label="t('certd.sys.settings.enableSelfRegistration')" :name="['public', 'registerEnabled']">
         <a-switch v-model:checked="formState.public.registerEnabled" />
       </a-form-item>
-      <a-form-item :label="t('certd.enableCommonSelfServicePasswordRetrieval')" :name="['public', 'selfServicePasswordRetrievalEnabled']">
+      <a-form-item :label="t('certd.sys.settings.enableCommonSelfServicePasswordRetrieval')" :name="['public', 'selfServicePasswordRetrievalEnabled']">
         <a-switch v-model:checked="formState.public.selfServicePasswordRetrievalEnabled" />
       </a-form-item>
-      <a-form-item :label="t('certd.enableUserValidityPeriod')" :name="['public', 'userValidTimeEnabled']">
+      <a-form-item :label="t('certd.sys.settings.enableUserValidityPeriod')" :name="['public', 'userValidTimeEnabled']">
         <div class="flex-o">
           <a-switch v-model:checked="formState.public.userValidTimeEnabled" :disabled="!settingsStore.isPlus" />
           <vip-button class="ml-5" mode="button"></vip-button>
         </div>
         <div class="helper">
-          {{ t("certd.userValidityPeriodHelper") }}
-          <a href="https://certd.docmirror.cn/guide/use/setting/user-valid.html" target="_blank">{{ t("certd.helpDocLink") }}</a>
+          {{ t("certd.sys.settings.userValidityPeriodHelper") }}
+          <a href="https://certd.docmirror.cn/guide/use/setting/user-valid.html" target="_blank">{{ t("certd.common.helpDocLink") }}</a>
         </div>
       </a-form-item>
       <template v-if="formState.public.registerEnabled">
-        <a-form-item :label="t('certd.enableUsernameRegistration')" :name="['public', 'usernameRegisterEnabled']">
+        <a-form-item :label="t('certd.sys.settings.enableUsernameRegistration')" :name="['public', 'usernameRegisterEnabled']">
           <a-switch v-model:checked="formState.public.usernameRegisterEnabled" />
         </a-form-item>
 
-        <a-form-item :label="t('certd.enableEmailRegistration')" :name="['public', 'emailRegisterEnabled']">
+        <a-form-item :label="t('certd.sys.settings.enableEmailRegistration')" :name="['public', 'emailRegisterEnabled']">
           <div class="flex-o">
-            <a-switch v-model:checked="formState.public.emailRegisterEnabled" :disabled="!settingsStore.isPlus" :title="t('certd.proFeature')" />
+            <a-switch v-model:checked="formState.public.emailRegisterEnabled" :disabled="!settingsStore.isPlus" :title="t('certd.sys.settings.proFeature')" />
             <vip-button class="ml-5" mode="button"></vip-button>
           </div>
           <div class="helper">
-            <router-link to="/sys/settings/email">{{ t("certd.emailServerSetup") }}</router-link>
+            <router-link to="/sys/settings/email">{{ t("certd.sys.settings.emailServerSetup") }}</router-link>
           </div>
         </a-form-item>
-        <a-form-item :label="t('certd.defaultLoginType')" :name="['public', 'defaultLoginType']" required>
+        <a-form-item :label="t('certd.sys.settings.defaultLoginType')" :name="['public', 'defaultLoginType']" required>
           <div class="flex-o">
-            <a-radio-group v-model:value="formState.public.defaultLoginType" :options="loginTypeOptions" :title="t('certd.commFeature')" />
+            <a-radio-group v-model:value="formState.public.defaultLoginType" :options="loginTypeOptions" :title="t('certd.sys.settings.commFeature')" />
           </div>
         </a-form-item>
-        <a-form-item :label="t('certd.enableSmsLoginRegister')" :name="['public', 'smsLoginEnabled']">
+        <a-form-item :label="t('certd.sys.settings.enableSmsLoginRegister')" :name="['public', 'smsLoginEnabled']">
           <div class="flex-o">
-            <a-switch v-model:checked="formState.public.smsLoginEnabled" :disabled="!settingsStore.isComm" :title="t('certd.commFeature')" />
+            <a-switch v-model:checked="formState.public.smsLoginEnabled" :disabled="!settingsStore.isComm" :title="t('certd.sys.settings.commFeature')" />
             <vip-button class="ml-5" mode="comm"></vip-button>
           </div>
         </a-form-item>
         <template v-if="formState.public.smsLoginEnabled">
-          <a-form-item :label="t('certd.smsProvider')" :name="['private', 'sms', 'type']">
+          <a-form-item :label="t('certd.sys.settings.smsProvider')" :name="['private', 'sms', 'type']">
             <a-select v-model:value="formState.private.sms.type" @change="smsTypeChange">
-              <a-select-option value="aliyun">{{ t("certd.aliyunSms") }}</a-select-option>
-              <a-select-option value="tencent">{{ t("certd.tencentSms") }}</a-select-option>
-              <a-select-option value="yfysms">{{ t("certd.yfySms") }}</a-select-option>
+              <a-select-option value="aliyun">{{ t("certd.sys.settings.aliyunSms") }}</a-select-option>
+              <a-select-option value="tencent">{{ t("certd.sys.settings.tencentSms") }}</a-select-option>
+              <a-select-option value="yfysms">{{ t("certd.sys.settings.yfySms") }}</a-select-option>
             </a-select>
           </a-form-item>
           <template v-for="item of smsTypeDefineInputs" :key="item.simpleKey">
             <fs-form-item v-model="formState.private.sms.config[item.simpleKey]" :path="'private.sms.config' + item.key" :item="item" />
           </template>
 
-          <a-form-item :label="t('certd.smsTest')">
+          <a-form-item :label="t('certd.sys.settings.smsTest')">
             <div class="flex">
-              <a-input v-model:value="testMobile" :placeholder="t('certd.testMobilePlaceholder')" />
-              <loading-button class="ml-5" :title="t('certd.saveThenTest')" type="primary" :click="testSendSms">{{ t("certd.testButton") }}</loading-button>
+              <a-input v-model:value="testMobile" :placeholder="t('certd.sys.settings.testMobilePlaceholder')" />
+              <loading-button class="ml-5" :title="t('certd.sys.settings.saveThenTest')" type="primary" :click="testSendSms">{{ t("certd.common.testButton") }}</loading-button>
             </div>
-            <div class="helper">{{ t("certd.saveThenTest") }}</div>
+            <div class="helper">{{ t("certd.sys.settings.saveThenTest") }}</div>
           </a-form-item>
         </template>
       </template>
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 16 }">
-        <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
+        <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.sys.settings.saveButton") }}</a-button>
       </a-form-item>
     </a-form>
   </div>
@@ -88,7 +88,7 @@ const testMobile = ref("");
 async function testSendSms() {
   if (!testMobile.value) {
     notification.error({
-      message: t("certd.enterTestMobile"),
+      message: t("certd.sys.settings.enterTestMobile"),
     });
     return;
   }
@@ -96,7 +96,7 @@ async function testSendSms() {
     mobile: testMobile.value,
   });
   notification.success({
-    message: t("certd.sendSuccess"),
+    message: t("certd.sys.settings.sendSuccess"),
   });
 }
 
@@ -116,7 +116,7 @@ const rules = {
   leastOneLogin: {
     validator: (rule: any, value: any) => {
       if (!formState.public.passwordLoginEnabled && !formState.public.smsLoginEnabled) {
-        return Promise.reject(t("certd.atLeastOneLoginRequired"));
+        return Promise.reject(t("certd.sys.settings.atLeastOneLoginRequired"));
       }
       return Promise.resolve();
     },
@@ -124,7 +124,7 @@ const rules = {
   required: {
     required: true,
     trigger: "change",
-    message: t("certd.fieldRequired"),
+    message: t("certd.common.fieldRequired"),
   },
 };
 
@@ -189,7 +189,7 @@ const onFinish = async (form: any) => {
     await api.SysSettingsSave(form);
     await settingsStore.loadSysSettings();
     notification.success({
-      message: t("certd.saveSuccess"),
+      message: t("certd.common.saveSuccess"),
     });
   } finally {
     saveLoading.value = false;

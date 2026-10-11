@@ -1,11 +1,11 @@
 <template>
   <div class="flex captcha-image-input">
-    <a-input :value="valueRef" :placeholder="t('certd.captcha.inputImageCode')" autocomplete="off" @update:value="onChange">
+    <a-input :value="valueRef" :placeholder="t('certd.common.captcha.inputImageCode')" autocomplete="off" @update:value="onChange">
       <template #prefix>
         <fs-icon icon="ion:image-outline"></fs-icon>
       </template>
     </a-input>
-    <div class="input-right pointer" :title="t('certd.captcha.refresh')">
+    <div class="input-right pointer" :title="t('certd.common.captcha.refresh')">
       <img class="image-code" :src="imageCodeSrc" @click="resetImageCode" />
     </div>
   </div>

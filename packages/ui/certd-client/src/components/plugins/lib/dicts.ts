@@ -4,10 +4,10 @@ import { $t } from "/@/locales";
 function createChallengeTypeDict() {
   return dict({
     data: [
-      { value: "dns", label: $t("certd.verifyPlan.dnsChallenge"), color: "green" },
+      { value: "dns", label: $t("certd.certdomain.verifyPlan.dnsChallenge"), color: "green" },
       { value: "dns-persist", label: "DNS持久验证", color: "cyan" },
-      { value: "cname", label: $t("certd.verifyPlan.cnameProxyChallenge"), color: "blue" },
-      { value: "http", label: $t("certd.verifyPlan.httpChallenge"), color: "yellow" },
+      { value: "cname", label: $t("certd.certdomain.verifyPlan.cnameProxyChallenge"), color: "blue" },
+      { value: "http", label: $t("certd.certdomain.verifyPlan.httpChallenge"), color: "yellow" },
     ],
   });
 }
@@ -18,11 +18,11 @@ function createUploaderTypeDict() {
       { label: "SFTP", value: "sftp" },
       { label: "SCP", value: "scp" },
       { label: "FTP", value: "ftp" },
-      { label: $t("certd.verifyPlan.uploader.aliyunOss"), value: "alioss" },
-      { label: $t("certd.verifyPlan.uploader.tencentCos"), value: "tencentcos" },
-      { label: $t("certd.verifyPlan.uploader.qiniuOss"), value: "qiniuoss" },
+      { label: $t("certd.certdomain.verifyPlan.uploader.aliyunOss"), value: "alioss" },
+      { label: $t("certd.certdomain.verifyPlan.uploader.tencentCos"), value: "tencentcos" },
+      { label: $t("certd.certdomain.verifyPlan.uploader.qiniuOss"), value: "qiniuoss" },
       { label: "S3/Minio", value: "s3" },
-      { label: $t("certd.verifyPlan.uploader.sshDeprecated"), value: "ssh", disabled: true },
+      { label: $t("certd.certdomain.verifyPlan.uploader.sshDeprecated"), value: "ssh", disabled: true },
     ],
   });
 }
@@ -30,8 +30,8 @@ function createUploaderTypeDict() {
 function createDomainFromTypeDict() {
   return dict({
     data: [
-      { value: "manual", label: $t("certd.verifyPlan.domainFrom.manual") },
-      { value: "auto", label: $t("certd.verifyPlan.domainFrom.auto") },
+      { value: "manual", label: $t("certd.certdomain.verifyPlan.domainFrom.manual") },
+      { value: "auto", label: $t("certd.certdomain.verifyPlan.domainFrom.auto") },
     ],
   });
 }

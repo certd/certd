@@ -54,15 +54,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         group: {
           groups: {
             base: {
-              header: t("certd.basicInfo"),
+              header: t("certd.common.basicInfo"),
               columns: ["title", "type", "disabled", "order", "supportBuy", "intro"],
             },
             content: {
-              header: t("certd.packageContent"),
+              header: t("certd.suite.packageContent"),
               columns: ["content.maxDomainCount", "content.maxWildcardDomainCount", "content.maxPipelineCount", "content.maxDeployCount", "content.maxMonitorCount"],
             },
             price: {
-              header: t("certd.price"),
+              header: t("certd.suite.price"),
               columns: ["durationPrices"],
             },
           },
@@ -81,20 +81,20 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         //   }
         // },
         title: {
-          title: t("certd.packageName"),
+          title: t("certd.suite.packageName"),
           type: "text",
           search: {
             show: true,
           },
           form: {
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
           },
           column: {
             width: 200,
           },
         },
         type: {
-          title: t("certd.type"),
+          title: t("certd.common.type"),
           type: "dict-select",
           editForm: {
             component: {
@@ -109,8 +109,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           }),
           form: {
             value: "suite",
-            rules: [{ required: true, message: t("certd.requiredField") }],
-            helper: t("certd.typeHelper"),
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
+            helper: t("certd.suite.typeHelper"),
           },
           column: {
             width: 80,
@@ -134,116 +134,116 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         "content.maxDomainCount": {
-          title: t("certd.domainCount"),
+          title: t("certd.common.domainCount"),
           type: "text",
           form: {
             key: ["content", "maxDomainCount"],
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: t("certd.unitCount"),
+              unit: t("certd.suite.unitCount"),
             },
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
           },
           column: {
             width: 100,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: t("certd.unitCount"),
+              unit: t("certd.suite.unitCount"),
             },
           },
         },
         "content.maxWildcardDomainCount": {
-          title: t("certd.wildcardDomainCountPart"),
+          title: t("certd.suite.wildcardDomainCountPart"),
           type: "text",
           form: {
             key: ["content", "maxWildcardDomainCount"],
-            helper: t("certd.wildcardDomainCountHelper"),
+            helper: t("certd.suite.wildcardDomainCountHelper"),
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: t("certd.unitCount"),
+              unit: t("certd.suite.unitCount"),
             },
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
           },
           column: {
             width: 120,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: t("certd.unitCount"),
+              unit: t("certd.suite.unitCount"),
             },
           },
         },
         "content.maxPipelineCount": {
-          title: t("certd.pipelineCount"),
+          title: t("certd.suite.pipelineCount"),
           type: "text",
           form: {
             key: ["content", "maxPipelineCount"],
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: t("certd.unitPipeline"),
+              unit: t("certd.suite.unitPipeline"),
             },
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
           },
           column: {
             width: 100,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: t("certd.unitPipeline"),
+              unit: t("certd.suite.unitPipeline"),
             },
           },
         },
         "content.maxDeployCount": {
-          title: t("certd.deployCount"),
+          title: t("certd.suite.deployCount"),
           type: "text",
           form: {
             key: ["content", "maxDeployCount"],
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: t("certd.unitDeploy"),
+              unit: t("certd.suite.unitDeploy"),
             },
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
           },
           column: {
             width: 100,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: t("certd.unitDeploy"),
+              unit: t("certd.suite.unitDeploy"),
             },
           },
         },
         "content.maxMonitorCount": {
-          title: t("certd.monitorCount"),
+          title: t("certd.suite.monitorCount"),
           type: "text",
           form: {
             key: ["content", "maxMonitorCount"],
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: t("certd.unitCount"),
+              unit: t("certd.suite.unitCount"),
             },
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
           },
           column: {
             width: 120,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: t("certd.unitCount"),
+              unit: t("certd.suite.unitCount"),
             },
           },
         },
         durationPrices: {
-          title: t("certd.durationPriceTitle"),
+          title: t("certd.suite.durationPriceTitle"),
           type: "text",
           form: {
-            title: t("certd.selectDuration"),
+            title: t("certd.suite.selectDuration"),
             component: {
               name: PriceEdit,
               vModel: "modelValue",
@@ -255,7 +255,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             col: {
               span: 24,
             },
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
           },
           column: {
             component: {
@@ -266,12 +266,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         supportBuy: {
-          title: t("certd.supportBuy"),
+          title: t("certd.suite.supportBuy"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("certd.supportPurchase"), value: true, color: "success" },
-              { label: t("certd.cannotPurchase"), value: false, color: "gray" },
+              { label: t("certd.suite.supportPurchase"), value: true, color: "success" },
+              { label: t("certd.suite.cannotPurchase"), value: false, color: "gray" },
             ],
           }),
           form: {
@@ -282,12 +282,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         disabled: {
-          title: t("certd.shelfStatus"),
+          title: t("certd.suite.shelfStatus"),
           type: "dict-radio",
           dict: dict({
             data: [
-              { value: false, label: t("certd.onShelf"), color: "green" },
-              { value: true, label: t("certd.offShelf"), color: "gray" },
+              { value: false, label: t("certd.suite.onShelf"), color: "green" },
+              { value: true, label: t("certd.suite.offShelf"), color: "gray" },
             ],
           }),
           form: {
@@ -298,10 +298,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         order: {
-          title: t("certd.ordera"),
+          title: t("certd.suite.ordera"),
           type: "number",
           form: {
-            helper: t("certd.orderHelper"),
+            helper: t("certd.suite.orderHelper"),
             value: 0,
           },
           column: {
@@ -309,14 +309,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         intro: {
-          title: t("certd.description"),
+          title: t("certd.common.description"),
           type: "textarea",
           column: {
             width: 200,
           },
         },
         createTime: {
-          title: t("certd.createTime"),
+          title: t("certd.common.createTime"),
           type: "datetime",
           form: {
             show: false,
@@ -328,7 +328,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         updateTime: {
-          title: t("certd.updateTime"),
+          title: t("certd.common.updateTime"),
           type: "datetime",
           form: {
             show: false,

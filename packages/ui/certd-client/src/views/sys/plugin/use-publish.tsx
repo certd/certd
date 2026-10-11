@@ -31,9 +31,9 @@ export function usePluginPublish() {
 
   function getPluginTypeLabel(pluginType: string) {
     const labelMap: Record<string, string> = {
-      access: t("certd.auth"),
-      dnsProvider: t("certd.dns"),
-      deploy: t("certd.deployPlugin"),
+      access: t("certd.sys.plugin.auth"),
+      dnsProvider: t("certd.sys.plugin.dns"),
+      deploy: t("certd.sys.plugin.deployPlugin"),
     };
     return labelMap[pluginType] || pluginType || "-";
   }
@@ -54,7 +54,7 @@ export function usePluginPublish() {
       };
 
       const formRes = await openFormDialog({
-        title: t("certd.onlinePluginAuthorRegister"),
+        title: t("certd.sys.plugin.onlinePluginAuthorRegister"),
         wrapper: {
           width: 560,
           onClosed() {
@@ -81,16 +81,16 @@ export function usePluginPublish() {
         },
         columns: {
           name: {
-            title: t("certd.onlinePluginAuthorName"),
+            title: t("certd.sys.plugin.onlinePluginAuthorName"),
             type: "text",
             form: {
               col: { span: 24 },
-              helper: t("certd.onlinePluginAuthorNameHelper"),
+              helper: t("certd.sys.plugin.onlinePluginAuthorNameHelper"),
               rules: [
-                { required: true, message: t("certd.onlinePluginAuthorNameRequired") },
+                { required: true, message: t("certd.sys.plugin.onlinePluginAuthorNameRequired") },
                 {
                   pattern: authorNamePattern,
-                  message: t("certd.onlinePluginAuthorNameRuleMsg"),
+                  message: t("certd.sys.plugin.onlinePluginAuthorNameRuleMsg"),
                 },
               ],
             },
@@ -165,11 +165,11 @@ export function usePluginPublish() {
 
   function getStatusLabel(status?: string) {
     const labelMap: Record<string, string> = {
-      draft: t("certd.onlinePluginStatusDraft"),
-      reviewing: t("certd.onlinePluginStatusReviewing"),
-      published: t("certd.onlinePluginStatusPublished"),
-      rejected: t("certd.onlinePluginStatusRejected"),
-      offline: t("certd.onlinePluginStatusOffline"),
+      draft: t("certd.sys.plugin.onlinePluginStatusDraft"),
+      reviewing: t("certd.sys.plugin.onlinePluginStatusReviewing"),
+      published: t("certd.sys.plugin.onlinePluginStatusPublished"),
+      rejected: t("certd.sys.plugin.onlinePluginStatusRejected"),
+      offline: t("certd.sys.plugin.onlinePluginStatusOffline"),
     };
     return labelMap[status || ""] || status || "-";
   }
@@ -228,13 +228,13 @@ export function usePluginPublish() {
   function getVersionError(version: string, baselineVersion?: api.OnlinePluginVersionBean) {
     const value = normalizeVersion(version);
     if (!value) {
-      return t("certd.onlinePluginPublishVersionRequired");
+      return t("certd.sys.plugin.onlinePluginPublishVersionRequired");
     }
     if (!/^v?\d+(\.\d+)*$/i.test(value)) {
-      return t("certd.onlinePluginVersionFormatError");
+      return t("certd.sys.plugin.onlinePluginVersionFormatError");
     }
     if (baselineVersion?.version && compareVersion(value, baselineVersion.version) <= 0) {
-      return t("certd.onlinePluginVersionBaselineError", { version: baselineVersion.version });
+      return t("certd.sys.plugin.onlinePluginVersionBaselineError", { version: baselineVersion.version });
     }
     return "";
   }
@@ -396,7 +396,7 @@ export function usePluginPublish() {
       }
       return (
         <span class="sys-plugin-publish__author-register">
-          <span class="cd-text-danger">{t("certd.onlinePluginAuthorNotRegistered")}</span>
+          <span class="cd-text-danger">{t("certd.sys.plugin.onlinePluginAuthorNotRegistered")}</span>
           <a-button
             size="small"
             type="link"
@@ -410,7 +410,7 @@ export function usePluginPublish() {
               formWrapper?.close?.();
             }}
           >
-            {t("certd.onlinePluginAuthorRegister")}
+            {t("certd.sys.plugin.onlinePluginAuthorRegister")}
           </a-button>
         </span>
       );
@@ -418,7 +418,7 @@ export function usePluginPublish() {
 
     function renderLatestVersion() {
       if (!latestVersion) {
-        return <div class="cd-text-muted">{t("certd.onlinePluginNoSubmittedVersion")}</div>;
+        return <div class="cd-text-muted">{t("certd.sys.plugin.onlinePluginNoSubmittedVersion")}</div>;
       }
       return (
         <div class="sys-plugin-publish__latest-version">
@@ -452,27 +452,27 @@ export function usePluginPublish() {
             <div class="cd-card-section">
               <div class="cd-card-section-title">插件信息</div>
               <div class="cd-meta-grid">
-                {renderMetaItem(t("certd.pluginName"), localPlugin.name || row.name)}
-                {renderMetaItem(t("certd.pluginType"), getPluginTypeLabel(localPlugin.pluginType || row.pluginType))}
-                {renderMetaItem(t("certd.pluginGroup"), localPlugin.group || row.group)}
-                {renderMetaItem(t("certd.onlinePluginPublishStatus"), marketPlugin ? getStatusLabel(marketPlugin.status) : t("certd.onlinePluginNotSubmitted"))}
-                <div class="sys-plugin-publish__meta-full">{renderMetaItem(t("certd.author"), renderAuthor())}</div>
+                {renderMetaItem(t("certd.sys.plugin.pluginName"), localPlugin.name || row.name)}
+                {renderMetaItem(t("certd.sys.plugin.pluginType"), getPluginTypeLabel(localPlugin.pluginType || row.pluginType))}
+                {renderMetaItem(t("certd.sys.plugin.pluginGroup"), localPlugin.group || row.group)}
+                {renderMetaItem(t("certd.sys.plugin.onlinePluginPublishStatus"), marketPlugin ? getStatusLabel(marketPlugin.status) : t("certd.sys.plugin.onlinePluginNotSubmitted"))}
+                <div class="sys-plugin-publish__meta-full">{renderMetaItem(t("certd.sys.plugin.author"), renderAuthor())}</div>
               </div>
             </div>
 
             <div class="cd-card-section">
-              <div class="cd-card-section-title">{t("certd.onlinePluginLatestVersion")}</div>
+              <div class="cd-card-section-title">{t("certd.sys.plugin.onlinePluginLatestVersion")}</div>
               {renderLatestVersion()}
             </div>
 
             <div class="cd-card-section">
-              <div class="cd-card-section-title cd-card-section-title--compact">{t("certd.onlinePluginCurrentRelease")}</div>
+              <div class="cd-card-section-title cd-card-section-title--compact">{t("certd.sys.plugin.onlinePluginCurrentRelease")}</div>
               <div class={["cd-tip-box sys-plugin-publish__prompt", { "cd-tip-box-warning": publishMode === "cover" }]}>
-                <div class="cd-tip-title">{t("certd.onlinePluginPublishPrompt")}</div>
+                <div class="cd-tip-title">{t("certd.sys.plugin.onlinePluginPublishPrompt")}</div>
                 <div>{getPublishModeTip()}</div>
               </div>
               <div class="cd-form-row">
-                <label class="cd-form-label">{t("certd.version")}</label>
+                <label class="cd-form-label">{t("certd.sys.plugin.version")}</label>
                 <div>
                   <input
                     type="text"
@@ -502,7 +502,7 @@ export function usePluginPublish() {
         resolve(result);
       };
       void openFormDialog({
-        title: marketPlugin ? t("certd.onlinePluginPublishManage") : t("certd.onlinePluginPublish"),
+        title: marketPlugin ? t("certd.sys.plugin.onlinePluginPublishManage") : t("certd.sys.plugin.onlinePluginPublish"),
         columns: {},
         body: () => renderContent(),
         wrapper: {
@@ -513,7 +513,7 @@ export function usePluginPublish() {
             },
             ok: {
               show: true,
-              text: t("certd.onlinePluginPublishSubmit"),
+              text: t("certd.sys.plugin.onlinePluginPublishSubmit"),
               disabled: !info.authorRegistered,
             },
             cancel: {
@@ -527,7 +527,7 @@ export function usePluginPublish() {
         },
         async onSubmit() {
           if (!info.authorRegistered) {
-            throw new Error(t("certd.onlinePluginAuthorNotRegistered"));
+            throw new Error(t("certd.sys.plugin.onlinePluginAuthorNotRegistered"));
           }
           state.error = getVersionError(state.version, versionBaseline);
           if (state.error) {
@@ -586,7 +586,7 @@ export function usePluginPublish() {
       });
       await pluginStore.reload();
       await options?.afterPublish?.();
-      notification.success({ message: t("certd.onlinePluginPublishSuccess") });
+      notification.success({ message: t("certd.sys.plugin.onlinePluginPublishSuccess") });
     } finally {
       publishingPluginId.value = "";
     }

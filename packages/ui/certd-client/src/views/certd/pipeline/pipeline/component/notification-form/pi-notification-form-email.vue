@@ -3,7 +3,7 @@
     <fs-form-item
       v-model="optionsFormState.receivers"
       :item="{
-        title: t('certd.email.title'),
+        title: t('certd.notification.email.title'),
         key: 'type',
         component: {
           name: 'a-select',
@@ -11,8 +11,8 @@
           mode: 'tags',
           open: false,
         },
-        helper: t('certd.email.helper'),
-        rules: [{ required: true, message: t('certd.email.required') }],
+        helper: t('certd.notification.email.helper'),
+        rules: [{ required: true, message: t('certd.notification.email.required') }],
       }"
     />
 

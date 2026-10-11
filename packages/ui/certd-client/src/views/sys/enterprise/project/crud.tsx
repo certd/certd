@@ -82,14 +82,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         name: {
-          title: t("certd.ent.projectName"),
+          title: t("certd.project.ent.projectName"),
           type: "link",
           search: {
             show: true,
           },
           form: {
             component: {},
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
           },
           column: {
             width: 200,
@@ -99,7 +99,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         isSystem: {
-          title: t("certd.ent.isSystem"),
+          title: t("certd.project.ent.isSystem"),
           type: "dict-switch",
           dict: dict({
             data: [
@@ -109,14 +109,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           }),
           form: {
             value: true,
-            helper: t("certd.ent.isSystemHelper"),
+            helper: t("certd.project.ent.isSystemHelper"),
           },
           column: {
             width: 150,
           },
         },
         adminId: {
-          title: t("certd.fields.adminId"),
+          title: t("certd.common.fields.adminId"),
           type: "dict-select",
           dict: userDict,
           column: {
@@ -124,7 +124,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         createTime: {
-          title: t("certd.createTime"),
+          title: t("certd.common.createTime"),
           type: "datetime",
           form: {
             show: false,
@@ -136,7 +136,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         updateTime: {
-          title: t("certd.updateTime"),
+          title: t("certd.common.updateTime"),
           type: "datetime",
           form: {
             show: false,

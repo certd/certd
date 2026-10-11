@@ -96,7 +96,7 @@ export default defineComponent({
       });
       return [
         {
-          title: t("certd.rootNode"),
+          title: t("certd.sys.authority.rootNode"),
           id: -1,
           children: clone,
         },

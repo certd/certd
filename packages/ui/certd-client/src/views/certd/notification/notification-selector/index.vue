@@ -87,7 +87,7 @@ const optionsDictRef = dict({
     const data = [
       {
         id: 0,
-        name: t("certd.notificationDefault"),
+        name: t("certd.notification.notificationDefault"),
         icon: "ion:notifications",
       },
       ...dict.data,

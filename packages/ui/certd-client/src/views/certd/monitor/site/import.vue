@@ -1,16 +1,16 @@
 <template>
   <div class="site-info-import-task-status min-h-[300px]">
     <div class="action mb-5">
-      <fs-button type="primary" icon="mingcute:vip-1-line" @click="addTask">{{ t("certd.domain.addImportTask") }}</fs-button>
-      <fs-button type="primary" icon="ion:refresh-outline" class="ml-2" @click="loadImportTaskStatus">{{ t("certd.domain.refresh") }}</fs-button>
+      <fs-button type="primary" icon="mingcute:vip-1-line" @click="addTask">{{ t("certd.certdomain.domain.addImportTask") }}</fs-button>
+      <fs-button type="primary" icon="ion:refresh-outline" class="ml-2" @click="loadImportTaskStatus">{{ t("certd.certdomain.domain.refresh") }}</fs-button>
     </div>
     <div class="table-container overflow-auto mb-10">
       <table class="cd-table border-gray-300 w-full">
         <thead>
           <tr>
-            <th class="w-[220px]">{{ t("certd.sourcee") }}</th>
-            <th class="">{{ t("certd.domain.progress") }}</th>
-            <th class="w-[220px]">{{ t("certd.domain.operation") }}</th>
+            <th class="w-[220px]">{{ t("certd.common.sourcee") }}</th>
+            <th class="">{{ t("certd.certdomain.domain.progress") }}</th>
+            <th class="w-[220px]">{{ t("certd.certdomain.domain.operation") }}</th>
           </tr>
         </thead>
         <tbody>
@@ -27,23 +27,23 @@
             <td>
               <div v-if="item.task">
                 <div>
-                  <a-tag color="blue">{{ t("certd.domain.total") }}：{{ item.task?.total }}</a-tag>
-                  <a-tag color="success" class="ml-2">{{ t("certd.success") }}：{{ item.task?.successCount }}</a-tag>
-                  <a-tag type="info" class="ml-2">{{ t("certd.domain.skipped") }}：{{ item.task?.skipCount }}</a-tag>
+                  <a-tag color="blue">{{ t("certd.certdomain.domain.total") }}：{{ item.task?.total }}</a-tag>
+                  <a-tag color="success" class="ml-2">{{ t("certd.common.success") }}：{{ item.task?.successCount }}</a-tag>
+                  <a-tag type="info" class="ml-2">{{ t("certd.certdomain.domain.skipped") }}：{{ item.task?.skipCount }}</a-tag>
                   <a-tooltip v-if="item.task?.errors.length > 0">
                     <template #title>
                       <div v-for="error in item.task?.errors" :key="error">{{ error }}</div>
                     </template>
-                    <a-tag color="red" class="ml-2">{{ t("certd.domain.failed") }}：{{ item.task?.errors.length }}</a-tag>
+                    <a-tag color="red" class="ml-2">{{ t("certd.certdomain.domain.failed") }}：{{ item.task?.errors.length }}</a-tag>
                   </a-tooltip>
                 </div>
                 <a-progress :percent="item.task?.progress" size="small" status="active" />
               </div>
-              <div v-else>{{ t("certd.domain.notExecuted") }}</div>
+              <div v-else>{{ t("certd.certdomain.domain.notExecuted") }}</div>
             </td>
             <td>
-              <fs-button type="primary" icon="ion:play-outline" :disabled="item.task?.status === 'running'" @click="startTask(item)">{{ t("certd.domain.execute") }}</fs-button>
-              <fs-button type="primary" class="ml-2" danger icon="ion:trash-outline" @click="deleteTask(item)">{{ t("certd.domain.delete") }}</fs-button>
+              <fs-button type="primary" icon="ion:play-outline" :disabled="item.task?.status === 'running'" @click="startTask(item)">{{ t("certd.certdomain.domain.execute") }}</fs-button>
+              <fs-button type="primary" class="ml-2" danger icon="ion:trash-outline" @click="deleteTask(item)">{{ t("certd.certdomain.domain.delete") }}</fs-button>
             </td>
           </tr>
         </tbody>
@@ -79,7 +79,7 @@ async function startTask(item: any) {
 
 async function deleteTask(item: any) {
   Modal.confirm({
-    title: t("certd.domain.confirmDelete"),
+    title: t("certd.certdomain.domain.confirmDelete"),
     okText: t("common.confirm"),
     okType: "danger",
     onOk: async () => {

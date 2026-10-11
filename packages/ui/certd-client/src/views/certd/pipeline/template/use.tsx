@@ -86,7 +86,7 @@ export function createExtraColumns() {
       },
     },
     triggerCron: {
-      title: t("certd.schedule"),
+      title: t("certd.pipeline.schedule"),
       form: {
         order: 100,
         component: {
@@ -96,7 +96,7 @@ export function createExtraColumns() {
         show: compute(({ form }) => {
           return form.clear !== true && form?.random !== true;
         }),
-        rules: [{ required: true, message: t("certd.selectCron") }],
+        rules: [{ required: true, message: t("certd.pipeline.selectCron") }],
       },
     },
     blank2: {

@@ -1,21 +1,21 @@
 <template>
   <fs-page class="page-user-settings page-grant">
     <template #header>
-      <div class="title">{{ t("certd.user.setting.grantSetting") }}</div>
+      <div class="title">{{ t("certd.mine.user.setting.grantSetting") }}</div>
     </template>
 
     <div class="user-settings-form settings-form">
       <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off">
-        <a-form-item :label="t('certd.user.setting.allowAdminViewCerts')" :name="['allowAdminViewCerts']">
+        <a-form-item :label="t('certd.mine.user.setting.allowAdminViewCerts')" :name="['allowAdminViewCerts']">
           <div class="flex mt-5">
             <a-switch v-model:checked="formState.allowAdminViewCerts" :disabled="!settingsStore.isPlus" />
             <vip-button class="ml-5" mode="button"></vip-button>
           </div>
-          <div class="helper">{{ t("certd.user.setting.allowAdminViewCertsHelper") }}</div>
+          <div class="helper">{{ t("certd.mine.user.setting.allowAdminViewCertsHelper") }}</div>
         </a-form-item>
 
         <a-form-item label=" " :colon="false" :wrapper-col="{ span: 16 }">
-          <loading-button type="primary" html-type="button" :click="doSave">{{ t("certd.confirm") }}</loading-button>
+          <loading-button type="primary" html-type="button" :click="doSave">{{ t("certd.common.confirm") }}</loading-button>
         </a-form-item>
       </a-form>
     </div>
@@ -52,7 +52,7 @@ const doSave = async () => {
     ...formState,
   });
   notification.success({
-    message: t("certd.user.setting.saveSuccess"),
+    message: t("certd.mine.user.setting.saveSuccess"),
   });
 };
 </script>

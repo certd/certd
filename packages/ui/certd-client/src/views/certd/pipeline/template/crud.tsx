@@ -1,4 +1,4 @@
-﻿import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, useFormWrapper, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, useFormWrapper, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { templateApi } from "./api";
 import { useRouter } from "vue-router";
 import { useModal } from "/@/use/use-modal";
@@ -76,7 +76,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         show: true,
         buttons: {
           add: {
-            text: t("certd.template.createTemplate"),
+            text: t("certd.pipeline.template.createTemplate"),
             type: "primary",
           },
         },
@@ -129,13 +129,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         title: {
-          title: t("certd.template.templateName"),
+          title: t("certd.pipeline.template.templateName"),
           type: "text",
           search: {
             show: true,
           },
           form: {
-            rules: [{ required: true, message: t("certd.template.enterTemplateName") }],
+            rules: [{ required: true, message: t("certd.pipeline.template.enterTemplateName") }],
           },
           column: {
             width: 400,
@@ -151,7 +151,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         pipelineId: {
-          title: t("certd.template.pipeline"),
+          title: t("certd.pipeline.template.pipeline"),
           type: "table-select",
           search: { show: true },
           dict: dict({
@@ -170,7 +170,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             show: true,
-            helper: t("certd.template.copyPipelineConfig"),
+            helper: t("certd.pipeline.template.copyPipelineConfig"),
             component: {
               valuesFormat: {
                 labelFormatter: (item: any) => {
@@ -202,7 +202,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         useCreate: {
-          title: t("certd.template.useTemplate"),
+          title: t("certd.pipeline.template.useTemplate"),
           form: { show: false },
           column: {
             conditionalRender: false,
@@ -219,14 +219,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               return (
                 <a class={"flex items-center"} onClick={create}>
                   <fs-icon icon={"ion:duplicate-outline"}></fs-icon>
-                  <span class={"ml-5"}>{t("certd.template.singleCreate")}</span>
+                  <span class={"ml-5"}>{t("certd.pipeline.template.singleCreate")}</span>
                 </a>
               );
             },
           },
         },
         useImport: {
-          title: t("certd.template.useTemplate"),
+          title: t("certd.pipeline.template.useTemplate"),
           form: { show: false },
           column: {
             conditionalRender: false,
@@ -235,14 +235,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               return (
                 <router-link class={"flex items-center"} to={{ path: "/cert/pipeline/template/import", query: { templateId: row.id } }}>
                   <fs-icon icon={"ion:duplicate"}></fs-icon>
-                  <span class={"ml-5"}>{t("certd.template.batchCreate")}</span>
+                  <span class={"ml-5"}>{t("certd.pipeline.template.batchCreate")}</span>
                 </router-link>
               );
             },
           },
         },
         projectId: {
-          title: t("certd.fields.projectName"),
+          title: t("certd.common.fields.projectName"),
           type: "dict-select",
           dict: myProjectDict,
           form: {

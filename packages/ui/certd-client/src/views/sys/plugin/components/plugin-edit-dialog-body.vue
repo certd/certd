@@ -155,7 +155,7 @@ async function doSave(versionOverride?: string) {
   // 本地编辑后必须提升版本号才能保存：本地版本需要高于云端已发布版本
   if (form.latest && form.version && compareVersions(form.version, form.latest) <= 0) {
     notification.warning({
-      message: t("certd.onlinePluginVersionMustExceedLatest", { version: `v${form.latest}` }),
+      message: t("certd.sys.plugin.onlinePluginVersionMustExceedLatest", { version: `v${form.latest}` }),
     });
     return;
   }
