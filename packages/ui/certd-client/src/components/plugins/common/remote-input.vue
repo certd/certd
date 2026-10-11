@@ -55,7 +55,7 @@ async function openDialog() {
             saveRemind: false,
           },
           afterSubmit() {
-            notification.success({ message: t("certd.operationSuccess") });
+            notification.success({ message: t("certd.common.operationSuccess") });
           },
           async doSubmit({ form }: any) {
             return await doPluginFormSubmit(form);

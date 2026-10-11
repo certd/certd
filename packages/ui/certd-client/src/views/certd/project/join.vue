@@ -2,7 +2,7 @@
   <fs-page class="page-project-join">
     <template #header>
       <div class="title">
-        {{ t("certd.sysResources.projectJoin") }}
+        {{ t("certd.navigation.sysResources.projectJoin") }}
         <span v-if="projectStore.projects.length === 0" class="sub">{{ t("certd.project.noProjectJoined") }}</span>
       </div>
 

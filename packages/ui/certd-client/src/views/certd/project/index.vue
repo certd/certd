@@ -2,7 +2,7 @@
   <fs-page class="page-cert">
     <template #header>
       <div class="title">
-        {{ t("certd.sysResources.myProjectManager") }}
+        {{ t("certd.navigation.sysResources.myProjectManager") }}
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
@@ -37,17 +37,17 @@ const selectedRowKeys = context.selectedRowKeys;
 const handleBatchDelete = () => {
   if (selectedRowKeys.value?.length > 0) {
     Modal.confirm({
-      title: t("certd.confirmTitle"),
-      content: t("certd.confirmDeleteBatch", { count: selectedRowKeys.value.length }),
+      title: t("certd.common.confirmTitle"),
+      content: t("certd.common.confirmDeleteBatch", { count: selectedRowKeys.value.length }),
       async onOk() {
         await DeleteBatch(selectedRowKeys.value);
-        notification.info({ message: t("certd.deleteSuccess") });
+        notification.info({ message: t("certd.common.deleteSuccess") });
         crudExpose.doRefresh();
         selectedRowKeys.value = [];
       },
     });
   } else {
-    notification.error({ message: t("certd.selectRecordsFirst") });
+    notification.error({ message: t("certd.common.selectRecordsFirst") });
   }
 };
 

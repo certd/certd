@@ -1,4 +1,4 @@
-﻿import * as api from "./api";
+import * as api from "./api";
 import { useI18n } from "/src/locales";
 import { computed, Ref, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -113,7 +113,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         userId: {
-          title: t("certd.fields.userId"),
+          title: t("certd.common.fields.userId"),
           type: "number",
           search: {
             show: computed(() => {
@@ -131,7 +131,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         pipelineId: {
-          title: t("certd.fields.pipelineId"),
+          title: t("certd.common.fields.pipelineId"),
           type: "number",
           search: {
             show: true,
@@ -144,7 +144,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         pipelineTitle: {
-          title: t("certd.fields.pipelineName"),
+          title: t("certd.common.fields.pipelineName"),
           type: "text",
           search: {
             show: true,
@@ -159,15 +159,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         triggerType: {
-          title: t("certd.fields.triggerType"),
+          title: t("certd.common.fields.triggerType"),
           type: "dict-select",
           search: {
             show: true,
           },
           dict: dict({
             data: [
-              { value: "user", label: t("certd.triggerTypes.manual") },
-              { value: "timer", label: t("certd.triggerTypes.timer") },
+              { value: "user", label: t("certd.history.triggerTypes.manual") },
+              { value: "timer", label: t("certd.history.triggerTypes.timer") },
             ],
           }),
           form: {
@@ -185,7 +185,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         status: {
-          title: t("certd.fields.status"),
+          title: t("certd.common.fields.status"),
           type: "dict-select",
           search: {
             show: true,
@@ -203,7 +203,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         projectId: {
-          title: t("certd.fields.projectName"),
+          title: t("certd.common.fields.projectName"),
           type: "dict-select",
           dict: myProjectDict,
           form: {
@@ -211,7 +211,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         updateTime: {
-          title: t("certd.fields.updateTime"),
+          title: t("certd.common.fields.updateTime"),
           type: "datetime",
           form: {
             show: false,

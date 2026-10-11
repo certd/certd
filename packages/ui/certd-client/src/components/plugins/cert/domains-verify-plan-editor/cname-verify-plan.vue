@@ -2,11 +2,11 @@
   <table class="cname-verify-plan">
     <thead>
       <tr>
-        <td class="col-host">{{ t("certd.verifyPlan.hostRecord") }}</td>
-        <td class="col-type center">{{ t("certd.verifyPlan.recordType") }}</td>
-        <td class="col-value">{{ t("certd.verifyPlan.setCnameRecord") }}</td>
-        <td class="col-status center">{{ t("certd.status") }}</td>
-        <td class="col-action center">{{ t("certd.verifyPlan.operation") }}</td>
+        <td class="col-host">{{ t("certd.certdomain.verifyPlan.hostRecord") }}</td>
+        <td class="col-type center">{{ t("certd.certdomain.verifyPlan.recordType") }}</td>
+        <td class="col-value">{{ t("certd.certdomain.verifyPlan.setCnameRecord") }}</td>
+        <td class="col-status center">{{ t("certd.common.status") }}</td>
+        <td class="col-action center">{{ t("certd.certdomain.verifyPlan.operation") }}</td>
       </tr>
     </thead>
     <template v-for="key in domains" :key="key">

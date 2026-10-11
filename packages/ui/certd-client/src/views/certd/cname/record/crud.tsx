@@ -39,11 +39,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const dictRef = dict({
     data: [
-      { label: t("certd.pending_cname_setup"), value: "cname", color: "warning" },
-      { label: t("certd.validating"), value: "validating", color: "blue" },
-      { label: t("certd.validation_successful"), value: "valid", color: "green" },
-      { label: t("certd.validation_failed"), value: "failed", color: "red" },
-      { label: t("certd.validation_timed_out"), value: "timeout", color: "red" },
+      { label: t("certd.cname.pending_cname_setup"), value: "cname", color: "warning" },
+      { label: t("certd.cname.validating"), value: "validating", color: "blue" },
+      { label: t("certd.cname.validation_successful"), value: "valid", color: "green" },
+      { label: t("certd.cname.validation_failed"), value: "failed", color: "red" },
+      { label: t("certd.cname.validation_timed_out"), value: "timeout", color: "red" },
     ],
   });
 
@@ -128,7 +128,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         domain: {
-          title: t("certd.proxied_domain"),
+          title: t("certd.cname.proxied_domain"),
           type: "text",
           search: {
             show: true,
@@ -140,7 +140,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         hostRecord: {
-          title: t("certd.host_record"),
+          title: t("certd.cname.host_record"),
           type: "text",
           form: {
             show: false,
@@ -153,7 +153,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         recordValue: {
-          title: t("certd.please_set_cname"),
+          title: t("certd.cname.please_set_cname"),
           type: "copyable",
           form: {
             show: false,
@@ -163,7 +163,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         cnameProviderId: {
-          title: t("certd.cname_service"),
+          title: t("certd.cname.cname_service"),
           type: "dict-select",
           dict: dict({
             url: "/cname/provider/list",
@@ -201,9 +201,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 };
                 return (
                   <div>
-                    {t("certd.default_public_cname")}
+                    {t("certd.cname.default_public_cname")}
                     <router-link to={"/sys/cname/provider"} onClick={closeForm}>
-                      {t("certd.customize_cname")}
+                      {t("certd.cname.customize_cname")}
                     </router-link>
                   </div>
                 );
@@ -215,15 +215,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
             cellRender({ value }) {
               if (value < 0) {
-                return <a-tag color={"green"}>{t("certd.public_cname")}</a-tag>;
+                return <a-tag color={"green"}>{t("certd.cname.public_cname")}</a-tag>;
               } else {
-                return <a-tag color={"blue"}>{t("certd.custom_cname")}</a-tag>;
+                return <a-tag color={"blue"}>{t("certd.cname.custom_cname")}</a-tag>;
               }
             },
           },
         },
         status: {
-          title: t("certd.fields.status"),
+          title: t("certd.common.fields.status"),
           type: "dict-select",
           dict: dictRef,
           addForm: {
@@ -263,7 +263,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         triggerValidate: {
-          title: t("certd.validate"),
+          title: t("certd.cname.validate"),
           type: "text",
           form: {
             show: false,
@@ -282,13 +282,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 try {
                   const res = await api.DoVerify(row.id);
                   if (res === true) {
-                    notification.success({ message: t("certd.validation_successful") });
+                    notification.success({ message: t("certd.cname.validation_successful") });
                     row.status = "valid";
                   } else if (res === false) {
-                    notification.success({ message: t("certd.validation_timed_out") });
+                    notification.success({ message: t("certd.cname.validation_timed_out") });
                     row.status = "timeout";
                   } else {
-                    notification.success({ message: t("certd.validation_started") });
+                    notification.success({ message: t("certd.cname.validation_started") });
                   }
                   await crudExpose.doRefresh();
                 } catch (e: any) {
@@ -302,7 +302,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               return (
                 <div>
                   <a-button onClick={doVerify} loading={row._validating_} size={"small"} type={"primary"}>
-                    {t("certd.click_to_validate")}
+                    {t("certd.cname.click_to_validate")}
                   </a-button>
                   <CnameTip record={row} />
                 </div>
@@ -311,14 +311,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         mainDomain: {
-          title: t("certd.mainDomain"),
+          title: t("certd.cname.mainDomain"),
           type: "text",
           form: {
             show: false,
           },
         },
         createTime: {
-          title: t("certd.createTime"),
+          title: t("certd.common.createTime"),
           type: "datetime",
           form: {
             show: false,
@@ -330,7 +330,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         updateTime: {
-          title: t("certd.updateTime"),
+          title: t("certd.common.updateTime"),
           type: "datetime",
           form: {
             show: false,

@@ -1,5 +1,5 @@
 <template>
-  <fs-button icon="icon-park-outline:replay-music" class="need-plus" type="link" :text="t('certd.batchRerun')" @click="openFormDialog"></fs-button>
+  <fs-button icon="icon-park-outline:replay-music" class="need-plus" type="link" :text="t('certd.pipeline.batchRerun')" @click="openFormDialog"></fs-button>
 </template>
 
 <script setup lang="ts">
@@ -76,7 +76,7 @@ async function openFormDialog() {
         },
       },
       wrapper: {
-        title: t("certd.batchRerun"),
+        title: t("certd.pipeline.batchRerun"),
         width: 600,
       },
     },

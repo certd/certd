@@ -1,7 +1,7 @@
-﻿<template>
+<template>
   <fs-page class="page-user-profile">
     <template #header>
-      <div class="title">{{ t("certd.myInfo") }}</div>
+      <div class="title">{{ t("certd.mine.myInfo") }}</div>
     </template>
     <div class="profile-container md:p-8">
       <div class="profile-card md:rounded">

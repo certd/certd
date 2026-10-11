@@ -1,6 +1,6 @@
 <template>
   <div class="upload-cert">
-    <fs-button v-model:loading="loading" type="primary" :text="t('certd.pluginCommon.upload')" v-bind="props.button" @click="openUploadCertDialog"></fs-button>
+    <fs-button v-model:loading="loading" type="primary" :text="t('certd.common.pluginCommon.upload')" v-bind="props.button" @click="openUploadCertDialog"></fs-button>
   </div>
 </template>
 <script lang="ts" setup>
@@ -30,18 +30,18 @@ const getScope: any = inject("get:scope", () => {
 const getPluginType: any = inject("get:plugin:type", () => {
   return "plugin";
 });
-const title = computed(() => props.title || t("certd.pluginCommon.uploadCert"));
+const title = computed(() => props.title || t("certd.common.pluginCommon.uploadCert"));
 function openUploadCertDialog() {
   const columns = merge(
     {
       certName: {
-        title: t("certd.pluginCommon.certName"),
+        title: t("certd.common.pluginCommon.certName"),
         form: {
           component: {
             name: "a-input",
             vModel: "value",
           },
-          helper: t("certd.pluginCommon.certNameHelper"),
+          helper: t("certd.common.pluginCommon.certNameHelper"),
         },
       },
     },
@@ -51,7 +51,7 @@ function openUploadCertDialog() {
     title: title.value,
     columns: {
       certName: {
-        title: t("certd.pluginCommon.certName"),
+        title: t("certd.common.pluginCommon.certName"),
         form: {
           component: {
             name: "a-input",
@@ -86,7 +86,7 @@ function openUploadCertDialog() {
             showErrorNotify: true,
           }
         );
-        notification.success({ message: t("certd.pluginCommon.uploadSuccess") });
+        notification.success({ message: t("certd.common.pluginCommon.uploadSuccess") });
         emit("submit");
       } finally {
         loading.value = false;

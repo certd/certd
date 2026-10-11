@@ -128,7 +128,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
         ...commonColumnsDefine,
         projectId: {
-          title: t("certd.fields.projectName"),
+          title: t("certd.common.fields.projectName"),
           type: "dict-select",
           dict: myProjectDict,
           form: {

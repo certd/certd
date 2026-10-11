@@ -57,7 +57,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, a
         if (!column.rules) {
           column.rules = [];
         }
-        column.rules.push({ required: true, message: t("certd.requiredField") });
+        column.rules.push({ required: true, message: t("certd.common.requiredField") });
       }
 
       //设置默认值
@@ -109,7 +109,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, a
     //   },
     // },
     type: {
-      title: t("certd.addonType"),
+      title: t("certd.addon.addonType"),
       type: "dict-select",
       dict: addonTypeDictRef,
       search: {
@@ -152,7 +152,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, a
             );
           },
         },
-        rules: [{ required: true, message: t("certd.addonTypeSelect") }],
+        rules: [{ required: true, message: t("certd.addon.addonTypeSelect") }],
         valueChange: {
           immediate: true,
           async handle({ value, mode, form, immediate }) {
@@ -187,27 +187,27 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, a
       },
     } as ColumnCompositionProps,
     name: {
-      title: t("certd.addonName"),
+      title: t("certd.addon.addonName"),
       search: {
         show: true,
       },
       type: ["text"],
       form: {
         order: -2,
-        rules: [{ required: true, message: t("certd.enterName") }],
-        helper: t("certd.addonNameHelper"),
+        rules: [{ required: true, message: t("certd.common.enterName") }],
+        helper: t("certd.addon.addonNameHelper"),
       },
       column: {
         width: 200,
       },
     },
     isDefault: {
-      title: t("certd.isDefault"),
+      title: t("certd.common.isDefault"),
       type: "dict-switch",
       dict: dict({
         data: [
-          { label: t("certd.yes"), value: true, color: "success" },
-          { label: t("certd.no"), value: false, color: "default" },
+          { label: t("certd.open.yes"), value: true, color: "success" },
+          { label: t("certd.open.no"), value: false, color: "default" },
         ],
       }),
       form: {
@@ -216,7 +216,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, a
         }),
         columnSetShow: false,
         value: false,
-        rules: [{ required: true, message: t("certd.selectIsDefault") }],
+        rules: [{ required: true, message: t("certd.common.selectIsDefault") }],
         order: 999,
       },
       column: {
@@ -236,8 +236,8 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, a
             // @ts-ignore
             change({ row }) {
               Modal.confirm({
-                title: t("certd.prompt"),
-                content: t("certd.confirmSetDefaultNotification"),
+                title: t("certd.common.prompt"),
+                content: t("certd.notification.confirmSetDefaultNotification"),
                 onOk: async () => {
                   await api.SetDefault(row.id);
                   await crudExpose.doRefresh();
@@ -252,7 +252,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, a
       },
     },
     test: {
-      title: t("certd.test"),
+      title: t("certd.common.test"),
       form: {
         show: compute(({ form }) => {
           return !!form.type && currentDefine.value?.showTest === true;

@@ -73,7 +73,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         domain: {
-          title: t("certd.cnameDomain"),
+          title: t("certd.sys.cname.cnameDomain"),
           type: "text",
           editForm: {
             component: {
@@ -85,12 +85,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             component: {
-              placeholder: t("certd.cnameDomainPlaceholder"),
+              placeholder: t("certd.sys.cname.cnameDomainPlaceholder"),
             },
-            helper: t("certd.cnameDomainHelper"),
+            helper: t("certd.sys.cname.cnameDomainHelper"),
             rules: [
-              { required: true, message: t("certd.requiredField") },
-              { pattern: /^[^*]+$/, message: t("certd.cnameDomainPattern") },
+              { required: true, message: t("certd.common.requiredField") },
+              { pattern: /^[^*]+$/, message: t("certd.sys.cname.cnameDomainPattern") },
             ],
           },
           column: {
@@ -98,14 +98,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         subdomain: {
-          title: t("certd.cnameProviderSubdomain"),
+          title: t("certd.sys.cname.cnameProviderSubdomain"),
           type: "text",
           form: {
             component: {
-              placeholder: t("certd.cnameProviderSubdomainPlaceholder"),
+              placeholder: t("certd.sys.cname.cnameProviderSubdomainPlaceholder"),
             },
-            helper: t("certd.cnameProviderSubdomainHelper"),
-            rules: [{ pattern: /^[^*]+$/, message: t("certd.cnameDomainPattern") }],
+            helper: t("certd.sys.cname.cnameProviderSubdomainHelper"),
+            rules: [{ pattern: /^[^*]+$/, message: t("certd.sys.cname.cnameDomainPattern") }],
           },
           column: {
             width: 200,
@@ -113,7 +113,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         dnsProviderType: {
-          title: t("certd.dnsProvider"),
+          title: t("certd.sys.cname.dnsProvider"),
           type: "dict-select",
           search: {
             show: true,
@@ -124,7 +124,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             label: "title",
           }),
           form: {
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
           },
           column: {
             width: 150,
@@ -134,7 +134,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         accessId: {
-          title: t("certd.dnsProviderAuthorization"),
+          title: t("certd.sys.cname.dnsProviderAuthorization"),
           type: "dict-select",
           dict: dict({
             url: "/sys/access/list",
@@ -150,7 +150,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               }),
               from: "sys",
             },
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
           },
           column: {
             width: 150,
@@ -160,17 +160,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         isDefault: {
-          title: t("certd.isDefault"),
+          title: t("certd.common.isDefault"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("certd.yes"), value: true, color: "success" },
-              { label: t("certd.no"), value: false, color: "default" },
+              { label: t("certd.open.yes"), value: true, color: "success" },
+              { label: t("certd.open.no"), value: false, color: "default" },
             ],
           }),
           form: {
             value: false,
-            rules: [{ required: true, message: t("certd.selectIsDefault") }],
+            rules: [{ required: true, message: t("certd.common.selectIsDefault") }],
           },
           column: {
             align: "center",
@@ -178,7 +178,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         setDefault: {
-          title: t("certd.setDefault"),
+          title: t("certd.common.setDefault"),
           type: "text",
           form: {
             show: false,
@@ -193,8 +193,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               }
               const onClick = async () => {
                 Modal.confirm({
-                  title: t("certd.prompt"),
-                  content: t("certd.confirmSetDefault"),
+                  title: t("certd.common.prompt"),
+                  content: t("certd.common.confirmSetDefault"),
                   onOk: async () => {
                     await api.SetDefault(row.id);
                     await crudExpose.doRefresh();
@@ -204,19 +204,19 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
               return (
                 <a-button type={"link"} size={"small"} onClick={onClick}>
-                  {t("certd.setAsDefault")}
+                  {t("certd.common.setAsDefault")}
                 </a-button>
               );
             },
           },
         },
         disabled: {
-          title: t("certd.disabled"),
+          title: t("certd.common.disabled"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("certd.enabled"), value: false, color: "success" },
-              { label: t("certd.disabledLabel"), value: true, color: "error" },
+              { label: t("certd.common.enabled"), value: false, color: "success" },
+              { label: t("certd.common.disabledLabel"), value: true, color: "error" },
             ],
           }),
           form: {
@@ -225,12 +225,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             width: 100,
             component: {
-              title: t("certd.clickToToggle"),
+              title: t("certd.common.clickToToggle"),
               on: {
                 async click({ value, row }) {
                   Modal.confirm({
-                    title: t("certd.prompt"),
-                    content: t("certd.confirmToggleStatus", { action: !value ? t("certd.disable") : t("certd.enable") }),
+                    title: t("certd.common.prompt"),
+                    content: t("certd.common.confirmToggleStatus", { action: !value ? t("certd.common.disable") : t("certd.common.enable") }),
                     onOk: async () => {
                       await api.SetDisabled(row.id, !value);
                       await crudExpose.doRefresh();
@@ -242,7 +242,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         createTime: {
-          title: t("certd.createTime"),
+          title: t("certd.common.createTime"),
           type: "datetime",
           form: {
             show: false,
@@ -254,7 +254,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         updateTime: {
-          title: t("certd.updateTime"),
+          title: t("certd.common.updateTime"),
           type: "datetime",
           form: {
             show: false,

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="landing-page">
     <nav class="landing-nav">
       <div class="nav-container">
@@ -10,14 +10,14 @@
           <LanguageToggle />
           <ThemeToggle />
           <template v-if="isLoggedIn">
-            <router-link to="/index" class="btn btn-primary">{{ t("certd.landing.console") }}</router-link>
+            <router-link to="/index" class="btn btn-primary">{{ t("certd.common.landing.console") }}</router-link>
             <!-- <div class="user-avatar" @click="goProfile">
               <div class="avatar-initials">{{ userInitials }}</div>
             </div> -->
           </template>
           <template v-else>
-            <router-link :to="{ name: 'login' }" class="btn btn-outline">{{ t("certd.landing.login") }}</router-link>
-            <router-link v-if="hasRegisterEnabled" :to="{ name: 'register' }" class="btn btn-primary">{{ t("certd.landing.register") }}</router-link>
+            <router-link :to="{ name: 'login' }" class="btn btn-outline">{{ t("certd.common.landing.login") }}</router-link>
+            <router-link v-if="hasRegisterEnabled" :to="{ name: 'register' }" class="btn btn-primary">{{ t("certd.common.landing.register") }}</router-link>
           </template>
         </div>
       </div>
@@ -27,12 +27,12 @@
       <div class="hero-container">
         <div class="hero-content">
           <h1 class="hero-title flex flex-col md:flex-row">
-            <div>{{ t("certd.landing.heroTitle") }}</div>
-            <div class="gradient-text mt-2 md:mt-0 md:ml-4">{{ t("certd.landing.heroHighlight") }}</div>
+            <div>{{ t("certd.common.landing.heroTitle") }}</div>
+            <div class="gradient-text mt-2 md:mt-0 md:ml-4">{{ t("certd.common.landing.heroHighlight") }}</div>
           </h1>
-          <p class="hero-description">{{ t("certd.landing.heroDescription") }}</p>
+          <p class="hero-description">{{ t("certd.common.landing.heroDescription") }}</p>
           <div class="hero-actions">
-            <router-link :to="{ name: 'login' }" class="btn btn-large btn-primary">{{ t("certd.landing.getStarted") }}</router-link>
+            <router-link :to="{ name: 'login' }" class="btn btn-large btn-primary">{{ t("certd.common.landing.getStarted") }}</router-link>
           </div>
           <div class="hero-benefits">
             <div v-for="(benefit, index) in heroBenefits" :key="index" class="benefit-item">
@@ -49,8 +49,8 @@
     <section id="features" class="features-section">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">{{ t("certd.landing.featuresTitle") }}</h2>
-          <p class="section-subtitle">{{ t("certd.landing.featuresSubtitle") }}</p>
+          <h2 class="section-title">{{ t("certd.common.landing.featuresTitle") }}</h2>
+          <p class="section-subtitle">{{ t("certd.common.landing.featuresSubtitle") }}</p>
         </div>
         <div class="features-grid">
           <div v-for="(feature, index) in features" :key="index" class="feature-card" :style="{ animationDelay: `${index * 0.08}s` }">
@@ -156,71 +156,71 @@ function goProfile() {
 const heroBenefits = computed(() => [
   {
     icon: "♻️",
-    text: t("certd.landing.benefits.autoRenewal"),
+    text: t("certd.common.landing.benefits.autoRenewal"),
   },
   {
     icon: "📊",
-    text: t("certd.landing.benefits.centralizedManagement"),
+    text: t("certd.common.landing.benefits.centralizedManagement"),
   },
   {
     icon: "🔔",
-    text: t("certd.landing.benefits.statusMonitoring"),
+    text: t("certd.common.landing.benefits.statusMonitoring"),
   },
   {
     icon: "💰",
-    text: t("certd.landing.benefits.costSaving"),
+    text: t("certd.common.landing.benefits.costSaving"),
   },
   {
     icon: "🛡️",
-    text: t("certd.landing.benefits.secureReliable"),
+    text: t("certd.common.landing.benefits.secureReliable"),
   },
 ]);
 
 const features = computed(() => [
   {
     icon: "🔐",
-    title: t("certd.landing.features.autoApply.title"),
-    description: t("certd.landing.features.autoApply.description"),
+    title: t("certd.common.landing.features.autoApply.title"),
+    description: t("certd.common.landing.features.autoApply.description"),
   },
   {
     icon: "🚀",
-    title: t("certd.landing.features.autoDeploy.title"),
-    description: t("certd.landing.features.autoDeploy.description"),
+    title: t("certd.common.landing.features.autoDeploy.title"),
+    description: t("certd.common.landing.features.autoDeploy.description"),
   },
   {
     icon: "📄",
-    title: t("certd.landing.features.certFormats.title"),
-    description: t("certd.landing.features.certFormats.description"),
+    title: t("certd.common.landing.features.certFormats.title"),
+    description: t("certd.common.landing.features.certFormats.description"),
   },
   {
     icon: "🌐",
-    title: t("certd.landing.features.wildcardSupport.title"),
-    description: t("certd.landing.features.wildcardSupport.description"),
+    title: t("certd.common.landing.features.wildcardSupport.title"),
+    description: t("certd.common.landing.features.wildcardSupport.description"),
   },
   {
     icon: "🔔",
-    title: t("certd.landing.features.notifications.title"),
-    description: t("certd.landing.features.notifications.description"),
+    title: t("certd.common.landing.features.notifications.title"),
+    description: t("certd.common.landing.features.notifications.description"),
   },
   {
     icon: "🔒",
-    title: t("certd.landing.features.security.title"),
-    description: t("certd.landing.features.security.description"),
+    title: t("certd.common.landing.features.security.title"),
+    description: t("certd.common.landing.features.security.description"),
   },
   {
     icon: "💾",
-    title: t("certd.landing.features.databases.title"),
-    description: t("certd.landing.features.databases.description"),
+    title: t("certd.common.landing.features.databases.title"),
+    description: t("certd.common.landing.features.databases.description"),
   },
   {
     icon: "🔌",
-    title: t("certd.landing.features.openApi.title"),
-    description: t("certd.landing.features.openApi.description"),
+    title: t("certd.common.landing.features.openApi.title"),
+    description: t("certd.common.landing.features.openApi.description"),
   },
   {
     icon: "📊",
-    title: t("certd.landing.features.siteMonitor.title"),
-    description: t("certd.landing.features.siteMonitor.description"),
+    title: t("certd.common.landing.features.siteMonitor.title"),
+    description: t("certd.common.landing.features.siteMonitor.description"),
   },
 ]);
 

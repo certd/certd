@@ -20,7 +20,7 @@
             {{ plugin.title || plugin.name }}
           </a>
           <span v-else class="plugin-card__title" :title="plugin.title || plugin.name">{{ plugin.title || plugin.name }}</span>
-          <a-tooltip v-if="plugin.aiCheckStatus === 'passed'" :title="t('certd.onlinePluginAiReviewPassed')">
+          <a-tooltip v-if="plugin.aiCheckStatus === 'passed'" :title="t('certd.sys.plugin.onlinePluginAiReviewPassed')">
             <fs-icon class="plugin-card__ai-check-icon" icon="ion:shield-checkmark-outline" />
           </a-tooltip>
           <a-tooltip v-if="pluginCardState.requiresVip" title="需要 Plus 会员">
@@ -37,14 +37,14 @@
               </template>
             </a-button>
           </a-tooltip>
-          <a-tooltip v-if="pluginCardState.canExportPlugin" :title="t('certd.export')">
+          <a-tooltip v-if="pluginCardState.canExportPlugin" :title="t('certd.common.export')">
             <a-button class="plugin-card__tool" type="text" size="small" :loading="isActionLoading('export')" @click.stop="exportPlugin">
               <template #icon>
                 <fs-icon icon="ion:cloud-download-outline" />
               </template>
             </a-button>
           </a-tooltip>
-          <a-tooltip v-if="pluginCardState.canPublishPlugin" :title="t('certd.onlinePluginPublish')">
+          <a-tooltip v-if="pluginCardState.canPublishPlugin" :title="t('certd.sys.plugin.onlinePluginPublish')">
             <a-button class="plugin-card__tool" type="text" size="small" :loading="isPublishingPlugin(plugin)" @click.stop="publishPlugin">
               <template #icon>
                 <fs-icon icon="ion:cloud-upload-outline" />
@@ -68,16 +68,16 @@
         </div>
         <template v-if="pluginCardState.isCloudPlugin && pluginCardState.isInstalled">
           <div v-if="plugin.id" class="plugin-card__action-zone" :class="{ 'is-loading': isActionLoading('uninstall') }">
-            <a-tag color="green" class="plugin-status-tag">{{ t("certd.onlinePluginInstalled") }}</a-tag>
+            <a-tag color="green" class="plugin-status-tag">{{ t("certd.sys.plugin.onlinePluginInstalled") }}</a-tag>
             <a-button class="plugin-card__action-button" size="small" danger ghost :loading="isActionLoading('uninstall')" @click.stop="uninstallPlugin">
-              {{ t("certd.onlinePluginUninstall") }}
+              {{ t("certd.sys.plugin.onlinePluginUninstall") }}
             </a-button>
           </div>
-          <a-tag v-else color="green" class="plugin-status-tag">{{ t("certd.onlinePluginInstalled") }}</a-tag>
+          <a-tag v-else color="green" class="plugin-status-tag">{{ t("certd.sys.plugin.onlinePluginInstalled") }}</a-tag>
         </template>
         <div v-else-if="pluginCardState.isCloudPlugin" class="plugin-card__action-zone plugin-card__install-zone" :class="{ 'is-loading': isActionLoading('install') }">
           <a-button class="plugin-card__action-button" size="small" type="primary" :loading="isActionLoading('install')" @click.stop="installPlugin">
-            {{ t("certd.onlinePluginInstall") }}
+            {{ t("certd.sys.plugin.onlinePluginInstall") }}
           </a-button>
         </div>
       </div>
@@ -91,7 +91,7 @@
       <template v-if="source === 'local'">
         <a-tooltip v-if="plugin.showDisabled" :title="toggleTitle">
           <a-tag class="plugin-status-tag" :class="{ 'is-loading': isActionLoading('toggle') }" :color="plugin.disabled ? 'default' : 'green'" @click.stop="togglePlugin">
-            {{ plugin.disabled ? t("certd.onlinePluginDisabled") : t("certd.onlinePluginEnabled") }}
+            {{ plugin.disabled ? t("certd.sys.plugin.onlinePluginDisabled") : t("certd.sys.plugin.onlinePluginEnabled") }}
           </a-tag>
         </a-tooltip>
         <a-tag>{{ pluginTypeLabel }}</a-tag>
@@ -101,12 +101,12 @@
       <template v-else-if="!simple">
         <a-tooltip v-if="plugin.installed && plugin.id && plugin.showDisabled" :title="toggleTitle">
           <a-tag class="plugin-status-tag" :class="{ 'is-loading': isActionLoading('toggle') }" :color="plugin.disabled ? 'default' : 'green'" @click.stop="togglePlugin">
-            {{ plugin.disabled ? t("certd.onlinePluginDisabled") : t("certd.onlinePluginEnabled") }}
+            {{ plugin.disabled ? t("certd.sys.plugin.onlinePluginDisabled") : t("certd.sys.plugin.onlinePluginEnabled") }}
           </a-tag>
         </a-tooltip>
         <a-tag>{{ pluginTypeLabel }}</a-tag>
         <a-tag v-if="plugin.group">{{ plugin.group }}</a-tag>
-        <a-tooltip :title="t('certd.onlinePluginDownloadCount', { count: plugin.downloadCount || 0 })">
+        <a-tooltip :title="t('certd.sys.plugin.onlinePluginDownloadCount', { count: plugin.downloadCount || 0 })">
           <a-tag class="plugin-card__download-count">
             <fs-icon icon="ion:cloud-download-outline" />
             <span>{{ formatDownloadCount(plugin.downloadCount || 0) }}</span>
@@ -126,7 +126,7 @@
           <fs-icon v-if="plugin.upgradeAvailable" class="plugin-card__version-icon" icon="carbon:upgrade" />
         </span>
       </a-tooltip>
-      <a-tooltip v-if="source !== 'local' && authorName" :title="`${t('certd.author')}：${authorName}`">
+      <a-tooltip v-if="source !== 'local' && authorName" :title="`${t('certd.sys.plugin.author')}：${authorName}`">
         <span class="plugin-card__author">
           <fs-icon icon="ion:person-circle-outline" />
           <span>{{ authorName }}</span>
@@ -232,21 +232,21 @@ const authorName = computed(() => {
 
 const pluginTypeLabel = computed(() => {
   const labelMap: Record<string, string> = {
-    access: t("certd.auth"),
-    dnsProvider: t("certd.dns"),
-    deploy: t("certd.deployPlugin"),
+    access: t("certd.sys.plugin.auth"),
+    dnsProvider: t("certd.sys.plugin.dns"),
+    deploy: t("certd.sys.plugin.deployPlugin"),
   };
   return labelMap[props.plugin.pluginType || ""] || props.plugin.pluginType || "-";
 });
 
 const sourceLabel = computed(() => {
   if (props.source === "local" && props.plugin.type !== "builtIn") {
-    return t("certd.localPlugin");
+    return t("certd.sys.plugin.localPlugin");
   }
   const labelMap: Record<string, string> = {
-    builtIn: t("certd.builtIn"),
-    custom: t("certd.custom"),
-    store: t("certd.store"),
+    builtIn: t("certd.sys.plugin.builtIn"),
+    custom: t("certd.sys.plugin.custom"),
+    store: t("certd.sys.plugin.store"),
   };
   return labelMap[props.plugin.type || ""] || props.plugin.type || "-";
 });
@@ -260,21 +260,21 @@ const currentVersion = computed(() => {
 
 const versionTitle = computed(() => {
   if (hasLocalUnpublishedChanges.value) {
-    return `${t("certd.version")} v${currentVersion.value}，${t("certd.onlinePluginUnpublishedChanges")}`;
+    return `${t("certd.sys.plugin.version")} v${currentVersion.value}，${t("certd.sys.plugin.onlinePluginUnpublishedChanges")}`;
   }
   if (props.source === "local") {
-    return `${t("certd.version")} v${currentVersion.value}`;
+    return `${t("certd.sys.plugin.version")} v${currentVersion.value}`;
   }
   if (props.plugin.version && props.plugin.upgradeAvailable && props.plugin.latest) {
-    return `${t("certd.dashboard.latestVersion", { version: `v${props.plugin.latest}` })}，${t("certd.onlinePluginClickToUpdate")}`;
+    return `${t("certd.dashboard.latestVersion", { version: `v${props.plugin.latest}` })}，${t("certd.sys.plugin.onlinePluginClickToUpdate")}`;
   }
   if (props.plugin.version) {
-    return t("certd.onlinePluginAlreadyLatest");
+    return t("certd.sys.plugin.onlinePluginAlreadyLatest");
   }
   if (props.plugin.latest) {
     return t("certd.dashboard.latestVersion", { version: `v${props.plugin.latest}` });
   }
-  return `${t("certd.version")} -`;
+  return `${t("certd.sys.plugin.version")} -`;
 });
 
 /**
@@ -288,7 +288,7 @@ const hasLocalUnpublishedChanges = computed(() => {
 
 const toggleTitle = computed(() => {
   const disabled = props.plugin.disabled;
-  return disabled ? t("certd.onlinePluginClickToEnable") : t("certd.onlinePluginClickToDisable");
+  return disabled ? t("certd.sys.plugin.onlinePluginClickToEnable") : t("certd.sys.plugin.onlinePluginClickToDisable");
 });
 
 function isActionLoading(action: PluginCardAction) {
@@ -409,9 +409,9 @@ async function installPlugin() {
     if (isDependencyNotSynced(error)) {
       // 依赖插件未同步到本地市场列表时，明确弹窗引导先同步
       Modal.warning({
-        title: t("certd.onlinePluginDependencyNotFound"),
+        title: t("certd.sys.plugin.onlinePluginDependencyNotFound"),
         content: `${error.message}，请先同步插件市场，确认依赖插件已发布后再安装`,
-        okText: t("certd.confirm"),
+        okText: t("certd.common.confirm"),
       });
       return;
     }
@@ -421,10 +421,10 @@ async function installPlugin() {
 
   if (dependencies.length > 0) {
     Modal.confirm({
-      title: t("certd.onlinePluginDependenciesTitle"),
+      title: t("certd.sys.plugin.onlinePluginDependenciesTitle"),
       content: (
         <div class="plugin-dependency-confirm">
-          <div>{t("certd.onlinePluginDependenciesPrompt")}</div>
+          <div>{t("certd.sys.plugin.onlinePluginDependenciesPrompt")}</div>
           <ul class="plugin-dependency-confirm__list">
             {dependencies.map(item => (
               <li key={fullNameValueFor(item)}>
@@ -442,8 +442,8 @@ async function installPlugin() {
           </ul>
         </div>
       ),
-      okText: t("certd.onlinePluginInstallDependencies"),
-      cancelText: t("certd.cancel"),
+      okText: t("certd.sys.plugin.onlinePluginInstallDependencies"),
+      cancelText: t("certd.common.cancel"),
       async onOk() {
         try {
           await runAction("install", () => installOnlinePluginChain(dependencies, props.plugin));
@@ -469,7 +469,7 @@ async function installPlugin() {
 }
 
 function isDependencyNotSynced(error: any) {
-  return error instanceof Error && error.message.includes(t("certd.onlinePluginDependencyNotFound"));
+  return error instanceof Error && error.message.includes(t("certd.sys.plugin.onlinePluginDependencyNotFound"));
 }
 
 function confirmRemoveMissingOnlinePlugin() {
@@ -497,13 +497,13 @@ function uninstallPlugin() {
     return;
   }
   Modal.confirm({
-    title: t("certd.confirm"),
-    content: t("certd.onlinePluginDeleteConfirm", { name: fullNameValue() || props.plugin.title || props.plugin.name }),
+    title: t("certd.common.confirm"),
+    content: t("certd.sys.plugin.onlinePluginDeleteConfirm", { name: fullNameValue() || props.plugin.title || props.plugin.name }),
     async onOk() {
       await runAction("uninstall", async () => {
         await api.OnlinePluginUninstall(props.plugin.id);
         await pluginStore.reload();
-        notification.success({ message: t("certd.onlinePluginUninstallSuccess") });
+        notification.success({ message: t("certd.sys.plugin.onlinePluginUninstallSuccess") });
       });
     },
   });
@@ -514,7 +514,7 @@ function removePlugin() {
     return;
   }
   Modal.confirm({
-    title: t("certd.confirm"),
+    title: t("certd.common.confirm"),
     content: "确定要删除吗？如果该插件已被使用，删除可能会导致流水线执行失败！",
     async onOk() {
       await runAction("remove", async () => {
@@ -532,8 +532,8 @@ function togglePlugin() {
     return;
   }
   Modal.confirm({
-    title: t("certd.confirm"),
-    content: `${t("certd.confirmToggle")} ${pluginCardState.value.isDisabled ? t("certd.enable") : t("certd.disable")}?`,
+    title: t("certd.common.confirm"),
+    content: `${t("certd.sys.plugin.confirmToggle")} ${pluginCardState.value.isDisabled ? t("certd.common.enable") : t("certd.common.disable")}?`,
     maskClosable: true,
     async onOk() {
       await runAction("toggle", async () => {
@@ -544,7 +544,7 @@ function togglePlugin() {
           disabled: !pluginCardState.value.isDisabled,
         });
         await pluginStore.reload();
-        notification.success({ message: t("certd.operationSuccess") });
+        notification.success({ message: t("certd.common.operationSuccess") });
       });
     },
   });

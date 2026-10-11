@@ -81,14 +81,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         name: {
-          title: t("certd.ent.projectName"),
+          title: t("certd.project.ent.projectName"),
           type: "link",
           search: {
             show: true,
           },
           form: {
             component: {},
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [{ required: true, message: t("certd.common.requiredField") }],
           },
           column: {
             width: 200,
@@ -98,12 +98,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         disabled: {
-          title: t("certd.disabled"),
+          title: t("certd.common.disabled"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("certd.enabled"), value: false, color: "success" },
-              { label: t("certd.disabledLabel"), value: true, color: "error" },
+              { label: t("certd.common.enabled"), value: false, color: "success" },
+              { label: t("certd.common.disabledLabel"), value: true, color: "error" },
             ],
           }),
           form: {
@@ -112,12 +112,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             width: 100,
             component: {
-              title: t("certd.clickToToggle"),
+              title: t("certd.common.clickToToggle"),
               on: {
                 async click({ value, row }) {
                   Modal.confirm({
-                    title: t("certd.prompt"),
-                    content: t("certd.confirmToggleStatus", { action: !value ? t("certd.disable") : t("certd.enable") }),
+                    title: t("certd.common.prompt"),
+                    content: t("certd.common.confirmToggleStatus", { action: !value ? t("certd.common.disable") : t("certd.common.enable") }),
                     onOk: async () => {
                       await api.SetDisabled(row.id, !value);
                       await crudExpose.doRefresh();
@@ -129,7 +129,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         adminId: {
-          title: t("certd.fields.adminId"),
+          title: t("certd.common.fields.adminId"),
           type: "dict-select",
           dict: userDict,
           column: {
@@ -137,7 +137,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         createTime: {
-          title: t("certd.createTime"),
+          title: t("certd.common.createTime"),
           type: "datetime",
           form: {
             show: false,
@@ -149,7 +149,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         updateTime: {
-          title: t("certd.updateTime"),
+          title: t("certd.common.updateTime"),
           type: "datetime",
           form: {
             show: false,

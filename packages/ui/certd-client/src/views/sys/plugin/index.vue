@@ -2,8 +2,8 @@
   <fs-page class="page-sys-plugin">
     <template #header>
       <div class="title">
-        {{ t("certd.pluginManagement") }}
-        <span class="sub">{{ t("certd.pluginBetaWarning") }}</span>
+        {{ t("certd.sys.plugin.pluginManagement") }}
+        <span class="sub">{{ t("certd.sys.plugin.pluginBetaWarning") }}</span>
       </div>
     </template>
     <fs-crud ref="crudRef" class="plugin-card-crud" v-bind="crudBinding">
@@ -49,7 +49,7 @@ async function syncOnlinePlugins(options?: { showSuccess?: boolean }) {
     await pluginStore.clear();
     crudExpose.doRefresh();
     if (options?.showSuccess !== false) {
-      notification.success({ message: t("certd.onlinePluginSyncSuccess") });
+      notification.success({ message: t("certd.sys.plugin.onlinePluginSyncSuccess") });
     }
   } finally {
     syncLoading.value = false;

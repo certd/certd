@@ -1,7 +1,7 @@
-﻿<template>
+<template>
   <div class="sys-settings-form sys-settings-mode">
     <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
-      <a-form-item :label="t('certd.sys.setting.adminMode')" :name="['public', 'adminMode']">
+      <a-form-item :label="t('certd.sys.settings.adminMode')" :name="['public', 'adminMode']">
         <div class="w-full flex items-center">
           <fs-dict-radio v-model:value="formState.public.adminMode" :disabled="!settingsStore.isPlus" :dict="adminModeDict" />
           <vip-button class="ml-5" mode="button"></vip-button>
@@ -15,7 +15,7 @@
       </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
-        <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
+        <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.sys.settings.saveButton") }}</a-button>
       </a-form-item>
     </a-form>
 
@@ -46,11 +46,11 @@ const adminModeIntroOpen = ref(false);
 const adminModeDict = dict({
   data: [
     {
-      label: t("certd.sys.setting.saasMode"),
+      label: t("certd.sys.settings.saasMode"),
       value: "saas",
     },
     {
-      label: t("certd.sys.setting.enterpriseMode"),
+      label: t("certd.sys.settings.enterpriseMode"),
       value: "enterprise",
     },
   ],
@@ -78,7 +78,7 @@ const onFinish = async (form: any) => {
     await settingsStore.loadSysSettings();
     await projectStore.reload();
     notification.success({
-      message: t("certd.saveSuccess"),
+      message: t("certd.common.saveSuccess"),
     });
 
     if (formState.public.adminMode === "enterprise") {

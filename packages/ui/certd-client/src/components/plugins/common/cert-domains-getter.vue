@@ -42,7 +42,7 @@ function findStepFromPipeline(targetStepId: string) {
 const errorRef = ref("");
 function getStepIdFromInputKey(inputKey: string) {
   if (!inputKey) {
-    errorRef.value = t("certd.pluginCommon.selectCertFirst");
+    errorRef.value = t("certd.common.pluginCommon.selectCertFirst");
     return;
   }
   return inputKey.split(".")[1];
@@ -51,7 +51,7 @@ function getDomainFromPipeline(inputKey: string) {
   let targetStepId = getStepIdFromInputKey(inputKey);
   let certStep = findStepFromPipeline(targetStepId);
   if (!certStep) {
-    errorRef.value = t("certd.pluginCommon.targetStepNotFound");
+    errorRef.value = t("certd.common.pluginCommon.targetStepNotFound");
     return;
   }
 
@@ -60,7 +60,7 @@ function getDomainFromPipeline(inputKey: string) {
     targetStepId = getStepIdFromInputKey(firstLevelValue);
     certStep = findStepFromPipeline(targetStepId);
     if (!certStep) {
-      errorRef.value = t("certd.pluginCommon.targetStepNotFound");
+      errorRef.value = t("certd.common.pluginCommon.targetStepNotFound");
       return;
     }
   }

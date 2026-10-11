@@ -2,7 +2,7 @@
   <a-drawer v-model:open="afterTaskDrawerVisible" placement="right" :closable="true" width="680px" class="pi-after-task-form">
     <template #title>
       <div>
-        {{ t("certd.edit_after_task") }}
+        {{ t("certd.pipeline.edit_after_task") }}
         <a-button v-if="mode === 'edit'" danger @click="afterTaskDelete()">
           <template #icon>
             <DeleteOutlined />
@@ -28,16 +28,16 @@
           <fs-form-item
             v-model="currentAfterTask.title"
             :item="{
-              title: t('certd.after_task_name'),
+              title: t('certd.pipeline.after_task_name'),
               key: 'title',
               component: { name: 'a-input', vModel: 'value' },
-              rules: [{ required: true, message: t('certd.required') }],
+              rules: [{ required: true, message: t('certd.common.required') }],
             }"
           />
           <fs-form-item
             v-model="currentAfterTask.when"
             :item="{
-              title: t('certd.trigger_time'),
+              title: t('certd.pipeline.trigger_time'),
               key: 'when',
               value: ['success'],
               component: {
@@ -47,8 +47,8 @@
                 mode: 'multiple',
                 options: whenOptions,
               },
-              helper: t('certd.after_task_when_helper'),
-              rules: [{ required: true, message: t('certd.required') }],
+              helper: t('certd.pipeline.after_task_when_helper'),
+              rules: [{ required: true, message: t('certd.common.required') }],
             }"
           />
 
@@ -60,11 +60,11 @@
         <template #footer>
           <!-- 插件选择阶段：确定进入配置表单 -->
           <a-form-item v-if="editMode && showPluginSelector" :wrapper-col="{ span: 14, offset: 4 }">
-            <a-button type="primary" @click="confirmPluginSelect"> {{ t("certd.confirm") }} </a-button>
+            <a-button type="primary" @click="confirmPluginSelect"> {{ t("certd.common.confirm") }} </a-button>
           </a-form-item>
           <!-- 配置表单阶段：保存后置任务 -->
           <a-form-item v-else-if="editMode" :wrapper-col="{ span: 14, offset: 4 }">
-            <a-button type="primary" @click="afterTaskSave"> {{ t("certd.confirm") }} </a-button>
+            <a-button type="primary" @click="afterTaskSave"> {{ t("certd.common.confirm") }} </a-button>
           </a-form-item>
         </template>
       </pi-container>
@@ -103,9 +103,9 @@ const afterTaskDrawerVisible = ref(false);
 const showPluginSelector = ref(false);
 
 const whenOptions = [
-  { value: "success", label: t("certd.success_time") },
-  { value: "turnToSuccess", label: t("certd.fail_to_success_time") },
-  { value: "error", label: t("certd.fail_time") },
+  { value: "success", label: t("certd.pipeline.success_time") },
+  { value: "turnToSuccess", label: t("certd.pipeline.fail_to_success_time") },
+  { value: "error", label: t("certd.pipeline.fail_time") },
 ];
 
 const pluginStore = usePluginStore();
@@ -166,8 +166,8 @@ const onPluginConfirm = (item: any) => {
 const confirmPluginSelect = () => {
   if (!currentAfterTask.value.type) {
     Modal.warning({
-      title: t("certd.after_task_plugin"),
-      content: t("certd.please_select_type"),
+      title: t("certd.pipeline.after_task_plugin"),
+      content: t("certd.pipeline.please_select_type"),
     });
     return;
   }
@@ -241,8 +241,8 @@ const afterTaskSave = async (e: any) => {
 
 const afterTaskDelete = () => {
   Modal.confirm({
-    title: t("certd.confirm"),
-    content: t("certd.after_task_delete_confirm"),
+    title: t("certd.common.confirm"),
+    content: t("certd.pipeline.after_task_delete_confirm"),
     async onOk() {
       callback.value("delete");
       afterTaskDrawerClose();

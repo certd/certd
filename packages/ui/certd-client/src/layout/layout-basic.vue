@@ -1,4 +1,4 @@
-﻿<script lang="ts" setup>
+<script lang="ts" setup>
 import { BasicLayout, LockScreen, UserDropdown } from "/@/vben/layouts";
 
 import { computed, onErrorCaptured, onMounted, provide, ref } from "vue";
@@ -23,14 +23,14 @@ const menus = computed(() => [
       router.push("/cert/mine/user-profile");
     },
     icon: "fa-solid:book",
-    text: t("certd.accountInfo"),
+    text: t("certd.mine.accountInfo"),
   },
   {
     handler: () => {
       router.push("/cert/mine/security");
     },
     icon: "fluent:shield-keyhole-16-regular",
-    text: t("certd.securitySettings"),
+    text: t("certd.mine.securitySettings"),
   },
 ]);
 
@@ -109,7 +109,7 @@ const projectStore = useProjectStore();
         <vip-button class="flex-center header-btn" mode="nav" />
       </div>
       <div v-if="!settingStore.isComm" class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
-        <fs-button shape="circle" type="text" icon="clarity:host-solid-badged" :text="null" :tooltip="{ title: t('certd.client') }" @click="goCertdClient" />
+        <fs-button shape="circle" type="text" icon="clarity:host-solid-badged" :text="null" :tooltip="{ title: t('certd.navigation.client') }" @click="goCertdClient" />
       </div>
       <div v-if="!settingStore.isComm" class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
         <fs-button shape="circle" type="text" icon="ion:logo-github" :text="null" @click="goGithub" />

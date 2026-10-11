@@ -42,20 +42,20 @@ export function useUserProfile() {
       onSubmit: doSubmit,
       columns: {
         nickName: {
-          title: t("certd.nickName"),
+          title: t("certd.common.nickName"),
           type: "text",
           form: {
             col: {
               span: 24,
             },
             component: {
-              placeholder: t("certd.nickName"),
+              placeholder: t("certd.common.nickName"),
             },
-            rules: [{ required: true, message: t("certd.nickName") }],
+            rules: [{ required: true, message: t("certd.common.nickName") }],
           },
         },
         avatar: {
-          title: t("certd.avatar"),
+          title: t("certd.common.avatar"),
           type: "cropper-uploader",
           column: {
             width: 70,

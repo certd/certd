@@ -96,7 +96,7 @@ export class PluginGroups {
     const { merge } = useMerge();
     const all: PluginGroup = {
       key: "all",
-      title: this.t("certd.all"),
+      title: this.t("certd.common.all"),
       order: 0,
       plugins: [],
       icon: "material-symbols:border-all-rounded",

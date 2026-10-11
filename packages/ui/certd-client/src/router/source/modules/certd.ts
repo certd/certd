@@ -3,7 +3,7 @@ import { useSettingStore } from "/@/store/settings";
 
 export const certdResources = [
   {
-    title: "certd.title",
+    title: "certd.navigation.title",
     name: "CertdRoot",
     path: "/cert",
     redirect: "/cert/pipeline",
@@ -14,7 +14,7 @@ export const certdResources = [
     },
     children: [
       {
-        title: "certd.sysResources.myProjectManager",
+        title: "certd.navigation.sysResources.myProjectManager",
         name: "MyProjectManager",
         path: "/cert/project",
         component: "/certd/project/index.vue",
@@ -30,7 +30,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.sysResources.projectJoin",
+        title: "certd.navigation.sysResources.projectJoin",
         name: "ProjectJoin",
         path: "/cert/project/join",
         component: "/certd/project/join.vue",
@@ -53,7 +53,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.pipelineEdit",
+        title: "certd.navigation.pipelineEdit",
         name: "PipelineEdit",
         path: "/cert/pipeline/detail",
         component: "/certd/pipeline/detail.vue",
@@ -74,7 +74,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.template.title",
+        title: "certd.pipeline.template.title",
         name: "PipelineTemplate",
         path: "/cert/pipeline/template",
         component: "/certd/pipeline/template/index.vue",
@@ -86,7 +86,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.template.edit",
+        title: "certd.pipeline.template.edit",
         name: "PipelineTemplateEdit",
         path: "/cert/pipeline/template/edit",
         component: "/certd/pipeline/template/edit.vue",
@@ -96,7 +96,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.template.importCreate",
+        title: "certd.pipeline.template.importCreate",
         name: "PipelineTemplateImport",
         path: "/cert/pipeline/template/import",
         component: "/certd/pipeline/template/import/index.vue",
@@ -106,7 +106,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.certStore",
+        title: "certd.navigation.certStore",
         name: "CertStore",
         path: "/cert/monitor/cert",
         component: "/certd/monitor/cert/index.vue",
@@ -118,7 +118,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.siteMonitor",
+        title: "certd.navigation.siteMonitor",
         name: "SiteCertMonitor",
         path: "/cert/monitor/site",
         component: "/certd/monitor/site/index.vue",
@@ -129,7 +129,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.clientManager",
+        title: "certd.client.clientManager",
         name: "ClientManager",
         path: "/cert/client",
         component: "/certd/client/index.vue",
@@ -140,7 +140,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.sysResources.currentProject",
+        title: "certd.navigation.sysResources.currentProject",
         name: "ProjectMemberManager",
         path: "/cert/project/detail",
         component: "/certd/project/detail/index.vue",
@@ -155,7 +155,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.settings",
+        title: "certd.navigation.settings",
         name: "MineSetting",
         path: "/cert/setting",
         redirect: "/cert/access",
@@ -166,7 +166,7 @@ export const certdResources = [
         },
         children: [
           {
-            title: "certd.accessManager",
+            title: "certd.navigation.accessManager",
             name: "AccessManager",
             path: "/cert/access",
             component: "/certd/access/index.vue",
@@ -177,7 +177,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.domain.domainManager",
+            title: "certd.certdomain.domain.domainManager",
             name: "DomainManager",
             path: "/cert/cert/domain",
             component: "/certd/cert/domain/index.vue",
@@ -188,7 +188,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.cnameRecord",
+            title: "certd.cname.cnameRecord",
             name: "CnameRecord",
             path: "/cert/cname/record",
             component: "/certd/cname/record/index.vue",
@@ -199,7 +199,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.dnsPersistRecord",
+            title: "certd.navigation.dnsPersistRecord",
             name: "DnsPersistRecord",
             path: "/cert/cert/dns-persist",
             component: "/certd/cert/dns-persist/index.vue",
@@ -210,7 +210,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.certApplyTemplate",
+            title: "certd.navigation.certApplyTemplate",
             name: "CertApplyTemplate",
             path: "/cert/cert/apply-template",
             component: "/certd/cert/apply-template/index.vue",
@@ -221,7 +221,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.subDomain",
+            title: "certd.navigation.subDomain",
             name: "SubDomain",
             path: "/cert/pipeline/subDomain",
             component: "/certd/pipeline/sub-domain/index.vue",
@@ -232,7 +232,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.pipelineGroup",
+            title: "certd.navigation.pipelineGroup",
             name: "PipelineGroupManager",
             path: "/cert/pipeline/group",
             component: "/certd/pipeline/group/index.vue",
@@ -243,7 +243,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.openKey",
+            title: "certd.navigation.openKey",
             name: "OpenKey",
             path: "/cert/open/openkey",
             component: "/certd/open/openkey/index.vue",
@@ -265,7 +265,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.siteMonitorSetting",
+            title: "certd.navigation.siteMonitorSetting",
             name: "SiteMonitorSetting",
             path: "/cert/monitor/setting",
             component: "/certd/monitor/site/setting/index.vue",
@@ -276,7 +276,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.sysResources.domainMonitorSetting",
+            title: "certd.navigation.sysResources.domainMonitorSetting",
             name: "DomainMonitorSetting",
             path: "/cert/cert/domain/setting",
             component: "/certd/cert/domain/setting/index.vue",
@@ -287,7 +287,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.sysResources.jobHistory",
+            title: "certd.navigation.sysResources.jobHistory",
             name: "JobHistory",
             path: "/cert/monitor/history",
             component: "/certd/monitor/history/index.vue",
@@ -299,7 +299,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.auditLog",
+            title: "certd.navigation.auditLog",
             name: "AuditLog",
             path: "/cert/audit",
             component: "/certd/audit/index.vue",
@@ -315,7 +315,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.userSecurity",
+            title: "certd.navigation.userSecurity",
             name: "UserSecurity",
             path: "/cert/mine/security",
             component: "/certd/mine/security/index.vue",
@@ -326,7 +326,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.userGrant",
+            title: "certd.navigation.userGrant",
             name: "UserGrantSetting",
             path: "/cert/mine/grant",
             component: "/certd/mine/grant/index.vue",
@@ -341,7 +341,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.userProfile",
+            title: "certd.navigation.userProfile",
             name: "UserProfile",
             path: "/cert/mine/user-profile",
             component: "/certd/mine/user-profile.vue",
@@ -368,7 +368,7 @@ export const certdResources = [
         },
         children: [
           {
-            title: "certd.mySuite",
+            title: "certd.navigation.mySuite",
             name: "MySuite",
             path: "/cert/suite/mine",
             component: "/certd/suite/mine/index.vue",
@@ -383,7 +383,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.suiteBuy",
+            title: "certd.navigation.suiteBuy",
             name: "SuiteProductBuy",
             path: "/cert/suite/buy",
             component: "/certd/suite/buy.vue",
@@ -397,7 +397,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.myTrade",
+            title: "certd.navigation.myTrade",
             name: "MyTrade",
             path: "/cert/trade",
             component: "/certd/trade/index.vue",
@@ -412,7 +412,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.inviteCommission",
+            title: "certd.navigation.inviteCommission",
             name: "InviteCommission",
             path: "/cert/invite",
             component: "/certd/invite/index.vue",
@@ -427,7 +427,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.myWallet",
+            title: "certd.navigation.myWallet",
             name: "MyWallet",
             path: "/cert/wallet",
             component: "/certd/wallet/index.vue",
@@ -442,7 +442,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.paymentReturn",
+            title: "certd.navigation.paymentReturn",
             name: "PaymentReturn",
             path: "/cert/payment/return/:type",
             component: "/certd/payment/return.vue",
