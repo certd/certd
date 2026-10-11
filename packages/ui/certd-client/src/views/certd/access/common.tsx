@@ -4,8 +4,11 @@ import { useReference } from "/@/use/use-refrence";
 import { forEach, get, merge, set } from "lodash-es";
 import SecretPlainGetter from "/@/views/certd/access/access-selector/access/secret-plain-getter.vue";
 import { utils } from "/@/utils";
+import { resolvePluginLocale } from "/@/store/plugin";
+import { useI18n } from "/src/locales";
 
 export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, fixedSubtype?: string) {
+  const { t } = useI18n();
   provide("getFromType", api.from);
   provide("accessApi", api);
   provide("get:plugin:type", () => {
@@ -87,7 +90,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, f
 
   return {
     type: {
-      title: "类型",
+      title: t("certd.access.type"),
       type: "dict-select",
       dict: AccessTypeDictRef,
       search: {
@@ -121,14 +124,14 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, f
             );
           },
         },
-        rules: [{ required: true, message: "请选择类型" }],
+        rules: [{ required: true, message: t("certd.access.selectType") }],
         valueChange: {
           immediate: true,
           async handle({ value, mode, form, immediate }) {
             if (value == null) {
               return;
             }
-            const define = await api.GetProviderDefine(value);
+            const define = resolvePluginLocale(await api.GetProviderDefine(value));
             currentDefine.value = define;
             console.log("define", define);
             if (!immediate) {

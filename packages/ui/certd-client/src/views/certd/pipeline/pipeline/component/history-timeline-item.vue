@@ -9,8 +9,8 @@
       <a-tag class="ml-0 mr-1" :color="status.color" :closable="status.value === 'start'" @close="cancelTask">
         {{ status.label }}
       </a-tag>
-      <a-tag v-if="isCurrent" class="pointer ml-0 mr-1" color="green" :closable="true" @close="cancel">当前</a-tag>
-      <a-tag v-else-if="!editMode" class="pointer ml-0 mr-1" color="blue" @click="view">查看</a-tag>
+      <a-tag v-if="isCurrent" class="pointer ml-0 mr-1" color="green" :closable="true" @close="cancel">{{ t("certd.pipeline.editor.current") }}</a-tag>
+      <a-tag v-else-if="!editMode" class="pointer ml-0 mr-1" color="blue" @click="view">{{ t("certd.pipeline.editor.view") }}</a-tag>
     </p>
   </a-timeline-item>
 </template>
@@ -21,6 +21,7 @@ import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import * as api from "../../api";
 import { Modal, notification } from "ant-design-vue";
 import TriggerIcon from "./trigger-icon.vue";
+import { useI18n } from "/@/locales";
 export default defineComponent({
   name: "PiHistoryTimelineItem",
   components: {
@@ -50,6 +51,7 @@ export default defineComponent({
   },
   emits: ["view", "cancel"],
   setup(props: any, ctx: any) {
+    const { t } = useI18n();
     const status = computed(() => {
       return statusUtil.get(props.runnable?.status);
     });
@@ -62,14 +64,14 @@ export default defineComponent({
     }
     function cancelTask() {
       Modal.confirm({
-        title: "确认取消",
-        content: "确认取消该任务吗？",
-        okText: "确认",
-        cancelText: "取消",
+        title: t("certd.pipeline.editor.confirmCancel"),
+        content: t("certd.pipeline.editor.confirmCancelTask"),
+        okText: t("certd.pipeline.editor.confirm"),
+        cancelText: t("certd.pipeline.editor.cancel"),
         onOk: async () => {
           await api.Cancel(props.historyId);
           notification.success({
-            message: "任务取消成功",
+            message: t("certd.pipeline.editor.taskCanceled"),
           });
         },
       });
@@ -80,6 +82,7 @@ export default defineComponent({
       cancel,
       view,
       cancelTask,
+      t,
     };
   },
 });

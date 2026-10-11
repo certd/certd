@@ -16,7 +16,7 @@ import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from
   },
   i18n: {
     "en-US": {
-      title: "DogeCloud Deploy to CDN Plugin",
+      title: "DogeCloud-Deploy to CDN",
     },
   },
 })

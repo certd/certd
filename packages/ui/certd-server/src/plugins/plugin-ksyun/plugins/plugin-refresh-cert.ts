@@ -20,7 +20,7 @@ import { KsyunAccess } from "../access.js";
   },
   i18n: {
     "en-US": {
-      title: "Ksyun Refresh Cert",
+      title: "Ksyun-Refresh Cert",
       desc: "Refresh certificates in Ksyun CDN.",
     },
   },

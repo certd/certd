@@ -4,6 +4,7 @@ import { errorLog, errorCreate } from "./tools";
 import { env } from "/src/utils/util.env";
 import { useUserStore } from "/@/store/user";
 import { useProjectStore } from "../store/project";
+import { i18n } from "/@/locales";
 
 export class CodeError extends Error {
   code: number;
@@ -139,6 +140,7 @@ function createRequestFunction(service: any) {
     const configDefault: any = {
       headers: {
         "Content-Type": get(config, "headers.Content-Type", "application/json"),
+        "Accept-Language": i18n.global.locale.value,
       } as any,
       timeout: 30000,
       baseURL: env.API,
@@ -154,6 +156,10 @@ function createRequestFunction(service: any) {
       configDefault.headers.Authorization = token;
     }
     Object.assign(configDefault, config);
+    configDefault.headers = {
+      ...configDefault.headers,
+      "Accept-Language": i18n.global.locale.value,
+    };
 
     if (!configDefault.params.projectId && projectStore.isEnterprise && !config.url.startsWith("/sys") && !config.url.startsWith("http")) {
       configDefault.params.projectId = projectStore.currentProject?.id;

@@ -2,7 +2,7 @@
   <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="760px" class="step-form-drawer" :class="{ fullscreen }">
     <template #title>
       <div>
-        编辑步骤
+        {{ t("certd.pipeline.editor.editStep") }}
         <template v-if="editMode">
           <a-button @click="stepDelete()">
             <template #icon>
@@ -21,17 +21,17 @@
       <pi-container v-if="currentStep._isAdd" class="pi-step-form">
         <div class="flex-col h-100 overflow-hidden md:ml-5 md:mr-5 step-form-body">
           <a-tabs v-model:active-key="pluginSourceActive" class="step-plugin-source-tabs flex-1 overflow-hidden h-full">
-            <a-tab-pane key="local" tab="已安装插件" class="h-full">
+            <a-tab-pane key="local" :tab="t('certd.pipeline.editor.installedPlugins')" class="h-full">
               <LocalPluginSelector :selected-type="currentStep.type" @select="stepTypeSelected" @confirm="handlePluginConfirm" />
             </a-tab-pane>
-            <a-tab-pane v-if="userStore.isAdmin" key="market" tab="插件市场" class="h-full step-market-pane">
+            <a-tab-pane v-if="userStore.isAdmin" key="market" :tab="t('certd.pipeline.editor.pluginMarket')" class="h-full step-market-pane">
               <OnlinePluginSelector :selected-type="currentStep.type" @select="stepTypeSelected" @confirm="handlePluginConfirm" @uninstalled="handleOnlinePluginUninstalled" />
             </a-tab-pane>
           </a-tabs>
         </div>
         <template #footer>
           <div class="bottom-button">
-            <a-button v-if="editMode" type="primary" @click="stepTypeSave"> 确定</a-button>
+            <a-button v-if="editMode" type="primary" @click="stepTypeSave"> {{ t("certd.pipeline.editor.confirm") }}</a-button>
           </div>
         </template>
       </pi-container>
@@ -50,13 +50,13 @@
             <fs-form-item-col
               v-model="currentStep.title"
               :item="{
-                title: '任务名称',
+                title: t('certd.pipeline.editor.taskName'),
                 key: 'title',
                 component: {
                   name: 'a-input',
                   vModel: 'value',
                 },
-                rules: [{ required: true, message: '此项必填' }],
+                rules: [{ required: true, message: t('certd.pipeline.editor.required') }],
               }"
               :get-context-fn="getScopeFunc"
             />
@@ -69,7 +69,7 @@
         </div>
         <template #footer>
           <div v-if="editMode" class="bottom-button">
-            <a-button type="primary" @click="stepSave"> 确定</a-button>
+            <a-button type="primary" @click="stepSave"> {{ t("certd.pipeline.editor.confirm") }}</a-button>
           </div>
         </template>
       </pi-container>
@@ -91,6 +91,7 @@ import PluginSelector from "../plugin-selector/index.vue";
 import { useUserStore } from "/@/store/user";
 import LocalPluginSelector from "./local-plugin-selector.vue";
 import OnlinePluginSelector from "./online-plugin-selector.vue";
+import { useI18n } from "/@/locales";
 
 defineOptions({
   name: "PiStepForm",
@@ -105,6 +106,7 @@ defineProps({
 defineEmits(["update"]);
 
 const userStore = useUserStore();
+const { t } = useI18n();
 
 const pluginStore = usePluginStore();
 function transformDesc(desc: string = "") {
@@ -131,7 +133,7 @@ function useStepForm() {
       {
         type: "string",
         required: true,
-        message: "请输入名称",
+        message: t("certd.pipeline.editor.enterName"),
       },
     ],
   });
@@ -141,9 +143,9 @@ function useStepForm() {
       return;
     }
     if (item.needPlus && !settingStore.isPlus) {
-      notification.warning({ message: "此插件需要开通Certd专业版才能使用" });
+      notification.warning({ message: t("certd.pipeline.editor.plusPluginRequired") });
       mitter.emit("openVipModal");
-      throw new Error("此插件需要开通Certd专业版才能使用");
+      throw new Error(t("certd.pipeline.editor.plusPluginRequired"));
     }
     currentStep.type = item.name;
     currentStep.title = item.title;
@@ -153,7 +155,7 @@ function useStepForm() {
   const stepTypeSave = async () => {
     currentStep._isAdd = false;
     if (currentStep.type == null) {
-      notification.warning({ message: "请先选择类型" });
+      notification.warning({ message: t("certd.pipeline.editor.pluginTypeFirst") });
       return;
     }
 
@@ -205,7 +207,7 @@ function useStepForm() {
     mode.value = "add";
     const step: any = {
       id: nanoid(),
-      title: "新任务",
+      title: t("certd.pipeline.editor.newTask"),
       type: undefined,
       _isAdd: true,
       input: {},
@@ -291,8 +293,8 @@ function useStepForm() {
     //检查输出依赖
 
     Modal.confirm({
-      title: "确认",
-      content: `确定要删除此步骤吗？`,
+      title: t("certd.pipeline.editor.confirmTitle"),
+      content: t("certd.pipeline.editor.confirmDeleteStep"),
       async onOk() {
         callback.value("delete");
         stepDrawerClose();
@@ -321,7 +323,7 @@ function useStepForm() {
   const handleOnlinePluginUninstalled = (plugin: any) => {
     if (currentStep.type === plugin.fullName) {
       currentStep.type = undefined;
-      currentStep.title = "新任务";
+      currentStep.title = t("certd.pipeline.editor.newTask");
     }
   };
 
@@ -351,28 +353,28 @@ function useStepForm() {
 }
 
 const runStrategyProps = ref({
-  title: "运行策略",
+  title: t("certd.pipeline.editor.runStrategy"),
   key: "strategy.runStrategy",
   component: {
     name: "a-select",
     vModel: "value",
     options: [
-      { value: 0, label: "正常运行（仅证书申请任务需要选它，除非你需要这个任务不跳过，每次都运行）" },
-      { value: 1, label: "成功后跳过（其他任务请选择它）" },
+      { value: 0, label: t("certd.pipeline.editor.runStrategyNormal") },
+      { value: 1, label: t("certd.pipeline.editor.runStrategySkip") },
     ],
   },
   helper: {
     render: () => {
       return (
         <div>
-          <div class="color-green">一般保持默认即可</div>
-          <div>正常运行：每次都运行，证书任务需要每次都运行</div>
-          <div>成功后跳过：该任务成功一次之后跳过，不重复执行（证书变化之后才会再次运行）</div>
+          <div class="color-green">{t("certd.pipeline.editor.runStrategyDefault")}</div>
+          <div>{t("certd.pipeline.editor.runStrategyNormalHelp")}</div>
+          <div>{t("certd.pipeline.editor.runStrategySkipHelp")}</div>
         </div>
       );
     },
   },
-  rules: [{ required: true, message: "此项必填" }],
+  rules: [{ required: true, message: t("certd.pipeline.editor.required") }],
 });
 
 const labelCol = ref({ span: 6 });

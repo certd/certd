@@ -1,4 +1,6 @@
 export default {
+  required: "Required",
+  no: "No",
   usera: "User",
   disabledSuccess: "Disabled successfully",
   app: {
