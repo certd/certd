@@ -16,6 +16,12 @@ import { UCloudRegions } from "./constants.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Ucloud-Deploy to US3 Plugin",
+      desc: "Integration plugin for UCloudDeployToUS3",
+    },
+  },
 })
 export class UCloudDeployToUS3 extends AbstractTaskPlugin {
   @TaskInput({

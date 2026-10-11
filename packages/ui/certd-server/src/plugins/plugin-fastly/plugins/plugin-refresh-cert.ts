@@ -14,6 +14,12 @@ import { FastlyAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Fastly-Update Certificate",
+      desc: "Update a certificate on Fastly.",
+    },
+  },
 })
 export class FastlyRefreshCertPlugin extends AbstractTaskPlugin {
   @TaskInput({

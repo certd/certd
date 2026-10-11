@@ -6,6 +6,7 @@ import { AliyunAccess } from "./aliyun-access.js";
   name: "aliesa",
   title: "阿里云ESA授权",
   desc: "",
+  i18n: { "en-US": { title: "Aliesa Access", desc: "Configure Aliesa access credentials." } },
   icon: "ant-design:aliyun-outlined",
   order: 0,
 })

@@ -17,6 +17,12 @@ import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "K8S - Apply Custom YAML",
+      desc: "Apply custom YAML to K8S.",
+    },
+  },
 })
 export class K8sApplyPlugin extends AbstractPlusTaskPlugin {
   @TaskInput({

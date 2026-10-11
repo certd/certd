@@ -10,6 +10,20 @@ import { AwsCNRegions } from "../constants.js";
   title: "AWS(国区)-部署证书到CloudFront",
   desc: "部署证书到 AWS CloudFront",
   icon: "svg:icon-aws",
+  i18n: {
+    "en-US": {
+      title: "AWS(China)-Deploy Certificate to CloudFront",
+      desc: "Deploy a certificate to AWS CloudFront in China",
+      input: {
+        cert: { title: "Certificate", helper: "Select the certificate output from a previous task" },
+        certDomains: { title: "Certificate domains" },
+        region: { title: "Region", helper: "Region where the certificate is uploaded" },
+        accessId: { title: "Access credentials", helper: "AWS China access credentials" },
+        certName: { title: "Certificate name", helper: "Used as the prefix for the uploaded certificate note" },
+        distributionIds: { title: "Distribution IDs", helper: "Select CloudFront distribution IDs" },
+      },
+    },
+  },
   group: pluginGroups.aws.key,
   needPlus: false,
   default: {

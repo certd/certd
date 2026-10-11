@@ -10,6 +10,7 @@ import S3OssClientImpl from "../oss/impls/s3.js";
   name: "s3",
   title: "s3/minio授权",
   desc: "S3/minio oss授权",
+  i18n: { "en-US": { title: "S3/minio Access" } },
   icon: "mdi:folder-upload-outline",
 })
 export class S3Access extends BaseAccess {

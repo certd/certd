@@ -21,6 +21,12 @@ export type CloudflareRecord = {
   name: "cloudflare",
   title: "cloudflare",
   desc: "cloudflare dns provider",
+  i18n: {
+    "en-US": {
+      title: "Cloudflare",
+      desc: "Cloudflare DNS provider.",
+    },
+  },
   icon: "simple-icons:cloudflare",
   // 这里是对应的 cloudflare的access类型名称
   accessType: "cloudflare",
@@ -170,3 +176,4 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
 
 //实例化这个provider，将其自动注册到系统中
 new CloudflareDnsProvider();
+

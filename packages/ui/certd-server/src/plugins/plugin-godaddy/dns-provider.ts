@@ -19,6 +19,12 @@ export type GodaddyRecord = {
   // 这里是对应的 cloudflare的access类型名称
   accessType: "godaddy",
   order: 10,
+  i18n: {
+    "en-US": {
+      title: "Godaddy DNS Provider",
+      desc: "GoDaddy DNS provider.",
+    },
+  },
 })
 export class GodaddyDnsProvider extends AbstractDnsProvider<GodaddyRecord> {
   access!: GodaddyAccess;

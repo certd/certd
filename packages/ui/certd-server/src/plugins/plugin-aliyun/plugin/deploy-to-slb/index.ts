@@ -1,4 +1,4 @@
-﻿import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertInfo } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { CertApplyPluginNames } from "@certd/plugin-cert";
@@ -11,6 +11,12 @@ import { AliyunClient, AliyunSslClient, CasCertInfo } from "../../../plugin-lib/
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "部署证书到阿里云CLB(传统负载均衡)",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Deploy Certificate to SLB",
+      desc: "Deploy a certificate to Aliyun SLB.",
+    },
+  },
   needPlus: false,
   default: {
     strategy: {
@@ -412,3 +418,4 @@ export class AliyunDeployCertToSLB extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToSLB();
+

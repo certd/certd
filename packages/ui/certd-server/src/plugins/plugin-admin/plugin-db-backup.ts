@@ -16,6 +16,7 @@ const defaultFilePrefix = "db_backup";
   title: "数据库备份",
   icon: "lucide:database-backup",
   desc: "【仅管理员可用】仅支持备份SQLite数据库",
+  i18n: { "en-US": { title: "Database Backup", desc: "[Administrators only] Back up the SQLite database." } },
   group: pluginGroups.admin.key,
   showRunStrategy: true,
   default: {

@@ -9,6 +9,12 @@ import { CertInfo } from "@certd/plugin-cert";
   title: "Dokploy授权",
   desc: "",
   icon: "svg:icon-lucky",
+  i18n: {
+    "en-US": {
+      title: "Dokploy Access",
+      desc: "Configure Dokploy access credentials.",
+    },
+  },
 })
 export class DokployAccess extends BaseAccess {
   @AccessInput({

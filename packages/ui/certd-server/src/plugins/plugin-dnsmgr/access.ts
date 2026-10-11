@@ -6,6 +6,12 @@ import { DomainRecord } from "@certd/plugin-lib";
   title: "彩虹DNS",
   icon: "clarity:plugin-line",
   desc: "彩虹DNS管理系统授权",
+  i18n: {
+    "en-US": {
+      title: "Dnsmgr Access",
+      desc: "Configure Dnsmgr access credentials.",
+    },
+  },
 })
 export class DnsmgrAccess extends BaseAccess {
   @AccessInput({

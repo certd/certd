@@ -3,6 +3,7 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
 const tencentAccessDefine: any = {
   name: "tencent",
   title: "腾讯云",
+  i18n: { "en-US": { title: "Tencent Cloud Access" } },
   icon: "svg:icon-tencentcloud",
   order: 0,
   dependPackages: {

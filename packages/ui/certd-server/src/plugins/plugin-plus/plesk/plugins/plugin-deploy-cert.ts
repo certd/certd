@@ -16,6 +16,17 @@ import FormData from "form-data";
     },
   },
   needPlus: true,
+  i18n: {
+    "en-US": {
+      title: "Plesk - Deploy Site Certs",
+      input: {
+        cert: { title: "Domain Certificate", helper: "Select the certificate output by a previous task." },
+        accessId: { title: "Plesk Access" },
+        domains: { title: "Website Domains", helper: "Select the site domains matching the certificate." },
+        deleteUnusedCert: { title: "Delete Unused Certificates" },
+      },
+    },
+  },
 })
 export class PleskDeploySiteCert extends AbstractPlusTaskPlugin {
   //证书选择，此项必须要有

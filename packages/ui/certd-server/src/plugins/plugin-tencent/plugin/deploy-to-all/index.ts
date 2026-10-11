@@ -9,6 +9,12 @@ import { TencentSslClient } from "../../../plugin-lib/tencent/index.js";
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "支持负载均衡、CDN、DDoS、直播、点播、Web应用防火墙、API网关、TEO、容器服务、对象存储、轻应用服务器、云原生微服务、云开发",
+  i18n: {
+    "en-US": {
+      title: "Tencent-Deploy Certificate to Any Cloud Resource",
+      desc: "Deploy a certificate to a Tencent Cloud resource.",
+    },
+  },
   dependPlugins: {
     "access:tencent": "*",
   },
@@ -166,3 +172,4 @@ export class DeployCertToTencentAll extends AbstractTaskPlugin {
     });
   }
 }
+

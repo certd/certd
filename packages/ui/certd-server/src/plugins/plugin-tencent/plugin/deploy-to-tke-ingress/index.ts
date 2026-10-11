@@ -11,6 +11,12 @@ import yaml from "js-yaml";
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "修改TKE集群密钥配置，支持Opaque和TLS证书类型。注意：\n1. serverless集群请使用K8S部署插件；\n2. Opaque类型需要【上传到腾讯云】作为前置任务；\n3. ApiServer需要开通公网访问（或者certd可访问），实际上底层仍然是通过KubeClient进行部署",
+  i18n: {
+    "en-US": {
+      title: "Tencent-Deploy to TKE Ingress",
+      desc: "Deploy a certificate to a Tencent Cloud TKE Ingress.",
+    },
+  },
   dependPlugins: {
     "access:tencent": "*",
   },
@@ -326,3 +332,4 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
     }
   }
 }
+

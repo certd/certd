@@ -1,4 +1,4 @@
-﻿import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
@@ -10,6 +10,12 @@ import { AliyunClient, AliyunSslClient, CasCertInfo } from "../../../plugin-lib/
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "部署证书到阿里云WAF(云产品接入)，CNAME方式接入的请选择另外一个waf插件",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Deploy Certificate to WAF Cloud",
+      desc: "Deploy a certificate to Aliyun WAF.",
+    },
+  },
   needPlus: false,
   default: {
     strategy: {
@@ -316,3 +322,4 @@ export class AliyunDeployCertToWafCloud extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToWafCloud();
+

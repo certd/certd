@@ -9,6 +9,12 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   title: "HiPM DNSMgr",
   icon: "svg:icon-dns",
   desc: "HiPM DNSMgr API Token 授权",
+  i18n: {
+    "en-US": {
+      title: "Hipmdnsmgr Access",
+      desc: "Configure HiPM DNSMgr access credentials.",
+    },
+  },
 })
 export class HipmDnsmgrAccess extends BaseAccess {
   @AccessInput({

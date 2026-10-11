@@ -13,6 +13,12 @@ import { JDCloudAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Jdcloud Upload Cert",
+      desc: "Upload certificates to SSL certificate center in JDCloud.",
+    },
+  },
 })
 export class JDCloudUploadCert extends AbstractTaskPlugin {
   @TaskInput({

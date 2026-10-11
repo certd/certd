@@ -7,6 +7,19 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   title: "LeCDN授权",
   desc: "",
   icon: "material-symbols:shield-outline",
+  i18n: {
+    "en-US": {
+      title: "LeCDN - Access",
+      input: {
+        url: { title: "LeCDN System URL", helper: "For example: http://demo.example.com." },
+        authType: { title: "Authentication Type" },
+        username: { title: "Username" },
+        password: { title: "Password" },
+        apiToken: { title: "API Access Token" },
+        testRequest: { title: "Test", helper: "Test the API connection." },
+      },
+    },
+  },
 })
 export class LeCDNAccess extends BaseAccess {
   @AccessInput({

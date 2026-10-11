@@ -10,6 +10,12 @@ import { AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/ssl-c
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "【不建议使用】需要消耗阿里云自动部署次数，支持SLB、LIVE、webHosting、VOD、CR、DCDN、DDoS、CDN、ALB、APIGateway、FC、GA、MSE、NLB、OSS、SAE、WAF等云产品",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Deploy Certificate to Any Cloud Resource",
+      desc: "Deploy a certificate to an Aliyun resource.",
+    },
+  },
   needPlus: false,
   default: {
     strategy: {
@@ -312,3 +318,4 @@ export class AliyunDeployCertToAll extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToAll();
+

@@ -5,6 +5,7 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   title: "腾讯云COS授权",
   icon: "svg:icon-tencentcloud",
   desc: "腾讯云对象存储授权，包含地域和存储桶",
+  i18n: { "en-US": { title: "Tencent Cloud Cos Access" } },
 })
 export class TencentCosAccess extends BaseAccess {
   @AccessInput({

@@ -7,6 +7,12 @@ import { AliyunClientV2 } from "../../plugin-lib/aliyun/lib/aliyun-client-v2.js"
   name: "aliesa",
   title: "阿里ESA",
   desc: "阿里ESA DNS解析",
+  i18n: {
+    "en-US": {
+      title: "Alibaba Cloud ESA DNS Provider",
+      desc: "Alibaba Cloud ESA DNS provider.",
+    },
+  },
   accessType: "aliesa",
   icon: "svg:icon-aliyun",
   order: 0,
@@ -97,3 +103,4 @@ export class AliesaDnsProvider extends AbstractDnsProvider {
 }
 
 new AliesaDnsProvider();
+

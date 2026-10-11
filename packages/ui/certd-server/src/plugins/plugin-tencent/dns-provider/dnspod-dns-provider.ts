@@ -6,6 +6,12 @@ import { DnspodAccess } from "../access/index.js";
   name: "dnspod",
   title: "dnspod(已过时,请尽快换成腾讯云)",
   desc: "已废弃，请尽快换成腾讯云类型",
+  i18n: {
+    "en-US": {
+      title: "DNSPod Provider",
+      desc: "DNSPod provider (deprecated; please migrate to Tencent Cloud DNS).",
+    },
+  },
   accessType: "dnspod",
   deprecated: "dnspod已废弃，请换成腾讯云",
   icon: "svg:icon-tencentcloud",
@@ -115,3 +121,4 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
   }
 }
 new DnspodDnsProvider();
+

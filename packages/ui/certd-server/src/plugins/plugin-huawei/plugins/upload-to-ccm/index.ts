@@ -10,6 +10,12 @@ import { resetLogConfigure } from "@certd/basic";
   icon: "svg:icon-huawei",
   group: pluginGroups.huawei.key,
   desc: "上传证书到华为云云证书管理（CCM）",
+  i18n: {
+    "en-US": {
+      title: "Huawei Cloud - Upload Certificate to CCM",
+      desc: "Upload a certificate to Huawei Cloud CCM.",
+    },
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -82,3 +88,4 @@ export class HauweiUploadToCCM extends AbstractTaskPlugin {
     };
   }
 }
+

@@ -15,6 +15,12 @@ import { JDCloudAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Jdcloud Update Cert",
+      desc: "Update certificates in JDCloud.",
+    },
+  },
 })
 export class JDCloudUpdateCert extends AbstractTaskPlugin {
   @TaskInput({

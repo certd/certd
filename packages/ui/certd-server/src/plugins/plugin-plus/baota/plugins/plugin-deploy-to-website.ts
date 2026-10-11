@@ -23,6 +23,18 @@ export type SiteItem = {
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Baota - Deploy Web Site Cert",
+      desc: "Deploy the certificate to the web site.",
+      input: {
+        cert: { title: "Domain Certificate", helper: "Select the certificate output by a previous task." },
+        accessId: { title: "Baota Access", helper: "Baota API credentials." },
+        isDockerSite: { title: "Docker Site", helper: "Whether the site is hosted in Docker." },
+        siteName: { title: "Site Name", helper: "Select or enter the site matching the certificate domains." },
+      },
+    },
+  },
 })
 export class BaotaDeployWebSiteCert extends AbstractTaskPlugin {
   //证书选择，此项必须要有

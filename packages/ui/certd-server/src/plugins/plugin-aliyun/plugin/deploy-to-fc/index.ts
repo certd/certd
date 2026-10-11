@@ -13,6 +13,12 @@ import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "部署证书到阿里云函数计算（FC3.0）",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Deploy Certificate to FC",
+      desc: "Deploy a certificate to Aliyun Function Compute.",
+    },
+  },
   needPlus: false,
   default: {
     strategy: {
@@ -266,3 +272,4 @@ export class AliyunDeployCertToFC extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToFC();
+

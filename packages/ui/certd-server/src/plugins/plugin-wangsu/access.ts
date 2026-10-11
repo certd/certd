@@ -55,6 +55,12 @@ const CONDITION_APIKEY = `form.access.authType === '${AUTH_TYPE_APIKEY}'`;
   title: "网宿授权",
   desc: "",
   icon: "svg:icon-wangsu",
+  i18n: {
+    "en-US": {
+      title: "Wangsu Access",
+      desc: "Wangsu IAM access.",
+    },
+  },
 })
 export class WangsuAccess extends BaseAccess {
   @AccessInput({

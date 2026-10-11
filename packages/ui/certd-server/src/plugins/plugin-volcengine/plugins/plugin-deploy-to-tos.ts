@@ -16,6 +16,12 @@ import { VolcengineClient } from "../ve-client.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Volcengine-Deploy to TOS Plugin",
+      desc: "Deploy certificates to Volcengine TOS custom domains.",
+    },
+  },
 })
 export class VolcengineDeployToTOS extends AbstractTaskPlugin {
   @TaskInput({

@@ -10,6 +10,12 @@ import { AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/ssl-c
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "部署证书到阿里云GA(全球加速)，支持更新默认证书和扩展证书",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Deploy Certificate to GA",
+      desc: "Deploy a certificate to Aliyun Global Accelerator.",
+    },
+  },
   needPlus: false,
   default: {
     strategy: {
@@ -322,3 +328,4 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToGA();
+

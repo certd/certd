@@ -10,6 +10,11 @@ import dayjs from "dayjs";
   title: "GoEdge授权",
   icon: "fa-solid:leaf:#6C6BF6",
   order: 100,
+  i18n: {
+    "en-US": {
+      title: "GoEdge Access",
+    },
+  },
 })
 export class GoEdgeAccess extends BaseAccess {
   @AccessInput({

@@ -19,6 +19,12 @@ import { BaiduYunClient } from "../client.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Baidu - Deploy to CCE",
+      desc: "Update the certificate of the Baidu CCE.",
+    },
+  },
 })
 export class DeployCertToBaiduCcePlugin extends AbstractTaskPlugin {
   @TaskInput({

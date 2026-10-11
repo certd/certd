@@ -11,6 +11,17 @@ import { BaiduYunCertClient } from "./client.js";
   desc: "",
   icon: "ant-design:baidu-outlined",
   order: 2,
+  i18n: {
+    "en-US": {
+      title: "Baidu Access",
+      desc: "Baidu Cloud.",
+      input: {
+        accessKey: { title: "Access Key", helper: "Get credentials from Baidu Cloud Security Authentication." },
+        secretKey: { title: "Secret Key", helper: "Baidu Cloud secret key." },
+        testRequest: { title: "Test", helper: "Test whether the credentials are valid." },
+      },
+    },
+  },
 })
 export class BaiduAccess extends BaseAccess {
   @AccessInput({

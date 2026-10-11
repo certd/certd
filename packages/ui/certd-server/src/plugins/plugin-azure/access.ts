@@ -7,6 +7,20 @@ import { PageRes, PageSearch } from "@certd/pipeline";
   name: "azure",
   title: "微软云Azure授权",
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "Microsoft Azure Access",
+      desc: "Configure Microsoft Azure access credentials.",
+      input: {
+        subscriptionId: { title: "Subscription ID", helper: "Azure subscription ID." },
+        resourceGroupName: { title: "Resource Group", helper: "Resource group containing the DNS zone." },
+        tenantId: { title: "Directory (Tenant) ID", helper: "Microsoft Entra tenant ID." },
+        clientId: { title: "Application (Client) ID", helper: "Application client ID." },
+        clientSecret: { title: "Client Secret", helper: "Client secret value." },
+        testRequest: { title: "Test", helper: "Test whether the credentials are valid." },
+      },
+    },
+  },
   icon: "simple-icons:microsoftazure",
 })
 export class AzureAccess extends BaseAccess {
@@ -227,3 +241,4 @@ export class AzureAccess extends BaseAccess {
 }
 
 new AzureAccess();
+

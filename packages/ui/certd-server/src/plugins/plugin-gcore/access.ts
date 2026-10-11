@@ -5,6 +5,12 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   title: "Gcore",
   desc: "Gcore",
   icon: "clarity:plugin-line",
+  i18n: {
+    "en-US": {
+      title: "Gcore Access",
+      desc: "Configure Gcore access credentials.",
+    },
+  },
 })
 export class GcoreAccess extends BaseAccess {
   @AccessInput({

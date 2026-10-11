@@ -26,6 +26,7 @@ export type AddonDefine = Registrable & {
   };
   showTest?: boolean;
   icon?: string;
+  i18n?: Record<string, any>;
 };
 
 export type AddonInstanceConfig = {

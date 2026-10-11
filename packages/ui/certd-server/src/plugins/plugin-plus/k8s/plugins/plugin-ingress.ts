@@ -16,6 +16,12 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "K8S - Deploy to Ingress",
+      desc: "Deploy the certificate to the K8S.",
+    },
+  },
 })
 export class K8sDeployToIngressPlugin extends AbstractTaskPlugin {
   @TaskInput({

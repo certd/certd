@@ -15,6 +15,12 @@ import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "AcePanel Panel Cert Plugin",
+      desc: "Deploy AcePanel panel certificate.",
+    },
+  },
 })
 export class AcePanelPanelCert extends AbstractPlusTaskPlugin {
   @TaskInput({

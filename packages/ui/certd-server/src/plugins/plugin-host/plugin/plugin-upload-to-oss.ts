@@ -8,6 +8,7 @@ import { ossClientFactory } from "../../plugin-lib/oss/factory.js";
   title: "上传证书到对象存储OSS",
   icon: "ion:cloud-upload-outline",
   desc: "支持阿里云OSS、腾讯云COS、七牛云KODO、S3、MinIO、FTP、SFTP",
+  i18n: { "en-US": { title: "Upload Certificate to Object Storage", desc: "Supports Alibaba Cloud OSS, Tencent COS, Qiniu KODO, S3, MinIO, FTP, and SFTP." } },
   group: pluginGroups.host.key,
   showRunStrategy: false,
   default: {

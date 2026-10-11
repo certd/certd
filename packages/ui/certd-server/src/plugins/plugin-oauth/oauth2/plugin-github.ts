@@ -6,6 +6,7 @@ import { BuildLoginUrlReq, BuildLogoutUrlReq, IOauthProvider, OnCallbackReq } fr
   name: "github",
   title: "GitHub认证",
   desc: "GitHub OAuth2登录",
+  i18n: { "en-US": { title: "GitHub OAuth", desc: "Sign in with a GitHub account." } },
   icon: "simple-icons:github",
   showTest: false,
 })

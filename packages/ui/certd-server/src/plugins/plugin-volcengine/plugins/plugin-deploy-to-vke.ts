@@ -27,6 +27,12 @@ const regionOptions = [
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Volcengine-Deploy to VKE Plugin",
+      desc: "Deploy certificates to Volcengine VKE clusters.",
+    },
+  },
 })
 export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
   @TaskInput({

@@ -15,8 +15,14 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
     },
   },
   needPlus: true,
+  i18n: {
+    "en-US": {
+      title: "Baota - Deploy Panel Cert",
+      desc: "Deploy the certificate to the panel.",
+    },
+  },
 })
-export class BaotaDeployPanelCertPlugin extends AbstractPlusTaskPlugin {
+export class BaotaDeployPanelCert extends AbstractPlusTaskPlugin {
   //证书选择，此项必须要有
   @TaskInput({
     title: "域名证书",
@@ -65,4 +71,4 @@ export class BaotaDeployPanelCertPlugin extends AbstractPlusTaskPlugin {
     });
   }
 }
-new BaotaDeployPanelCertPlugin();
+new BaotaDeployPanelCert();

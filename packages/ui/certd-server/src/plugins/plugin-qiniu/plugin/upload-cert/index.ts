@@ -14,6 +14,11 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Qiniu - Upload Cert",
+    },
+  },
 })
 export class QiniuCertUpload extends AbstractTaskPlugin {
   @TaskInput({

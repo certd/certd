@@ -8,6 +8,11 @@ import { Pager, PageRes, PageSearch } from "@certd/pipeline";
   desc: "雨云DNS解析提供商",
   accessType: "rainyun",
   icon: "svg:icon-rainyun",
+  i18n: {
+    "en-US": {
+      title: "Rainyun DNS Provider",
+    },
+  },
 })
 export class RainyunDnsProvider extends AbstractDnsProvider {
   client: any;

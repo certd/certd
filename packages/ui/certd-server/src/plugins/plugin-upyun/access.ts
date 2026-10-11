@@ -10,6 +10,12 @@ import { UpyunClient } from "./client.js";
   title: "又拍云",
   desc: "",
   icon: "svg:icon-upyun",
+  i18n: {
+    "en-US": {
+      title: "Upyun-Access",
+      desc: "Access for Upyun API",
+    },
+  },
 })
 export class UpyunAccess extends BaseAccess {
   @AccessInput({

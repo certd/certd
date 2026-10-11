@@ -32,6 +32,11 @@ type TechnitiumRecord = {
   icon: "clarity:server-line",
   accessType: "technitium",
   order: 10,
+  i18n: {
+    "en-US": {
+      title: "Technitium DNS Provider",
+    },
+  },
 })
 export class TechnitiumDnsProvider extends AbstractDnsProvider<TechnitiumRecord> {
   access!: TechnitiumAccess;

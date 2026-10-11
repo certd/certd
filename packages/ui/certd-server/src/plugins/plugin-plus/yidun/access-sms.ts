@@ -9,6 +9,11 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   title: "易发云短信",
   icon: "material-symbols:shield-outline",
   desc: "sms.yfyidc.cn/",
+  i18n: {
+    "en-US": {
+      title: "Yfysms Access",
+    },
+  },
 })
 export class YfySmsAccess extends BaseAccess {
   @AccessInput({

@@ -18,6 +18,12 @@ import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Apisix-Refresh Cert Plugin",
+      desc: "Integration plugin for Apisix certificates",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class ApisixRefreshCDNCert extends AbstractPlusTaskPlugin {

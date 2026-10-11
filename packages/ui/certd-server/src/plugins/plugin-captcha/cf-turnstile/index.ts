@@ -6,6 +6,7 @@ import { CaptchaRequest, ICaptchaAddon } from "../api.js";
   name: "cfTurnstile",
   title: "Cloudflare Turnstile",
   desc: "谨慎使用，国内被墙了",
+  i18n: { "en-US": { title: "Cloudflare Turnstile", desc: "Verify user requests with Cloudflare Turnstile." } },
   showTest: false,
 })
 export class CfTurnstileCaptcha extends BaseAddon implements ICaptchaAddon {

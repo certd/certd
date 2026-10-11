@@ -15,6 +15,12 @@ import { JDCloudAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Jdcloud Deploy to CDN",
+      desc: "Deploy certificates to JDCloud CDN.",
+    },
+  },
 })
 export class JDCloudDeployToCDN extends AbstractTaskPlugin {
   @TaskInput({

@@ -11,6 +11,12 @@ import { HipmDnsmgrAccess } from "../access/hipmdnsmgr-access.js";
   desc: "HiPM DNSMgr DNS 解析提供商",
   accessType: "hipmdnsmgr",
   icon: "svg:icon-dns",
+  i18n: {
+    "en-US": {
+      title: "Hipmdnsmgr DNS Provider",
+      desc: "HiPM DNSMgr DNS provider.",
+    },
+  },
 })
 export class HipmDnsmgrDnsProvider extends AbstractDnsProvider<{ domainId: string; recordId: string; name: string; value: string }> {
   access!: HipmDnsmgrAccess;

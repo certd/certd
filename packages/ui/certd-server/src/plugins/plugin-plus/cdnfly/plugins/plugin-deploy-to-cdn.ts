@@ -15,6 +15,12 @@ import { CdnflyAccess } from "../access.js";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Cdnfly - Deploy to CDN",
+      desc: "Deploy the certificate to the CDN.",
+    },
+  },
 })
 export class CdnflyDeployToCDNPlugin extends AbstractTaskPlugin {
   //证书选择，此项必须要有

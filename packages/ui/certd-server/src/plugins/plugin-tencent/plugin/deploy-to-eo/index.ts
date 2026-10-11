@@ -10,6 +10,12 @@ import { TencentSslClient } from "../../../plugin-lib/tencent/index.js";
   title: "腾讯云-部署到腾讯云EO",
   icon: "svg:icon-tencentcloud",
   desc: "腾讯云边缘安全加速平台EdgeOne(EO)",
+  i18n: {
+    "en-US": {
+      title: "Tencent-Deploy to EO",
+      desc: "Deploy a certificate to Tencent Cloud EO.",
+    },
+  },
   group: pluginGroups.tencent.key,
   dependPlugins: {
     "access:tencent": "*",
@@ -211,3 +217,4 @@ export class DeployCertToTencentEO extends AbstractTaskPlugin {
 }
 
 new DeployCertToTencentEO();
+

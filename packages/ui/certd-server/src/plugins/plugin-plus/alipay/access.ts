@@ -3,6 +3,11 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   name: "alipay",
   title: "支付宝",
   icon: "ion:logo-alipay",
+  i18n: {
+    "en-US": {
+      title: "Alipay",
+    },
+  },
 })
 export class AlipayAccess extends BaseAccess {
   /**

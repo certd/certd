@@ -10,6 +10,12 @@ import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "自动部署域名证书至阿里云API网关（APIGateway）",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Deploy Certificate to API Gateway",
+      desc: "Deploy a certificate to Aliyun API Gateway.",
+    },
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -234,3 +240,4 @@ export class DeployCertToAliyunApiGateway extends AbstractTaskPlugin {
   }
 }
 new DeployCertToAliyunApiGateway();
+

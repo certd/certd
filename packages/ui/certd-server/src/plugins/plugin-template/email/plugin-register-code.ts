@@ -7,6 +7,10 @@ import { BaseEmailTemplateProvider } from "./plugin-base.js";
   name: "registerCode",
   title: "注册验证码邮件模版",
   desc: "您的注册验证码为：xxxx，请勿泄露",
+  i18n: { "en-US": { 
+    title: "Registration Code Email Template",
+    desc: "Email template for registration codes.",
+  } },
   icon: "simple-icons:email:blue",
   showTest: false,
 })

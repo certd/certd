@@ -17,6 +17,11 @@ import FormData from "form-data";
     },
   },
   needPlus: true,
+  i18n: {
+    "en-US": {
+      title: "Plesk - Refresh Cert",
+    },
+  },
 })
 export class PleskRefreshCert extends AbstractPlusTaskPlugin {
   //证书选择，此项必须要有

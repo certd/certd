@@ -9,6 +9,12 @@ import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from
   icon: "svg:icon-huawei",
   group: pluginGroups.huawei.key,
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "Huawei Cloud - Deploy Certificate to OBS",
+      desc: "Deploy a certificate to Huawei Cloud OBS.",
+    },
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -180,3 +186,4 @@ export class HauweiDeployCertToOBS extends AbstractTaskPlugin {
   }
 }
 new HauweiDeployCertToOBS();
+

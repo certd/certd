@@ -19,6 +19,12 @@ import { BaotaClient } from "../lib/client.js";
   desc: "根据证书域名自动匹配宝塔站点，全自动部署SSL证书。新增加速域名自动感知，自动新增部署",
   runStrategy: RunStrategy.AlwaysRun,
   needPlus: true,
+  i18n: {
+    "en-US": {
+      title: "Baota - Auto Deploy Site Cert",
+      desc: "Auto deploy the certificate to the site.",
+    },
+  },
 })
 export class BaotaAutoDeploySiteCert extends AbstractPlusTaskPlugin {
   /** 域名证书 */

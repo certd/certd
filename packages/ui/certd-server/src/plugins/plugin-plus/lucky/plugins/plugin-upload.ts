@@ -19,6 +19,11 @@ import { isArray } from "lodash-es";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Lucky - Update Cert",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class LuckyUpdateCert extends AbstractPlusTaskPlugin {

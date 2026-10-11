@@ -5,6 +5,16 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   title: "k8s授权",
   desc: "",
   icon: "mdi:kubernetes",
+  i18n: {
+    "en-US": {
+      title: "K8S - Access",
+      input: {
+        kubeconfig: { title: "Kubeconfig", helper: "Kubernetes cluster configuration." },
+        skipTLSVerify: { title: "Skip TLS Verification", helper: "Skip TLS certificate verification when connecting to the cluster." },
+        testRequest: { title: "Test", helper: "Test whether the Kubernetes connection works." },
+      },
+    },
+  },
 })
 export class K8sAccess extends BaseAccess {
   @AccessInput({

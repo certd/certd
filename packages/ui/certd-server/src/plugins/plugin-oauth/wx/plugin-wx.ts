@@ -6,6 +6,16 @@ import { BuildLoginUrlReq, BuildLogoutUrlReq, IOauthProvider, OnCallbackReq } fr
   name: "wx",
   title: "微信登录",
   desc: "微信网站应用登录",
+  i18n: {
+    "en-US": {
+      title: "WeChat OAuth",
+      desc: "Sign in with a WeChat account.",
+      input: {
+        appId: { title: "App ID", helper: "Create a website application in the WeChat Open Platform and enter its App ID." },
+        appSecretKey: { title: "App Secret" },
+      },
+    },
+  },
   icon: "ion:logo-wechat:green",
   showTest: false,
 })

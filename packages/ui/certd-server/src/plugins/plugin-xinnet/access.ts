@@ -10,6 +10,12 @@ import { XinnetClient } from "@certd/plugin-plus";
   title: "新网授权",
   icon: "svg:icon-xinnet",
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "Xinnet Access",
+      desc: "Xinnet IAM access.",
+    },
+  },
 })
 export class XinnetAccess extends BaseAccess {
   /**

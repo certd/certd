@@ -16,6 +16,16 @@ import { SafelineAccess } from "../access.js";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Safeline - Deploy to Website",
+      input: {
+        cert: { title: "Domain Certificate", helper: "Select the certificate output by a previous task." },
+        accessId: { title: "Safeline Access", helper: "Safeline API credentials." },
+        certIds: { title: "Safeline Certificate", helper: "Select the certificate ID to update, or 0 to create a new certificate." },
+      },
+    },
+  },
 })
 export class SafelineDeployToWebsitePlugin extends AbstractTaskPlugin {
   //证书选择，此项必须要有

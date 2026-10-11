@@ -8,6 +8,13 @@ import { HttpClient } from "@certd/basic";
   desc: "",
   icon: "ant-design:aliyun-outlined",
   order: 2,
+  i18n: {
+    "en-US": {
+      title: "Ctyun Access",
+      desc: "ctyun access.",
+      input: { accessKeyId: { title: "Access Key ID", helper: "Create an AccessKey in the CTYun console." }, securityKey: { title: "Security Key" }, testRequest: { title: "Test", helper: "Test the API connection." } },
+    },
+  },
 })
 export class CtyunAccess extends BaseAccess {
   @AccessInput({

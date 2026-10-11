@@ -44,6 +44,7 @@ export type NotificationDefine = Registrable & {
   input?: {
     [key: string]: NotificationInputDefine;
   };
+  i18n?: Record<string, any>;
 };
 
 export type NotificationInstanceConfig = {

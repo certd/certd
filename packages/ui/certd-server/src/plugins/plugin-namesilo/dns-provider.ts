@@ -14,6 +14,11 @@ export type NamesiloRecord = {
   icon: "simple-icons:namesilo",
   // 这里是对应的 cloudflare的access类型名称
   accessType: "namesilo",
+  i18n: {
+    "en-US": {
+      title: "Namesilo Access",
+    },
+  },
 })
 export class NamesiloDnsProvider extends AbstractDnsProvider<NamesiloRecord> {
   access!: NamesiloAccess;

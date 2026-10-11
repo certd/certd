@@ -5,6 +5,7 @@ import { AliyunAccess } from "./aliyun-access.js";
   name: "alioss",
   title: "阿里云OSS授权",
   desc: "包含地域和Bucket",
+  i18n: { "en-US": { title: "Alioss Access", desc: "Configure Alioss access credentials." } },
   icon: "ant-design:aliyun-outlined",
 })
 export class AliossAccess extends BaseAccess {
