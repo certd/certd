@@ -90,11 +90,11 @@ export class EmailService implements IEmailService {
     const emailConf = await getEmailSettings(this.sysSettingsService, this.settingsService);
 
     if (!emailConf.host && emailConf.usePlus == null) {
-      if (isPlus()) {
-        //自动使用plus发邮件
-        return await this.sendByPlus(email);
-      }
-      throw new Error("邮件服务器还未设置");
+      // if (isPlus()) {
+      //   //自动使用plus发邮件
+      //   return await this.sendByPlus(email);
+      // }
+      throw new Error("邮件服务器还未设置，请先到系统管理-邮件服务器设置中配置");
     }
 
     if (emailConf.usePlus && isPlus()) {
