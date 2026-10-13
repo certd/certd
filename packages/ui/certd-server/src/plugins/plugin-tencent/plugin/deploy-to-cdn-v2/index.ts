@@ -132,4 +132,3 @@ export class TencentDeployCertToCDNv2 extends AbstractTaskPlugin {
     return this.ctx.utils.options.buildGroupOptions(options, this.certDomains);
   }
 }
-

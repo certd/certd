@@ -240,4 +240,3 @@ export class DeployCertToAliyunApiGateway extends AbstractTaskPlugin {
   }
 }
 new DeployCertToAliyunApiGateway();
-

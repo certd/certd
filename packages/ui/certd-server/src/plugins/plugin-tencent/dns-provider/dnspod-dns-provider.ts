@@ -121,4 +121,3 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
   }
 }
 new DnspodDnsProvider();
-

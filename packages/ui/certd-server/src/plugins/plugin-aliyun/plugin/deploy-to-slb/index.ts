@@ -418,4 +418,3 @@ export class AliyunDeployCertToSLB extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToSLB();
-

@@ -172,4 +172,3 @@ export class DeployCertToTencentAll extends AbstractTaskPlugin {
     });
   }
 }
-

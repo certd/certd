@@ -139,4 +139,3 @@ export class TencentEoDnsProvider extends AbstractDnsProvider {
   }
 }
 new TencentEoDnsProvider();
-

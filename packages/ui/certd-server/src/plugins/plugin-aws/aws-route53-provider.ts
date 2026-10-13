@@ -68,4 +68,3 @@ export class AwsRoute53Provider extends AbstractDnsProvider {
 }
 
 new AwsRoute53Provider();
-

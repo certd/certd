@@ -33,6 +33,10 @@ export default {
     pipelineStarted: "管道已经开始运行",
   },
   actions: {
+    edit: "编辑",
+    delete: "删除",
+    enable: "启用",
+    disable: "禁用",
     editPipeline: "编辑流水线",
     editConfigGroup: "修改配置/分组",
     viewCertificate: "查看证书",

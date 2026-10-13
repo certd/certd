@@ -332,4 +332,3 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
     }
   }
 }
-

@@ -134,4 +134,3 @@ export class TencentDeployCertToLive extends AbstractTaskPlugin {
     });
   }
 }
-

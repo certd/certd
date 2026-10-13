@@ -154,7 +154,8 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
     } else if (key === "lastVars.certDomains") {
       row[key] = formatListValue(value);
     } else if (key === "status") {
-      row[key] = statusUtil.get(value)?.label ?? value;
+      const status = statusUtil.get(value);
+      row[key] = status ? t(`certd.pipeline.editor.${status.label}`) : value;
     } else if (key === "disabled") {
       row[key] = findDictLabel(disabledDictData, value);
     } else if (key === "type") {
@@ -567,7 +568,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             col: { span: 2 },
           },
           dict: dict({
-            data: statusUtil.getOptions(),
+            data: statusUtil.getOptions(t),
           }),
           form: {
             show: false,

@@ -103,4 +103,3 @@ export class AliesaDnsProvider extends AbstractDnsProvider {
 }
 
 new AliesaDnsProvider();
-

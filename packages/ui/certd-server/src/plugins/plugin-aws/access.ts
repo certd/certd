@@ -66,4 +66,3 @@ export class AwsAccess extends BaseAccess {
 }
 
 new AwsAccess();
-

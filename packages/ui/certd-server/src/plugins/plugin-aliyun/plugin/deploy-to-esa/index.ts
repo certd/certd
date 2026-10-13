@@ -441,4 +441,3 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToESA();
-

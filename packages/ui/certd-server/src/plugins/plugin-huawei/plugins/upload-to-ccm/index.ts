@@ -88,4 +88,3 @@ export class HauweiUploadToCCM extends AbstractTaskPlugin {
     };
   }
 }
-

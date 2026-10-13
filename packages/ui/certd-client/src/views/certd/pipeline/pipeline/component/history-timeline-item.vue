@@ -53,7 +53,11 @@ export default defineComponent({
   setup(props: any, ctx: any) {
     const { t } = useI18n();
     const status = computed(() => {
-      return statusUtil.get(props.runnable?.status);
+      const statusItem = statusUtil.get(props.runnable?.status);
+      return {
+        ...statusItem,
+        label: t(`certd.pipeline.editor.${statusItem.label}`),
+      };
     });
 
     function view() {

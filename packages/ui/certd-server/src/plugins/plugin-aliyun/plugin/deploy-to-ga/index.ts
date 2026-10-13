@@ -328,4 +328,3 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToGA();
-

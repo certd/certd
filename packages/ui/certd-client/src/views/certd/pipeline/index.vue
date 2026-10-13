@@ -42,6 +42,7 @@
           <change-group v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-group>
           <change-cert-apply-options v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-cert-apply-options>
           <change-notification v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-notification>
+          <change-cert-apply-notification v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-cert-apply-notification>
           <change-trigger v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-trigger>
           <change-project v-if="hasActionPermission('write') && settingStore.isEnterprise" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-project>
         </div>
@@ -70,6 +71,7 @@ import { useI18n } from "/src/locales";
 import { useMounted } from "/@/use/use-mounted";
 const { t } = useI18n();
 import ChangeNotification from "/@/views/certd/pipeline/components/change-notification.vue";
+import ChangeCertApplyNotification from "/@/views/certd/pipeline/components/change-cert-apply-notification.vue";
 import { useSettingStore } from "/@/store/settings";
 import { groupDictRef } from "./group/dicts";
 import { useCertPipelineCreator } from "./certd-form/use";

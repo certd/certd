@@ -162,4 +162,3 @@ export class HauweiDeployCertToCDN extends AbstractTaskPlugin {
   }
 }
 new HauweiDeployCertToCDN();
-

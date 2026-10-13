@@ -13,7 +13,7 @@ function createPlugin() {
   plugin.logger = logger as any;
   plugin.sleep = async () => {};
   plugin.checkSignal = () => {};
-  plugin.readLastCert = async () => ({ expires: 1000 }) as any;
+  plugin.readLastCert = async () => ({ expires: 1000 } as any);
   return plugin;
 }
 

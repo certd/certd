@@ -166,4 +166,3 @@ export class AliyunDeleteExpiringCert extends AbstractPlusTaskPlugin {
 }
 
 new AliyunDeleteExpiringCert();
-

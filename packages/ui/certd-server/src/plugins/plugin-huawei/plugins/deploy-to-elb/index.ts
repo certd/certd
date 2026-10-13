@@ -152,4 +152,3 @@ export class HauweiDeployCertToELB extends AbstractTaskPlugin {
   }
 }
 new HauweiDeployCertToELB();
-

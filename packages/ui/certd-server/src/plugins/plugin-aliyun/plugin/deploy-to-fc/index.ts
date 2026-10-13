@@ -272,4 +272,3 @@ export class AliyunDeployCertToFC extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToFC();
-

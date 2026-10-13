@@ -184,4 +184,3 @@ export class AliyunDeployCertToVod extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToVod();
-

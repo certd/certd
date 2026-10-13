@@ -272,4 +272,3 @@ export class DeployCertToAliyunOSS extends AbstractTaskPlugin {
   }
 }
 new DeployCertToAliyunOSS();
-

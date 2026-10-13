@@ -160,4 +160,3 @@ export class DeployCertToAliyunLive extends AbstractTaskPlugin {
 }
 
 new DeployCertToAliyunLive();
-
