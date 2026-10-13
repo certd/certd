@@ -4,7 +4,7 @@ const errorPage = [{ path: "/:pathMatch(.*)*", name: "not-found", component: Err
 export const outsideResource = [
   {
     meta: {
-      title: "navigation.home",
+      title: "certd.navigation.home",
       isMenu: false,
     },
     name: "landing",
@@ -19,7 +19,7 @@ export const outsideResource = [
     children: [
       {
         meta: {
-          title: "navigation.login",
+          title: "certd.navigation.login",
         },
         name: "login",
         path: "/login",
@@ -27,7 +27,7 @@ export const outsideResource = [
       },
       {
         meta: {
-          title: "navigation.register",
+          title: "certd.navigation.register",
         },
         name: "register",
         path: "/register",
@@ -35,7 +35,7 @@ export const outsideResource = [
       },
       {
         meta: {
-          title: "navigation.forgotPassword",
+          title: "certd.navigation.forgotPassword",
         },
         name: "forgotPassword",
         path: "/forgotPassword",
@@ -43,7 +43,7 @@ export const outsideResource = [
       },
       {
         meta: {
-          title: "navigation.oauthCallback",
+          title: "certd.navigation.oauthCallback",
         },
         name: "oauthCallback",
         path: "/oauth/callback/:type",
