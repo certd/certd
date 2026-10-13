@@ -1,6 +1,9 @@
 name: yizhifu
 title: 易支付
 icon: svg:icon-yizhifu
+i18n:
+  en-US:
+    title: Yizhifu Access
 input:
   url:
     title: url

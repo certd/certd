@@ -7,6 +7,10 @@ title: 我爱云-部署证书到我爱云CDN
 desc: 部署证书到我爱云CDN
 icon: clarity:plugin-line
 group: cdn
+i18n:
+  en-US:
+    title: Woai-CDN Plugin
+    desc: Deploy certificates to Woai CDN.
 input:
   baseApi:
     title: 接口地址(可留空)

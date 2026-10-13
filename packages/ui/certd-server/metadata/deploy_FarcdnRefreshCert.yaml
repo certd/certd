@@ -8,6 +8,10 @@ desc: www.farcdn.net
 icon: svg:icon-lucky
 group: cdn
 needPlus: false
+i18n:
+  en-US:
+    title: FarCDN-Update Certificate
+    desc: Update a certificate on FarCDN.
 input:
   cert:
     title: 域名证书

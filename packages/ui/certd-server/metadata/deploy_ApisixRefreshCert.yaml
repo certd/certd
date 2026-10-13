@@ -8,6 +8,10 @@ desc: 自动更新APISIX证书
 icon: svg:icon-lucky
 group: cdn
 needPlus: true
+i18n:
+  en-US:
+    title: Apisix-Refresh Cert Plugin
+    desc: Integration plugin for Apisix certificates
 input:
   cert:
     title: 域名证书

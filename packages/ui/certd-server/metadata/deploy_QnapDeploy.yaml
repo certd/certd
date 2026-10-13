@@ -8,6 +8,9 @@ icon: svg:icon-qnap
 group: panel
 desc: 部署证书到qnap
 needPlus: true
+i18n:
+  en-US:
+    title: Qnap - Deploy Cert
 input:
   cert:
     title: 域名证书

@@ -2,6 +2,10 @@ name: farcdn
 title: farcdn授权
 desc: ''
 icon: svg:icon-lucky
+i18n:
+  en-US:
+    title: Farcdn Access
+    desc: Configure Farcdn access credentials.
 input:
   endpoint:
     title: 接口地址

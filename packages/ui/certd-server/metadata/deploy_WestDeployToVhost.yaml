@@ -8,6 +8,10 @@ desc: 西部数码部署证书到虚拟主机
 icon: svg:icon-lucky
 group: cdn
 needPlus: false
+i18n:
+  en-US:
+    title: West-Deploy to Vhost Plugin
+    desc: Deploy certificates to West Vhost.
 input:
   cert:
     title: 域名证书

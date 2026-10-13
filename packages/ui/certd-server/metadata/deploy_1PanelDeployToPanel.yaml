@@ -8,6 +8,23 @@ icon: svg:icon-onepanel
 desc: 更新1Panel的面板证书
 group: panel
 needPlus: false
+i18n:
+  en-US:
+    title: 1Panel - Deploy to Panel
+    desc: Update the certificate of the 1Panel.
+    input:
+      cert:
+        title: Domain Certificate
+        helper: Select the certificate output by a previous task.
+      accessId:
+        title: 1Panel Access
+        helper: 1Panel access credentials.
+      node:
+        title: 1Panel Node
+        helper: Node information for the certificate. This is available in version 2.
+      sslMode:
+        title: SSL Mode
+        helper: Supported in version 2.1.x and later.
 input:
   cert:
     title: 域名证书

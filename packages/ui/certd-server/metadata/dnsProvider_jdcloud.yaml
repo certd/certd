@@ -4,6 +4,10 @@ desc: 京东云DNS解析提供商
 accessType: jdcloud
 icon: svg:icon-jdcloud
 order: 3
+i18n:
+  en-US:
+    title: Jdcloud DNS Provider
+    desc: JDcloud DNS provider.
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-jdcloud/dns-provider.js

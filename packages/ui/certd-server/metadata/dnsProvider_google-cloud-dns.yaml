@@ -4,6 +4,10 @@ desc: Google Cloud DNS提供商
 icon: flat-color-icons:google
 accessType: google
 order: 2
+i18n:
+  en-US:
+    title: Google Cloud DNS
+    desc: Google Cloud DNS provider.
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-google/dns-provider.js

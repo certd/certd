@@ -7,6 +7,53 @@ icon: ph:certificate
 title: 获取阿里云订阅证书
 group: cert
 desc: 从阿里云拉取订阅模式的商用证书（支持 API 1.0 和 2.0）
+i18n:
+  en-US:
+    title: Get Alibaba Cloud Subscription Certificate
+    desc: >-
+      Retrieve commercial certificates purchased through Alibaba Cloud
+      subscription plans (API 1.0 and 2.0 supported).
+    input:
+      domains:
+        title: Certificate Domains
+        component:
+          placeholder: Enter certificate domains or IPs
+        helper: Enter the domains covered by this certificate.
+      accessId:
+        title: Access Credentials
+        helper: Alibaba Cloud AccessKey ID and AccessKey Secret.
+      apiVersion:
+        title: Certificate API Version
+        component:
+          optionsMapping:
+            v1: API 1.0 (Legacy)
+            v2: API 2.0 (Current)
+        helper: Select the Alibaba Cloud Certificate API version.
+      orderId:
+        title: Certificate Order or Instance ID
+        helper: Certificate order ID for subscription certificates.
+      renewDays:
+        title: Renewal Window (Days)
+      forceUpdate:
+        title: Force Renewal
+      pfxPassword:
+        title: Certificate Encryption Password
+        helper: >-
+          Choose whether to encrypt PFX and JKS certificates. If omitted, PFX
+          uses an empty password and JKS uses 123456.
+      pfxArgs:
+        title: PFX Conversion Options
+        component:
+          optionsMapping:
+            '': Latest Windows Server compatibility
+            '-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES': Windows Server 2016 compatibility
+            '-nomac -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES': Windows Server 2008 compatibility
+        helper: Options for compatibility with different Windows Server versions.
+    output:
+      cert:
+        title: Domain Certificate
+      certMd5:
+        title: Certificate MD5
 input:
   domains:
     title: 证书域名

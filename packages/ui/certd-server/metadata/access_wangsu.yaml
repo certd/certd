@@ -2,6 +2,10 @@ name: wangsu
 title: 网宿授权
 desc: ''
 icon: svg:icon-wangsu
+i18n:
+  en-US:
+    title: Wangsu Access
+    desc: Wangsu IAM access.
 input:
   authType:
     title: 鉴权方式

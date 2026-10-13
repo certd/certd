@@ -7,6 +7,10 @@ title: NextTerminal-更新证书
 icon: clarity:plugin-line
 desc: 更新 Next Terminal 证书
 group: panel
+i18n:
+  en-US:
+    title: NextTerminal-Refresh Cert
+    desc: Update Next Terminal certificate
 input:
   cert:
     title: 域名证书

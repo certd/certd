@@ -8,6 +8,9 @@ icon: simple-icons:synology
 group: panel
 desc: 群晖登录状态可能30天失效，需要在失效之前登录一次，刷新有效期，您可以将其放在“部署到群晖面板”任务之后
 needPlus: true
+i18n:
+  en-US:
+    title: Synology - Keep Alive
 input:
   accessId:
     title: 群晖授权

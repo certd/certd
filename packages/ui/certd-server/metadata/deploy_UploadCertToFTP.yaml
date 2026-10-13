@@ -8,6 +8,10 @@ icon: mdi:folder-upload-outline
 group: host
 desc: 将证书上传到FTP服务器
 needPlus: false
+i18n:
+  en-US:
+    title: FTP - Upload to FTP
+    desc: Upload the certificate to the FTP server.
 input:
   certType:
     title: 证书格式

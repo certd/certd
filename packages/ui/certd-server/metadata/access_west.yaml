@@ -2,6 +2,10 @@ name: west
 title: 西部数码授权
 desc: ''
 icon: tabler:map-west
+i18n:
+  en-US:
+    title: West Access
+    desc: West IAM access.
 input:
   scope:
     title: 权限范围

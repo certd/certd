@@ -2,6 +2,35 @@ name: synology
 title: 群晖登录授权
 desc: ''
 icon: simple-icons:synology
+i18n:
+  en-US:
+    title: Synology Access
+    input:
+      synologyVersion:
+        title: Synology Version
+      url:
+        title: Synology URL
+        helper: Synology panel URL, for example https://yourdomain:5006.
+      username:
+        title: Username
+        helper: Synology administrator username.
+      password:
+        title: Password
+        helper: Synology panel password.
+      otpEnabled:
+        title: Two-factor Authentication
+        helper: Whether two-factor authentication is enabled.
+      deviceId:
+        title: Device ID
+        helper: Required when two-factor authentication is enabled.
+      skipSslVerify:
+        title: Skip Certificate Verification
+      timeout:
+        title: Request Timeout
+        helper: Request timeout in seconds.
+      testRequest:
+        title: Test
+        helper: Test the API connection.
 input:
   version:
     title: 群晖版本

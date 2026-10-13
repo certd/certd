@@ -8,6 +8,10 @@ desc: 金山云自动更新CDN证书
 icon: svg:icon-ksyun
 group: cdn
 needPlus: false
+i18n:
+  en-US:
+    title: Ksyun-Refresh Cert
+    desc: Refresh certificates in Ksyun CDN.
 input:
   cert:
     title: 域名证书

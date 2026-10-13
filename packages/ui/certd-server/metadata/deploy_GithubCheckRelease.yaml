@@ -8,6 +8,10 @@ desc: 检查最新Release版本并推送消息
 icon: ion:logo-github
 group: other
 needPlus: false
+i18n:
+  en-US:
+    title: Github-Check Release Version
+    desc: Check latest release version and push message.
 input:
   accessId:
     title: Github授权

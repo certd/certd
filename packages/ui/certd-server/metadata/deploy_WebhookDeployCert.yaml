@@ -6,6 +6,10 @@ name: WebhookDeployCert
 title: webhook方式部署证书
 icon: ion:send-sharp
 desc: 调用webhook部署证书
+i18n:
+  en-US:
+    title: Deploy Certificate via Webhook
+    desc: Deploy certificates by calling a webhook.
 group: other
 input:
   cert:

@@ -7,6 +7,9 @@ title: 飞牛NAS-部署证书
 icon: svg:icon-fnos
 group: panel
 needPlus: false
+i18n:
+  en-US:
+    title: FnOS-Deploy Certificate to Feiniu NAS Device
 input:
   cert:
     title: 域名证书

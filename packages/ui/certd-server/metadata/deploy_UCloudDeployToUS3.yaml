@@ -8,6 +8,10 @@ desc: 将证书部署到UCloud对象存储(US3)
 icon: svg:icon-ucloud
 group: ucloud
 needPlus: false
+i18n:
+  en-US:
+    title: Ucloud-Deploy to US3 Plugin
+    desc: Integration plugin for UCloudDeployToUS3
 input:
   cert:
     title: 域名证书

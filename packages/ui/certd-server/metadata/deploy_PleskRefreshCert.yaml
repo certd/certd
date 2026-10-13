@@ -8,6 +8,9 @@ icon: svg:icon-plesk
 desc: 不会创建新证书记录，直接更新旧的证书
 group: panel
 needPlus: true
+i18n:
+  en-US:
+    title: Plesk - Refresh Cert
 input:
   cert:
     title: 域名证书

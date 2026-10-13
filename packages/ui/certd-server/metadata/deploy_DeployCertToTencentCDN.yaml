@@ -7,6 +7,10 @@ title: 腾讯云-部署到CDN（废弃）
 icon: svg:icon-tencentcloud
 group: tencent
 desc: 已废弃，请使用v2版
+i18n:
+  en-US:
+    title: Tencent-Deploy to CDN (Deprecated)
+    desc: Deploy a certificate to Tencent Cloud CDN.
 dependPlugins:
   access:tencent: '*'
 input:

@@ -7,6 +7,9 @@ title: ESXi-部署证书到ESXi
 icon: svg:icon-lucky
 group: host
 needPlus: true
+i18n:
+  en-US:
+    title: ESXi - Deploy to ESXi
 input:
   cert:
     title: 域名证书

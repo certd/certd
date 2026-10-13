@@ -7,6 +7,10 @@ title: 百度云-上传到证书托管
 icon: ant-design:baidu-outlined
 desc: 上传证书到百度云证书托管中心
 group: baidu
+i18n:
+  en-US:
+    title: Baidu - Upload to Cert Hosted
+    desc: Upload the certificate to the Baidu Cert Hosted.
 input:
   cert:
     title: 域名证书

@@ -7,6 +7,10 @@ title: 华为云-上传证书至CCM
 icon: svg:icon-huawei
 group: huawei
 desc: 上传证书到华为云云证书管理（CCM）
+i18n:
+  en-US:
+    title: Huawei Cloud - Upload Certificate to CCM
+    desc: Upload a certificate to Huawei Cloud CCM.
 input:
   cert:
     title: 域名证书

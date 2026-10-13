@@ -7,6 +7,10 @@ title: 阿里云-部署证书至CDN
 icon: svg:icon-aliyun
 group: aliyun
 desc: 自动部署域名证书至阿里云CDN
+i18n:
+  en-US:
+    title: Aliyun-Deploy Certificate to CDN
+    desc: Deploy a certificate to Aliyun CDN.
 runStrategy: 0
 input:
   endpoint:

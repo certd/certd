@@ -7,6 +7,10 @@ title: 火山引擎-上传证书至证书中心
 icon: svg:icon-volcengine
 group: volcengine
 desc: 上传证书至火山引擎证书中心
+i18n:
+  en-US:
+    title: Volcengine-Upload to Cert Center Plugin
+    desc: Upload certificates to Volcengine Cert Center.
 input:
   cert:
     title: 域名证书

@@ -4,6 +4,10 @@ desc: 新网域名解析
 icon: svg:icon-xinnet
 accessType: xinnet
 order: 7
+i18n:
+  en-US:
+    title: Xinnet DNS Provider
+    desc: Xinnet DNS provider.
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-xinnet/dns-provider.js

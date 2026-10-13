@@ -2,6 +2,10 @@ addonType: captcha
 name: geetest
 title: 极验验证码v4
 desc: ''
+i18n:
+  en-US:
+    title: GeeTest CAPTCHA
+    desc: Verify user requests with GeeTest CAPTCHA.
 showTest: false
 input:
   captchaId:

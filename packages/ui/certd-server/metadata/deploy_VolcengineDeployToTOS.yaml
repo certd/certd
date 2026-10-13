@@ -7,6 +7,10 @@ title: 火山引擎-部署证书至TOS自定义域名
 icon: svg:icon-volcengine
 group: volcengine
 desc: 仅限TOS自定义域名，加速域名请选择火山引擎的CDN插件
+i18n:
+  en-US:
+    title: Volcengine-Deploy to TOS Plugin
+    desc: Deploy certificates to Volcengine TOS custom domains.
 input:
   cert:
     title: 域名证书

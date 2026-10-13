@@ -8,6 +8,10 @@ desc: 自动更新Dokploy server证书
 icon: svg:icon-lucky
 group: panel
 needPlus: true
+i18n:
+  en-US:
+    title: Dokploy-Deploy Server Certificate
+    desc: Automatically update the Dokploy server certificate.
 input:
   cert:
     title: 域名证书

@@ -8,6 +8,10 @@ icon: mdi:kubernetes
 desc: 部署证书到k8s的Ingress
 needPlus: false
 group: panel
+i18n:
+  en-US:
+    title: K8S - Deploy to Ingress
+    desc: Deploy the certificate to the K8S.
 input:
   namespace:
     title: 命名空间

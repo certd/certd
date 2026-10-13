@@ -8,6 +8,10 @@ icon: majesticons:cloud-line
 group: cdn
 desc: cdnfly
 needPlus: false
+i18n:
+  en-US:
+    title: Cdnfly - Deploy to CDN
+    desc: Deploy the certificate to the CDN.
 input:
   cert:
     title: 域名证书

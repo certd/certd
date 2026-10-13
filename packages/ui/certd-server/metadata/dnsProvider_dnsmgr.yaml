@@ -4,6 +4,10 @@ desc: 彩虹DNS管理系统
 icon: clarity:plugin-line
 accessType: dnsmgr
 order: 99
+i18n:
+  en-US:
+    title: Dnsmgr DNS Provider
+    desc: Configure Dnsmgr DNS provider credentials.
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-dnsmgr/dns-provider.js

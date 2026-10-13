@@ -3,6 +3,9 @@ title: 雨云授权
 desc: https://app.rainyun.com/
 icon: svg:icon-rainyun
 order: 100
+i18n:
+  en-US:
+    title: Rainyun Access
 input:
   apiKey:
     title: ApiKey

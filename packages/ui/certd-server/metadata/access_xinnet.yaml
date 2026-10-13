@@ -2,6 +2,10 @@ name: xinnet
 title: 新网授权
 icon: svg:icon-xinnet
 desc: ''
+i18n:
+  en-US:
+    title: Xinnet Access
+    desc: Xinnet IAM access.
 input:
   username:
     title: 用户名

@@ -7,6 +7,12 @@ title: Nginx Proxy Manager-部署到主机
 desc: 上传自定义证书到 Nginx Proxy Manager，并绑定到所选主机。
 icon: logos:nginx
 group: panel
+i18n:
+  en-US:
+    title: NginxProxyManager - Deploy to Proxy Hosts
+    desc: >-
+      Upload custom certificates to the Nginx Proxy Manager and bind them to
+      selected proxy hosts.
 input:
   cert:
     title: 域名证书

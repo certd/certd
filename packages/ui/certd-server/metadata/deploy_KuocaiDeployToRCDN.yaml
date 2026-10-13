@@ -8,6 +8,10 @@ icon: material-symbols:shield-outline
 group: cdn
 desc: 括彩云CDN，每月免费30G，[注册即领](https://kuocaicdn.com/register?code=8mn536rrzfbf8)
 needPlus: false
+i18n:
+  en-US:
+    title: Kuocai - Deploy to CDN
+    desc: Deploy the certificate to the CDN.
 input:
   cert:
     title: 域名证书

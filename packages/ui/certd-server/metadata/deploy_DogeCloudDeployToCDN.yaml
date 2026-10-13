@@ -6,6 +6,9 @@ name: DogeCloudDeployToCDN
 title: 多吉云-部署到多吉云CDN
 icon: svg:icon-dogecloud
 group: cdn
+i18n:
+  en-US:
+    title: DogeCloud-Deploy to CDN
 input:
   cert:
     title: 证书
