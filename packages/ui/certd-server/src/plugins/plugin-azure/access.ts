@@ -241,4 +241,3 @@ export class AzureAccess extends BaseAccess {
 }
 
 new AzureAccess();
-

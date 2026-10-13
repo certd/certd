@@ -343,4 +343,3 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
 
 //实例化一下，注册插件
 new TencentRefreshCert();
-

@@ -395,4 +395,3 @@ export class AliyunDeployCertToNLB extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToNLB();
-

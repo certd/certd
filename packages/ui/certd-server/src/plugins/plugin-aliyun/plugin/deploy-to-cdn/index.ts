@@ -299,4 +299,3 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   }
 }
 new DeployCertToAliyunCDN();
-

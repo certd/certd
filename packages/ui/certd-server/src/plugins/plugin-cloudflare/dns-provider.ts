@@ -176,4 +176,3 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
 
 //实例化这个provider，将其自动注册到系统中
 new CloudflareDnsProvider();
-

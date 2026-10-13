@@ -67,4 +67,3 @@ export class AzureDnsProvider extends AbstractDnsProvider {
 }
 
 new AzureDnsProvider();
-

@@ -121,4 +121,3 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
 }
 //注册插件
 new UploadCertToAliyun();
-

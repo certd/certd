@@ -187,4 +187,3 @@ export class TencentActionInstancesPlugin extends AbstractTaskPlugin {
 }
 
 new TencentActionInstancesPlugin();
-

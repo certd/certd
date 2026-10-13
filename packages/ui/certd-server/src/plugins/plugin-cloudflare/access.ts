@@ -99,4 +99,3 @@ export class CloudflareAccess extends BaseAccess {
 }
 
 new CloudflareAccess();
-

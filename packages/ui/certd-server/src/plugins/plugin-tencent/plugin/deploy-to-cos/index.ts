@@ -11,10 +11,12 @@ const deployCertToTencentCosDefine: any = {
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "部署到腾讯云COS源站域名证书，注意是源站域名，加速域名请使用腾讯云CDN v2插件【注意：很不稳定，需要重试很多次偶尔才能成功一次】",
-  i18n: { "en-US": { 
-    title: "Tencent-Deploy Certificate to COS", 
-    desc: "Deploy a certificate to Tencent Cloud COS." }
-   },
+  i18n: {
+    "en-US": {
+      title: "Tencent-Deploy Certificate to COS",
+      desc: "Deploy a certificate to Tencent Cloud COS.",
+    },
+  },
   dependPlugins: {
     "access:tencent": "*",
   },

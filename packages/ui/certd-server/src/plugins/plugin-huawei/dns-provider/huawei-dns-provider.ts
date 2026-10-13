@@ -209,4 +209,3 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
 }
 
 new HuaweiDnsProvider();
-

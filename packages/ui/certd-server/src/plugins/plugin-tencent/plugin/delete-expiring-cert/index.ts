@@ -209,4 +209,3 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
 }
 
 new TencentDeleteExpiringCert();
-

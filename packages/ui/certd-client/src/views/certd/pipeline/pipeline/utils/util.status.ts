@@ -73,10 +73,14 @@ export const statusUtil = {
     return StatusEnum[status];
   },
 
-  getOptions() {
+  getOptions(t?: (key: string) => string) {
     const options: any[] = [];
     for (const key of Object.keys(StatusEnum)) {
-      options.push(StatusEnum[key]);
+      const option = StatusEnum[key];
+      options.push({
+        ...option,
+        label: t ? t(`certd.pipeline.editor.${option.label}`) : option.label,
+      });
     }
     return options;
   },

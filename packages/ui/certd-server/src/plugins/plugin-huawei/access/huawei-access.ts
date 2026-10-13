@@ -68,4 +68,3 @@ export class HuaweiAccess extends BaseAccess {
 }
 
 new HuaweiAccess();
-

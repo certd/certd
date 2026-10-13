@@ -190,4 +190,3 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
 }
 
 new AwsDeployToCloudFront();
-

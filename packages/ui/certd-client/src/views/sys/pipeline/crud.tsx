@@ -6,10 +6,12 @@ import { ref } from "vue";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { sysPipelineApi } from "./api";
 import { useSettingStore } from "/@/store/settings";
+import { useI18n } from "/@/locales";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const api = sysPipelineApi;
   const settingStore = useSettingStore();
+  const { t } = useI18n();
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -75,7 +77,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     } else if (key === "lastVars.certDomains") {
       row[key] = formatListValue(value);
     } else if (key === "status") {
-      row[key] = statusUtil.get(value)?.label ?? value;
+      const status = statusUtil.get(value);
+      row[key] = status ? t(`certd.pipeline.editor.${status.label}`) : value;
     } else if (key === "disabled") {
       row[key] = findDictLabel(disabledDictData, value);
     } else if (key === "type") {
@@ -282,7 +285,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           dict: dict({
-            data: statusUtil.getOptions(),
+            data: statusUtil.getOptions(t),
           }),
           column: {
             sorter: true,

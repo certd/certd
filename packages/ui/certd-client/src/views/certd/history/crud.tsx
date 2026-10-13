@@ -191,7 +191,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
           },
           dict: dict({
-            data: statusUtil.getOptions(),
+            data: statusUtil.getOptions(t),
           }),
           form: {
             show: false,

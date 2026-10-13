@@ -50,4 +50,3 @@ export class DnspodAccess extends BaseAccess {
 }
 
 new DnspodAccess();
-

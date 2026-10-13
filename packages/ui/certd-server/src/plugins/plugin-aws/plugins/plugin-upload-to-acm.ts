@@ -77,4 +77,3 @@ export class AwsUploadToACM extends AbstractTaskPlugin {
 }
 
 new AwsUploadToACM();
-

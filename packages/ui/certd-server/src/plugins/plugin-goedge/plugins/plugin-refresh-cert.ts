@@ -22,7 +22,7 @@ import { GoEdgeAccess } from "../access.js";
     "en-US": {
       title: "GoEdge-Refresh Cert",
       desc: "GoEdge refresh cert plugin.",
-   },
+    },
   },
 })
 //类名规范，跟上面插件名称（name）一致

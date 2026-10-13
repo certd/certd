@@ -186,4 +186,3 @@ export class HauweiDeployCertToOBS extends AbstractTaskPlugin {
   }
 }
 new HauweiDeployCertToOBS();
-
