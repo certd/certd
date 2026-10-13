@@ -1,6 +1,10 @@
 name: dnspod
 title: dnspod(已废弃)
 desc: 腾讯云的域名解析接口已迁移到dnspod
+i18n:
+  en-US:
+    title: DNSPod
+    desc: DNSPod access (deprecated).
 deprecated: dnspod已废弃，请换成腾讯云
 icon: svg:icon-tencentcloud
 input:

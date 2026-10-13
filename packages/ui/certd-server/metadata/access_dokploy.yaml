@@ -2,6 +2,10 @@ name: dokploy
 title: Dokploy授权
 desc: ''
 icon: svg:icon-lucky
+i18n:
+  en-US:
+    title: Dokploy Access
+    desc: Configure Dokploy access credentials.
 input:
   endpoint:
     title: Dokploy地址

@@ -2,6 +2,10 @@ name: xinnetconnect
 title: 新网互联授权
 icon: svg:icon-xinnet
 desc: 仅支持代理账号，ip需要加入白名单
+i18n:
+  en-US:
+    title: Xinnet Connect Access
+    desc: Xinnet connect IAM access.
 input:
   username:
     title: 用户名

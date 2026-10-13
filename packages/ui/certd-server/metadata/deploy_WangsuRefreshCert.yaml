@@ -4,10 +4,14 @@ default:
     runStrategy: 1
 name: WangsuRefreshCert
 title: 网宿-更新证书
-desc: 网宿证书自动更新
+desc: 网宿证书自动更新，注意：仅支持普通CDN证书更新，CDN pro的证书请安装在线插件“网宿-CDNPro更新证书”
 icon: svg:icon-wangsu
 group: cdn
 needPlus: false
+i18n:
+  en-US:
+    title: Wangsu-Refresh Cert Plugin
+    desc: Refresh Wangsu certificates.
 input:
   cert:
     title: 域名证书

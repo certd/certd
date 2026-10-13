@@ -8,6 +8,10 @@ desc: 中国移动自动部署证书到CDN
 icon: svg:icon-cmcc
 group: cdn
 needPlus: true
+i18n:
+  en-US:
+    title: Cmcc-Deploy Certificate to CDN Plugin
+    desc: Deploy a certificate to CDN in China
 input:
   cert:
     title: 域名证书

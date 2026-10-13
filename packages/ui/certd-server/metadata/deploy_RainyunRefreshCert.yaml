@@ -8,6 +8,9 @@ desc: app.rainyun.com
 icon: svg:icon-rainyun
 group: cdn
 needPlus: false
+i18n:
+  en-US:
+    title: Rainyun - Refresh Cert
 input:
   cert:
     title: 域名证书

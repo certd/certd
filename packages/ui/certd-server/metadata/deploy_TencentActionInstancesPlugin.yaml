@@ -7,6 +7,10 @@ title: 腾讯云-实例开关机
 icon: svg:icon-tencentcloud
 group: tencent
 desc: 腾讯云实例开关机
+i18n:
+  en-US:
+    title: Tencent-Start or Stop Instances
+    desc: Start or stop Tencent Cloud instances.
 dependPlugins:
   access:tencent: '*'
 needPlus: false

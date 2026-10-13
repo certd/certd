@@ -7,6 +7,10 @@ title: 主机-执行远程主机脚本命令
 icon: tabler:brand-powershell
 group: host
 desc: 可以执行重启nginx等操作让证书生效
+i18n:
+  en-US:
+    title: Host - Execute Remote Script
+    desc: Execute commands such as restarting Nginx to activate certificates.
 input:
   accessId:
     title: 主机登录配置

@@ -8,6 +8,10 @@ icon: ant-design:baidu-outlined
 group: baidu
 desc: 部署到百度云CDN
 needPlus: false
+i18n:
+  en-US:
+    title: Baidu - Deploy to CDN
+    desc: Update the certificate of the Baidu CDN.
 input:
   cert:
     title: 域名证书

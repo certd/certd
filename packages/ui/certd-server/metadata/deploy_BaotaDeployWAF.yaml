@@ -8,6 +8,10 @@ icon: svg:icon-bt
 group: panel
 desc: 部署宝塔云WAF/aaWAF
 needPlus: false
+i18n:
+  en-US:
+    title: Baota - Deploy WAF
+    desc: Deploy the WAFAF.
 input:
   cert:
     title: 域名证书

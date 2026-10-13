@@ -8,6 +8,10 @@ desc: 将证书部署到UCloud CDN
 icon: svg:icon-ucloud
 group: ucloud
 needPlus: false
+i18n:
+  en-US:
+    title: Ucloud-Deploy to CDN Plugin
+    desc: Integration plugin for UCloudDeployToCDN
 input:
   cert:
     title: 域名证书

@@ -7,6 +7,20 @@ title: Plesk-部署Plesk网站证书
 icon: svg:icon-plesk
 group: panel
 needPlus: true
+i18n:
+  en-US:
+    title: Plesk - Deploy Site Certs
+    input:
+      cert:
+        title: Domain Certificate
+        helper: Select the certificate output by a previous task.
+      accessId:
+        title: Plesk Access
+      domains:
+        title: Website Domains
+        helper: Select the site domains matching the certificate.
+      deleteUnusedCert:
+        title: Delete Unused Certificates
 input:
   cert:
     title: 域名证书

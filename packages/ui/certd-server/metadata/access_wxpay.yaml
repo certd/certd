@@ -1,6 +1,9 @@
 name: wxpay
 title: 微信支付
 icon: tdesign:logo-wechatpay-filled
+i18n:
+  en-US:
+    title: Wxpay Access
 input:
   appId:
     title: AppId

@@ -8,6 +8,21 @@ icon: simple-icons:synology
 group: panel
 desc: Synology，支持6.x以上版本
 needPlus: true
+i18n:
+  en-US:
+    title: Synology - Deploy to Panel
+    input:
+      description:
+        title: Certificate Description
+        helper: >-
+          Set the description used to identify the certificate. Leave empty to
+          update all certificates.
+      cert:
+        title: Domain Certificate
+        helper: Select the certificate output by a previous task.
+      accessId:
+        title: Synology Access
+        helper: Synology administrator access.
 input:
   certName:
     title: 群晖证书描述

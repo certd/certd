@@ -7,6 +7,10 @@ title: 阿里云-部署至GA
 icon: svg:icon-aliyun
 group: aliyun
 desc: 部署证书到阿里云GA(全球加速)，支持更新默认证书和扩展证书
+i18n:
+  en-US:
+    title: Aliyun-Deploy Certificate to GA
+    desc: Deploy a certificate to Aliyun Global Accelerator.
 needPlus: false
 input:
   cert:

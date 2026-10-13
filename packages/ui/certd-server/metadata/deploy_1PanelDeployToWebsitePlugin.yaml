@@ -8,6 +8,10 @@ icon: svg:icon-onepanel
 desc: 更新1Panel的站点证书
 group: panel
 needPlus: false
+i18n:
+  en-US:
+    title: 1Panel - Deploy to Website
+    desc: Update the certificate of the 1Panel.
 input:
   cert:
     title: 域名证书

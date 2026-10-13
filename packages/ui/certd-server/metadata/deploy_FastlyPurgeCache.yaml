@@ -7,6 +7,10 @@ title: Fastly-清除缓存
 desc: 清除 Fastly 指定 Service 的所有缓存 (Purge All)
 icon: simple-icons:fastly
 group: cdn
+i18n:
+  en-US:
+    title: Fastly-Purge Cache
+    desc: Purge all cache for a Fastly service.
 input:
   accessId:
     title: Access授权

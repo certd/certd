@@ -2,6 +2,10 @@ name: dogecloud
 title: 多吉云
 desc: ''
 icon: svg:icon-dogecloud
+i18n:
+  en-US:
+    title: Dogecloud Access
+    desc: Configure Dogecloud access credentials.
 input:
   accessKey:
     title: AccessKey

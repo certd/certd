@@ -3,6 +3,10 @@ title: HiPM DNSMgr
 desc: HiPM DNSMgr DNS 解析提供商
 accessType: hipmdnsmgr
 icon: svg:icon-dns
+i18n:
+  en-US:
+    title: Hipmdnsmgr DNS Provider
+    desc: HiPM DNSMgr DNS provider.
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-hipmdnsmgr/dns-provider/hipmdnsmgr-dns-provider.js

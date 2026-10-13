@@ -2,6 +2,10 @@ name: ksyun
 title: 金山云授权
 desc: ''
 icon: svg:icon-ksyun
+i18n:
+  en-US:
+    title: Ksyun Access
+    desc: Configure Ksyun access credentials.
 input:
   accessKeyId:
     title: AccessKeyID

@@ -2,6 +2,9 @@ name: namesilo
 title: namesilo授权
 desc: ''
 icon: simple-icons:namesilo
+i18n:
+  en-US:
+    title: Namesilo Access
 input:
   apiKey:
     title: API Key

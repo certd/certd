@@ -7,6 +7,10 @@ title: 阿里云-部署证书至DCDN
 icon: svg:icon-aliyun
 group: aliyun
 desc: 依赖证书申请前置任务，自动部署域名证书至阿里云DCDN
+i18n:
+  en-US:
+    title: Aliyun - Deploy Certificate to DCDN
+    desc: Deploy a certificate to Aliyun DCDN.
 runStrategy: 0
 input:
   cert:

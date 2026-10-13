@@ -7,6 +7,9 @@ title: Proxmox-上传证书到Proxmox
 icon: svg:icon-proxmox
 group: panel
 needPlus: true
+i18n:
+  en-US:
+    title: Proxmox - Upload Cert
 input:
   cert:
     title: 域名证书

@@ -4,6 +4,10 @@ desc: 新网互联
 icon: svg:icon-xinnet
 accessType: xinnetconnect
 order: 999
+i18n:
+  en-US:
+    title: Xinnet Connect DNS Provider
+    desc: Xinnet connect DNS provider.
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-xinnetconnet/dns-provider.js

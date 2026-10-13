@@ -2,6 +2,10 @@ name: hipmdnsmgr
 title: HiPM DNSMgr
 icon: svg:icon-dns
 desc: HiPM DNSMgr API Token 授权
+i18n:
+  en-US:
+    title: Hipmdnsmgr Access
+    desc: Configure HiPM DNSMgr access credentials.
 input:
   endpoint:
     title: 服务器地址

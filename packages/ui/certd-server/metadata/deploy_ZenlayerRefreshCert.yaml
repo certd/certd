@@ -8,6 +8,10 @@ desc: 刷新Zenlayer CDN证书
 icon: svg:icon-lucky
 group: cdn
 needPlus: false
+i18n:
+  en-US:
+    title: Zenlayer Refresh Cert Plugin
+    desc: Refresh Zenlayer certificate.
 input:
   cert:
     title: 域名证书

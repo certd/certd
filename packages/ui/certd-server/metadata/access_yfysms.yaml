@@ -2,6 +2,9 @@ name: yfysms
 title: 易发云短信
 icon: material-symbols:shield-outline
 desc: sms.yfyidc.cn/
+i18n:
+  en-US:
+    title: Yfysms Access
 input:
   keyId:
     title: KeyID

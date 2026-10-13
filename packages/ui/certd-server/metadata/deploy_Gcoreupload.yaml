@@ -7,6 +7,10 @@ title: Gcore-部署证书到Gcore
 desc: 仅上传 并不会部署到cdn
 icon: clarity:plugin-line
 group: cdn
+i18n:
+  en-US:
+    title: Gcore-Upload Certificate
+    desc: Configure Gcore upload credentials.
 input:
   certName:
     title: 证书名称

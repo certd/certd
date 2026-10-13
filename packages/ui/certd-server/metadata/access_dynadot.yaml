@@ -2,6 +2,10 @@ name: dynadot
 title: Dynadot授权
 desc: ''
 icon: simple-icons:dynatrace
+i18n:
+  en-US:
+    title: Dynadot Access
+    desc: Configure Dynadot access credentials.
 input:
   apiKey:
     title: API Key

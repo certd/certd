@@ -7,6 +7,9 @@ title: 七牛云-上传证书到七牛云
 icon: svg:icon-qiniuyun
 group: qiniu
 desc: 上传到七牛云
+i18n:
+  en-US:
+    title: Qiniu - Upload Cert
 input:
   certName:
     title: 证书名称

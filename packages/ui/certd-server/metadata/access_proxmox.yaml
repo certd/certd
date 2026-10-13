@@ -2,6 +2,9 @@ name: proxmox
 title: proxmox
 desc: ''
 icon: svg:icon-proxmox
+i18n:
+  en-US:
+    title: Proxmox Access
 input:
   host:
     title: host

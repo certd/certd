@@ -8,6 +8,10 @@ icon: mdi:kubernetes
 desc: apply自定义yaml到k8s
 needPlus: true
 group: panel
+i18n:
+  en-US:
+    title: K8S - Apply Custom YAML
+    desc: Apply custom YAML to K8S.
 input:
   cert:
     title: 域名证书

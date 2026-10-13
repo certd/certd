@@ -2,6 +2,10 @@ name: baishan
 title: 白山云授权
 desc: ''
 icon: material-symbols:shield-outline
+i18n:
+  en-US:
+    title: Baishan Access
+    desc: Baishan Cloud.
 input:
   token:
     title: token

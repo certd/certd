@@ -1,6 +1,10 @@
 name: aws
 title: 亚马逊云aws授权
 desc: ''
+i18n:
+  en-US:
+    title: AWS Access
+    desc: Configure AWS access credentials.
 icon: svg:icon-aws
 input:
   accessKeyId:

@@ -3,6 +3,19 @@ title: 火山引擎
 desc: ''
 icon: svg:icon-volcengine
 order: 1
+i18n:
+  en-US:
+    title: Volcengine Access
+    desc: Volcengine IAM access.
+    input:
+      accessKeyId:
+        title: Access key ID
+        helper: Get credentials from Volcengine IAM
+      secretAccessKey:
+        title: Secret access key
+      testRequest:
+        title: Test
+        helper: Test whether the credentials are valid
 input:
   accessKeyId:
     title: AccessKeyID

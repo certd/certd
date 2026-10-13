@@ -8,6 +8,10 @@ icon: material-symbols:shield-outline
 group: cdn
 desc: 易盾CDN，每月免费30G，[注册即领](https://rhcdn.yiduncdn.com/register?code=8mn536rrzfbf8)
 needPlus: false
+i18n:
+  en-US:
+    title: Yidun - Deploy to RCDN
+    desc: Deploy a certificate to Yidun RCDN.
 input:
   cert:
     title: 域名证书

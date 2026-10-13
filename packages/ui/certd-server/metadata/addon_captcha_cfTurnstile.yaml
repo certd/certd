@@ -2,6 +2,10 @@ addonType: captcha
 name: cfTurnstile
 title: Cloudflare Turnstile
 desc: 谨慎使用，国内被墙了
+i18n:
+  en-US:
+    title: Cloudflare Turnstile
+    desc: Verify user requests with Cloudflare Turnstile.
 showTest: false
 input:
   siteKey:

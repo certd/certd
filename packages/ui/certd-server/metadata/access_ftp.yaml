@@ -1,6 +1,9 @@
 name: ftp
 title: FTP授权
 desc: ''
+i18n:
+  en-US:
+    title: FTP Access
 icon: mdi:folder-upload-outline
 input:
   host:
