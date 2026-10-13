@@ -4,6 +4,16 @@ import { CertApplyBasePlugin } from "../base.js";
 import { CertReader, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import dayjs from "dayjs";
 
+const APPLY_CERTIFICATE_POLL_INTERVAL_MS = 5000;
+const APPLY_CERTIFICATE_TIMEOUT_MS = 10 * 60 * 1000;
+const NEW_CERTIFICATE_POLL_INTERVAL_MS = 60 * 1000;
+const NEW_CERTIFICATE_MAX_CHECKS = 10;
+
+type AliyunInstanceDetailV2 = {
+  CertificateId?: string;
+  CertificateNotAfter?: number | string;
+};
+
 @IsTaskPlugin({
   name: "CertApplyGetFormAliyun",
   icon: "ph:certificate",
@@ -129,11 +139,120 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
     if (Array.isArray(this.orderId) && this.orderId.length > 0) {
       this.orderId = this.orderId[0];
     }
-    const certificateId = await this.getOrderDetailV2(client, this.orderId);
+
+    const lastCert = await this.readLastCert();
+    const currentCertificateNotAfter = lastCert?.expires;
+    const instanceDetail = await this.getInstanceDetailV2(client, this.orderId);
+    let certificateId = instanceDetail.CertificateId;
+    if (!this.isNewCertificate(instanceDetail.CertificateNotAfter, currentCertificateNotAfter) || !certificateId) {
+      await this.applyCertificateV2(client, this.orderId);
+      certificateId = await this.waitForNewCertificateV2(client, this.orderId, currentCertificateNotAfter);
+    } else {
+      this.logger.info(`实例中已有新证书，直接使用证书 ID:${certificateId}`);
+    }
+
+    if (!certificateId) {
+      throw new Error(`未找到阿里云证书 ID，实例 ID:${this.orderId}`);
+    }
+
     this.logger.info(`获取到证书 ID:${certificateId}`);
     const certDetail = await this.getCertDetail(client, certificateId);
     this.logger.info(`获取到证书:${certDetail.getAllDomains()}, 过期时间：${dayjs(certDetail.expires).format("YYYY-MM-DD HH:mm:ss")}`);
     return certDetail;
+  }
+
+  async waitForNewCertificateV2(client: any, instanceId: string, currentCertificateNotAfter?: number): Promise<string> {
+    for (let checkCount = 1; checkCount <= NEW_CERTIFICATE_MAX_CHECKS; checkCount++) {
+      this.checkSignal();
+      const instanceDetail = await this.getInstanceDetailV2(client, instanceId);
+      if (instanceDetail.CertificateId && this.isNewCertificate(instanceDetail.CertificateNotAfter, currentCertificateNotAfter)) {
+        this.logger.info(`获取到新证书 ID:${instanceDetail.CertificateId}`);
+        return instanceDetail.CertificateId;
+      }
+
+      this.logger.info(`实例证书尚未更新，${checkCount}/${NEW_CERTIFICATE_MAX_CHECKS} 次检查未发现新证书`);
+      if (checkCount < NEW_CERTIFICATE_MAX_CHECKS) {
+        await this.sleep(NEW_CERTIFICATE_POLL_INTERVAL_MS);
+      }
+    }
+
+    throw new Error(`等待阿里云新证书生成超时，实例 ID:${instanceId}`);
+  }
+
+  isNewCertificate(certificateNotAfter: number | string | undefined, currentCertificateNotAfter?: number): boolean {
+    if (certificateNotAfter == null) {
+      return false;
+    }
+    if (currentCertificateNotAfter == null) {
+      return true;
+    }
+
+    const certificateExpires = this.normalizeTimestamp(certificateNotAfter);
+    const currentCertificateExpires = this.normalizeTimestamp(currentCertificateNotAfter);
+    return certificateExpires != null && currentCertificateExpires != null && certificateExpires !== currentCertificateExpires;
+  }
+
+  normalizeTimestamp(timestamp: number | string): number {
+    const value = Number(timestamp);
+    if (value > 0 && value < 1_000_000_000_000) {
+      return value * 1000;
+    }
+    return value;
+  }
+
+  async applyCertificateV2(client: any, instanceId: string): Promise<void> {
+    await client.doRequest({
+      action: "ApplyCertificate",
+      version: "2020-04-07",
+      protocol: "HTTPS",
+      method: "POST",
+      authType: "AK",
+      style: "RPC",
+      pathname: `/`,
+      data: {
+        query: {
+          InstanceId: instanceId,
+        },
+      },
+    });
+
+    this.logger.info(`已提交证书申请，实例 ID:${instanceId}`);
+    const startTime = Date.now();
+    while (Date.now() - startTime < APPLY_CERTIFICATE_TIMEOUT_MS) {
+      this.checkSignal();
+      const task = await client.doRequest({
+        action: "GetTaskAttribute",
+        version: "2020-04-07",
+        protocol: "HTTPS",
+        method: "POST",
+        authType: "AK",
+        style: "RPC",
+        pathname: `/`,
+        data: {
+          query: {
+            TaskType: "ApplyCertificate",
+            TaskId: instanceId,
+          },
+        },
+      });
+
+      if (task.TaskStatus === "success") {
+        this.logger.info(`证书申请提交成功，实例 ID:${instanceId}`);
+        return;
+      }
+      if (task.TaskStatus === "failed") {
+        const errorMessage = task.TaskMessage || "未知错误";
+        throw new Error(`阿里云证书申请提交失败：${errorMessage}`);
+      }
+      if (task.TaskStatus !== "processing") {
+        throw new Error(`阿里云证书申请返回未知任务状态：${task.TaskStatus || "空"}`);
+      }
+
+      this.logger.info("阿里云证书申请仍在处理中，5 秒后继续查询");
+      await this.sleep(APPLY_CERTIFICATE_POLL_INTERVAL_MS);
+    }
+
+    throw new Error(`阿里云证书申请提交超时，实例 ID:${instanceId}`);
   }
 
   async getCertDetail(client: any, certId: any) {
@@ -162,8 +281,8 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
     });
   }
 
-  async getOrderDetailV2(client: any, instanceId: string) {
-    const instanceDetail = await client.doRequest({
+  async getInstanceDetailV2(client: any, instanceId: string): Promise<AliyunInstanceDetailV2> {
+    return await client.doRequest({
       action: "GetInstanceDetail",
       version: "2020-04-07",
       protocol: "HTTPS",
@@ -177,13 +296,6 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
         },
       },
     });
-
-    const certificateId = instanceDetail.CertificateId;
-    if (!certificateId) {
-      throw new Error(`未找到证书 ID，实例详情：${JSON.stringify(instanceDetail)}`);
-    }
-
-    return certificateId;
   }
 
   async getCertificateState(client: any, orderId: any): Promise<{ CertId: string; Type: string; Domain: string }> {
