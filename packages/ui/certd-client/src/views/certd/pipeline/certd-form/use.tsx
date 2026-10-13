@@ -1,21 +1,21 @@
-import { checkPipelineLimit } from "/@/views/certd/pipeline/utils";
-import { cloneDeep, merge, omit } from "lodash-es";
-import { notification, Modal, message } from "ant-design-vue";
-import { nanoid } from "nanoid";
-import { useRouter } from "vue-router";
 import { compute, CreateCrudOptionsRet, dict, useFormWrapper } from "@fast-crud/fast-crud";
-import NotificationSelector from "/@/views/certd/notification/notification-selector/index.vue";
-import { useReference } from "/@/use/use-refrence";
-import { computed, provide, reactive, Ref, ref } from "vue";
-import * as api from "../api";
-import { PluginGroup, usePluginStore } from "/@/store/plugin";
-import { createNotificationApi } from "/@/views/certd/notification/api";
-import GroupSelector from "../group/group-selector.vue";
-import { useI18n } from "/src/locales";
-import { useSettingStore } from "/@/store/settings";
+import { message, Modal, notification } from "ant-design-vue";
 import dayjs from "dayjs";
+import { cloneDeep, merge } from "lodash-es";
+import { nanoid } from "nanoid";
+import { computed, reactive, Ref, ref } from "vue";
+import { useRouter } from "vue-router";
+import * as api from "../api";
+import GroupSelector from "../group/group-selector.vue";
+import { PluginGroup, usePluginStore } from "/@/store/plugin";
+import { useSettingStore } from "/@/store/settings";
+import { useReference } from "/@/use/use-refrence";
 import * as certApplyTemplateApi from "/@/views/certd/cert/apply-template/api";
 import { buildCertApplyTemplateColumns, buildTemplateSubmitData, pickCertApplyTemplateParams } from "/@/views/certd/cert/apply-template/fields";
+import { createNotificationApi } from "/@/views/certd/notification/api";
+import NotificationSelector from "/@/views/certd/notification/notification-selector/index.vue";
+import { checkPipelineLimit } from "/@/views/certd/pipeline/utils";
+import { useI18n } from "/src/locales";
 
 export function fillPipelineByDefaultForm(pipeline: any, form: any) {
   const triggers = [];
