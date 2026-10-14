@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.45.1](https://github.com/certd/certd/compare/v1.45.0...v1.45.1) (2026-10-14)
+
+### Performance Improvements
+
+* 完善插件翻译 ([d0463ab](https://github.com/certd/certd/commit/d0463abc2607d22aba50ae3acc6584bbed6e3a0e))
+
 # [1.45.0](https://github.com/certd/certd/compare/v1.44.4...v1.45.0) (2026-10-02)
 
 ### Features
