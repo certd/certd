@@ -17,7 +17,13 @@ export class AutoPipelineEmitterRegister {
     pipelineEmitter.on(EVENT_CERT_APPLY_SUCCESS, async (event: PipelineEvent<CertInfo>) => {
       const taskId = event.runnableId;
       const pipelineId = event.pipelineId;
-      await this.certInfoService.updateCertByPipelineId(pipelineId, event.cert, "pipeline", taskId);
+      await this.certInfoService.updateCertByPipelineId({
+        pipelineId,
+        cert: event.cert,
+        fromType: "pipeline",
+        taskId,
+        certPassword: event.certPassword,
+      });
     });
   }
 }

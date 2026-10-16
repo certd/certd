@@ -9,6 +9,12 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   title: "白山云授权",
   desc: "",
   icon: "material-symbols:shield-outline",
+  i18n: {
+    "en-US": {
+      title: "Baishan Access",
+      desc: "Baishan Cloud.",
+    },
+  },
 })
 export class BaishanAccess extends BaseAccess {
   @AccessInput({

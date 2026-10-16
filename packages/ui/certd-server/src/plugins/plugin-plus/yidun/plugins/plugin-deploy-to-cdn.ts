@@ -14,6 +14,18 @@ import { YidunAccess } from "../access.js";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Yidun - Deploy to CDN",
+      desc: "Deploy a certificate to Yidun CDN.",
+      input: {
+        certId: { title: "Certificate ID", helper: "Certificate ID from the certificate management page." },
+        domain: { title: "Website Domain", helper: "Provide either a certificate ID or a website domain. The certificate ID takes precedence." },
+        cert: { title: "Domain Certificate", helper: "Select the domain certificate produced by a previous task." },
+        accessId: { title: "Yidun Access", helper: "Yidun CDN access credentials." },
+      },
+    },
+  },
 })
 export class YidunDeployToCDNPlugin extends AbstractTaskPlugin {
   //测试参数

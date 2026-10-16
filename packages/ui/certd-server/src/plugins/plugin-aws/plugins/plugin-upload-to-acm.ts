@@ -8,6 +8,12 @@ import { AwsRegions } from "../constants.js";
   name: "AwsUploadToACM",
   title: "AWS-上传证书到ACM",
   desc: "上传证书 AWS ACM",
+  i18n: {
+    "en-US": {
+      title: "AWS-Upload Certificate to ACM",
+      desc: "Upload a certificate to Amazon Certificate Manager.",
+    },
+  },
   icon: "svg:icon-aws",
   group: pluginGroups.aws.key,
   default: {

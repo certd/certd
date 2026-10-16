@@ -58,7 +58,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
         if (!column.rules) {
           column.rules = [];
         }
-        column.rules.push({ required: true, message: t("certd.requiredField") });
+        column.rules.push({ required: true, message: t("certd.common.requiredField") });
       }
 
       //设置默认值
@@ -87,7 +87,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
       },
     },
     type: {
-      title: t("certd.notificationType"),
+      title: t("certd.notification.notificationType"),
       type: "dict-select",
       dict: notificationTypeDictRef,
       search: {
@@ -122,7 +122,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
             );
           },
         },
-        rules: [{ required: true, message: t("certd.selectNotificationType") }],
+        rules: [{ required: true, message: t("certd.notification.selectNotificationType") }],
         valueChange: {
           immediate: true,
           async handle({ value, mode, form, immediate }) {
@@ -157,32 +157,32 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
       },
     } as ColumnCompositionProps,
     name: {
-      title: t("certd.notificationName"),
+      title: t("certd.notification.notificationName"),
       search: {
         show: true,
       },
       type: ["text"],
       form: {
         order: -2,
-        rules: [{ required: true, message: t("certd.enterName") }],
-        helper: t("certd.helperNotificationName"),
+        rules: [{ required: true, message: t("certd.common.enterName") }],
+        helper: t("certd.notification.helperNotificationName"),
       },
       column: {
         width: 200,
       },
     },
     isDefault: {
-      title: t("certd.isDefault"),
+      title: t("certd.common.isDefault"),
       type: "dict-switch",
       dict: dict({
         data: [
-          { label: t("certd.yes"), value: true, color: "success" },
-          { label: t("certd.no"), value: false, color: "default" },
+          { label: t("certd.open.yes"), value: true, color: "success" },
+          { label: t("certd.open.no"), value: false, color: "default" },
         ],
       }),
       form: {
         value: false,
-        rules: [{ required: true, message: t("certd.selectIsDefault") }],
+        rules: [{ required: true, message: t("certd.common.selectIsDefault") }],
         order: 999,
       },
       column: {
@@ -197,8 +197,8 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
           on: {
             change({ row }) {
               Modal.confirm({
-                title: t("certd.prompt"),
-                content: t("certd.confirmSetDefaultNotification"),
+                title: t("certd.common.prompt"),
+                content: t("certd.notification.confirmSetDefaultNotification"),
                 onOk: async () => {
                   await api.SetDefault(row.id);
                   await crudExpose.doRefresh();
@@ -213,7 +213,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
       },
     } as ColumnCompositionProps,
     test: {
-      title: t("certd.test"),
+      title: t("certd.common.test"),
       form: {
         show: compute(({ form }) => {
           return !!form.type;
@@ -252,7 +252,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
       },
     } as ColumnCompositionProps,
     projectId: {
-      title: t("certd.fields.projectName"),
+      title: t("certd.common.fields.projectName"),
       type: "dict-select",
       dict: myProjectDict,
       form: {

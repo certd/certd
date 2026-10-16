@@ -15,6 +15,12 @@ export type DnslaRecord = {
   icon: "arcticons:dns-changer-3",
   // 这里是对应的 cloudflare的access类型名称
   accessType: "dnsla",
+  i18n: {
+    "en-US": {
+      title: "Dnsla DNS Provider",
+      desc: "Configure Dnsla DNS provider credentials.",
+    },
+  },
 })
 export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
   access!: DnslaAccess;

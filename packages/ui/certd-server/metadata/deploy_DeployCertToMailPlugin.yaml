@@ -6,6 +6,10 @@ name: DeployCertToMailPlugin
 title: 邮件发送证书
 icon: ion:mail-outline
 desc: 通过邮件发送证书
+i18n:
+  en-US:
+    title: Send Certificate by Email
+    desc: Send certificates by email.
 group: other
 input:
   cert:

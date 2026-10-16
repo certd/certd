@@ -1,7 +1,7 @@
 <template>
   <fs-page class="page-cert">
     <template #header>
-      <div class="title">顶部菜单配置</div>
+      <div class="title">{{ $t("certd.sys.settings.headerMenuSetting") }}</div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
   </fs-page>

@@ -7,6 +7,10 @@ title: 京东云-部署证书至CDN
 icon: svg:icon-jdcloud
 group: jdcloud
 desc: 京东云内容分发网络
+i18n:
+  en-US:
+    title: Jdcloud Deploy to CDN
+    desc: Deploy certificates to JDCloud CDN.
 input:
   cert:
     title: 域名证书

@@ -1,7 +1,7 @@
 <template>
   <div v-if="passkeyEnabled && isPlus" class="oauth-icon-button" :class="{ pointer: passkeySupported }" @click="handlePasskeyLogin">
     <div><fs-icon icon="ion:finger-print-outline" :class="{ 'text-blue-600': passkeySupported, 'text-gray-400': !passkeySupported }" class="text-40" /></div>
-    <div class="ellipsis title" :title="t('authentication.passkeyLogin')" :class="{ 'text-gray-400': !passkeySupported }">{{ t("authentication.passkeyLogin") }}</div>
+    <div class="ellipsis title" :title="t('certd.auth.passkeyLogin')" :class="{ 'text-gray-400': !passkeySupported }">{{ t("certd.auth.passkeyLogin") }}</div>
   </div>
 </template>
 
@@ -33,7 +33,7 @@ const checkPasskeySupport = () => {
 
 const handlePasskeyLogin = async () => {
   if (!passkeySupported.value) {
-    notification.error({ message: t("authentication.passkeyNotSupported") });
+    notification.error({ message: t("certd.auth.passkeyNotSupported") });
     return;
   }
 

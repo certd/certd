@@ -41,7 +41,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     value: "id",
     label: "title",
     async onReady({ dict }: any) {
-      dict.setData([{ id: -1, title: t("certd.rootNode"), children: dict.data }]);
+      dict.setData([{ id: -1, title: t("certd.sys.authority.rootNode"), children: dict.data }]);
     },
   });
   return {
@@ -83,15 +83,15 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         title: {
-          title: t("certd.permissionName"),
+          title: t("certd.sys.authority.permissionName"),
           type: "text",
           form: {
             rules: [
-              { required: true, message: t("certd.enterPermissionName") },
-              { max: 50, message: t("certd.max50Chars") },
+              { required: true, message: t("certd.sys.authority.enterPermissionName") },
+              { max: 50, message: t("certd.sys.authority.max50Chars") },
             ],
             component: {
-              placeholder: t("certd.permissionName"),
+              placeholder: t("certd.sys.authority.permissionName"),
             },
           },
           column: {
@@ -99,34 +99,34 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         permission: {
-          title: t("certd.permissionCode"),
+          title: t("certd.sys.authority.permissionCode"),
           type: "text",
           column: {
             width: 170,
           },
           form: {
             rules: [
-              { required: true, message: t("certd.enterPermissionCode") },
-              { max: 100, message: t("certd.max100Chars") },
+              { required: true, message: t("certd.sys.authority.enterPermissionCode") },
+              { max: 100, message: t("certd.sys.authority.max100Chars") },
             ],
             component: {
-              placeholder: t("certd.examplePermissionCode"),
+              placeholder: t("certd.sys.authority.examplePermissionCode"),
             },
           },
         },
         sort: {
-          title: t("certd.sortOrder"),
+          title: t("certd.sys.authority.sortOrder"),
           type: "number",
           column: {
             width: 100,
           },
           form: {
             value: 100,
-            rules: [{ required: true, type: "number", message: t("certd.sortRequired") }],
+            rules: [{ required: true, type: "number", message: t("certd.sys.authority.sortRequired") }],
           },
         },
         parentId: {
-          title: t("certd.parentNode"),
+          title: t("certd.sys.authority.parentNode"),
           type: "dict-tree",
           column: {
             width: 100,

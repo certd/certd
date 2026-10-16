@@ -7,6 +7,9 @@ title: lucky-更新Lucky证书
 icon: svg:icon-lucky
 group: panel
 needPlus: true
+i18n:
+  en-US:
+    title: Lucky - Update Cert
 input:
   cert:
     title: 域名证书

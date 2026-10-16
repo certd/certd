@@ -1,30 +1,31 @@
 <template>
   <div class="sys-settings-form sys-settings-oauth">
     <a-form :model="formState" name="register" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
-      <a-form-item :label="t('certd.sys.setting.enablePasskey')" :name="['public', 'passkeyEnabled']">
+      <a-form-item :label="t('certd.sys.settings.enablePasskey')" :name="['public', 'passkeyEnabled']">
         <div class="flex-o">
           <a-switch v-model:checked="formState.public.passkeyEnabled" :disabled="!settingsStore.isPlus" :title="t('certd.plusFeature')" />
           <vip-button class="ml-5" mode="button"></vip-button>
         </div>
-        <pre class="helper pre">{{ t("certd.sys.setting.passkeyEnabledHelper", [bindDomain]) }}</pre>
+        <pre class="helper pre">{{ t("certd.sys.settings.passkeyEnabledHelper", [bindDomain]) }}</pre>
         <div v-if="!bindDomainIsSame" class="text-red-500 text-sm mt-2">
-          {{ t("certd.sys.setting.passkeyHostnameNotSame") }} <a-button class="ml-2" size="small" type="primary" @click="settingsStore.openBindUrlModal({ closable: true })">{{ t("certd.sys.setting.bindUrl") }}</a-button>
+          {{ t("certd.sys.settings.passkeyHostnameNotSame") }}
+          <a-button class="ml-2" size="small" type="primary" @click="settingsStore.openBindUrlModal({ closable: true })">{{ t("certd.sys.settings.bindUrl") }}</a-button>
         </div>
       </a-form-item>
-      <a-form-item :label="t('certd.sys.setting.enableOauth')" :name="['public', 'oauthEnabled']">
+      <a-form-item :label="t('certd.sys.settings.enableOauth')" :name="['public', 'oauthEnabled']">
         <div class="flex-o">
           <a-switch v-model:checked="formState.public.oauthEnabled" :disabled="!settingsStore.isPlus" :title="t('certd.plusFeature')" />
           <vip-button class="ml-5" mode="button"></vip-button>
         </div>
       </a-form-item>
-      <a-form-item :label="t('certd.sys.setting.oauthProviders')" :name="['public', 'oauthProviders']">
+      <a-form-item :label="t('certd.sys.settings.oauthProviders')" :name="['public', 'oauthProviders']">
         <div class="flex flex-wrap">
           <table class="w-full table-auto border-collapse border border-gray-400">
             <thead>
               <tr>
-                <th class="border border-gray-300 px-4 py-2 w-1/3">{{ t("certd.sys.setting.oauthType") }}</th>
-                <th class="border border-gray-300 px-4 py-2 w-1/3">{{ t("certd.sys.setting.oauthCallback") }}</th>
-                <th class="border border-gray-300 px-4 py-2 w-1/3">{{ t("certd.sys.setting.oauthConfig") }}</th>
+                <th class="border border-gray-300 px-4 py-2 w-1/3">{{ t("certd.sys.settings.oauthType") }}</th>
+                <th class="border border-gray-300 px-4 py-2 w-1/3">{{ t("certd.sys.settings.oauthCallback") }}</th>
+                <th class="border border-gray-300 px-4 py-2 w-1/3">{{ t("certd.sys.settings.oauthConfig") }}</th>
               </tr>
             </thead>
             <tbody>
@@ -35,9 +36,9 @@
                     {{ item.title }}
                   </div>
                 </td>
-                <td class="border border-gray-300 px-4 py-2 overflow-ellipsis" :title="t('certd.sys.setting.oauthCallbackHelper')">
+                <td class="border border-gray-300 px-4 py-2 overflow-ellipsis" :title="t('certd.sys.settings.oauthCallbackHelper')">
                   <fs-copyable :model-value="buildCallbackUrl(item.name)">
-                    {{ t("certd.sys.setting.oauthCallbackCopy") }}
+                    {{ t("certd.sys.settings.oauthCallbackCopy") }}
                   </fs-copyable>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
@@ -47,7 +48,7 @@
                     addon-type="oauth"
                     from="sys"
                     :type="item.name"
-                    :placeholder="t('certd.sys.setting.oauthProviderSelectorPlaceholder')"
+                    :placeholder="t('certd.sys.settings.oauthProviderSelectorPlaceholder')"
                   />
                 </td>
               </tr>
@@ -55,32 +56,32 @@
           </table>
         </div>
       </a-form-item>
-      <a-form-item v-if="formState.public.oauthEnabled" :label="t('certd.sys.setting.oauthOnly')" :name="['public', 'oauthOnly']">
+      <a-form-item v-if="formState.public.oauthEnabled" :label="t('certd.sys.settings.oauthOnly')" :name="['public', 'oauthOnly']">
         <div class="flex-o">
           <a-switch v-model:checked="formState.public.oauthOnly" :disabled="!settingsStore.isPlus" :title="t('certd.plusFeature')" />
         </div>
-        <div class="helper text-red-500">{{ t("certd.sys.setting.oauthOnlyHelper") }}</div>
+        <div class="helper text-red-500">{{ t("certd.sys.settings.oauthOnlyHelper") }}</div>
       </a-form-item>
-      <a-form-item v-if="formState.public.oauthEnabled" :label="t('certd.sys.setting.oauthAutoRedirect')" :name="['public', 'oauthAutoRedirect']">
+      <a-form-item v-if="formState.public.oauthEnabled" :label="t('certd.sys.settings.oauthAutoRedirect')" :name="['public', 'oauthAutoRedirect']">
         <div class="flex-o">
           <a-switch v-model:checked="formState.public.oauthAutoRedirect" :disabled="!settingsStore.isPlus" :title="t('certd.plusFeature')" />
         </div>
-        <div class="helper text-red-500">{{ t("certd.sys.setting.oauthAutoRedirectHelper") }}</div>
+        <div class="helper text-red-500">{{ t("certd.sys.settings.oauthAutoRedirectHelper") }}</div>
       </a-form-item>
-      <a-form-item v-if="formState.public.oauthEnabled" :label="t('certd.sys.setting.oauthAutoRegister')" :name="['public', 'oauthAutoRegister']">
+      <a-form-item v-if="formState.public.oauthEnabled" :label="t('certd.sys.settings.oauthAutoRegister')" :name="['public', 'oauthAutoRegister']">
         <div class="flex-o">
           <a-switch
             v-model:checked="formState.public.oauthAutoRegister"
-            :checked-children="t('certd.sys.setting.oauthAutoRegisterCheckedText')"
-            :un-checked-children="t('certd.sys.setting.oauthAutoRegisterUnCheckedText')"
+            :checked-children="t('certd.sys.settings.oauthAutoRegisterCheckedText')"
+            :un-checked-children="t('certd.sys.settings.oauthAutoRegisterUnCheckedText')"
             :disabled="!settingsStore.isPlus"
             :title="t('certd.plusFeature')"
           />
         </div>
-        <div class="helper">{{ t("certd.sys.setting.oauthAutoRegisterHelper") }}</div>
+        <div class="helper">{{ t("certd.sys.settings.oauthAutoRegisterHelper") }}</div>
       </a-form-item>
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 16 }">
-        <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
+        <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.sys.settings.saveButton") }}</a-button>
       </a-form-item>
     </a-form>
   </div>
@@ -154,7 +155,7 @@ const onFinish = async (form: any) => {
     await api.SysSettingsSave(form);
     await settingsStore.loadSysSettings();
     notification.success({
-      message: t("certd.saveSuccess"),
+      message: t("certd.common.saveSuccess"),
     });
     await loadSysSettings();
   } finally {

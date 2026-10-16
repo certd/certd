@@ -3,6 +3,11 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   name: "yizhifu",
   title: "易支付",
   icon: "svg:icon-yizhifu",
+  i18n: {
+    "en-US": {
+      title: "Yizhifu Access",
+    },
+  },
 })
 export class YizhifuAccess extends BaseAccess {
   @AccessInput({

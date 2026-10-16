@@ -9,6 +9,12 @@ import { TencentSslClient } from "../../../plugin-lib/tencent/index.js";
   title: "腾讯云-部署到腾讯云直播",
   icon: "svg:icon-tencentcloud",
   desc: "https://console.cloud.tencent.com/live/",
+  i18n: {
+    "en-US": {
+      title: "Tencent-Deploy to Live",
+      desc: "Deploy a certificate to Tencent Cloud Live.",
+    },
+  },
   group: pluginGroups.tencent.key,
   needPlus: false,
   dependPlugins: {

@@ -11,6 +11,23 @@ import { OnePanelClient } from "./client.js";
   title: "1panel授权",
   desc: "账号和密码",
   icon: "svg:icon-onepanel",
+  i18n: {
+    "en-US": {
+      title: "1Panel Access",
+      desc: "Configure the 1Panel Access integration.",
+      input: {
+        url: { title: "1Panel URL", helper: "Enter the panel URL without the security entry path." },
+        securityEntrance: { title: "Security Entry" },
+        authType: { title: "Authentication Method" },
+        apiVersion: { title: "API Version" },
+        username: { title: "Username" },
+        password: { title: "Password" },
+        apiKey: { title: "API Key", helper: "Get this from Panel Settings > API Interface." },
+        skipSslVerify: { title: "Skip Certificate Verification", helper: "Enable for self-signed HTTPS certificates." },
+        testRequest: { title: "Test", helper: "Test the API connection." },
+      },
+    },
+  },
 })
 export class OnePanelAccess extends BaseAccess {
   @AccessInput({

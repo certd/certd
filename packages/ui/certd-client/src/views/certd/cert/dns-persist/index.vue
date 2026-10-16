@@ -2,8 +2,8 @@
   <fs-page class="page-cert-dns-persist">
     <template #header>
       <div class="title">
-        DNS持久验证记录
-        <span class="red sub" style="color: red">当前仅 Google证书 可以申请 DNS 持久验证。</span>
+        {{ t("certd.navigation.dnsPersistRecord") }}
+        <span class="red sub" style="color: red">{{ t("certd.certdomain.domain.dnsPersistDescription") }}</span>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"></fs-crud>
@@ -14,6 +14,7 @@
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import { useMounted } from "/@/use/use-mounted";
+import { useI18n } from "/src/locales";
 
 defineOptions({
   name: "DnsPersistRecord",
@@ -22,6 +23,7 @@ defineOptions({
 const context: any = {
   permission: { isProjectPermission: true },
 };
+const { t } = useI18n();
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
 // 页面打开后获取列表数据

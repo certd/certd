@@ -76,7 +76,7 @@ async function genMetadata() {
 
   fs.rmSync("./metadata", { recursive: true });
   fs.mkdirSync("./metadata", { recursive: true });
-  const warnings = []
+  const warnings = [];
   for (const key in modules) {
     const module = modules[key];
     const entry = Object.entries(module);

@@ -8,6 +8,10 @@ desc: 将证书部署到UCloud负载均衡(ULB/ALB/CLB)
 icon: svg:icon-ucloud
 group: ucloud
 needPlus: false
+i18n:
+  en-US:
+    title: Ucloud-Deploy to ULB Plugin
+    desc: Integration plugin for UCloudDeployToULB
 input:
   cert:
     title: 域名证书

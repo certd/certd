@@ -49,13 +49,13 @@ export default function ({ crudExpose, context: { authz } }: CreateCrudOptionsPr
           },
         },
         name: {
-          title: t("certd.roleName"),
+          title: t("certd.sys.authority.roleName"),
           type: "text",
           search: { show: true },
           form: {
             rules: [
-              { required: true, message: t("certd.enterRoleName") },
-              { max: 50, message: t("certd.max50Chars") },
+              { required: true, message: t("certd.sys.authority.enterRoleName") },
+              { max: 50, message: t("certd.sys.authority.max50Chars") },
             ],
           }, // 表单配置
           column: {
@@ -63,7 +63,7 @@ export default function ({ crudExpose, context: { authz } }: CreateCrudOptionsPr
           },
         },
         createTime: {
-          title: t("certd.createTime"),
+          title: t("certd.common.createTime"),
           type: "datetime",
           column: {
             sorter: true,
@@ -73,7 +73,7 @@ export default function ({ crudExpose, context: { authz } }: CreateCrudOptionsPr
           },
         },
         updateTime: {
-          title: t("certd.updateTime"),
+          title: t("certd.common.updateTime"),
           type: "datetime",
           column: {
             sorter: true,

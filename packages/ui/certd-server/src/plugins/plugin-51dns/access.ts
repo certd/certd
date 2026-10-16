@@ -10,6 +10,12 @@ import { Dns51Client } from "./client.js";
   title: "51dns授权",
   icon: "arcticons:dns-changer-3",
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "51Dns Access",
+      desc: "51DNS IAM access.",
+    },
+  },
 })
 export class Dns51Access extends BaseAccess {
   /**

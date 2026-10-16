@@ -12,6 +12,12 @@ import dayjs from "dayjs";
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "部署证书到阿里云ESA(边缘安全加速)，支持边缘证书和SaaS证书两种模式",
+  i18n: {
+    "en-US": {
+      title: "Aliyun - Deploy Certificate to ESA",
+      desc: "Deploy a certificate to Aliyun ESA.",
+    },
+  },
   needPlus: false,
   default: {
     strategy: {

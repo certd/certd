@@ -6,6 +6,10 @@ export default {
   keyRemark: "Key Purpose",
   keyRemarkHelper: "Describe the purpose of this key for easier identification",
   keyRemarkMaxChars: "Maximum 512 characters",
+  returnCertPassword: "Return certificate password",
+  returnCertPasswordHelper: "When enabled, the certificate password is included in Open API certificate responses. Keep this key secure.",
+  yes: "Yes",
+  no: "No",
   gen: {
     text: "API Test",
     title: "x-certd-token",

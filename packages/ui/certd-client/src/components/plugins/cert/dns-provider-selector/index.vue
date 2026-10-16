@@ -5,6 +5,7 @@
 <script lang="ts">
 import { ref } from "vue";
 import * as api from "./api";
+import { resolvePluginLocale } from "/@/store/plugin";
 
 export default {
   name: "DnsProviderSelector",
@@ -21,12 +22,13 @@ export default {
     async function onCreate() {
       const list = await api.GetList();
       const array: any[] = [];
-      for (let item of list) {
+      for (const item of list) {
+        const localizedItem = resolvePluginLocale(item);
         array.push({
-          value: item.name,
-          label: item.title,
-          icon: item.icon,
-          accessType: item.accessType,
+          value: localizedItem.name,
+          label: localizedItem.title,
+          icon: localizedItem.icon,
+          accessType: localizedItem.accessType,
         });
       }
       options.value = array;

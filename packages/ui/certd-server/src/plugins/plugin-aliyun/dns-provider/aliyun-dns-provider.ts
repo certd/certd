@@ -7,6 +7,12 @@ import { Pager, PageRes, PageSearch } from "@certd/pipeline";
   name: "aliyun",
   title: "阿里云",
   desc: "阿里云DNS解析提供商",
+  i18n: {
+    "en-US": {
+      title: "Alibaba Cloud DNS",
+      desc: "Alibaba Cloud DNS provider",
+    },
+  },
   accessType: "aliyun",
   icon: "svg:icon-aliyun",
   order: 0,

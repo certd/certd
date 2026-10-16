@@ -1693,4 +1693,41 @@ describe("PluginService online plugins", () => {
     assert.equal(loaded.aiCheckStatus, undefined);
     assert.equal(loaded.syncTime, undefined);
   });
+
+  it("preserves plugin English metadata when importing nested metadata", async () => {
+    const service = new PluginService();
+    let savedPlugin: any;
+    service.findOne = (async () => null) as any;
+    service.repository = {
+      async save(plugin: any) {
+        savedPlugin = plugin;
+        return plugin;
+      },
+    } as any;
+    service.registerById = async () => {};
+
+    await service.importPlugin({
+      type: "store",
+      content: `name: demo-i18n
+pluginType: deploy
+title: 示例插件
+metadata:
+  input:
+    cert:
+      title: 证书
+  i18n:
+    en-US:
+      title: Demo Plugin
+      input:
+        cert:
+          title: Certificate
+content: |
+  return class DemoI18n {}
+`,
+    });
+
+    const metadata = yaml.load(savedPlugin.metadata) as any;
+    assert.equal(metadata.input.cert.title, "证书");
+    assert.equal(metadata.i18n["en-US"].input.cert.title, "Certificate");
+  });
 });

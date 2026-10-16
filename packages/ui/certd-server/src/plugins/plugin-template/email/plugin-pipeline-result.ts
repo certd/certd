@@ -7,6 +7,12 @@ import { BaseEmailTemplateProvider } from "./plugin-base.js";
   name: "pipelineResult",
   title: "流水线执行结果邮件模版",
   desc: "执行失败，xxxx自动化【流水线id】；运行ID:xxx,错误信息:xxxx",
+  i18n: {
+    "en-US": {
+      title: "Pipeline Result Email Template",
+      desc: "Email template for pipeline execution results.",
+    },
+  },
   icon: "simple-icons:email:blue",
   showTest: false,
 })

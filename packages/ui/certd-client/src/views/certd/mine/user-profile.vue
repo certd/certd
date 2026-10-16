@@ -1,7 +1,7 @@
-﻿<template>
+<template>
   <fs-page class="page-user-profile">
     <template #header>
-      <div class="title">{{ t("certd.myInfo") }}</div>
+      <div class="title">{{ t("certd.mine.myInfo") }}</div>
     </template>
     <div class="profile-container md:p-8">
       <div class="profile-card md:rounded">
@@ -51,7 +51,7 @@
               <change-password-button ref="changePasswordButtonRef" :show-button="true" />
 
               <a-button type="primary" class="action-btn" @click="goSecuritySetting">
-                {{ t("authentication.securitySettingTip") }}
+                {{ t("certd.auth.securitySettingTip") }}
               </a-button>
             </div>
           </div>
@@ -133,13 +133,13 @@
             </div>
             <div v-if="!passkeySupported" class="warning-box">
               <fs-icon icon="ion:warning-outline" class="warning-icon" />
-              <span>{{ t("authentication.passkeyNotSupported") }}</span>
+              <span>{{ t("certd.auth.passkeyNotSupported") }}</span>
             </div>
             <a-button v-if="passkeySupported" type="primary" class="add-btn" @click="registerPasskey">
               <template #icon><fs-icon icon="ion:add-circle-outline" /></template>
               注册新的Passkey
             </a-button>
-            <pre class="helper pre">{{ t("authentication.passkeyRegisterHelper") }}</pre>
+            <pre class="helper pre">{{ t("certd.auth.passkeyRegisterHelper") }}</pre>
           </div>
         </div>
       </div>
@@ -408,10 +408,10 @@ onMounted(async () => {
   userStore.setUserInfo(userInfo.value);
   if (userInfo.value.needInitPassword === true) {
     Modal.confirm({
-      title: t("authentication.initPasswordTitle"),
-      content: t("authentication.initPasswordWarning"),
-      okText: t("authentication.setNow"),
-      cancelText: t("authentication.notNow"),
+      title: t("certd.auth.initPasswordTitle"),
+      content: t("certd.auth.initPasswordWarning"),
+      okText: t("certd.auth.setNow"),
+      cancelText: t("certd.auth.notNow"),
       closable: true,
       onOk: () => {
         changePasswordButtonRef.value.open({

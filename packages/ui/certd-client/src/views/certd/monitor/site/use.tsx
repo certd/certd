@@ -17,12 +17,12 @@ export function useSiteImport() {
         columns: {
           text: {
             type: "textarea",
-            title: t("certd.domainList.title"),
+            title: t("certd.monitor.domainList.title"),
             form: {
-              helper: t("certd.domainList.helper"),
-              rules: [{ required: true, message: t("certd.domainList.required") }],
+              helper: t("certd.monitor.domainList.helper"),
+              rules: [{ required: true, message: t("certd.monitor.domainList.required") }],
               component: {
-                placeholder: t("certd.domainList.placeholder"),
+                placeholder: t("certd.monitor.domainList.placeholder"),
                 rows: 8,
               },
               col: { span: 24 },
@@ -30,7 +30,7 @@ export function useSiteImport() {
           },
           groupId: {
             type: "select",
-            title: t("certd.fields.group"),
+            title: t("certd.common.fields.group"),
             form: {
               value: defaultGroupId,
               component: {
@@ -61,7 +61,7 @@ export function useSiteImportTask() {
 
   const columns = {
     dnsProviderType: {
-      title: t("certd.domain.domainProvider"),
+      title: t("certd.certdomain.domain.domainProvider"),
       type: "text",
       form: {
         component: {
@@ -78,12 +78,12 @@ export function useSiteImportTask() {
       },
     },
     dnsProviderAccessType: {
-      title: t("certd.domain.domainProviderAccessType"),
+      title: t("certd.certdomain.domain.domainProviderAccessType"),
       type: "text",
       form: { show: false },
     },
     dnsProviderAccessId: {
-      title: t("certd.domain.domainProviderAccess"),
+      title: t("certd.certdomain.domain.domainProviderAccess"),
       type: "text",
       form: {
         component: {
@@ -94,7 +94,7 @@ export function useSiteImportTask() {
       },
     },
     groupId: {
-      title: t("certd.fields.group"),
+      title: t("certd.common.fields.group"),
       type: "text",
       form: {
         component: {
@@ -108,7 +108,7 @@ export function useSiteImportTask() {
 
   return function openSiteImportTaskDialog(req: { afterSubmit?: (res?: any) => void; form?: any }) {
     openFormDialog({
-      title: t("certd.domain.importFromProvider"),
+      title: t("certd.certdomain.domain.importFromProvider"),
       columns,
       initialForm: { ...req.form },
       onSubmit: async (form: any) => {
@@ -133,7 +133,7 @@ export function useSiteImportTaskManage() {
   return async function openSiteImportTaskManageDialog(req: { afterSubmit?: (res?: any) => void; form?: any; zIndex?: number }) {
     settingStore.checkPlus();
     await openFormDialog({
-      title: t("certd.domain.importFromProvider"),
+      title: t("certd.certdomain.domain.importFromProvider"),
       body: () => <SiteInfoImportTaskStatus />,
       zIndex: req.zIndex,
       onSubmit: async (form: any) => {

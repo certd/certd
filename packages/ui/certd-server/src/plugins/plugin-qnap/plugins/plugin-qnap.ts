@@ -17,6 +17,11 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
     },
   },
   needPlus: true,
+  i18n: {
+    "en-US": {
+      title: "Qnap - Deploy Cert",
+    },
+  },
 })
 export class QnapDeploy extends AbstractPlusTaskPlugin {
   //证书选择，此项必须要有

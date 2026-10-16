@@ -2,6 +2,21 @@ name: aws-cn
 title: 亚马逊云科技（国区）授权
 desc: ''
 icon: svg:icon-aws
+i18n:
+  en-US:
+    title: AWS Access(China)
+    desc: AWS credentials for the China region
+    input:
+      accessKeyId:
+        title: Access key ID
+        helper: >-
+          Find this under Security credentials > Access keys in the AWS China
+          console.
+      secretAccessKey:
+        title: Secret access key
+        helper: >-
+          Keep your secret access key secure. Create access keys in IAM in the
+          AWS console.
 input:
   accessKeyId:
     title: accessKeyId

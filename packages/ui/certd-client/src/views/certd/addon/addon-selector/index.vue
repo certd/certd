@@ -6,7 +6,7 @@
         <a-tag class="mr-5" color="green">{{ target?.name || modelValue }}</a-tag>
         <fs-icon class="cd-icon-button" icon="ion:close-circle-outline" @click="clear"></fs-icon>
       </span>
-      <span v-else class="mlr-5 text-gray">{{ placeholder || t("certd.addonSelector.placeholder") }}</span>
+      <span v-else class="mlr-5 text-gray">{{ placeholder || t("certd.addon.addonSelector.placeholder") }}</span>
       <fs-table-select
         ref="tableSelectRef"
         class="flex-0"
@@ -32,7 +32,7 @@
         @dialog-closed="doRefresh"
       >
         <template #default="scope">
-          <fs-button class="ml-5" :disabled="disabled" :size="size" type="primary" :text="t('certd.addonSelector.select')" @click="scope.open" />
+          <fs-button class="ml-5" :disabled="disabled" :size="size" type="primary" :text="t('certd.addon.addonSelector.select')" @click="scope.open" />
         </template>
       </fs-table-select>
     </div>

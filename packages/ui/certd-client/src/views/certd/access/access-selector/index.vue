@@ -5,9 +5,9 @@
       <fs-icon class="cd-icon-button" icon="ion:close-circle-outline" @click="clear"></fs-icon>
     </span>
     <span v-else class="mlr-5 text-gray">{{ placeholder }}</span>
-    <a-button class="ml-5" :disabled="disabled" :size="size" @click="chooseForm.open">选择</a-button>
+    <a-button class="ml-5" :disabled="disabled" :size="size" @click="chooseForm.open">{{ t("certd.access.select") }}</a-button>
     <a-form-item-rest v-if="chooseForm.show">
-      <a-modal v-model:open="chooseForm.show" title="选择授权提供者" width="900px" @ok="chooseForm.ok">
+      <a-modal v-model:open="chooseForm.show" :title="t('certd.access.selectProvider')" width="900px" @ok="chooseForm.ok">
         <div style="height: 400px; position: relative">
           <cert-access-modal v-model="selectedId" :type="type" :subtype="subtype" :from="from"></cert-access-modal>
         </div>
@@ -23,6 +23,7 @@ import { createAccessApi } from "../api";
 import { notification } from "ant-design-vue";
 import { useUserStore } from "/@/store/user";
 import { useProjectStore } from "/@/store/project";
+import { useI18n } from "/@/locales";
 export default defineComponent({
   name: "AccessSelector",
   components: { CertAccessModal },
@@ -62,6 +63,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue", "change", "selectedChange"],
   setup(props, ctx) {
+    const { t } = useI18n();
     const api = createAccessApi(props.from);
 
     const target: Ref<any> = ref({});
@@ -193,6 +195,7 @@ export default defineComponent({
     });
 
     return {
+      t,
       clear,
       target,
       selectedId,

@@ -2,8 +2,8 @@
   <fs-page class="page-sys-plugin">
     <template #header>
       <div class="title">
-        {{ t("certd.pluginManagement") }}
-        <span class="sub">{{ t("certd.pluginBetaWarning") }}</span>
+        {{ t("certd.sys.plugin.pluginManagement") }}
+        <span class="sub">{{ t("certd.sys.plugin.pluginBetaWarning") }}</span>
       </div>
     </template>
     <fs-crud ref="crudRef" class="plugin-card-crud" v-bind="crudBinding">
@@ -23,7 +23,7 @@ import OnlinePluginDetail from "./components/online-plugin-detail.vue";
 import { useI18n } from "/src/locales";
 import { useMounted } from "/@/use/use-mounted";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { usePluginStore } from "/@/store/plugin";
+import { resolvePluginLocale, usePluginStore } from "/@/store/plugin";
 import { useFormDialog } from "/@/use/use-dialog";
 import { notification } from "ant-design-vue";
 import * as api from "./api";
@@ -49,7 +49,7 @@ async function syncOnlinePlugins(options?: { showSuccess?: boolean }) {
     await pluginStore.clear();
     crudExpose.doRefresh();
     if (options?.showSuccess !== false) {
-      notification.success({ message: t("certd.onlinePluginSyncSuccess") });
+      notification.success({ message: t("certd.sys.plugin.onlinePluginSyncSuccess") });
     }
   } finally {
     syncLoading.value = false;
@@ -59,7 +59,19 @@ async function syncOnlinePlugins(options?: { showSuccess?: boolean }) {
 const context = { lastSyncTime, syncLoading, syncOnlinePlugins };
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 const pluginList = computed(() => {
-  return crudBinding.value?.data || [];
+  const rows = crudBinding.value?.data || [];
+  return rows.map((row: any) => {
+    const define = resolvePluginLocale(pluginStore.getPluginDefineSync(row.name));
+    if (!define) {
+      return row;
+    }
+    return {
+      ...row,
+      title: define.title || row.title,
+      desc: define.desc || row.desc,
+      group: define.group || row.group,
+    };
+  });
 });
 
 function getPluginCardSource(row: any) {
@@ -118,6 +130,7 @@ async function autoSyncOnlinePlugins() {
 
 // 页面打开后获取列表数据
 useMounted(async () => {
+  await pluginStore.init();
   autoSyncOnlinePlugins();
   crudExpose.doRefresh();
 });

@@ -7,6 +7,9 @@ title: Maoyun-更新猫云CDN证书
 icon: svg:icon-lucky
 group: cdn
 needPlus: true
+i18n:
+  en-US:
+    title: Maoyun - Deploy to CDN
 input:
   cert:
     title: 域名证书

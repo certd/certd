@@ -5,6 +5,12 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   title: "BIND9 DNS 授权",
   desc: "通过 SSH 连接到 BIND9 服务器，使用 nsupdate 命令管理 DNS 记录",
   icon: "clarity:host-line",
+  i18n: {
+    "en-US": {
+      title: "Bind9 Access",
+      desc: "Configure BIND9 access credentials. ",
+    },
+  },
 })
 export class Bind9Access extends BaseAccess {
   @AccessInput({

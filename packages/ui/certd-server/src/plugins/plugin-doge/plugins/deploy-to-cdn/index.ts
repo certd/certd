@@ -14,6 +14,11 @@ import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "DogeCloud-Deploy to CDN",
+    },
+  },
 })
 export class DogeCloudDeployToCDNPlugin extends AbstractTaskPlugin {
   //证书选择，此项必须要有

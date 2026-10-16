@@ -7,6 +7,10 @@ title: Fastly-上传证书到Fastly
 desc: 部署 / 上传 SSL/TLS 自定义证书到 Fastly CDN
 icon: simple-icons:fastly
 group: cdn
+i18n:
+  en-US:
+    title: Fastly-Upload Certificate
+    desc: Upload a certificate to Fastly.
 input:
   cert:
     title: 域名证书

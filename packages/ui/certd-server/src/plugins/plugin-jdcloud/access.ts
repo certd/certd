@@ -11,6 +11,12 @@ import { DomainRecord } from "@certd/plugin-lib";
   desc: "",
   icon: "svg:icon-jdcloud",
   order: 1,
+  i18n: {
+    "en-US": {
+      title: "Jdcloud Access",
+      desc: "Configure JDcloud access credentials.",
+    },
+  },
 })
 export class JDCloudAccess extends BaseAccess {
   @AccessInput({

@@ -1,4 +1,4 @@
-﻿import { AddReq, ColumnProps, CreateCrudOptionsProps, CreateCrudOptionsRet, DataFormatterContext, DelReq, dict, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
+import { AddReq, ColumnProps, CreateCrudOptionsProps, CreateCrudOptionsRet, DataFormatterContext, DelReq, dict, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
 import { Modal, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { computed, ref } from "vue";
@@ -76,15 +76,15 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
   const { myProjectDict } = useDicts();
   const DEFAULT_WILL_EXPIRE_DAYS = settingStore.sysPublic.defaultWillExpireDays || settingStore.sysPublic.defaultCertRenewDays || 15;
   const pipelineTypeDictData = [
-    { value: "cert", label: t("certd.types.certApply") },
-    { value: "cert_upload", label: t("certd.types.certUpload") },
-    { value: "custom", label: t("certd.types.custom") },
-    { value: "template", label: t("certd.types.template") },
-    { value: "cert_auto", label: t("certd.types.certApply") },
+    { value: "cert", label: t("certd.pipeline.types.certApply") },
+    { value: "cert_upload", label: t("certd.pipeline.types.certUpload") },
+    { value: "custom", label: t("certd.pipeline.types.custom") },
+    { value: "template", label: t("certd.pipeline.types.template") },
+    { value: "cert_auto", label: t("certd.pipeline.types.certApply") },
   ];
   const disabledDictData = [
-    { value: false, label: t("certd.fields.enabledLabel") },
-    { value: true, label: t("certd.fields.disabledLabel") },
+    { value: false, label: t("certd.common.fields.enabledLabel") },
+    { value: true, label: t("certd.common.fields.disabledLabel") },
   ];
 
   function onDialogOpen(opt: any) {
@@ -105,10 +105,10 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
 
   function formatValidTime(value: any) {
     if (!value || value <= 0) {
-      return t("certd.pi.permanentValid");
+      return t("certd.pipeline.pi.permanentValid");
     }
     if (value < Date.now()) {
-      return t("certd.hasExpired");
+      return t("certd.pipeline.hasExpired");
     }
     return dayjs(value).format("YYYY-MM-DD");
   }
@@ -120,9 +120,9 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
     }
     const leftDays = dayjs(expiresTime).diff(dayjs(), "day");
     if (leftDays < 0) {
-      return t("certd.hasExpired");
+      return t("certd.pipeline.hasExpired");
     }
-    return `${leftDays}${t("certd.days")}`;
+    return `${leftDays}${t("certd.common.days")}`;
   }
 
   function formatListValue(value: any) {
@@ -154,7 +154,8 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
     } else if (key === "lastVars.certDomains") {
       row[key] = formatListValue(value);
     } else if (key === "status") {
-      row[key] = statusUtil.get(value)?.label ?? value;
+      const status = statusUtil.get(value);
+      row[key] = status ? t(`certd.pipeline.editor.${status.label}`) : value;
     } else if (key === "disabled") {
       row[key] = findDictLabel(disabledDictData, value);
     } else if (key === "type") {
@@ -202,11 +203,11 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             order: 99,
             show: false,
             icon: "ion:ios-add-circle-outline",
-            text: t("certd.customPipeline"),
+            text: t("certd.pipeline.customPipeline"),
           },
           addCertd: {
             order: 1,
-            text: t("certd.createCertdPipeline"),
+            text: t("certd.pipeline.createCertdPipeline"),
             type: "primary",
             icon: "ion:ios-add-circle-outline",
             click() {
@@ -217,16 +218,16 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           uploadCert: {
             order: 2,
             show: hasActionPermission("write"),
-            text: t("certd.commercialCertHosting"),
+            text: t("certd.pipeline.commercialCertHosting"),
             type: "primary",
             tooltip: {
               slots: {
                 title() {
                   return (
                     <ul>
-                      <li>{t("certd.tooltip.manualUploadOwnCert")}</li>
-                      <li>{t("certd.tooltip.noAutoApplyCommercialCert")}</li>
-                      <li>{t("certd.tooltip.manualUploadOnUpdate")}</li>
+                      <li>{t("certd.pipeline.tooltip.manualUploadOwnCert")}</li>
+                      <li>{t("certd.pipeline.tooltip.noAutoApplyCommercialCert")}</li>
+                      <li>{t("certd.pipeline.tooltip.manualUploadOnUpdate")}</li>
                     </ul>
                   );
                 },
@@ -258,8 +259,8 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
       table: {
         scroll: { x: 1500 },
         remove: {
-          confirmTitle: t("certd.table.confirmDeleteTitle"),
-          confirmMessage: t("certd.table.confirmDeleteMessage"),
+          confirmTitle: t("certd.pipeline.table.confirmDeleteTitle"),
+          confirmMessage: t("certd.pipeline.table.confirmDeleteMessage"),
         },
       },
       toolbar: {
@@ -287,17 +288,17 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
         buttons: {
           play: {
             order: -999,
-            title: t("certd.play.runPipeline"),
-            tooltip: { title: t("certd.play.runPipeline") },
+            title: t("certd.pipeline.play.runPipeline"),
+            tooltip: { title: t("certd.pipeline.play.runPipeline") },
             type: "link",
             icon: "ant-design:play-circle-outlined",
             click({ row }) {
               Modal.confirm({
-                title: t("certd.play.confirm"),
-                content: t("certd.play.confirmTrigger"),
+                title: t("certd.pipeline.play.confirm"),
+                content: t("certd.pipeline.play.confirmTrigger"),
                 async onOk() {
                   await api.Trigger(row.id);
-                  notification.success({ message: t("certd.play.pipelineStarted") });
+                  notification.success({ message: t("certd.pipeline.play.pipelineStarted") });
                 },
               });
             },
@@ -329,7 +330,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           config: {
             show: hasActionPermission("write"),
             order: 1,
-            title: t("certd.actions.editPipeline"),
+            title: t("certd.pipeline.actions.editPipeline"),
             type: "link",
             dropdown: true,
             icon: "ant-design:edit-outlined",
@@ -340,14 +341,14 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           edit: {
             show: hasActionPermission("write"),
             order: 2,
-            title: t("certd.actions.editConfigGroup"),
+            title: t("certd.pipeline.actions.editConfigGroup"),
             icon: "ant-design:setting-outlined",
             dropdown: true,
           },
           viewCert: {
             order: 3,
-            title: t("certd.actions.viewCertificate"),
-            tooltip: { title: t("certd.actions.viewCertificate") },
+            title: t("certd.pipeline.actions.viewCertificate"),
+            tooltip: { title: t("certd.pipeline.actions.viewCertificate") },
             type: "link",
             icon: "ph:certificate",
             async click({ row }) {
@@ -357,8 +358,8 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           download: {
             order: 4,
             type: "link",
-            title: t("certd.actions.downloadCertificate"),
-            tooltip: { title: t("certd.actions.downloadCertificate") },
+            title: t("certd.pipeline.actions.downloadCertificate"),
+            tooltip: { title: t("certd.pipeline.actions.downloadCertificate") },
             icon: "ant-design:download-outlined",
             async click({ row }) {
               await downloadCert(row.id);
@@ -387,7 +388,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         userId: {
-          title: t("certd.fields.userId"),
+          title: t("certd.common.fields.userId"),
           type: "number",
           search: {
             show: computed(() => {
@@ -406,18 +407,18 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         title: {
-          title: t("certd.fields.pipelineName"),
+          title: t("certd.common.fields.pipelineName"),
           type: "link",
           search: {
             show: true,
-            title: t("certd.fields.keyword"),
+            title: t("certd.common.fields.keyword"),
             component: {
               name: "a-input",
             },
             col: { span: 3 },
           },
           form: {
-            rules: [{ required: true, message: t("certd.fields.required") }],
+            rules: [{ required: true, message: t("certd.common.fields.required") }],
           },
           column: {
             width: 350,
@@ -430,7 +431,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         // content: {
-        //   title: t("certd.fields.pipelineContent"),
+        //   title: t("certd.common.fields.pipelineContent"),
         //   form: { show: false },
         //   column: {
         //     show: false,
@@ -458,7 +459,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
         //   },
         // },
         triggerCount: {
-          title: t("certd.fields.scheduledTaskCount"),
+          title: t("certd.common.fields.scheduledTaskCount"),
           type: "number",
           column: {
             align: "center",
@@ -471,7 +472,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         stepCount: {
-          title: t("certd.fields.deployTaskCount"),
+          title: t("certd.common.fields.deployTaskCount"),
           type: "number",
           form: { show: false },
           column: {
@@ -480,7 +481,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         lastVars: {
-          title: t("certd.fields.remainingValidity"),
+          title: t("certd.common.fields.remainingValidity"),
           type: "number",
           form: {
             show: false,
@@ -507,16 +508,16 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
               const percent = (leftDays / effectiveDays) * 100;
               const textColor = leftDays < DEFAULT_WILL_EXPIRE_DAYS ? "red" : leftDays > 60 ? "#389e0d" : "";
               const format = () => {
-                return <span style={{ color: textColor }}>{`${leftDays}${t("certd.days")}`}</span>;
+                return <span style={{ color: textColor }}>{`${leftDays}${t("certd.common.days")}`}</span>;
               };
               // console.log('cellRender', 'effectiveDays', effectiveDays, 'expiresTime', expiresTime, 'applyTime', applyTime, 'percent', percent, row)
-              return <a-progress title={expireDate + t("certd.expires")} percent={percent} strokeColor={color} format={format} />;
+              return <a-progress title={expireDate + t("certd.common.expires")} percent={percent} strokeColor={color} format={format} />;
             },
             width: 150,
           },
         },
         "lastVars.certDomains": {
-          title: t("certd.fields.certDomains"),
+          title: t("certd.common.fields.certDomains"),
           type: "text",
           form: {
             show: false,
@@ -529,7 +530,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         "lastVars.certEffectiveTime": {
-          title: t("certd.fields.effectiveTime"),
+          title: t("certd.common.fields.effectiveTime"),
           search: {
             show: false,
           },
@@ -545,7 +546,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         "lastVars.certExpiresTime": {
-          title: t("certd.fields.expiryTime"),
+          title: t("certd.common.fields.expiryTime"),
           search: {
             show: false,
           },
@@ -560,14 +561,14 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         status: {
-          title: t("certd.fields.status"),
+          title: t("certd.common.fields.status"),
           type: "dict-select",
           search: {
             show: true,
             col: { span: 2 },
           },
           dict: dict({
-            data: statusUtil.getOptions(),
+            data: statusUtil.getOptions(t),
           }),
           form: {
             show: false,
@@ -579,7 +580,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         lastHistoryTime: {
-          title: t("certd.fields.lastRun"),
+          title: t("certd.common.fields.lastRun"),
           type: "datetime",
           form: {
             show: false,
@@ -591,7 +592,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         nextRunTime: {
-          title: t("certd.fields.nextRunTime"),
+          title: t("certd.common.fields.nextRunTime"),
           type: "datetime",
           form: {
             show: false,
@@ -603,7 +604,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         disabled: {
-          title: t("certd.fields.enabled"),
+          title: t("certd.common.fields.enabled"),
           type: "dict-switch",
           search: {
             show: true,
@@ -635,7 +636,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         groupId: {
-          title: t("certd.fields.group"),
+          title: t("certd.common.fields.group"),
           type: "dict-select",
           search: {
             show: true,
@@ -662,7 +663,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         type: {
-          title: t("certd.fields.type"),
+          title: t("certd.common.fields.type"),
           type: "dict-select",
           search: {
             show: true,
@@ -686,7 +687,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         order: {
-          title: t("certd.fields.order"),
+          title: t("certd.common.fields.order"),
           type: "number",
           column: {
             sorter: true,
@@ -698,11 +699,11 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         keepHistoryCount: {
-          title: t("certd.fields.keepHistoryCount"),
+          title: t("certd.common.fields.keepHistoryCount"),
           type: "number",
           form: {
             value: 20,
-            helper: t("certd.fields.keepHistoryHelper"),
+            helper: t("certd.common.fields.keepHistoryHelper"),
           },
           column: {
             width: 130,
@@ -711,13 +712,13 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         validTime: {
-          title: t("certd.pi.validTime"),
+          title: t("certd.pipeline.pi.validTime"),
           type: "date",
           form: {
             show: computed(() => {
               return settingStore.isPlus && settingStore.sysPublic.pipelineValidTimeEnabled && userStore.isAdmin;
             }),
-            helper: t("certd.pi.validTimeHelper"),
+            helper: t("certd.pipeline.pi.validTimeHelper"),
             valueResolve({ form, key, value }) {
               if (value) {
                 form[key] = value.valueOf();
@@ -730,14 +731,14 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             },
             component: {
               presets: [
-                { label: t("certd.dates.months", { count: 3 }), value: dayjs().add(3, "month") },
-                { label: t("certd.dates.months", { count: 6 }), value: dayjs().add(6, "month") },
-                { label: t("certd.dates.years", { count: 1 }), value: dayjs().add(1, "year") },
-                { label: t("certd.dates.years", { count: 2 }), value: dayjs().add(2, "year") },
-                { label: t("certd.dates.years", { count: 3 }), value: dayjs().add(3, "year") },
-                { label: t("certd.dates.years", { count: 4 }), value: dayjs().add(4, "year") },
-                { label: t("certd.dates.years", { count: 5 }), value: dayjs().add(5, "year") },
-                { label: t("certd.dates.years", { count: 6 }), value: dayjs().add(6, "year") },
+                { label: t("certd.pipeline.dates.months", { count: 3 }), value: dayjs().add(3, "month") },
+                { label: t("certd.pipeline.dates.months", { count: 6 }), value: dayjs().add(6, "month") },
+                { label: t("certd.pipeline.dates.years", { count: 1 }), value: dayjs().add(1, "year") },
+                { label: t("certd.pipeline.dates.years", { count: 2 }), value: dayjs().add(2, "year") },
+                { label: t("certd.pipeline.dates.years", { count: 3 }), value: dayjs().add(3, "year") },
+                { label: t("certd.pipeline.dates.years", { count: 4 }), value: dayjs().add(4, "year") },
+                { label: t("certd.pipeline.dates.years", { count: 5 }), value: dayjs().add(5, "year") },
+                { label: t("certd.pipeline.dates.years", { count: 6 }), value: dayjs().add(6, "year") },
               ],
             },
           },
@@ -750,17 +751,17 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             align: "center",
             cellRender({ value }) {
               if (!value || value <= 0) {
-                return t("certd.pi.permanentValid");
+                return t("certd.pipeline.pi.permanentValid");
               }
               if (value < Date.now()) {
-                return t("certd.hasExpired");
+                return t("certd.pipeline.hasExpired");
               }
               return dayjs(value).format("YYYY-MM-DD");
             },
           },
         },
         projectId: {
-          title: t("certd.fields.projectName"),
+          title: t("certd.common.fields.projectName"),
           type: "dict-select",
           dict: myProjectDict,
           form: {
@@ -776,7 +777,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           },
         },
         updateTime: {
-          title: t("certd.fields.updateTime"),
+          title: t("certd.common.fields.updateTime"),
           type: "datetime",
           form: {
             show: false,

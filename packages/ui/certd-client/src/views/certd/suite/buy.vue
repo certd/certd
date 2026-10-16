@@ -1,7 +1,7 @@
 <template>
   <fs-page class="page-suite-buy">
     <template #header>
-      <div class="title">套餐购买</div>
+      <div class="title">{{ $t("certd.suite.suiteBuy") }}</div>
     </template>
     <div class="suite-buy-content">
       <a-row class="w-100" :gutter="8">
@@ -15,7 +15,7 @@
         </a-col>
       </a-row>
       <div class="suite-buy-action-row mt-10 pl-1">
-        <a-button type="primary" :loading="activating" @click="openActivateDialog">激活码兑换</a-button>
+        <a-button type="primary" :loading="activating" @click="openActivateDialog">{{ $t("certd.suite.activationExchange") }}</a-button>
       </div>
       <a-row :gutter="8">
         <a-col v-for="item of suites" :key="item.id" class="mb-10 suite-card-col">
@@ -26,7 +26,7 @@
         </a-col>
       </a-row>
 
-      <a-empty v-if="suites.length == 0 && addons.length == 0" class="w-100 mt-10" description="暂无套餐可购买" />
+      <a-empty v-if="suites.length == 0 && addons.length == 0" class="w-100 mt-10" :description="$t('certd.suite.noSuite')" />
     </div>
 
     <order-modal ref="orderModalRef" />
@@ -40,6 +40,7 @@ import ProductInfo from "/@/views/certd/suite/product-info.vue";
 import OrderModal from "/@/views/certd/suite/order-modal.vue";
 import { notification } from "ant-design-vue";
 import { useFormDialog } from "/@/use/use-dialog";
+import { useI18n } from "vue-i18n";
 
 const suites = ref([]);
 const addons = ref([]);
@@ -47,23 +48,24 @@ const addons = ref([]);
 const activationCode = ref("");
 const activating = ref(false);
 const { openFormDialog } = useFormDialog();
+const { t } = useI18n();
 
 async function openActivateDialog() {
   await openFormDialog({
-    title: "激活码兑换",
+    title: t("certd.suite.activationExchange"),
     wrapper: { width: 520 },
     initialForm: {
       code: activationCode.value,
     },
     columns: {
       code: {
-        title: "激活码",
+        title: t("certd.suite.activationCode"),
         type: "text",
         form: {
           col: { span: 24 },
-          rules: [{ required: true, message: "请输入激活码" }],
+          rules: [{ required: true, message: t("certd.suite.enterActivationCode") }],
           component: {
-            placeholder: "请输入 CDK 激活码",
+            placeholder: t("certd.suite.enterCdkCode"),
           },
         },
       },
@@ -78,7 +80,7 @@ async function openActivateDialog() {
 async function doActivate() {
   const code = activationCode.value.trim().toUpperCase();
   if (!code) {
-    notification.warning({ message: "请输入激活码" });
+    notification.warning({ message: t("certd.suite.enterActivationCode") });
     return;
   }
   activationCode.value = code;
@@ -87,11 +89,11 @@ async function doActivate() {
     const res = await api.UseActivationCode(code);
     activationCode.value = "";
     notification.success({
-      message: "激活成功",
+      message: t("certd.suite.activateSuccess"),
       description: `您已成功激活 ${res.title}，时长 ${res.duration} 天`,
     });
   } catch (e: any) {
-    notification.error({ message: e?.message || "兑换失败" });
+    notification.error({ message: e?.message || t("certd.suite.exchangeFailed") });
   } finally {
     activating.value = false;
   }
@@ -115,9 +117,9 @@ const suiteIntro = ref("");
 const allowSuiteStack = ref(false);
 const buyHelperText = computed(() => {
   if (allowSuiteStack.value) {
-    return "说明：可以购买多个套餐和加量包，套餐和加量包内的数量可以叠加";
+    return t("certd.suite.suiteHelperStack");
   }
-  return "说明：① 同一时间只有最新购买的一个套餐生效；② 可以购买多个加量包，加量包立即生效；③ 套餐和加量包内的数量可以叠加";
+  return t("certd.suite.suiteHelperLatest");
 });
 async function loadSuiteIntro() {
   const res = await api.GetSuiteSetting();

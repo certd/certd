@@ -10,6 +10,12 @@ import { DomainRecord } from "@certd/plugin-lib";
   title: "dns.la授权",
   icon: "arcticons:dns-changer-3",
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "Dnsla Access",
+      desc: "Configure Dnsla access credentials.",
+    },
+  },
 })
 export class DnslaAccess extends BaseAccess {
   /**

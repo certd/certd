@@ -9,6 +9,12 @@ import { FlexCDNClient } from "./client.js";
   title: "FlexCDN授权",
   desc: "",
   icon: "svg:icon-lucky",
+  i18n: {
+    "en-US": {
+      title: "Flexcdn Access",
+      desc: "Configure Flexcdn access credentials.",
+    },
+  },
 })
 export class FlexCDNAccess extends BaseAccess {
   @AccessInput({

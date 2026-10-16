@@ -14,6 +14,12 @@ import { AsiaIspAccess } from "./access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "AsiaIsp-Deploy to CDN Plugin",
+      desc: "Deploy certificates to AsiaIsp CDN domains",
+    },
+  },
 })
 export class AsiaIspDeployToCDN extends AbstractTaskPlugin {
   @TaskInput({

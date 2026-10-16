@@ -3,6 +3,33 @@ title: baota授权
 desc: ''
 icon: svg:icon-bt
 order: 2
+i18n:
+  en-US:
+    title: Baota Access
+    desc: Baota.
+    input:
+      url:
+        title: Baota Panel URL
+        helper: Baota panel URL without the security entry path.
+      apiKey:
+        title: API Key
+        helper: >-
+          Configure this in Panel Settings > API Interface. Add the server IP to
+          the allowlist.
+      apiSecret:
+        title: API Secret
+        helper: >-
+          Configure this in Panel Settings > API Interface. Add the server IP to
+          the allowlist.
+      skipSslVerify:
+        title: Skip Certificate Verification
+        helper: Enable for self-signed HTTPS certificates.
+      isWindows:
+        title: Windows Version
+        helper: Whether this is the Windows version of Baota.
+      testRequest:
+        title: Test
+        helper: Test the API connection.
 input:
   panelUrl:
     title: 宝塔URL地址

@@ -4,6 +4,10 @@ desc: GoDaddy
 icon: simple-icons:godaddy
 accessType: godaddy
 order: 10
+i18n:
+  en-US:
+    title: Godaddy DNS Provider
+    desc: GoDaddy DNS provider.
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-godaddy/dns-provider.js

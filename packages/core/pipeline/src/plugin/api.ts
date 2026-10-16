@@ -43,6 +43,7 @@ export type TaskInputDefine = {
 } & FormItemProps;
 
 export type PluginDefine = Registrable & {
+  i18n?: Record<string, any>;
   default?: any;
   group?: string;
   icon?: string;
@@ -97,6 +98,7 @@ export type CertTargetItem = {
 
 export type PipelineEvent<T = any> = {
   cert: T;
+  certPassword?: string;
   runnableId: string;
   pipelineId: number;
 };

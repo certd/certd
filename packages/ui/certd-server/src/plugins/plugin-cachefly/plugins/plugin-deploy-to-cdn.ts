@@ -7,6 +7,16 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
   title: "CacheFly-部署证书到CacheFly",
   desc: "部署证书到 CacheFly",
   icon: "clarity:plugin-line",
+  i18n: {
+    "en-US": {
+      title: "CacheFly-Deploy Certificate to CDN",
+      desc: "Deploy a certificate to CacheFly",
+      input: {
+        cert: { title: "Certificate", helper: "Select the certificate output from a previous task" },
+        accessId: { title: "Access credentials", helper: "CacheFly access credentials" },
+      },
+    },
+  },
   group: pluginGroups.cdn.key,
   default: {
     strategy: {

@@ -3,6 +3,10 @@ title: dns.la
 desc: dns.la
 icon: arcticons:dns-changer-3
 accessType: dnsla
+i18n:
+  en-US:
+    title: Dnsla DNS Provider
+    desc: Configure Dnsla DNS provider credentials.
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-dnsla/dns-provider.js

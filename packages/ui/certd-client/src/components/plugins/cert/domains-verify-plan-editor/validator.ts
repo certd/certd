@@ -14,7 +14,7 @@ function checkDomainVerifyPlan(rule: any, value: DomainsVerifyPlanInput) {
         for (const subDomain of subDomains) {
           const plan = value[domain].cnameVerifyPlan[subDomain];
           if (plan.status !== "valid") {
-            throw new Error($t("certd.verifyPlan.errors.cnameNotValid", { domain: subDomain }));
+            throw new Error($t("certd.certdomain.verifyPlan.errors.cnameNotValid", { domain: subDomain }));
           }
         }
       }
@@ -23,7 +23,7 @@ function checkDomainVerifyPlan(rule: any, value: DomainsVerifyPlanInput) {
       for (const item of domains) {
         //如果有通配符域名则不允许使用http校验
         if (item.startsWith("*.")) {
-          throw new Error($t("certd.verifyPlan.errors.wildcardNotSupportHttp", { domain: item }));
+          throw new Error($t("certd.certdomain.verifyPlan.errors.wildcardNotSupportHttp", { domain: item }));
         }
       }
 
@@ -32,19 +32,19 @@ function checkDomainVerifyPlan(rule: any, value: DomainsVerifyPlanInput) {
         for (const subDomain of subDomains) {
           const plan = value[domain].httpVerifyPlan[subDomain];
           if (!plan.httpUploaderType) {
-            throw new Error($t("certd.verifyPlan.errors.uploadMethodRequired", { domain: subDomain }));
+            throw new Error($t("certd.certdomain.verifyPlan.errors.uploadMethodRequired", { domain: subDomain }));
           }
           if (!plan.httpUploaderAccess) {
-            throw new Error($t("certd.verifyPlan.errors.uploadAccessRequired", { domain: subDomain }));
+            throw new Error($t("certd.certdomain.verifyPlan.errors.uploadAccessRequired", { domain: subDomain }));
           }
           if (!plan.httpUploadRootDir) {
-            throw new Error($t("certd.verifyPlan.errors.websiteRootRequired", { domain: subDomain }));
+            throw new Error($t("certd.certdomain.verifyPlan.errors.websiteRootRequired", { domain: subDomain }));
           }
         }
       }
     } else if (type === "dns") {
       if (!value[domain].dnsProviderType || !value[domain].dnsProviderAccessId) {
-        throw new Error($t("certd.verifyPlan.errors.dnsProviderRequired", { domain }));
+        throw new Error($t("certd.certdomain.verifyPlan.errors.dnsProviderRequired", { domain }));
       }
     } else if (type === "dns-persist") {
       const subDomains = Object.keys(value[domain].dnsPersistVerifyPlan || {});

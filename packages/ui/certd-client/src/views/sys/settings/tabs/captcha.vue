@@ -1,14 +1,14 @@
 <template>
   <div class="sys-settings-form sys-settings-base">
     <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
-      <a-form-item :label="t('certd.sys.setting.captchaEnabled')" :name="['public', 'captchaEnabled']">
+      <a-form-item :label="t('certd.sys.settings.captchaEnabled')" :name="['public', 'captchaEnabled']">
         <a-switch v-model:checked="formState.public.captchaEnabled" />
-        <div class="helper" v-html="t('certd.sys.setting.captchaHelper')"></div>
+        <div class="helper" v-html="t('certd.sys.settings.captchaHelper')"></div>
       </a-form-item>
-      <a-form-item :label="t('certd.sys.setting.captchaType')" :name="['public', 'captchaAddonId']">
+      <a-form-item :label="t('certd.sys.settings.captchaType')" :name="['public', 'captchaAddonId']">
         <addon-selector v-model:model-value="formState.public.captchaAddonId" addon-type="captcha" from="sys" @selected-change="onAddonChanged" />
       </a-form-item>
-      <a-form-item v-if="formState.public.captchaType === settingsStore.sysPublic.captchaType" :label="t('certd.sys.setting.captchaTest')">
+      <a-form-item v-if="formState.public.captchaType === settingsStore.sysPublic.captchaType" :label="t('certd.sys.settings.captchaTest')">
         <div class="flex items-center">
           <CaptchaInput v-model:model-value="captchaTestForm.captcha" class="w-60%"></CaptchaInput>
           <a-button class="ml-2 mr-2" type="primary" @click="doCaptchaValidate">后端验证</a-button>
@@ -22,7 +22,7 @@
       </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
-        <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
+        <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.sys.settings.saveButton") }}</a-button>
       </a-form-item>
     </a-form>
   </div>
@@ -101,7 +101,7 @@ const onFinish = async (form: any) => {
     await api.SysSettingsSave(form);
     await settingsStore.loadSysSettings();
     notification.success({
-      message: t("certd.saveSuccess"),
+      message: t("certd.common.saveSuccess"),
     });
   } catch (e) {
     console.error(e);

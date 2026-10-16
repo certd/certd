@@ -8,6 +8,23 @@ icon: svg:icon-bt
 group: panel
 desc: 部署宝塔管理的站点的ssl证书，目前支持宝塔网站站点、docker站点等。本插件也支持aaPanel。
 needPlus: false
+i18n:
+  en-US:
+    title: Baota - Deploy Web Site Cert
+    desc: Deploy the certificate to the web site.
+    input:
+      cert:
+        title: Domain Certificate
+        helper: Select the certificate output by a previous task.
+      accessId:
+        title: Baota Access
+        helper: Baota API credentials.
+      isDockerSite:
+        title: Docker Site
+        helper: Whether the site is hosted in Docker.
+      siteName:
+        title: Site Name
+        helper: Select or enter the site matching the certificate domains.
 input:
   cert:
     title: 域名证书

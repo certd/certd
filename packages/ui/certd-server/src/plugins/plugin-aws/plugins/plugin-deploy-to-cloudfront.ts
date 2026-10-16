@@ -10,6 +10,12 @@ import { AwsRegions } from "../constants.js";
   name: "AwsDeployToCloudFront",
   title: "AWS-部署证书到CloudFront",
   desc: "部署证书到 AWS CloudFront",
+  i18n: {
+    "en-US": {
+      title: "AWS-Deploy to CloudFront",
+      desc: "Deploy a certificate to Amazon CloudFront.",
+    },
+  },
   icon: "svg:icon-aws",
   group: pluginGroups.aws.key,
   needPlus: false,

@@ -10,6 +10,12 @@ import { HttpRequestConfig } from "@certd/basic";
   title: "cdnfly授权",
   desc: "",
   icon: "majesticons:cloud-line",
+  i18n: {
+    "en-US": {
+      title: "Cdnfly Access",
+      desc: "cdnfly access.",
+    },
+  },
 })
 export class CdnflyAccess extends BaseAccess {
   @AccessInput({

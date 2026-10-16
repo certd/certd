@@ -12,7 +12,7 @@ const dynamicRouteFiles = import.meta.glob("./modules/**/*.ts*", {
 const dynamicRoutes: RouteRecordRaw[] = mergeRouteModules(dynamicRouteFiles);
 export const frameworkResource = [
   {
-    title: "certd.framework.title",
+    title: "certd.navigation.framework.title",
     name: "root",
     path: "/",
     redirect: "/index",
@@ -23,7 +23,7 @@ export const frameworkResource = [
     },
     children: [
       {
-        title: "certd.framework.home",
+        title: "certd.navigation.framework.home",
         name: "index",
         path: "/index",
         component: "/framework/home/index.vue",

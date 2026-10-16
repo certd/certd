@@ -2,8 +2,8 @@
   <fs-page>
     <template #header>
       <div class="title">
-        {{ t("certd.authorizationManagement") }}
-        <span class="sub">{{ t("certd.manageThirdPartyAuth") }}</span>
+        {{ t("certd.access.authorizationManagement") }}
+        <span class="sub">{{ t("certd.access.manageThirdPartyAuth") }}</span>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>

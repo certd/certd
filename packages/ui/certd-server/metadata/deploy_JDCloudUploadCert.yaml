@@ -7,6 +7,10 @@ title: 京东云-上传新证书
 icon: svg:icon-jdcloud
 group: jdcloud
 desc: 上传证书到SSL数字证书中心
+i18n:
+  en-US:
+    title: Jdcloud Upload Cert
+    desc: Upload certificates to SSL certificate center in JDCloud.
 input:
   cert:
     title: 域名证书

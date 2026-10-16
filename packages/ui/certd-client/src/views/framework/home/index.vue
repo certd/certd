@@ -115,14 +115,14 @@ async function checkAndSetupAccount() {
 onMounted(() => {
   if (userStore.getUserInfo.isWeak === true) {
     Modal.info({
-      title: t("authentication.title"),
-      content: t("authentication.weakPasswordWarning"),
+      title: t("certd.auth.title"),
+      content: t("certd.auth.weakPasswordWarning"),
       onOk: () => {
         changePasswordButtonRef.value.open({
           password: "123456",
         });
       },
-      okText: t("authentication.changeNow"),
+      okText: t("certd.auth.changeNow"),
     });
   } else {
     //两个弹框不要同时出现

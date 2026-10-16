@@ -16,6 +16,16 @@ import { CertApplyPluginNames } from "@certd/plugin-lib";
     },
   },
   needPlus: true,
+  i18n: {
+    "en-US": {
+      title: "Synology - Deploy to Panel",
+      input: {
+        description: { title: "Certificate Description", helper: "Set the description used to identify the certificate. Leave empty to update all certificates." },
+        cert: { title: "Domain Certificate", helper: "Select the certificate output by a previous task." },
+        accessId: { title: "Synology Access", helper: "Synology administrator access." },
+      },
+    },
+  },
 })
 export class SynologyDeployToPanel extends AbstractPlusTaskPlugin {
   //测试参数

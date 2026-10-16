@@ -13,36 +13,54 @@ import notification from "./certd/notification";
 import addon from "./certd/addon";
 import suite from "./certd/suite";
 import project from "./certd/project";
-import syssettings from "./certd/sys-settings";
-import sysplugin from "./certd/sys-plugin";
-import sysauthority from "./certd/sys-authority";
-import syscname from "./certd/sys-cname";
+import settings from "./certd/sys-settings";
+import plugin from "./certd/sys-plugin";
+import authority from "./certd/sys-authority";
+import cnameSettings from "./certd/sys-cname";
 import tutorial from "./certd/tutorial";
 import cron from "./certd/cron";
 import client from "./certd/client";
+import wallet from "./certd/wallet";
+import nettest from "./certd/nettest";
+import audit from "./certd/audit";
+import applyTemplate from "./certd/apply-template";
+import dnsPersist from "./certd/dns-persist";
+import auth from "./certd/auth";
+import guide from "./certd/guide";
+import vip from "./certd/vip";
 
 // Note: @ is reserved in locale messages; use {'@'} when needed.
 export default {
-  ...common,
-  ...navigation,
-  ...dashboard,
-  ...pipeline,
-  ...history,
-  ...monitor,
-  ...certdomain,
-  ...cname,
-  ...access,
-  ...open,
-  ...mine,
-  ...notification,
-  ...addon,
-  ...suite,
-  ...project,
-  ...syssettings,
-  ...sysplugin,
-  ...sysauthority,
-  ...syscname,
-  ...tutorial,
-  ...cron,
-  ...client,
+  common,
+  navigation,
+  dashboard,
+  pipeline,
+  history,
+  monitor,
+  certdomain,
+  cname,
+  access,
+  open,
+  mine,
+  notification,
+  addon,
+  suite,
+  project,
+  sys: {
+    settings,
+    plugin,
+    authority,
+    cname: cnameSettings,
+  },
+  tutorial,
+  cron,
+  client,
+  wallet,
+  nettest,
+  audit,
+  applyTemplate,
+  dnsPersist,
+  auth,
+  guide,
+  vip,
 };

@@ -18,6 +18,11 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Proxmox - Upload Cert",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class ProxmoxUploadCert extends AbstractPlusTaskPlugin {

@@ -9,6 +9,12 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   title: "括彩云cdn授权",
   icon: "material-symbols:shield-outline",
   desc: "括彩云CDN，每月免费30G，[注册即领](https://kuocaicdn.com/register?code=8mn536rrzfbf8)",
+  i18n: {
+    "en-US": {
+      title: "Kuocai CDN Access",
+      input: { username: { title: "Account", helper: "Enter the Kuocai Cloud account or mobile number." }, password: { title: "Password" }, testRequest: { title: "Test", helper: "Test the API connection." } },
+    },
+  },
 })
 export class KuocaiCdnAccess extends BaseAccess {
   @AccessInput({

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="domain-select">
     <div class="flex flex-row">
       <a-select
@@ -18,12 +18,12 @@
           <template v-if="search">
             <div class="flex w-full items-center justify-between flex-wrap" style="padding: 4px 8px">
               <div class="flex-1 flex flex-row items-center">
-                <a-input ref="inputRef" v-model:value="searchKeyRef" class="flex-1" allow-clear :placeholder="t('certd.pluginCommon.domainSearchPlaceholder')" @keydown.enter="doSearch" />
-                <fs-button type="primary" class="m-1" :loading="loading" icon="mingcute:search-2-line" @click="doSearch">{{ t("certd.pluginCommon.search") }}</fs-button>
+                <a-input ref="inputRef" v-model:value="searchKeyRef" class="flex-1" allow-clear :placeholder="t('certd.common.pluginCommon.domainSearchPlaceholder')" @keydown.enter="doSearch" />
+                <fs-button type="primary" class="m-1" :loading="loading" icon="mingcute:search-2-line" @click="doSearch">{{ t("certd.common.pluginCommon.search") }}</fs-button>
               </div>
               <div class="manager flex flex-row items-center">
-                <fs-button type="primary" class="m-1" icon="mingcute:vip-1-line" @click="openDomainImportDialog">{{ t("certd.pluginCommon.importDomain") }}</fs-button>
-                <fs-button class="m-1" type="primary" icon="carbon:gui-management" @click="openDomainManager">{{ t("certd.pluginCommon.manageDomain") }}</fs-button>
+                <fs-button type="primary" class="m-1" icon="mingcute:vip-1-line" @click="openDomainImportDialog">{{ t("certd.common.pluginCommon.importDomain") }}</fs-button>
+                <fs-button class="m-1" type="primary" icon="carbon:gui-management" @click="openDomainManager">{{ t("certd.common.pluginCommon.manageDomain") }}</fs-button>
               </div>
             </div>
             <div v-if="hasError" class="helper p-2" :class="{ error: hasError }">
@@ -49,7 +49,7 @@
       </a-select>
       <div class="ml-5 flex flex-row items-center">
         <fs-button title="复制全部域名" icon="ion:copy-outline" class="domain-select-copy-icon mr-5" @click="copySelectedDomains" />
-        <fs-button :loading="loading" :title="t('certd.pluginCommon.refreshMyDomains')" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
+        <fs-button :loading="loading" :title="t('certd.common.pluginCommon.refreshMyDomains')" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
       </div>
     </div>
     <div class="helper" :class="{ error: hasError }">

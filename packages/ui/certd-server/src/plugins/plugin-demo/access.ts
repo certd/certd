@@ -10,6 +10,7 @@ import { DomainRecord } from "@certd/plugin-lib";
   title: "授权插件示例",
   icon: "clarity:plugin-line", //插件图标
   desc: "这是一个示例授权插件，用于演示如何实现一个授权插件",
+  i18n: { "en-US": { title: "Demo Access", desc: "Configure Demo access credentials." } },
 })
 export class DemoAccess extends BaseAccess {
   /**

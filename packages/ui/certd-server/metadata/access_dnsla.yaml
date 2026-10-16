@@ -2,6 +2,10 @@ name: dnsla
 title: dns.la授权
 icon: arcticons:dns-changer-3
 desc: ''
+i18n:
+  en-US:
+    title: Dnsla Access
+    desc: Configure Dnsla access credentials.
 input:
   apiId:
     title: APIID

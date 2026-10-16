@@ -3,6 +3,10 @@ title: 西部数码
 desc: west dns provider
 icon: svg:icon-xibushuma
 accessType: west
+i18n:
+  en-US:
+    title: West DNS Provider
+    desc: West DNS provider.
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-west/dns-provider.js

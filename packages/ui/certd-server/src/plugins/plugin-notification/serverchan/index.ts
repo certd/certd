@@ -4,6 +4,7 @@ import { BaseNotification, IsNotification, NotificationBody, NotificationInput }
   name: "serverchan",
   title: "Server酱ᵀ",
   desc: "https://sct.ftqq.com/",
+  i18n: { "en-US": { title: "ServerChan Notification", desc: "Send pipeline notifications using ServerChan." } },
   needPlus: true,
 })
 export class ServerChanNotification extends BaseNotification {

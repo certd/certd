@@ -7,6 +7,10 @@ title: 阿里云-部署证书至OSS
 icon: svg:icon-aliyun
 group: aliyun
 desc: 部署域名证书至阿里云OSS自定义域名，不是上传到阿里云oss
+i18n:
+  en-US:
+    title: Aliyun - Deploy Certificate to OSS
+    desc: Deploy a certificate to Aliyun OSS.
 input:
   casRegion:
     title: 证书服务接入点

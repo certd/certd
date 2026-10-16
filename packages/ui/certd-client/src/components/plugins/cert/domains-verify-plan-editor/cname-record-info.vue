@@ -4,7 +4,7 @@
       <!--    <td class="domain">-->
       <!--      {{ props.domain }}-->
       <!--    </td>-->
-      <td class="host-record" :title="t('certd.verifyPlan.domainTitle', { domain: props.domain })">
+      <td class="host-record" :title="t('certd.certdomain.verifyPlan.domainTitle', { domain: props.domain })">
         <fs-copyable v-model="cnameRecord.hostRecord"></fs-copyable>
       </td>
       <td style="text-align: center">CNAME</td>
@@ -17,18 +17,18 @@
           <a-tooltip v-if="cnameRecord.error" :title="cnameRecord.error">
             <fs-icon class="ml-5 color-red" icon="ion:warning-outline"></fs-icon>
           </a-tooltip>
-          <a-tooltip v-if="cnameRecord.status === 'valid'" :title="t('certd.verifyPlan.resetStatusTooltip')">
+          <a-tooltip v-if="cnameRecord.status === 'valid'" :title="t('certd.certdomain.verifyPlan.resetStatusTooltip')">
             <fs-icon class="ml-2 color-yellow text-md pointer" icon="solar:undo-left-square-bold" @click="resetStatus"></fs-icon>
           </a-tooltip>
         </span>
       </td>
       <td class="center">
         <template v-if="cnameRecord.status !== 'valid'">
-          <a-button type="primary" size="small" :loading="loading" @click="doVerify">{{ t("certd.verifyPlan.clickToValidate") }}</a-button>
+          <a-button type="primary" size="small" :loading="loading" @click="doVerify">{{ t("certd.certdomain.verifyPlan.clickToValidate") }}</a-button>
           <cname-tip :record="cnameRecord"></cname-tip>
         </template>
 
-        <div v-else class="helper" :title="t('certd.verifyPlan.keepCnameTitle')">{{ t("certd.verifyPlan.keepCname") }}</div>
+        <div v-else class="helper" :title="t('certd.certdomain.verifyPlan.keepCnameTitle')">{{ t("certd.certdomain.verifyPlan.keepCname") }}</div>
       </td>
     </tr>
   </tbody>
@@ -46,11 +46,11 @@ import { utils } from "/@/utils/index.js";
 const { t } = useI18n();
 const statusDict = dict({
   data: [
-    { label: t("certd.verifyPlan.status.pendingCname"), value: "cname", color: "warning" },
-    { label: t("certd.verifyPlan.status.validating"), value: "validating", color: "blue" },
-    { label: t("certd.verifyPlan.status.valid"), value: "valid", color: "green" },
-    { label: t("certd.verifyPlan.status.failed"), value: "failed", color: "red" },
-    { label: t("certd.verifyPlan.status.timeout"), value: "timeout", color: "red" },
+    { label: t("certd.certdomain.verifyPlan.status.pendingCname"), value: "cname", color: "warning" },
+    { label: t("certd.certdomain.verifyPlan.status.validating"), value: "validating", color: "blue" },
+    { label: t("certd.certdomain.verifyPlan.status.valid"), value: "valid", color: "green" },
+    { label: t("certd.certdomain.verifyPlan.status.failed"), value: "failed", color: "red" },
+    { label: t("certd.certdomain.verifyPlan.status.timeout"), value: "timeout", color: "red" },
   ],
 });
 
@@ -129,8 +129,8 @@ async function doVerify() {
 
 async function resetStatus() {
   Modal.confirm({
-    title: t("certd.verifyPlan.resetStatus"),
-    content: t("certd.verifyPlan.confirmResetStatus"),
+    title: t("certd.certdomain.verifyPlan.resetStatus"),
+    content: t("certd.certdomain.verifyPlan.confirmResetStatus"),
     onOk: async () => {
       await api.ResetStatus(cnameRecord.value.id);
       await loadRecord();

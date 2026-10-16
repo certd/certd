@@ -96,12 +96,12 @@ async function installPluginVersion(data: { fullName?: string; version?: string 
   try {
     dependencies = await resolveOnlinePluginDependencies(plugin);
   } catch (error: any) {
-    if (error instanceof Error && error.message.includes(t("certd.onlinePluginDependencyNotFound"))) {
+    if (error instanceof Error && error.message.includes(t("certd.sys.plugin.onlinePluginDependencyNotFound"))) {
       // 依赖插件未同步到本地市场列表时，明确弹窗引导先同步
       Modal.warning({
-        title: t("certd.onlinePluginDependencyNotFound"),
+        title: t("certd.sys.plugin.onlinePluginDependencyNotFound"),
         content: `${error.message}，请先同步插件市场，确认依赖插件已发布后再安装`,
-        okText: t("certd.confirm"),
+        okText: t("certd.common.confirm"),
       });
       return;
     }
@@ -113,10 +113,10 @@ async function installPluginVersion(data: { fullName?: string; version?: string 
     // 先弹窗确认安装依赖，再安装指定版本的目标插件
     await new Promise<void>((resolve, reject) => {
       Modal.confirm({
-        title: t("certd.onlinePluginDependenciesTitle"),
+        title: t("certd.sys.plugin.onlinePluginDependenciesTitle"),
         content: (
           <div class="plugin-dependency-confirm">
-            <div>{t("certd.onlinePluginDependenciesPrompt")}</div>
+            <div>{t("certd.sys.plugin.onlinePluginDependenciesPrompt")}</div>
             <ul class="plugin-dependency-confirm__list">
               {dependencies.map(item => (
                 <li key={fullNameValueFor(item)}>
@@ -134,8 +134,8 @@ async function installPluginVersion(data: { fullName?: string; version?: string 
             </ul>
           </div>
         ),
-        okText: t("certd.onlinePluginInstallDependencies"),
-        cancelText: t("certd.cancel"),
+        okText: t("certd.sys.plugin.onlinePluginInstallDependencies"),
+        cancelText: t("certd.common.cancel"),
         async onOk() {
           try {
             await installOnlinePluginChain(dependencies, plugin, { version: data.version });

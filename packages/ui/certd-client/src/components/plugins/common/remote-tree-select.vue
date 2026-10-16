@@ -3,7 +3,7 @@
     <div class="flex flex-row">
       <a-tree-select class="remote-tree-select-input" :tree-data="optionsRef" :value="value" tree-checkable allow-clear v-bind="attrs" @click="onClick" @update:value="emit('update:value', $event)"> </a-tree-select>
       <div class="ml-5">
-        <fs-button :loading="loading" :title="t('certd.pluginCommon.refreshOptions')" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
+        <fs-button :loading="loading" :title="t('certd.common.pluginCommon.refreshOptions')" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
       </div>
     </div>
     <div class="helper" :class="{ error: hasError }">
@@ -107,16 +107,16 @@ const getOptions = async () => {
       {
         onError(err: any) {
           hasError.value = true;
-          message.value = t("certd.pluginCommon.getOptionsError", { message: err.message });
+          message.value = t("certd.common.pluginCommon.getOptionsError", { message: err.message });
         },
         showErrorNotify: false,
       }
     );
     const list = res?.list || res || [];
     if (list.length > 0) {
-      message.value = t("certd.pluginCommon.getDataSuccessSelect");
+      message.value = t("certd.common.pluginCommon.getDataSuccessSelect");
     } else {
-      message.value = t("certd.pluginCommon.getDataSuccessEmpty");
+      message.value = t("certd.common.pluginCommon.getDataSuccessEmpty");
     }
     optionsRef.value = list;
     pagerRef.value.total = list.length;

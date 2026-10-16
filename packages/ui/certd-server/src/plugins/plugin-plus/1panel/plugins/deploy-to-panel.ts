@@ -17,6 +17,18 @@ import { OnePanelClient } from "../client.js";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "1Panel - Deploy to Panel",
+      desc: "Update the certificate of the 1Panel.",
+      input: {
+        cert: { title: "Domain Certificate", helper: "Select the certificate output by a previous task." },
+        accessId: { title: "1Panel Access", helper: "1Panel access credentials." },
+        node: { title: "1Panel Node", helper: "Node information for the certificate. This is available in version 2." },
+        sslMode: { title: "SSL Mode", helper: "Supported in version 2.1.x and later." },
+      },
+    },
+  },
 })
 export class OnePanelDeployToPanelPlugin extends AbstractTaskPlugin {
   //证书选择，此项必须要有

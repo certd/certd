@@ -2,7 +2,7 @@
   <div class="plugin-selector">
     <a-row :gutter="10" class="mb-10">
       <a-col :span="24" style="padding-left: 20px">
-        <a-input-search v-model:value="pluginSearch.keyword" placeholder="搜索插件" :allow-clear="true" :show-search="true"></a-input-search>
+        <a-input-search v-model:value="pluginSearch.keyword" :placeholder="t('certd.pipeline.editor.searchPlugin')" :allow-clear="true" :show-search="true"></a-input-search>
       </a-col>
     </a-row>
     <a-tabs v-model:active-key="pluginGroupActive" tab-position="left" class="plugin-selector-tabs">
@@ -16,7 +16,7 @@
           </template>
           <a-row v-if="!group.plugins || group.plugins.length === 0" :gutter="10">
             <a-col class="flex-o">
-              <div class="flex-o m-10">没有找到插件</div>
+              <div class="flex-o m-10">{{ t("certd.pipeline.editor.noPluginFound") }}</div>
             </a-col>
           </a-row>
           <a-row v-else :gutter="10">
@@ -51,6 +51,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, ref, Ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { notification } from "ant-design-vue";
 import { usePluginStore, PluginGroups } from "/@/store/plugin";
 import { useSettingStore } from "/@/store/settings";
@@ -79,6 +80,7 @@ const emit = defineEmits(["update:modelValue", "select", "confirm"]);
 const userStore = useUserStore();
 const settingStore = useSettingStore();
 const pluginStore = usePluginStore();
+const { t } = useI18n();
 
 const pluginSearch = ref({
   keyword: "",
@@ -120,7 +122,7 @@ const computedPluginGroups: any = computed(() => {
       }
     }
     return {
-      search: { key: "search", title: "搜索结果", plugins: list },
+      search: { key: "search", title: t("certd.pipeline.editor.searchResults"), plugins: list },
     };
   } else {
     return filtered;
@@ -142,7 +144,7 @@ watch(
 
 function checkNeedPlus(item: any): boolean {
   if (item.needPlus && !settingStore.isPlus) {
-    notification.warning({ message: "此插件需要开通Certd专业版才能使用" });
+    notification.warning({ message: t("certd.pipeline.editor.plusPluginRequired") });
     mitter.emit("openVipModal");
     return false;
   }

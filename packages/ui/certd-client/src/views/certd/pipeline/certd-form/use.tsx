@@ -1,21 +1,21 @@
-﻿import { checkPipelineLimit } from "/@/views/certd/pipeline/utils";
-import { cloneDeep, merge, omit } from "lodash-es";
-import { notification, Modal, message } from "ant-design-vue";
-import { nanoid } from "nanoid";
-import { useRouter } from "vue-router";
 import { compute, CreateCrudOptionsRet, dict, useFormWrapper } from "@fast-crud/fast-crud";
-import NotificationSelector from "/@/views/certd/notification/notification-selector/index.vue";
-import { useReference } from "/@/use/use-refrence";
-import { computed, provide, reactive, Ref, ref } from "vue";
-import * as api from "../api";
-import { PluginGroup, usePluginStore } from "/@/store/plugin";
-import { createNotificationApi } from "/@/views/certd/notification/api";
-import GroupSelector from "../group/group-selector.vue";
-import { useI18n } from "/src/locales";
-import { useSettingStore } from "/@/store/settings";
+import { message, Modal, notification } from "ant-design-vue";
 import dayjs from "dayjs";
+import { cloneDeep, merge } from "lodash-es";
+import { nanoid } from "nanoid";
+import { computed, reactive, Ref, ref } from "vue";
+import { useRouter } from "vue-router";
+import * as api from "../api";
+import GroupSelector from "../group/group-selector.vue";
+import { PluginGroup, usePluginStore } from "/@/store/plugin";
+import { useSettingStore } from "/@/store/settings";
+import { useReference } from "/@/use/use-refrence";
 import * as certApplyTemplateApi from "/@/views/certd/cert/apply-template/api";
 import { buildCertApplyTemplateColumns, buildTemplateSubmitData, pickCertApplyTemplateParams } from "/@/views/certd/cert/apply-template/fields";
+import { createNotificationApi } from "/@/views/certd/notification/api";
+import NotificationSelector from "/@/views/certd/notification/notification-selector/index.vue";
+import { checkPipelineLimit } from "/@/views/certd/pipeline/utils";
+import { useI18n } from "/src/locales";
 
 export function fillPipelineByDefaultForm(pipeline: any, form: any) {
   const triggers = [];
@@ -402,7 +402,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
             wrapClassName: "cert_pipeline_create_form",
             width: 1350,
             saveRemind: false,
-            title: req.title || t("certd.pipelineForm.createTitle"),
+            title: req.title || t("certd.pipeline.pipelineForm.createTitle"),
             slots: {
               "form-footer-left": renderTemplateFooter,
             },
@@ -410,7 +410,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
           group: {
             groups: {
               more: {
-                header: t("certd.pipelineForm.moreParams"),
+                header: t("certd.pipeline.pipelineForm.moreParams"),
                 columns: moreParams,
                 collapsed: true,
               },
@@ -420,7 +420,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
         columns: {
           ...inputs,
           triggerCron: {
-            title: t("certd.pipelineForm.triggerCronTitle"),
+            title: t("certd.pipeline.pipelineForm.triggerCronTitle"),
             type: "text",
             form: {
               value: randomCron,
@@ -429,12 +429,12 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                 vModel: "modelValue",
                 placeholder: "0 0 4 * * * (表示凌晨4点执行)",
               },
-              helper: t("certd.pipelineForm.triggerCronHelper"),
+              helper: t("certd.pipeline.pipelineForm.triggerCronHelper"),
               order: 100,
             },
           },
           notification: {
-            title: t("certd.pipelineForm.notificationTitle"),
+            title: t("certd.pipeline.pipelineForm.notificationTitle"),
             type: "text",
             form: {
               value: 0,
@@ -448,11 +448,11 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                 },
               },
               order: 101,
-              helper: t("certd.pipelineForm.notificationHelper"),
+              helper: t("certd.pipeline.pipelineForm.notificationHelper"),
             },
           },
           notificationWhen: {
-            title: t("certd.pipelineForm.notificationWhen"),
+            title: t("certd.pipeline.pipelineForm.notificationWhen"),
             type: "text",
             form: {
               value: ["error", "turnToSuccess"],
@@ -461,17 +461,17 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                 vModel: "value",
                 mode: "multiple",
                 options: [
-                  { value: "start", label: t("certd.start_time") },
-                  { value: "success", label: t("certd.success_time") },
-                  { value: "turnToSuccess", label: t("certd.fail_to_success_time") },
-                  { value: "error", label: t("certd.fail_time") },
+                  { value: "start", label: t("certd.pipeline.start_time") },
+                  { value: "success", label: t("certd.pipeline.success_time") },
+                  { value: "turnToSuccess", label: t("certd.pipeline.fail_to_success_time") },
+                  { value: "error", label: t("certd.pipeline.fail_time") },
                 ],
               },
               order: 102,
             },
           },
           groupId: {
-            title: t("certd.pipelineForm.groupIdTitle"),
+            title: t("certd.pipeline.pipelineForm.groupIdTitle"),
             type: "dict-select",
             dict: groupDictRef,
             form: {
@@ -483,7 +483,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
             },
           },
           addToMonitorEnabled: {
-            title: t("certd.pipelineForm.addToMonitorEnabled"),
+            title: t("certd.pipeline.pipelineForm.addToMonitorEnabled"),
             type: "switch",
             form: {
               show: computed(() => {
@@ -506,7 +506,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
             },
           },
           addToMonitorDomains: {
-            title: t("certd.pipelineForm.addToMonitorDomains"),
+            title: t("certd.pipeline.pipelineForm.addToMonitorDomains"),
             type: "text",
             form: {
               show: compute(({ form }) => {
@@ -519,15 +519,15 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
               col: {
                 span: 24,
               },
-              helper: t("certd.domainList.helper"),
+              helper: t("certd.monitor.domainList.helper"),
               order: 999,
             },
           },
           webhookEnabled: {
-            title: t("certd.pipelineForm.webhookEnabled"),
+            title: t("certd.pipeline.pipelineForm.webhookEnabled"),
             type: "switch",
             form: {
-              helper: t("certd.pipelineForm.webhookEnabledHelper"),
+              helper: t("certd.pipeline.pipelineForm.webhookEnabledHelper"),
               value: false,
               component: {
                 name: "a-switch",

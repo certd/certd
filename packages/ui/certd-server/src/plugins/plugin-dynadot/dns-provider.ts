@@ -17,6 +17,12 @@ type MainRecordItem = { record_type: string; record_value1: string; record_value
   desc: "Dynadot DNS提供商",
   icon: "simple-icons:dynatrace",
   accessType: "dynadot",
+  i18n: {
+    "en-US": {
+      title: "Dynadot",
+      desc: "Dynadot DNS provider.",
+    },
+  },
 })
 export class DynadotDnsProvider extends AbstractDnsProvider<DynadotRecord> {
   access!: DynadotAccess;

@@ -7,6 +7,9 @@ title: 七牛云-部署证书至CDN/DCDN
 icon: svg:icon-qiniuyun
 group: qiniu
 desc: 自动部署域名证书至七牛云CDN、DCDN
+i18n:
+  en-US:
+    title: Qiniu - Deploy Cert to CDN
 input:
   cert:
     title: 域名证书

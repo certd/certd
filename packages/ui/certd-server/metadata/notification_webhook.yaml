@@ -1,6 +1,30 @@
 name: webhook
 title: 自定义webhook
 desc: 根据模版自定义http请求
+i18n:
+  en-US:
+    title: Webhook Notification
+    desc: Send pipeline notifications to a webhook.
+    input:
+      webhook:
+        title: Webhook URL
+        helper: Enter the webhook endpoint.
+      method:
+        title: Request Method
+      contentType:
+        title: Content Type
+        helper: You can enter a custom content type.
+      headers:
+        title: Headers
+        helper: One key=value pair per line.
+      template:
+        title: Message Body Template
+        helper: >-
+          Build the JSON request body according to the webhook API
+          documentation. Supported variables: {title}, {content}, and {url}. For
+          GET requests, the fields are appended as query parameters.
+      skipSslVerify:
+        title: Skip Certificate Verification
 order: -100
 input:
   webhook:

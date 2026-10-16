@@ -16,6 +16,12 @@ export type XinnetAgentRecord = {
   // 这里是对应的 cloudflare的access类型名称
   accessType: "xinnetagent",
   order: 7,
+  i18n: {
+    "en-US": {
+      title: "Xinnet Agent DNS Provider",
+      desc: "Xinnet agent DNS provider.",
+    },
+  },
 })
 export class XinnetAgentProvider extends AbstractDnsProvider<XinnetAgentRecord> {
   access!: XinnetAgentAccess;

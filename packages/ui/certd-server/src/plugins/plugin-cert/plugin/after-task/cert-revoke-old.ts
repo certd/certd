@@ -19,6 +19,16 @@ import { CertStatus } from "../../../../modules/monitor/entity/cert-info.js";
   icon: "tabler:certificate-off",
   desc: "新证书申请成功，并全部部署成功后，吊销本流水线产生的旧证书。（注意 如果本流水线证书还在别处有使用或手动部署，请慎重添加此吊销任务）",
   supportAfterTask: true,
+  i18n: {
+    "en-US": {
+      title: "Revoke Old Certificates",
+      desc: "Revoke certificates issued by this pipeline after the new certificate has been issued and all deployments succeed. Use with care if the old certificate is used elsewhere or deployed manually.",
+      input: {
+        revokeOld: { title: "Revoke Inactive Old Certificates", helper: "When enabled, the certificate authority will be called to revoke old certificates replaced by this pipeline." },
+        delay: { title: "Delay (seconds)", helper: "Wait this many seconds before revocation so the new certificate has time to take effect." },
+      },
+    },
+  },
 })
 export class CertRevokeOldPlugin extends AbstractTaskPlugin {
   @TaskInput({

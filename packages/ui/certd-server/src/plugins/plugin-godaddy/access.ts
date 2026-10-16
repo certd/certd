@@ -10,6 +10,12 @@ import { HttpRequestConfig } from "@certd/basic";
   title: "godaddy授权",
   icon: "simple-icons:godaddy",
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "Godaddy Access",
+      desc: "Configure Godaddy access credentials.",
+    },
+  },
 })
 export class GodaddyAccess extends BaseAccess {
   /**

@@ -1,9 +1,9 @@
-﻿<template>
+<template>
   <fs-page class="page-cert">
     <template #header>
       <div class="title">
-        {{ t("certd.myPipelines") }}
-        <span class="sub">{{ t("certd.pipelinePage.myPipelinesDesc") }}</span>
+        {{ t("certd.pipeline.myPipelines") }}
+        <span class="sub">{{ t("certd.pipeline.pipelinePage.myPipelinesDesc") }}</span>
       </div>
     </template>
     <!-- <a-alert v-if="settingStore.sysPublic.notice" type="warning" show-icon>
@@ -15,7 +15,7 @@
       <template #actionbar-right>
         <a-dropdown v-if="hasActionPermission('write')" class="ml-1">
           <a-button type="primary" class="ant-dropdown-link" @click.prevent>
-            {{ t("certd.pipelinePage.addMore") }}
+            {{ t("certd.pipeline.pipelinePage.addMore") }}
             <DownOutlined />
           </a-button>
           <template #overlay>
@@ -36,8 +36,8 @@
       </template>
       <div v-if="selectedRowKeys.length > 0" class="batch-actions">
         <div class="batch-actions-inner overflow-x-auto">
-          <span class="mr-2 inline-flex whitespace-nowrap">{{ t("certd.selectedCount", { count: selectedRowKeys.length }) }}</span>
-          <fs-button v-if="hasActionPermission('write')" icon="ion:trash-outline" class="color-red" type="link" :text="t('certd.batchDelete')" @click="batchDelete"></fs-button>
+          <span class="mr-2 inline-flex whitespace-nowrap">{{ t("certd.pipeline.selectedCount", { count: selectedRowKeys.length }) }}</span>
+          <fs-button v-if="hasActionPermission('write')" icon="ion:trash-outline" class="color-red" type="link" :text="t('certd.common.batchDelete')" @click="batchDelete"></fs-button>
           <batch-rerun :selected-row-keys="selectedRowKeys" @change="batchFinished"></batch-rerun>
           <change-group v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-group>
           <change-cert-apply-options v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-cert-apply-options>
@@ -47,7 +47,7 @@
         </div>
       </div>
       <template #form-bottom>
-        <div>{{ t("certd.applyCertificate") }}</div>
+        <div>{{ t("certd.pipeline.applyCertificate") }}</div>
       </template>
     </fs-crud>
     <fs-form-wrapper ref="formWrapperRef"></fs-form-wrapper>
@@ -97,10 +97,10 @@ provide("getCurrentPluginDefine", () => {
 
 const addMorePipelineBtns = computed(() => {
   return [
-    { key: "CertApplyGetFormAliyun", title: t("certd.pipelinePage.aliyunSubscriptionPipeline"), icon: "svg:icon-aliyun" },
-    { key: "CertApplyLego", title: t("certd.pipelinePage.legoCertPipeline"), icon: "cbi:lego" },
-    { key: "AddPipeline", title: t("certd.pipelinePage.customPipeline"), icon: "ion:add-circle-outline" },
-    { key: "BatchAddPipeline", title: t("certd.pipelinePage.batchAddPipeline"), icon: "ion:duplicate" },
+    { key: "CertApplyGetFormAliyun", title: t("certd.pipeline.pipelinePage.aliyunSubscriptionPipeline"), icon: "svg:icon-aliyun" },
+    { key: "CertApplyLego", title: t("certd.pipeline.pipelinePage.legoCertPipeline"), icon: "cbi:lego" },
+    { key: "AddPipeline", title: t("certd.pipeline.pipelinePage.customPipeline"), icon: "ion:add-circle-outline" },
+    { key: "BatchAddPipeline", title: t("certd.pipeline.pipelinePage.batchAddPipeline"), icon: "ion:duplicate" },
   ];
 });
 

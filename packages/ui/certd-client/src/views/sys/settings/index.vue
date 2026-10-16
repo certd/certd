@@ -5,31 +5,31 @@
     <!--    </template>-->
     <div class="sys-settings-body md:p-5">
       <a-tabs :active-key="activeKey" type="card" class="sys-settings-tabs" @update:active-key="onChange">
-        <a-tab-pane key="base" :tab="t('certd.sys.setting.baseSetting')">
+        <a-tab-pane key="base" :tab="t('certd.sys.settings.baseSetting')">
           <SettingBase v-if="activeKey === 'base'" />
         </a-tab-pane>
-        <a-tab-pane key="register" :tab="t('certd.sys.setting.registerSetting')">
+        <a-tab-pane key="register" :tab="t('certd.sys.settings.registerSetting')">
           <SettingRegister v-if="activeKey === 'register'" />
         </a-tab-pane>
-        <a-tab-pane key="oauth" :tab="t('certd.sys.setting.oauthSetting')">
+        <a-tab-pane key="oauth" :tab="t('certd.sys.settings.oauthSetting')">
           <SettingOauth v-if="activeKey === 'oauth'" />
         </a-tab-pane>
-        <a-tab-pane v-if="settingsStore.isComm" key="payment" :tab="t('certd.sys.setting.paymentSetting')">
+        <a-tab-pane v-if="settingsStore.isComm" key="payment" :tab="t('certd.sys.settings.paymentSetting')">
           <SettingPayment v-if="activeKey === 'payment'" />
         </a-tab-pane>
-        <a-tab-pane key="safe" :tab="t('certd.sys.setting.safeSetting')">
+        <a-tab-pane key="safe" :tab="t('certd.sys.settings.safeSetting')">
           <SettingSafe v-if="activeKey === 'safe'" />
         </a-tab-pane>
-        <a-tab-pane key="captcha" :tab="t('certd.sys.setting.captchaSetting')">
+        <a-tab-pane key="captcha" :tab="t('certd.sys.settings.captchaSetting')">
           <SettingCaptcha v-if="activeKey === 'captcha'" />
         </a-tab-pane>
-        <a-tab-pane key="pipeline" :tab="t('certd.sys.setting.pipelineSetting')">
+        <a-tab-pane key="pipeline" :tab="t('certd.sys.settings.pipelineSetting')">
           <SettingPipeline v-if="activeKey === 'pipeline'" />
         </a-tab-pane>
-        <a-tab-pane key="network" :tab="t('certd.sys.setting.networkSetting')">
+        <a-tab-pane key="network" :tab="t('certd.sys.settings.networkSetting')">
           <SettingNetwork v-if="activeKey === 'network'" />
         </a-tab-pane>
-        <a-tab-pane key="mode" :tab="t('certd.sys.setting.adminModeSetting')">
+        <a-tab-pane key="mode" :tab="t('certd.sys.settings.adminModeSetting')">
           <SettingMode v-if="activeKey === 'mode'" />
         </a-tab-pane>
       </a-tabs>

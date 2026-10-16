@@ -12,6 +12,7 @@ import { SshClient } from "../../plugin-lib/ssh/ssh.js";
 @IsTaskPlugin({
   name: "HostDeployToIIS",
   title: "IIS-部署到IIS站点",
+  i18n: { "en-US": { title: "IIS - Deploy to IIS Site", desc: "Deploy a certificate to an IIS site." } },
   icon: "devicon:windows8",
   group: pluginGroups.host.key,
   default: {

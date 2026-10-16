@@ -42,18 +42,18 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         fixed: "right",
         buttons: {
           unlock: {
-            title: t("certd.unlockLogin"),
+            title: t("certd.sys.authority.unlockLogin"),
             text: null,
             type: "link",
             icon: "ion:lock-open-outline",
             click: async ({ row }) => {
               Modal.confirm({
-                title: t("certd.notice"),
-                content: t("certd.confirmUnlock"),
+                title: t("certd.sys.authority.notice"),
+                content: t("certd.sys.authority.confirmUnlock"),
                 onOk: async () => {
                   await api.Unlock(row.id);
                   notification.success({
-                    message: t("certd.unlockSuccess"),
+                    message: t("certd.sys.authority.unlockSuccess"),
                   });
                 },
               });
@@ -78,7 +78,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         createTime: {
-          title: t("certd.createTime"),
+          title: t("certd.common.createTime"),
           type: "datetime",
           form: { show: false }, // 表单配置
           column: {
@@ -96,13 +96,13 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         //   }
         // },
         username: {
-          title: t("certd.username"),
+          title: t("certd.common.username"),
           type: "text",
           search: { show: true }, // 开启查询
           form: {
             rules: [
-              { required: true, message: t("certd.enterUsername") },
-              { max: 50, message: t("certd.max50Chars") },
+              { required: true, message: t("certd.sys.authority.enterUsername") },
+              { max: 50, message: t("certd.sys.authority.max50Chars") },
             ],
           },
           editForm: { component: { disabled: false } },
@@ -112,37 +112,37 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         password: {
-          title: t("certd.password"),
+          title: t("certd.common.password"),
           type: "text",
           key: "password",
           column: {
             show: false,
           },
           form: {
-            rules: [{ max: 50, message: t("certd.max50Chars") }],
+            rules: [{ max: 50, message: t("certd.sys.authority.max50Chars") }],
             component: {
               showPassword: true,
             },
-            helper: t("certd.modifyPasswordIfFilled"),
+            helper: t("certd.sys.authority.modifyPasswordIfFilled"),
           },
         },
         nickName: {
-          title: t("certd.nickName"),
+          title: t("certd.common.nickName"),
           type: "text",
           search: { show: true }, // 开启查询
           form: {
-            rules: [{ max: 50, message: t("certd.max50Chars") }],
+            rules: [{ max: 50, message: t("certd.sys.authority.max50Chars") }],
           },
           column: {
             sorter: true,
           },
         },
         email: {
-          title: t("certd.emaila"),
+          title: t("certd.sys.authority.emaila"),
           type: "text",
           search: { show: true }, // 开启查询
           form: {
-            rules: [{ max: 50, message: t("certd.max50Chars") }],
+            rules: [{ max: 50, message: t("certd.sys.authority.max50Chars") }],
           },
           column: {
             sorter: true,
@@ -150,11 +150,11 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         mobile: {
-          title: t("certd.mobile"),
+          title: t("certd.sys.authority.mobile"),
           type: "text",
           search: { show: true }, // 开启查询
           form: {
-            rules: [{ max: 50, message: t("certd.max50Chars") }],
+            rules: [{ max: 50, message: t("certd.sys.authority.max50Chars") }],
           },
           column: {
             sorter: true,
@@ -162,7 +162,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         avatar: {
-          title: t("certd.avatar"),
+          title: t("certd.common.avatar"),
           type: "cropper-uploader",
           column: {
             width: 70,
@@ -204,7 +204,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         status: {
-          title: t("certd.status"),
+          title: t("certd.common.status"),
           type: "dict-switch",
           dict: dict({
             data: [
@@ -219,7 +219,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         validTime: {
-          title: t("certd.validTime"),
+          title: t("certd.sys.authority.validTime"),
           type: "date",
           form: {
             show: userValidTimeEnabled,
@@ -234,7 +234,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                 return "";
               }
               if (value < dayjs().valueOf()) {
-                return <a-tag color={"red"}>{t("certd.expired")}</a-tag>;
+                return <a-tag color={"red"}>{t("certd.common.expired")}</a-tag>;
               }
               const date = dayjs(value).format("YYYY-MM-DD");
               return (
@@ -256,17 +256,17 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         remark: {
-          title: t("certd.remark"),
+          title: t("certd.sys.authority.remark"),
           type: "text",
           column: {
             sorter: true,
           },
           form: {
-            rules: [{ max: 100, message: t("certd.max100Chars") }],
+            rules: [{ max: 100, message: t("certd.sys.authority.max100Chars") }],
           },
         },
         roles: {
-          title: t("certd.roles"),
+          title: t("certd.sys.authority.roles"),
           type: "dict-select",
           dict: dict({
             url: "/basic/user/getSimpleRoles",

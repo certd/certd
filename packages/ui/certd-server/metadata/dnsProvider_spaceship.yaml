@@ -4,6 +4,9 @@ desc: Spaceship 域名解析
 icon: clarity:plugin-line
 accessType: spaceship
 order: 99
+i18n:
+  en-US:
+    title: Spaceship DNS Provider
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-spaceship/dns-provider.js

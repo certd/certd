@@ -2,6 +2,10 @@ name: godaddy
 title: godaddy授权
 icon: simple-icons:godaddy
 desc: ''
+i18n:
+  en-US:
+    title: Godaddy Access
+    desc: Configure Godaddy access credentials.
 input:
   key:
     title: Key

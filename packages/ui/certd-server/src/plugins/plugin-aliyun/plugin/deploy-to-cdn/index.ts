@@ -1,4 +1,4 @@
-﻿import { optionsUtils } from "@certd/basic";
+import { optionsUtils } from "@certd/basic";
 import { AbstractTaskPlugin, CertTargetItem, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertReader } from "@certd/plugin-cert";
 import { CertInfo, createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
@@ -10,6 +10,12 @@ import { AliyunClient, AliyunSslClient, CasCertId } from "../../../plugin-lib/al
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "自动部署域名证书至阿里云CDN",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Deploy Certificate to CDN",
+      desc: "Deploy a certificate to Aliyun CDN.",
+    },
+  },
   runStrategy: RunStrategy.AlwaysRun,
   // default: {
   //   strategy: {

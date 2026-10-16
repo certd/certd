@@ -55,6 +55,12 @@ const CONDITION_APIKEY = `form.access.authType === '${AUTH_TYPE_APIKEY}'`;
   title: "网宿授权",
   desc: "",
   icon: "svg:icon-wangsu",
+  i18n: {
+    "en-US": {
+      title: "Wangsu Access",
+      desc: "Wangsu IAM access.",
+    },
+  },
 })
 export class WangsuAccess extends BaseAccess {
   @AccessInput({
@@ -228,7 +234,7 @@ export class WangsuAccess extends BaseAccess {
 
   async getCdnProCertList(req: any = {}) {
     if (!this.isApiKeyAuth()) {
-      throw new Error("CDNPro仅支持apikey授权方式")
+      throw new Error("CDNPro仅支持apikey授权方式");
     }
     const res: any = await this.doRequest({
       url: "/cdn/certificates?limit=200",

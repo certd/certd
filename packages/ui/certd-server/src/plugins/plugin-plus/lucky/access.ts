@@ -9,6 +9,11 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   title: "lucky",
   desc: "",
   icon: "svg:icon-lucky",
+  i18n: {
+    "en-US": {
+      title: "Lucky Access",
+    },
+  },
 })
 export class LuckyAccess extends BaseAccess {
   /**

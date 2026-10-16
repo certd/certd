@@ -16,6 +16,23 @@ import { VolcengineCdnClient } from "../cdn-client.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Volcengine-Deploy to CDN Plugin",
+      desc: "Deploy certificates to Volcengine CDN acceleration domains",
+      input: {
+        cert: { title: "Certificate", helper: "Select the certificate output from a previous task" },
+        certDomains: { title: "Certificate domains" },
+        accessId: { title: "Access credentials", helper: "Volcengine access key ID and secret" },
+        serviceType: {
+          title: "Service type",
+          helper: "Select the CDN service type",
+          optionsMapping: { web: "Web", download: "File download", video: "Video on demand" },
+        },
+        domainName: { title: "CDN acceleration domain", helper: "Select a CDN acceleration domain configured in Volcengine" },
+      },
+    },
+  },
 })
 export class VolcengineDeployToCDN extends AbstractTaskPlugin {
   @TaskInput({

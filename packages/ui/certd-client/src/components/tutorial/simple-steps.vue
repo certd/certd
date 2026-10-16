@@ -18,9 +18,9 @@ import { ref } from "vue";
 import { mitter } from "/@/utils/util.mitt";
 
 const steps = ref<Step[]>([
-  { title: t("certd.steps.createPipeline"), icon: <fs-icon icon="tabler:circle-number-1-filled"></fs-icon> },
-  { title: t("certd.steps.addTask"), icon: <fs-icon icon="tabler:circle-number-2-filled"></fs-icon> },
-  { title: t("certd.steps.scheduledRun"), icon: <fs-icon icon="tabler:circle-number-3-filled"></fs-icon> },
+  { title: t("certd.tutorial.steps.createPipeline"), icon: <fs-icon icon="tabler:circle-number-1-filled"></fs-icon> },
+  { title: t("certd.tutorial.steps.addTask"), icon: <fs-icon icon="tabler:circle-number-2-filled"></fs-icon> },
+  { title: t("certd.tutorial.steps.scheduledRun"), icon: <fs-icon icon="tabler:circle-number-3-filled"></fs-icon> },
 ]);
 
 function goPipeline() {

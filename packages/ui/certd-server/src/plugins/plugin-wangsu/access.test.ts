@@ -98,24 +98,17 @@ describe("WangsuAccess 授权方式", () => {
     assert.equal(http.calls[0].headers["x-cnc-accessKey"], "ak-sk-id");
   });
 
-  it("authType=apikey 时改用 CDN Pro 的 HTTP Basic 鉴权", async () => {
+  it("authType=apikey 时普通证书列表仍沿用旧接口", async () => {
     const { access, http } = createAccess({ authType: "apikey" });
-    http.push(cdnProResponse({ data: { count: 0, certificates: [] } }));
+    http.push({ sslCertificate: [] });
 
     await access.getCertList({});
 
     const call = http.calls[0];
     assert.equal(call.method, "GET");
-    assert.equal(call.url, "https://open.chinanetcenter.com/cdn/certificates?limit=200");
+    assert.equal(call.url, "https://open.chinanetcenter.com/api/ssl/certificate");
     assert.match(call.headers["Authorization"], /^Basic /);
     assert.ok(isRfc1123Gmt(call.headers["Date"]), `Date 头格式错误：${call.headers["Date"]}`);
-    assert.equal(call.returnOriginRes, true);
-
-    // 用户名取 ApiKey 方式专属字段，密码必须是 Base64(HMAC-SHA1(API Key, Date))
-    const parsed = parseBasicAuth(call.headers["Authorization"]);
-    assert.equal(parsed.user, "api-user");
-    const expectedPassword = crypto.createHmac("sha1", "api-key").update(call.headers["Date"]).digest("base64");
-    assert.equal(parsed.password, expectedPassword);
   });
 
   it("apikey 方式兼容历史数据：ApiKey 专属字段为空时回退到 accessKeyId/accessKeySecret", async () => {
@@ -186,12 +179,12 @@ describe("WangsuAccess 授权方式", () => {
     assert.deepEqual(res.data, { sslCertificate: [{ certificateId: "c1" }] });
   });
 
-  it("getCertList 从原始响应里取出证书数组，并带上域名 dnsNames", async () => {
+  it("getCdnProCertList 从 CDN Pro 响应里取出证书数组", async () => {
     const { access, http } = createAccess({ authType: "apikey" });
     const certificates = [{ id: "cert-1", name: "证书1", dnsNames: ["a.example.com"] }];
     http.push(cdnProResponse({ data: { count: 1, certificates } }));
 
-    const list = await access.getCertList({});
+    const list = await access.getCdnProCertList({});
 
     assert.deepEqual(list, certificates);
   });
@@ -235,12 +228,13 @@ describe("WangsuAccess 授权方式", () => {
     await assert.rejects(() => access.doRequest({ url: "/api/ssl/certificate", method: "GET" }), /authorization is error! please check signature, accessKey!/);
   });
 
-  it("onTestRequest 在 apikey 方式下走 CDN Pro 证书列表接口", async () => {
+  it("onTestRequest 在 apikey 方式下仍测试普通证书列表接口", async () => {
     const { access, http } = createAccess({ authType: "apikey" });
-    http.push(cdnProResponse({ data: { count: 0, certificates: [] } }));
+    http.push({ sslCertificate: [] });
 
     assert.equal(await access.onTestRequest(), "ok");
-    assert.match(http.calls[0].url, /\/cdn\/certificates/);
+    assert.match(http.calls[0].url, /\/api\/ssl\/certificate$/);
+    assert.match(http.calls[0].headers["Authorization"], /^Basic /);
   });
 
   it("encryptPrivateKey 用 ApiKey 与同一个 Date 派生 Key/IV 加密私钥，可解回原文", () => {

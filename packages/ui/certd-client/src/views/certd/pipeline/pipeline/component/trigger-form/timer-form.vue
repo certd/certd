@@ -3,15 +3,15 @@
     <fs-form-item
       v-model="trigger.props.cron"
       :item="{
-        title: t('certd.cronForm.title'),
+        title: t('certd.pipeline.cronForm.title'),
         key: 'props.cron',
         component: {
           disabled: !editMode,
           name: 'cron-editor',
           vModel: 'modelValue',
         },
-        helper: t('certd.cronForm.helper'),
-        rules: [{ required: true, message: t('certd.cronForm.required') }],
+        helper: t('certd.pipeline.cronForm.helper'),
+        rules: [{ required: true, message: t('certd.pipeline.cronForm.required') }],
       }"
     />
   </div>

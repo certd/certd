@@ -7,6 +7,10 @@ title: Fastly-更新证书
 desc: 自动更新 Fastly CDN 上的已有自定义证书
 icon: simple-icons:fastly
 group: cdn
+i18n:
+  en-US:
+    title: Fastly-Update Certificate
+    desc: Update a certificate on Fastly.
 input:
   cert:
     title: 域名证书

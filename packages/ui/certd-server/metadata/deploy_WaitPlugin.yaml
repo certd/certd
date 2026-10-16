@@ -6,6 +6,10 @@ name: WaitPlugin
 title: 等待
 icon: ri:rest-time-line
 desc: 等待一段时间
+i18n:
+  en-US:
+    title: Wait
+    desc: Wait for a specified period.
 group: other
 input:
   waitTime:

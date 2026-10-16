@@ -1,7 +1,7 @@
 <template>
   <div class="step-plugin-source-pane-local">
     <div class="step-plugin-search">
-      <a-input-search v-model:value="localPluginSearch.keyword" placeholder="搜索本地插件" :allow-clear="true" :show-search="true"></a-input-search>
+      <a-input-search v-model:value="localPluginSearch.keyword" :placeholder="t('certd.pipeline.editor.searchLocalPlugins')" :allow-clear="true" :show-search="true"></a-input-search>
     </div>
     <a-tabs v-model:active-key="pluginGroupActive" tab-position="left" class="step-plugin-selector-tabs flex-1 overflow-hidden h-full">
       <a-tab-pane v-for="group of computedLocalPluginGroups" :key="group.key" class="step-plugin-list-pane">
@@ -11,7 +11,7 @@
             <div>{{ group.title }}</div>
           </div>
         </template>
-        <div v-if="!group.plugins || group.plugins.length === 0" class="step-plugin-empty">没有找到插件</div>
+        <div v-if="!group.plugins || group.plugins.length === 0" class="step-plugin-empty">{{ t("certd.pipeline.editor.noPluginFound") }}</div>
         <a-row v-else :gutter="10">
           <a-col v-for="item of group.plugins" :key="item.key || item.name" class="step-plugin w-full md:w-[50%]">
             <a-card hoverable :class="{ current: item.name === selectedType }" @click="emit('select', item)" @dblclick="emit('confirm', item)">
@@ -38,6 +38,7 @@ import { computed, ref, Ref, watch } from "vue";
 import { PluginGroups, usePluginStore } from "/@/store/plugin";
 import { useUserStore } from "/@/store/user";
 import { utils } from "/@/utils";
+import { useI18n } from "/@/locales";
 
 defineProps({
   selectedType: {
@@ -51,6 +52,7 @@ const emit = defineEmits<{
   (e: "confirm", plugin: any): void;
 }>();
 
+const { t } = useI18n();
 const userStore = useUserStore();
 const pluginStore = usePluginStore();
 const pluginGroupActive = ref("all");
@@ -81,6 +83,15 @@ function handleLocalPluginGroupChange(groupKey: string) {
   localPluginSearch.value.keyword = "";
 }
 
+function getTranslatedPluginGroupTitle(groupKey: string, fallbackTitle: string) {
+  const translationKey = `certd.pipeline.editor.pluginGroups.${groupKey}`;
+  const translatedTitle = t(translationKey);
+  if (translatedTitle === translationKey) {
+    return fallbackTitle;
+  }
+  return translatedTitle;
+}
+
 const computedLocalPluginGroups: any = computed(() => {
   if (!pluginGroup.value) {
     return {};
@@ -92,7 +103,10 @@ const computedLocalPluginGroups: any = computed(() => {
     if (groupKey === "admin" && !userStore.isAdmin) {
       continue;
     }
-    visibleGroups[groupKey] = groups[groupKey];
+    visibleGroups[groupKey] = {
+      ...groups[groupKey],
+      title: getTranslatedPluginGroupTitle(groupKey, groups[groupKey].title),
+    };
   }
   if (!keyword) {
     return visibleGroups;

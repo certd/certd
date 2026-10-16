@@ -51,14 +51,14 @@ export function useOnlineInstall() {
     target.version = result.version;
     if (!options?.silent) {
       await pluginStore.reload();
-      notification.success({ message: t("certd.onlinePluginInstallSuccess") });
+      notification.success({ message: t("certd.sys.plugin.onlinePluginInstallSuccess") });
     }
   }
 
   async function installOnlinePluginRecord(record: any, versionOverride?: string) {
     const fullName = fullNameValueFor(record);
     if (!fullName) {
-      throw new Error(t("certd.onlinePluginDependencyNotFound"));
+      throw new Error(t("certd.sys.plugin.onlinePluginDependencyNotFound"));
     }
     const version = versionOverride || record.latest;
     await api.OnlinePluginInstall(

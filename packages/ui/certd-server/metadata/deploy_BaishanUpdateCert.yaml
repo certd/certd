@@ -7,6 +7,9 @@ title: 白山云-更新证书
 icon: material-symbols:shield-outline
 group: cdn
 needPlus: false
+i18n:
+  en-US:
+    title: Baishan - Update Certificate
 input:
   certId:
     title: 证书ID

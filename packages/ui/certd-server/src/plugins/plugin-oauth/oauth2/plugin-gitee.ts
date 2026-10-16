@@ -6,6 +6,7 @@ import { BuildLoginUrlReq, BuildLogoutUrlReq, IOauthProvider, OnCallbackReq } fr
   name: "gitee",
   title: "Gitee认证",
   desc: "Gitee OAuth2登录",
+  i18n: { "en-US": { title: "Gitee OAuth", desc: "Sign in with a Gitee account." } },
   icon: "simple-icons:gitee:red",
   showTest: false,
 })

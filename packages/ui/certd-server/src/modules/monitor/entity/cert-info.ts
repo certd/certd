@@ -60,6 +60,9 @@ export class CertInfoEntity {
   @Column({ name: "cert_info", comment: "证书详情" })
   certInfo: string;
 
+  @Column({ name: "cert_password", comment: "证书密码", nullable: true })
+  certPassword: string;
+
   // Deprecated 废弃
   @Column({ name: "cert_file", comment: "证书下载" })
   certFile: string;

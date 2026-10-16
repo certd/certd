@@ -7,6 +7,51 @@ icon: ph:certificate
 title: 已有证书托管
 group: cert
 desc: 手动上传自定义证书后，自动部署（每次证书有更新，都需要手动上传一次）
+i18n:
+  en-US:
+    title: Manage Existing Certificate
+    desc: >-
+      Upload a custom certificate manually and deploy it automatically. Upload
+      the certificate again whenever it is renewed.
+    shortcut:
+      certUpdate:
+        title: Update Certificate
+        form:
+          columns:
+            crt:
+              title: Certificate
+            key:
+              title: Private Key
+    input:
+      domains:
+        title: Certificate Domains
+        component:
+          placeholder: Enter certificate domains or IPs
+        helper: Enter the domains covered by this certificate.
+      renewDays:
+        title: Expiration Reminder
+        helper: Send a reminder this many days before expiration.
+      uploadCert:
+        title: Upload Certificate
+        helper: Upload the certificate manually.
+      pfxPassword:
+        title: Certificate Encryption Password
+        helper: >-
+          Choose whether to encrypt PFX and JKS certificates. If omitted, PFX
+          uses an empty password and JKS uses 123456.
+      pfxArgs:
+        title: PFX Conversion Options
+        component:
+          optionsMapping:
+            '': Latest Windows Server compatibility
+            '-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES': Windows Server 2016 compatibility
+            '-nomac -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES': Windows Server 2008 compatibility
+        helper: Options for compatibility with different Windows Server versions.
+    output:
+      cert:
+        title: Domain Certificate
+      certMd5:
+        title: Certificate MD5
 shortcut:
   certUpdate:
     title: 更新证书

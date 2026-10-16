@@ -19,6 +19,7 @@ export type AccessInputDefine = FormItemProps & {
   encrypt?: boolean;
 };
 export type AccessDefine = Registrable & {
+  i18n?: Record<string, any>;
   icon?: string;
   subtype?: string;
   dependPlugins?: Record<string, string>;

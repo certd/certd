@@ -7,6 +7,12 @@ import { PageRes, PageSearch } from "@certd/pipeline";
   name: "aws-route53",
   title: "AWS Route53",
   desc: "AWS Route53 DNS解析提供商",
+  i18n: {
+    "en-US": {
+      title: "AWS Route 53",
+      desc: "Amazon Route 53 DNS provider.",
+    },
+  },
   accessType: "aws",
   icon: "svg:icon-aws",
   order: 1,

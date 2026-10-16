@@ -19,6 +19,11 @@ import { MaoyunClient } from "@certd/plugin-plus";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Maoyun - Deploy to CDN",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class MaoyunDeployToCdn extends AbstractPlusTaskPlugin {

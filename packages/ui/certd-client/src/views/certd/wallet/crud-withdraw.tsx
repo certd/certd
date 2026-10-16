@@ -1,8 +1,10 @@
 import { CreateCrudOptionsRet, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import * as api from "./api";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
+import { useI18n } from "/src/locales";
 
 export default function (): CreateCrudOptionsRet {
+  const { t } = useI18n();
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetWithdraws(query);
   };
@@ -15,9 +17,9 @@ export default function (): CreateCrudOptionsRet {
       toolbar: { show: false },
       rowHandle: { show: false },
       columns: {
-        createTime: { title: "申请时间", type: "datetime", column: { width: 180 } },
+        createTime: { title: t("certd.wallet.applyTime"), type: "datetime", column: { width: 180 } },
         amount: {
-          title: "金额",
+          title: t("certd.wallet.amount"),
           type: "number",
           column: {
             width: 120,
@@ -25,29 +27,29 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         status: {
-          title: "状态",
+          title: t("certd.common.status"),
           type: "dict-select",
           dict: dict({
             data: [
-              { label: "待审核", value: "pending", color: "warning" },
-              { label: "已通过", value: "approved", color: "success" },
-              { label: "已拒绝", value: "rejected", color: "error" },
+              { label: t("certd.wallet.pending"), value: "pending", color: "warning" },
+              { label: t("certd.wallet.approved"), value: "approved", color: "success" },
+              { label: t("certd.wallet.rejected"), value: "rejected", color: "error" },
             ],
           }),
           column: { width: 110 },
         },
         channel: {
-          title: "提现渠道",
+          title: t("certd.wallet.channel"),
           type: "dict-select",
           dict: dict({
             data: [
-              { label: "支付宝", value: "alipay" },
-              { label: "银行卡", value: "bank" },
+              { label: t("certd.wallet.alipay"), value: "alipay" },
+              { label: t("certd.wallet.bank"), value: "bank" },
             ],
           }),
           column: { width: 110 },
         },
-        auditRemark: { title: "审核备注", type: "text", column: { minWidth: 180 } },
+        auditRemark: { title: t("certd.wallet.auditRemark"), type: "text", column: { minWidth: 180 } },
       },
     },
   };

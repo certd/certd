@@ -18,6 +18,12 @@ import { DokployAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Dokploy-Deploy Server Certificate",
+      desc: "Automatically update the Dokploy server certificate.",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class DokployRefreshCert extends AbstractTaskPlugin {

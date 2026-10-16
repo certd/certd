@@ -5,6 +5,7 @@ import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput 
   title: "等待",
   icon: "ri:rest-time-line",
   desc: "等待一段时间",
+  i18n: { "en-US": { title: "Wait", desc: "Wait for a specified period." } },
   group: pluginGroups.other.key,
   showRunStrategy: true,
   default: {

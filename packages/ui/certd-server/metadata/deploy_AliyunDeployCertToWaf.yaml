@@ -7,6 +7,10 @@ title: 阿里云-部署至阿里云WAF(cname接入)
 icon: svg:icon-aliyun
 group: aliyun
 desc: 部署证书到阿里云WAF(cname接入)，云资源的请选择另外一个waf插件
+i18n:
+  en-US:
+    title: Aliyun-Deploy Certificate to WAF CNAME
+    desc: Deploy a certificate to Aliyun WAF.
 needPlus: false
 input:
   cert:

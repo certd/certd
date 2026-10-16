@@ -2,6 +2,10 @@ name: 51dns
 title: 51dns授权
 icon: arcticons:dns-changer-3
 desc: ''
+i18n:
+  en-US:
+    title: 51Dns Access
+    desc: 51DNS IAM access.
 input:
   username:
     title: 用户名

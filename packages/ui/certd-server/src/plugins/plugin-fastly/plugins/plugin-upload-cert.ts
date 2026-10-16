@@ -13,6 +13,12 @@ import { FastlyAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Fastly-Upload Certificate",
+      desc: "Upload a certificate to Fastly.",
+    },
+  },
 })
 export class FastlyUploadCertPlugin extends AbstractTaskPlugin {
   @TaskInput({

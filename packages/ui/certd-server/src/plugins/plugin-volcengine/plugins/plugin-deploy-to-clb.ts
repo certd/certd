@@ -15,6 +15,12 @@ import { VolcengineClient } from "../ve-client.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Volcengine-Deploy to CLB Plugin",
+      desc: "Deploy certificates to Volcengine CLB listeners.",
+    },
+  },
 })
 export class VolcengineDeployToCLB extends AbstractTaskPlugin {
   @TaskInput({

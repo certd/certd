@@ -17,6 +17,11 @@ import { QiniuClient } from "../../../plugin-lib/qiniu/index.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Qiniu - Deploy Cert to CDN",
+    },
+  },
 })
 export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
   @TaskInput({

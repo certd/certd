@@ -3,6 +3,7 @@ import { IAccess, IAccessService, IServiceGetter, PageRes, PageSearch, Registrab
 
 export type DnsProviderDefine = Registrable & {
   accessType: string;
+  i18n?: Record<string, any>;
   icon?: string;
   dependPlugins?: Record<string, string>;
   dependPackages?: Record<string, string>;

@@ -9,6 +9,12 @@ import { JDCloudAccess } from "./access.js";
   accessType: "jdcloud",
   icon: "svg:icon-jdcloud",
   order: 3,
+  i18n: {
+    "en-US": {
+      title: "Jdcloud DNS Provider",
+      desc: "JDcloud DNS provider.",
+    },
+  },
 })
 export class JDCloudDnsProvider extends AbstractDnsProvider {
   access!: JDCloudAccess;

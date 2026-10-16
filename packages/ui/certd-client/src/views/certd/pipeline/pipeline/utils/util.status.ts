@@ -14,26 +14,26 @@ export type StatusEnumType = {
 const StatusEnum: StatusEnumType = {
   success: {
     value: "success",
-    label: "成功",
+    label: "statusSuccess",
     color: "green",
     spin: false,
     icon: "ant-design:check-circle-outlined",
   },
   error: {
     value: "error",
-    label: "错误",
+    label: "statusError",
     color: "red",
     icon: "ant-design:info-circle-outlined",
   },
   skip: {
     value: "skip",
-    label: "跳过",
+    label: "statusSkip",
     color: "blue",
     icon: "fluent:arrow-step-over-20-filled",
   },
   start: {
     value: "start",
-    label: "运行中",
+    label: "statusStart",
     color: "blue",
     spin: true,
     iconSpin: true,
@@ -41,26 +41,26 @@ const StatusEnum: StatusEnumType = {
   },
   canceled: {
     value: "canceled",
-    label: "已取消",
+    label: "statusCanceled",
     color: "yellow",
     iconColor: "#d4b106",
     icon: "ant-design:minus-circle-twotone",
   },
   none: {
     value: "none",
-    label: "未运行",
+    label: "statusNone",
     color: "blue",
     icon: "ant-design:minus-circle-twotone",
   },
   disabled: {
     value: "disabled",
-    label: "禁用",
+    label: "statusDisabled",
     color: "gray",
     icon: "ant-design:stop-outlined",
   },
   no_deploy_count: {
     value: "no_deploy_count",
-    label: "次数不足",
+    label: "statusNoDeployCount",
     color: "gray",
     icon: "ant-design:stop-outlined",
   },
@@ -73,10 +73,14 @@ export const statusUtil = {
     return StatusEnum[status];
   },
 
-  getOptions() {
+  getOptions(t?: (key: string) => string) {
     const options: any[] = [];
     for (const key of Object.keys(StatusEnum)) {
-      options.push(StatusEnum[key]);
+      const option = StatusEnum[key];
+      options.push({
+        ...option,
+        label: t ? t(`certd.pipeline.editor.${option.label}`) : option.label,
+      });
     }
     return options;
   },

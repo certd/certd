@@ -99,6 +99,82 @@ const preferredChainMergeScript = (() => {
   icon: "ph:certificate",
   group: pluginGroups.cert.key,
   desc: "免费通配符域名证书申请，支持多个域名打到同一个证书上",
+  i18n: {
+    "en-US": {
+      title: "Request Certificate (JS)",
+      desc: "Request free wildcard certificates and include multiple domains in a single certificate.",
+      input: {
+        version: { title: "Version" },
+        domains: {
+          title: "Certificate Domains",
+          component: { placeholder: "Enter certificate domains or IPs, e.g. foo.com, *.foo.com, *.sub.foo.com, *.bar.com, 123.123.123.123" },
+          helper:
+            "1. Multiple domains can be included in one certificate, e.g. foo.com, *.foo.com, *.bar.com.\n2. Do not include subdomains already covered by a wildcard, e.g. www.foo.com is covered by *.foo.com.\n3. A wildcard covers only one level: a certificate for *.foo.com does not cover foo.com or xxx.yyy.foo.com.\n4. Enter a domain, press Space, then enter the next one.\n5. If delegated subdomain hosting is configured, [configure the delegated subdomain first](#/certd/pipeline/subDomain).",
+        },
+        renewDays: { title: "Renewal Window (Days)", helper: "Renew the certificate when it expires within this many days. The pipeline does not run automatically by default; schedule it to run daily." },
+        forceUpdate: { title: "Force Renewal" },
+        challengeType: {
+          title: "Domain Validation Method",
+          optionsMapping: {
+            dns: "Direct DNS Validation",
+            "dns-persist": "Persistent DNS Validation",
+            cname: "CNAME Proxy Validation",
+            http: "HTTP File Validation (required for IP certificates)",
+            dnses: "Multiple DNS Providers",
+            auto: "Automatic Matching",
+          },
+          helper:
+            "1. Direct DNS: recommended when this system supports your DNS provider.\n2. Persistent DNS: configure an ACME account and a _validation-persist TXT record first; currently supported only for Google certificates.\n3. CNAME proxy: works with any registrar; add the CNAME record on first use and keep it for renewals.\n4. HTTP file: does not support wildcards and requires website file upload; required for IP certificates.\n5. Multiple DNS providers: configure a separate provider or validation method for each domain.\n6. Automatic matching: configure validation methods in Domain Management before use.",
+        },
+        dnsProviderType: { title: "DNS Provider", helper: "Select the platform that hosts your domain's DNS. If it is not listed, use CNAME proxy validation." },
+        dnsProviderAccess: { title: "DNS Provider Credentials", helper: "Select credentials for the DNS provider." },
+        domainsVerifyPlan: { title: "Domain Validation Configuration", helper: "Configure validation records or upload settings for each domain according to the selected validation method." },
+        sslProvider: {
+          title: "Certificate Authority",
+          helper:
+            "Let's Encrypt: easiest to use.\nGoogle: good compatibility; no proxy required.\nSSL.com: free for the apex domain and www only; a CAA record is required.\nCustom ACME: configured by an administrator in System Settings > Pipeline Settings.",
+        },
+        googleCommonEabAccessId: { title: "Google Shared EAB Credentials" },
+        googleCommonAcmeAccountAccessId: { title: "Google Shared ACME Account" },
+        zerosslCommonEabAccessId: { title: "ZeroSSL Shared EAB Credentials" },
+        zerosslCommonAcmeAccountAccessId: { title: "ZeroSSL Shared ACME Account" },
+        sslcomCommonEabAccessId: { title: "SSL.com Shared EAB Credentials" },
+        sslcomCommonAcmeAccountAccessId: { title: "SSL.com Shared ACME Account" },
+        litesslCommonEabAccessId: { title: "litessl Shared EAB Credentials" },
+        litesslCommonAcmeAccountAccessId: { title: "litessl Shared ACME Account" },
+        eabAccessId: { title: "EAB Credentials", helper: "Some certificate authorities require EAB credentials. See the provider documentation to create them." },
+        acmeAccountAccessId: { title: "ACME Account", helper: "Generate an account locally without external registration: select Add, enter an email, then generate the account." },
+        googleAccessId: {
+          title: "Google Service Account",
+          helper: "For Google, choose either service account credentials or EAB. See the [setup guide](https://certd.docmirror.cn/guide/use/google/). A proxy or an overseas server may be required.",
+        },
+        privateKeyType: { title: "Key Algorithm", optionsMapping: { rsa_2048_pkcs1: "RSA 2048 PKCS#1 (Legacy)" }, helper: "Keep the default unless needed. RSA 2048 PKCS#1 produces a legacy RSA certificate." },
+        certProfile: {
+          title: "Certificate Profile",
+          optionsMapping: { classic: "Classic (classic)", tlsserver: "TLS Server (tlsserver)", shortlived: "Short-lived (shortlived)" },
+          helper: "Keep the default unless needed.",
+        },
+        preferredChain: { title: "Preferred Certificate Chain", helper: "Keep the default unless needed." },
+        useProxy: { title: "Use Proxy", helper: "Enable this if the Let's Encrypt or Google ACME endpoint is inaccessible. The system tests connectivity and uses a proxy automatically when needed." },
+        reverseProxy: { title: "Custom Reverse Proxy", helper: "Enter the proxy hostname without http://.\nLet's Encrypt target: acme-v02.api.letsencrypt.org\nGoogle target: dv.acme-v02.api.pki.goog" },
+        skipLocalVerify: { title: "Skip Local DNS Validation", helper: "Skipping local validation may speed up requests but can increase the chance of failure." },
+        maxCheckRetryCount: { title: "DNS Propagation Check Retries", helper: "Number of retries for checking validation records. Increase this if your DNS provider propagates changes slowly." },
+        waitDnsDiffuseTime: { title: "DNS Propagation Wait (Seconds)", helper: "Wait for DNS changes to propagate. If local validation fails with CNAME validation, try a longer delay such as 5–10 minutes." },
+        certApplyRetryCount: { title: "Certificate Request Retries", helper: "Wait 30 seconds before retrying a failed request. Set to 0 to disable retries." },
+        pfxPassword: { title: "Certificate Encryption Password", helper: "Choose whether to encrypt PFX and JKS certificates. If omitted, PFX uses an empty password and JKS uses 123456." },
+        pfxArgs: {
+          title: "PFX Conversion Options",
+          optionsMapping: {
+            "": "Latest Windows Server compatibility",
+            "-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES": "Windows Server 2016 compatibility",
+            "-nomac -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES": "Windows Server 2008 compatibility",
+          },
+          helper: "Options for compatibility with different Windows Server versions.",
+        },
+      },
+      output: { cert: { title: "Domain Certificate" }, certMd5: { title: "Certificate MD5" } },
+    },
+  },
   default: {
     input: {
       renewDays: 20,

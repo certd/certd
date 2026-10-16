@@ -5,6 +5,11 @@ import { IsAccess, AccessInput, BaseAccess, PageSearch } from "@certd/pipeline";
   title: "Spaceship.com 授权",
   icon: "clarity:plugin-line",
   desc: "Spaceship.com API 授权插件",
+  i18n: {
+    "en-US": {
+      title: "Spaceship Access",
+    },
+  },
 })
 export class SpaceshipAccess extends BaseAccess {
   @AccessInput({

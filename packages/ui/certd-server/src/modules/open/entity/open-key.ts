@@ -20,6 +20,9 @@ export class OpenKeyEntity {
   @Column({ name: "remark", comment: "密钥用途备注", length: 512, nullable: true })
   remark: string; // 用于说明该密钥的用途，便于区分和查找
 
+  @Column({ name: "return_cert_password", comment: "开放接口是否返回证书密码", default: false })
+  returnCertPassword: boolean;
+
   @Column({ name: "project_id", comment: "项目id" })
   projectId: number;
 

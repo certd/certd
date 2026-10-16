@@ -32,6 +32,7 @@ function getCloginType(subtype?: string, loginType?: string | string[]) {
   name: "clogin",
   title: "彩虹聚合登录",
   desc: "彩虹聚合登录",
+  i18n: { "en-US": { title: "Clogin OAuth", desc: "Sign in with the configured OAuth provider." } },
   icon: "emojione:rainbow",
   showTest: false,
 })

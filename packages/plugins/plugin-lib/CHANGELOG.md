@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.45.1](https://github.com/certd/certd/compare/v1.45.0...v1.45.1) (2026-10-14)
+
+### Performance Improvements
+
+* 多语言国际化优化，插件支持国际化配置 ([8f1b38a](https://github.com/certd/certd/commit/8f1b38ad7d445473ae71d537ad8e465f2e55ebc7))
+
 # [1.45.0](https://github.com/certd/certd/compare/v1.44.4...v1.45.0) (2026-10-02)
 
 **Note:** Version bump only for package @certd/plugin-lib

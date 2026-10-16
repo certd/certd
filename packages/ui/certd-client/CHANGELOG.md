@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.45.1](https://github.com/certd/certd/compare/v1.45.0...v1.45.1) (2026-10-14)
+
+### Bug Fixes
+
+* 修复批量修改证书申请参数，无法选择证书颁发机构的bug ([9d9ae64](https://github.com/certd/certd/commit/9d9ae64aff76a09d64a5be04968ff0cc3ad097a4))
+
+### Performance Improvements
+
+* 插件市场新增同步按钮并调整搜索区域布局 ([41ca198](https://github.com/certd/certd/commit/41ca198116e1890e65973c4317acfecb32126951))
+* 多语言国际化优化，插件支持国际化配置 ([8f1b38a](https://github.com/certd/certd/commit/8f1b38ad7d445473ae71d537ad8e465f2e55ebc7))
+* 开放接口支持返回证书密码，需要在openKey主动开启该设置，客户端部署证书时可以直接获取密码部署 ([3e001b8](https://github.com/certd/certd/commit/3e001b8ba431eb9af8c4ea1b20118bcf5e7ebce4))
+* 证书申请成功通知支持批量修改 ([22715a4](https://github.com/certd/certd/commit/22715a430e24a6132482cadb6b217acc283f270c))
+
 # [1.45.0](https://github.com/certd/certd/compare/v1.44.4...v1.45.0) (2026-10-02)
 
 ### Features

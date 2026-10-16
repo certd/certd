@@ -13,6 +13,11 @@ import { QiniuAccess, QiniuClient } from "../../plugin-lib/qiniu/index.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Qiniu - Deploy Cert to OSS",
+    },
+  },
 })
 export class QiniuDeployCertToOSS extends AbstractTaskPlugin {
   @TaskInput({

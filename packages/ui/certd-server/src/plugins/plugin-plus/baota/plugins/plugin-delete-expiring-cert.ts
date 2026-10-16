@@ -15,6 +15,12 @@ import dayjs from "dayjs";
     },
   },
   needPlus: true,
+  i18n: {
+    "en-US": {
+      title: "Baota - Delete Expiring Cert",
+      desc: "Delete the expiring certificate.",
+    },
+  },
 })
 export class BaotaDeleteExpiringCert extends AbstractPlusTaskPlugin {
   //授权选择框

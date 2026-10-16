@@ -5,6 +5,12 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   name: "huawei",
   title: "华为云授权",
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "Huawei Cloud Access",
+      desc: "Configure Huawei Cloud access credentials.",
+    },
+  },
   icon: "svg:icon-huawei",
   order: 0,
 })

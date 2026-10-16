@@ -1,4 +1,5 @@
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useFormDialog } from "/@/use/use-dialog";
 import PluginAiDevDialogBody from "./components/plugin-ai-dev-dialog-body.vue";
 
@@ -9,11 +10,12 @@ export type PluginAiDevOpenOptions = {
 
 export function usePluginAiDev() {
   const { openFormDialog } = useFormDialog();
+  const { t } = useI18n();
 
   async function openAiDevDialog(options: PluginAiDevOpenOptions = {}) {
     const bodyRef = ref();
     await openFormDialog({
-      title: "AI 开发插件",
+      title: t("certd.sys.plugin.aiDevTitle"),
       columns: {},
       noneForm: true,
       wrapper: {

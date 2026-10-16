@@ -7,6 +7,9 @@ title: Openwrt-部署证书到Openwrt
 icon: svg:icon-lucky
 group: host
 needPlus: true
+i18n:
+  en-US:
+    title: Openwrt - Deploy to Openwrt
 input:
   cert:
     title: 域名证书

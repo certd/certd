@@ -8,6 +8,10 @@ desc: 上传证书并部署到指定网站
 icon: svg:icon-lucky
 group: panel
 needPlus: true
+i18n:
+  en-US:
+    title: AcePanel Deploy to Website Plugin
+    desc: Deploy AcePanel certificate to website.
 input:
   cert:
     title: 域名证书

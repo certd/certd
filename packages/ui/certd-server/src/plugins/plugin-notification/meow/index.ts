@@ -41,6 +41,7 @@ Content-Type: application/json
   name: "meow",
   title: "MeoW通知",
   desc: "https://api.chuckfang.com/",
+  i18n: { "en-US": { title: "Meow Notification", desc: "Send pipeline notifications using Meow." } },
   needPlus: false,
 })
 export class MeowNotification extends BaseNotification {

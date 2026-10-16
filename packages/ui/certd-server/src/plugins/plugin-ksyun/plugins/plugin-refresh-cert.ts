@@ -18,6 +18,12 @@ import { KsyunAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Ksyun-Refresh Cert",
+      desc: "Refresh certificates in Ksyun CDN.",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class KsyunRefreshCDNCert extends AbstractTaskPlugin {

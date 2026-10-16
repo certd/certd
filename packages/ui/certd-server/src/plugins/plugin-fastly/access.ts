@@ -9,6 +9,12 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   title: "Fastly授权",
   icon: "simple-icons:fastly",
   desc: "Fastly CDN / TLS Custom Certificates API 授权",
+  i18n: {
+    "en-US": {
+      title: "Fastly Access",
+      desc: "Configure Fastly access credentials.",
+    },
+  },
 })
 export class FastlyAccess extends BaseAccess {
   @AccessInput({

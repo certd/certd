@@ -13,6 +13,11 @@ import { BaishanAccess } from "../access.js";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Baishan - Update Certificate",
+    },
+  },
 })
 export class BaishanUpdateCert extends AbstractTaskPlugin {
   //测试参数

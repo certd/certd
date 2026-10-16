@@ -20,8 +20,8 @@
     </div>
 
     <div class="flex-center actions">
-      <fs-button class="m-10" icon="ion:arrow-back-outline" @click="prev()">{{ t("guide.buttons.prev") }}</fs-button>
-      <fs-button class="m-10" type="primary" icon-right="ion:arrow-forward-outline" @click="next()">{{ t("guide.buttons.next") }}</fs-button>
+      <fs-button class="m-10" icon="ion:arrow-back-outline" @click="prev()">{{ t("certd.guide.buttons.prev") }}</fs-button>
+      <fs-button class="m-10" type="primary" icon-right="ion:arrow-forward-outline" @click="next()">{{ t("certd.guide.buttons.next") }}</fs-button>
     </div>
   </div>
 </template>
@@ -52,126 +52,126 @@ import { computed, nextTick, ref } from "vue";
 
 const steps = ref<Step[]>([
   {
-    title: t("guide.createCertPipeline.title"),
-    description: t("guide.createCertPipeline.description"),
+    title: t("certd.guide.createCertPipeline.title"),
+    description: t("certd.guide.createCertPipeline.description"),
     items: [
       {
-        title: t("guide.createCertPipeline.items.tutorialTitle"),
-        descriptions: [t("guide.createCertPipeline.items.tutorialDesc1"), t("guide.createCertPipeline.items.tutorialDesc2")],
+        title: t("certd.guide.createCertPipeline.items.tutorialTitle"),
+        descriptions: [t("certd.guide.createCertPipeline.items.tutorialDesc1"), t("certd.guide.createCertPipeline.items.tutorialDesc2")],
         body: () => {
           return <SimpleSteps></SimpleSteps>;
         },
       },
       {
         image: "/static/doc/images/1-add.png",
-        title: t("guide.createCertPipeline.items.createTitle"),
-        descriptions: [t("guide.createCertPipeline.items.createDesc")],
+        title: t("certd.guide.createCertPipeline.items.createTitle"),
+        descriptions: [t("certd.guide.createCertPipeline.items.createDesc")],
       },
       {
         image: "/static/doc/images/3-add-success.png",
-        title: t("guide.createCertPipeline.items.successTitle"),
-        descriptions: [t("guide.createCertPipeline.items.successDesc")],
+        title: t("certd.guide.createCertPipeline.items.successTitle"),
+        descriptions: [t("certd.guide.createCertPipeline.items.successDesc")],
       },
       // {
-      //   title: t("guide.createCertPipeline.items.nextTitle"),
-      //   descriptions: [t("guide.createCertPipeline.items.nextDesc")],
+      //   title: t("certd.guide.createCertPipeline.items.nextTitle"),
+      //   descriptions: [t("certd.guide.createCertPipeline.items.nextDesc")],
       // },
     ],
   },
   {
-    title: t("guide.addDeployTask.title"),
-    description: t("guide.addDeployTask.description"),
+    title: t("certd.guide.addDeployTask.title"),
+    description: t("certd.guide.addDeployTask.description"),
     items: [
       {
         image: "/static/doc/images/5-1-add-host.png",
-        title: t("guide.addDeployTask.items.addTaskTitle"),
-        descriptions: [t("guide.addDeployTask.items.addTaskDesc1"), t("guide.addDeployTask.items.addTaskDesc2")],
+        title: t("certd.guide.addDeployTask.items.addTaskTitle"),
+        descriptions: [t("certd.guide.addDeployTask.items.addTaskDesc1"), t("certd.guide.addDeployTask.items.addTaskDesc2")],
       },
       {
         image: "/static/doc/images/5-2-add-host.png",
-        title: t("guide.addDeployTask.items.fillParamsTitle"),
-        descriptions: [t("guide.addDeployTask.items.fillParamsDesc1"), t("guide.addDeployTask.items.fillParamsDesc2")],
+        title: t("certd.guide.addDeployTask.items.fillParamsTitle"),
+        descriptions: [t("certd.guide.addDeployTask.items.fillParamsDesc1"), t("certd.guide.addDeployTask.items.fillParamsDesc2")],
       },
       {
         image: "/static/doc/images/5-3-add-host.png",
-        title: t("guide.addDeployTask.items.activateCertTitle"),
-        descriptions: [t("guide.addDeployTask.items.activateCertDesc1"), t("guide.addDeployTask.items.activateCertDesc2")],
+        title: t("certd.guide.addDeployTask.items.activateCertTitle"),
+        descriptions: [t("certd.guide.addDeployTask.items.activateCertDesc1"), t("certd.guide.addDeployTask.items.activateCertDesc2")],
       },
       {
         image: "/static/doc/images/5-4-add-host.png",
-        title: t("guide.addDeployTask.items.taskSuccessTitle"),
-        descriptions: [t("guide.addDeployTask.items.taskSuccessDesc")],
+        title: t("certd.guide.addDeployTask.items.taskSuccessTitle"),
+        descriptions: [t("certd.guide.addDeployTask.items.taskSuccessDesc")],
       },
       {
         image: "/static/doc/images/5-5-plugin-list.png",
-        title: t("guide.addDeployTask.items.pluginsTitle"),
-        descriptions: [t("guide.addDeployTask.items.pluginsDesc")],
+        title: t("certd.guide.addDeployTask.items.pluginsTitle"),
+        descriptions: [t("certd.guide.addDeployTask.items.pluginsDesc")],
       },
     ],
   },
   {
-    title: t("guide.runAndTestTask.runAndTestTitle"),
-    description: t("guide.runAndTestTask.runAndTestDescription"),
+    title: t("certd.guide.runAndTestTask.runAndTestTitle"),
+    description: t("certd.guide.runAndTestTask.runAndTestDescription"),
     items: [
       {
         image: "/static/doc/images/9-start.png",
-        title: t("guide.runAndTestTask.runTestOnce"),
-        descriptions: [t("guide.runAndTestTask.clickManualTriggerToTest")],
+        title: t("certd.guide.runAndTestTask.runTestOnce"),
+        descriptions: [t("certd.guide.runAndTestTask.clickManualTriggerToTest")],
       },
       {
         image: "/static/doc/images/10-1-log.png",
-        title: t("guide.runAndTestTask.viewLogs"),
-        descriptions: [t("guide.runAndTestTask.clickTaskToViewStatusAndLogs")],
+        title: t("certd.guide.runAndTestTask.viewLogs"),
+        descriptions: [t("certd.guide.runAndTestTask.clickTaskToViewStatusAndLogs")],
       },
       {
         image: "/static/doc/images/11-1-error.png",
-        title: t("guide.runAndTestTask.howToTroubleshootFailure"),
-        descriptions: [t("guide.runAndTestTask.viewErrorLogs")],
+        title: t("certd.guide.runAndTestTask.howToTroubleshootFailure"),
+        descriptions: [t("certd.guide.runAndTestTask.viewErrorLogs")],
       },
       {
         image: "/static/doc/images/11-2-error.png",
-        title: t("guide.runAndTestTask.howToTroubleshootFailure"),
-        descriptions: [t("guide.runAndTestTask.viewErrorLogs"), t("guide.runAndTestTask.nginxContainerNotExistFix")],
+        title: t("certd.guide.runAndTestTask.howToTroubleshootFailure"),
+        descriptions: [t("certd.guide.runAndTestTask.viewErrorLogs"), t("certd.guide.runAndTestTask.nginxContainerNotExistFix")],
       },
       {
         image: "/static/doc/images/12-1-log-success.png",
-        title: t("guide.runAndTestTask.executionSuccess"),
-        descriptions: [t("guide.runAndTestTask.retryAfterFix")],
+        title: t("certd.guide.runAndTestTask.executionSuccess"),
+        descriptions: [t("certd.guide.runAndTestTask.retryAfterFix")],
       },
       {
         image: "/static/doc/images/12-2-skip-log.png",
-        title: t("guide.runAndTestTask.autoSkipAfterSuccess"),
-        descriptions: [t("guide.runAndTestTask.successSkipExplanation")],
+        title: t("certd.guide.runAndTestTask.autoSkipAfterSuccess"),
+        descriptions: [t("certd.guide.runAndTestTask.successSkipExplanation")],
       },
       {
         image: "/static/doc/images/13-1-result.png",
-        title: t("guide.runAndTestTask.viewCertDeploymentSuccess"),
-        descriptions: [t("guide.runAndTestTask.visitNginxToSeeCert")],
+        title: t("certd.guide.runAndTestTask.viewCertDeploymentSuccess"),
+        descriptions: [t("certd.guide.runAndTestTask.visitNginxToSeeCert")],
       },
       {
         image: "/static/doc/images/13-3-download.png",
-        title: t("guide.runAndTestTask.downloadCertManualDeploy"),
-        descriptions: [t("guide.runAndTestTask.downloadIfNoAutoDeployPlugin")],
+        title: t("certd.guide.runAndTestTask.downloadCertManualDeploy"),
+        descriptions: [t("certd.guide.runAndTestTask.downloadIfNoAutoDeployPlugin")],
       },
     ],
   },
   {
-    title: t("guide.scheduleAndEmailTask.title"),
-    description: t("guide.scheduleAndEmailTask.description"),
+    title: t("certd.guide.scheduleAndEmailTask.title"),
+    description: t("certd.guide.scheduleAndEmailTask.description"),
     items: [
       {
         image: "/static/doc/images/14-timer.png",
-        title: t("guide.scheduleAndEmailTask.setSchedule"),
-        descriptions: [t("guide.scheduleAndEmailTask.pipelineSuccessThenSchedule"), t("guide.scheduleAndEmailTask.recommendDailyRun")],
+        title: t("certd.guide.scheduleAndEmailTask.setSchedule"),
+        descriptions: [t("certd.guide.scheduleAndEmailTask.pipelineSuccessThenSchedule"), t("certd.guide.scheduleAndEmailTask.recommendDailyRun")],
       },
       {
         image: "/static/doc/images/15-1-email.png",
-        title: t("guide.scheduleAndEmailTask.setEmailNotification"),
-        descriptions: [t("guide.scheduleAndEmailTask.suggestErrorAndRecoveryEmails")],
+        title: t("certd.guide.scheduleAndEmailTask.setEmailNotification"),
+        descriptions: [t("certd.guide.scheduleAndEmailTask.suggestErrorAndRecoveryEmails")],
       },
       {
-        title: t("guide.scheduleAndEmailTask.tutorialEndTitle"),
-        descriptions: [t("guide.scheduleAndEmailTask.thanksForWatching")],
+        title: t("certd.guide.scheduleAndEmailTask.tutorialEndTitle"),
+        descriptions: [t("certd.guide.scheduleAndEmailTask.thanksForWatching")],
       },
     ],
   },

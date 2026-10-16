@@ -1,6 +1,10 @@
 name: alioss
 title: 阿里云OSS授权
 desc: 包含地域和Bucket
+i18n:
+  en-US:
+    title: Alioss Access
+    desc: Configure Alioss access credentials.
 icon: ant-design:aliyun-outlined
 input:
   accessId:

@@ -11,6 +11,11 @@ import qs from "qs";
   title: "namesilo授权",
   desc: "",
   icon: "simple-icons:namesilo",
+  i18n: {
+    "en-US": {
+      title: "Namesilo Access",
+    },
+  },
 })
 export class NamesiloAccess extends BaseAccess {
   /**

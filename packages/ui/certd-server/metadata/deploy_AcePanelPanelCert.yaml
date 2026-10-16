@@ -8,6 +8,10 @@ desc: 部署AcePanel面板证书
 icon: svg:icon-lucky
 group: panel
 needPlus: true
+i18n:
+  en-US:
+    title: AcePanel Panel Cert Plugin
+    desc: Deploy AcePanel panel certificate.
 input:
   cert:
     title: 域名证书

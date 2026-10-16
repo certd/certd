@@ -20,6 +20,12 @@ export type GoogleCloudDnsRecord = {
   icon: "flat-color-icons:google",
   accessType: "google",
   order: 2,
+  i18n: {
+    "en-US": {
+      title: "Google Cloud DNS",
+      desc: "Google Cloud DNS provider.",
+    },
+  },
 })
 export class GoogleCloudDnsProvider extends AbstractDnsProvider<GoogleCloudDnsRecord> {
   access!: GoogleAccess;

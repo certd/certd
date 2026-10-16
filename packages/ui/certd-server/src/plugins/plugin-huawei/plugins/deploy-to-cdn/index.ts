@@ -10,6 +10,12 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
   icon: "svg:icon-huawei",
   group: pluginGroups.huawei.key,
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "Huawei Cloud - Deploy Certificate to CDN",
+      desc: "Deploy a certificate to Huawei Cloud CDN.",
+    },
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,

@@ -4,6 +4,7 @@ export type CertApplyStepInputPatch = {
   acmeAccountAccessId?: number;
   renewDays?: number;
   privateKeyType?: string;
+  successNotify?: boolean;
 };
 
 export type GetStepInputDefine = (stepType: string) => Record<string, unknown> | undefined;
@@ -33,7 +34,7 @@ function applyPatchFields(target: Record<string, unknown>, patch: CertApplyStepI
 }
 
 export function updateCertApplyStepInputs(pipeline: any, patch: CertApplyStepInputPatch, getStepInputDefine?: GetStepInputDefine) {
-  const fields: (keyof CertApplyStepInputPatch)[] = ["challengeType", "sslProvider", "acmeAccountAccessId", "renewDays", "privateKeyType"];
+  const fields: (keyof CertApplyStepInputPatch)[] = ["challengeType", "sslProvider", "acmeAccountAccessId", "renewDays", "privateKeyType", "successNotify"];
   let count = 0;
   for (const stage of pipeline?.stages || []) {
     for (const task of stage?.tasks || []) {

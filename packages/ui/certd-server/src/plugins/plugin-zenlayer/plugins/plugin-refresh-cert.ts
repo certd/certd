@@ -18,6 +18,12 @@ import { ZenlayerAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Zenlayer Refresh Cert Plugin",
+      desc: "Refresh Zenlayer certificate.",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class ZenlayerRefreshCert extends AbstractTaskPlugin {

@@ -2,7 +2,7 @@
   <fs-page class="page-cert">
     <template #header>
       <div class="title">
-        订单管理
+        {{ $t("certd.sys.settings.orderManager") }}
         <span class="sub"> </span>
       </div>
     </template>

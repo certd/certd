@@ -7,6 +7,10 @@ title: 阿里云-部署至VOD
 icon: svg:icon-aliyun
 group: aliyun
 desc: 部署证书到阿里云视频点播（vod）
+i18n:
+  en-US:
+    title: Aliyun-Deploy Certificate to VOD
+    desc: Deploy a certificate to Aliyun VOD.
 needPlus: false
 input:
   cert:
