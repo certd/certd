@@ -154,7 +154,7 @@
     "@aws-sdk/client-s3": "^3.964.0",
     "@aws-sdk/client-sts": "^3.990.0",
     "ali-oss": "^6.21.0",
-    "tencentcloud-sdk-nodejs": "^4.1.112",
+    "tencentcloud-sdk-nodejs": "^4.1.320",
     "cos-nodejs-sdk-v5": "^2.14.6",
     "@azure/arm-dns": "^5.1.0",
     "@azure/identity": "^4.13.1",
