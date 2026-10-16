@@ -7,6 +7,10 @@ title: 阿里云-部署至阿里云FC(3.0)
 icon: svg:icon-aliyun
 group: aliyun
 desc: 部署证书到阿里云函数计算（FC3.0）
+i18n:
+  en-US:
+    title: Aliyun-Deploy Certificate to FC
+    desc: Deploy a certificate to Aliyun Function Compute.
 needPlus: false
 input:
   cert:

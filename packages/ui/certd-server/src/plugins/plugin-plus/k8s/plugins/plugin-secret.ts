@@ -15,6 +15,20 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "K8S - Deploy to Secret",
+      desc: "Deploy the certificate to the K8S.",
+      input: {
+        namespace: { title: "Namespace" },
+        secretName: { title: "Secret Name", helper: "Name of the Secret storing the certificate." },
+        accessId: { title: "Kubernetes Access", helper: "Kubeconfig access credentials." },
+        cert: { title: "Domain Certificate", helper: "Select the certificate output by a previous task." },
+        ingressName: { title: "Ingress Name", helper: "Optional Ingress to restart after updating the Secret." },
+        createOnNotFound: { title: "Create Secret Automatically", helper: "Create the Secret when it does not exist." },
+      },
+    },
+  },
 })
 export class K8sDeployToSecretPlugin extends AbstractTaskPlugin {
   @TaskInput({

@@ -7,6 +7,12 @@ import { BaseEmailTemplateProvider } from "./plugin-base.js";
   name: "common",
   title: "通用邮件模版",
   desc: "使用通用的邮件标题和内容，内容外部可以自定义html进行美化",
+  i18n: {
+    "en-US": {
+      title: "Common Email Template",
+      desc: "Use a customizable email subject and HTML content template.",
+    },
+  },
   icon: "simple-icons:email:blue",
   showTest: false,
 })

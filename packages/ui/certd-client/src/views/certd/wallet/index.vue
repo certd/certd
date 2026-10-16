@@ -1,7 +1,7 @@
 <template>
   <fs-page class="page-wallet">
     <template #header>
-      <div class="title">我的钱包</div>
+      <div class="title">{{ t("certd.wallet.title") }}</div>
     </template>
     <div class="wallet-body">
       <div class="wallet-summary-grid">
@@ -10,15 +10,15 @@
             <div class="summary-title">{{ item.title }}</div>
             <div class="summary-value" :class="item.className">{{ item.value }}</div>
           </div>
-          <a-button v-if="item.key === 'availableAmount'" class="summary-action-button" type="primary" @click="openWithdrawDialog">申请提现</a-button>
+          <a-button v-if="item.key === 'availableAmount'" class="summary-action-button" type="primary" @click="openWithdrawDialog">{{ t("certd.wallet.withdraw") }}</a-button>
         </div>
       </div>
 
       <a-tabs v-model:active-key="activeTab" class="wallet-tabs" @change="refreshActiveList">
-        <a-tab-pane key="withdraw" tab="提现记录">
+        <a-tab-pane key="withdraw" :tab="t('certd.wallet.withdrawRecords')">
           <fs-crud v-if="activeTab === 'withdraw'" ref="withdrawCrudRef" class="wallet-crud" v-bind="withdrawCrudBinding" />
         </a-tab-pane>
-        <a-tab-pane key="logs" tab="余额明细">
+        <a-tab-pane key="logs" :tab="t('certd.wallet.balanceLogs')">
           <fs-crud v-if="activeTab === 'logs'" ref="logsCrudRef" class="wallet-crud" v-bind="logsCrudBinding" />
         </a-tab-pane>
       </a-tabs>
@@ -37,6 +37,7 @@ import { util } from "/@/utils";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useUserStore } from "/@/store/user";
 import { useMounted } from "/@/use/use-mounted";
+import { useI18n } from "/src/locales";
 
 defineOptions({ name: "MyWallet" });
 
@@ -45,6 +46,7 @@ const loaded = ref(false);
 const activeTab = ref("withdraw");
 const { openFormDialog } = useFormDialog();
 const userStore = useUserStore();
+const { t } = useI18n();
 const { crudBinding: withdrawCrudBinding, crudExpose: withdrawCrudExpose, crudRef: withdrawCrudRef } = useFs({ createCrudOptions: createWithdrawCrudOptions });
 const { crudBinding: logsCrudBinding, crudExpose: logsCrudExpose, crudRef: logsCrudRef } = useFs({ createCrudOptions: createLogsCrudOptions });
 
@@ -63,25 +65,25 @@ function buildPrivateFileUrl(key: string) {
 const summaryCards = computed(() => [
   {
     key: "availableAmount",
-    title: "可用余额",
+    title: t("certd.wallet.availableAmount"),
     value: moneyText(summary.availableAmount),
     className: "available",
   },
   {
     key: "frozenAmount",
-    title: "冻结余额",
+    title: t("certd.wallet.frozenAmount"),
     value: moneyText(summary.frozenAmount),
     className: "frozen",
   },
   {
     key: "totalIncomeAmount",
-    title: "累计收入",
+    title: t("certd.wallet.totalIncomeAmount"),
     value: moneyText(summary.totalIncomeAmount),
     className: "income",
   },
   {
     key: "totalWithdrawAmount",
-    title: "累计提现",
+    title: t("certd.wallet.totalWithdrawAmount"),
     value: moneyText(summary.totalWithdrawAmount),
     className: "withdraw",
   },
@@ -97,8 +99,8 @@ async function openWithdrawSetting() {
   const enabledChannels = walletSetting?.withdrawChannels?.length ? walletSetting.withdrawChannels : ["alipay", "bank"];
   const enabledBanks = walletSetting?.withdrawBanks?.length ? walletSetting.withdrawBanks : [];
   const channelOptions = [
-    { label: "支付宝", value: "alipay" },
-    { label: "银行卡", value: "bank" },
+    { label: t("certd.wallet.alipay"), value: "alipay" },
+    { label: t("certd.wallet.bank"), value: "bank" },
   ].filter(item => enabledChannels.includes(item.value));
   const bankOptions = enabledBanks.map((item: string) => ({ label: item, value: item }));
   const initialForm = Object.assign({ channel: "alipay", realName: "", account: "", bankName: "" }, setting || {});
@@ -106,45 +108,45 @@ async function openWithdrawSetting() {
     initialForm.channel = enabledChannels[0] || "alipay";
   }
   await openFormDialog({
-    title: "提现设置",
+    title: t("certd.wallet.withdrawSetting"),
     wrapper: {
       width: 560,
     },
     initialForm,
     columns: {
       channel: {
-        title: "提现渠道",
+        title: t("certd.wallet.channel"),
         type: "dict-radio",
         dict: dict({
           data: channelOptions,
         }),
         form: {
           col: { span: 24 },
-          rules: [{ required: true, message: "请选择提现渠道" }],
+          rules: [{ required: true, message: t("certd.wallet.selectChannel") }],
         },
       },
       realName: {
-        title: "真实姓名",
+        title: t("certd.wallet.realName"),
         type: "text",
         form: {
           col: { span: 24 },
-          rules: [{ required: true, message: "请输入真实姓名" }],
+          rules: [{ required: true, message: t("certd.wallet.enterRealName") }],
         },
       },
       account: {
-        title: "收款账号",
+        title: t("certd.wallet.account"),
         type: "text",
         form: {
           col: { span: 24 },
-          rules: [{ required: true, message: "请输入收款账号" }],
+          rules: [{ required: true, message: t("certd.wallet.enterAccount") }],
         },
       },
       qrCode: {
-        title: "收款二维码",
+        title: t("certd.wallet.qrCode"),
         type: "avatar-uploader",
         form: {
           col: { span: 24 },
-          helper: "上传支付宝收款二维码图片",
+          helper: t("certd.wallet.uploadQrCode"),
           show: compute(({ form }) => form.channel !== "bank"),
           component: {
             valueType: "key",
@@ -166,7 +168,7 @@ async function openWithdrawSetting() {
         },
       },
       bankName: {
-        title: "开户银行",
+        title: t("certd.wallet.bankName"),
         form: {
           col: { span: 24 },
           show: compute(({ form }) => form.channel === "bank"),
@@ -175,9 +177,9 @@ async function openWithdrawSetting() {
             vModel: "value",
             options: bankOptions,
             showSearch: true,
-            placeholder: "请选择开户银行",
+            placeholder: t("certd.wallet.selectBank"),
           },
-          rules: [{ required: compute(({ form }) => form.channel === "bank"), message: "请输入开户银行" }],
+          rules: [{ required: compute(({ form }) => form.channel === "bank"), message: t("certd.wallet.enterBankName") }],
         },
       },
     },
@@ -186,14 +188,14 @@ async function openWithdrawSetting() {
         form.qrCode = "";
       }
       await api.SaveWithdrawSetting(form);
-      notification.success({ message: "保存成功" });
+      notification.success({ message: t("certd.wallet.saveSuccess") });
     },
   });
 }
 
 async function openWithdrawDialog() {
   await openFormDialog({
-    title: "申请提现",
+    title: t("certd.wallet.withdraw"),
     wrapper: {
       width: 520,
     },
@@ -202,7 +204,7 @@ async function openWithdrawDialog() {
     },
     body: () =>
       h("div", { class: "withdraw-dialog-tip" }, [
-        h("span", "提现前需要先设置提现账号。"),
+        h("span", t("certd.wallet.beforeWithdrawTip")),
         h(
           Button,
           {
@@ -210,12 +212,12 @@ async function openWithdrawDialog() {
             type: "link",
             onClick: openWithdrawSetting,
           },
-          () => "提现设置"
+          () => t("certd.wallet.withdrawSetting")
         ),
       ]),
     columns: {
       amountYuan: {
-        title: "提现金额",
+        title: t("certd.wallet.amount"),
         form: {
           col: { span: 24 },
           component: {
@@ -223,10 +225,10 @@ async function openWithdrawDialog() {
             vModel: "value",
             min: 0,
             precision: 2,
-            addonAfter: "元",
+            addonAfter: t("certd.wallet.yuan"),
             style: { width: "100%" },
           },
-          rules: [{ required: true, message: "请输入提现金额" }],
+          rules: [{ required: true, message: t("certd.wallet.enterAmount") }],
         },
       },
     },
@@ -241,7 +243,7 @@ async function applyWithdraw(amountYuan: number) {
   activeTab.value = "withdraw";
   await loadWalletSummary();
   await Promise.all([withdrawCrudExpose.doRefresh(), logsCrudExpose.doRefresh()]);
-  notification.success({ message: "提现申请已提交" });
+  notification.success({ message: t("certd.wallet.submitSuccess") });
 }
 
 async function refreshActiveList() {

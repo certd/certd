@@ -2,6 +2,10 @@ name: Gcore
 title: Gcore
 desc: Gcore
 icon: clarity:plugin-line
+i18n:
+  en-US:
+    title: Gcore Access
+    desc: Configure Gcore access credentials.
 input:
   username:
     title: username

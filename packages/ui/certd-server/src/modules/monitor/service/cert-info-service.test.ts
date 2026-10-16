@@ -39,6 +39,30 @@ describe("CertInfoService", () => {
   });
 
   describe("updateCertByPipelineId 多条模式", () => {
+    it("保存申请成功事件携带的证书密码", async () => {
+      const service = createCertInfoService();
+      service.repository = {
+        async findOne() {
+          return null;
+        },
+        async update() {},
+      } as any;
+      service.pipelineRepository = {
+        async findOne() {
+          return { id: 1, userId: 2, projectId: 3, type: "cert_auto" };
+        },
+      } as any;
+      let saved: any;
+      service.addOrUpdate = async bean => {
+        saved = bean;
+        return bean;
+      };
+
+      await service.updateCertByPipelineId({ pipelineId: 1, cert: createSelfSignedCert(), fromType: "pipeline", taskId: "apply-1", certPassword: "secret" });
+
+      assert.equal(saved.certPassword, "secret");
+    });
+
     it("新建激活证书并绑定流水线id、继承已有记录来源", async () => {
       const service = createCertInfoService();
       // 该流水线已有旧证书记录（upload 来源），但没有空证书记录
@@ -68,7 +92,7 @@ describe("CertInfoService", () => {
       };
 
       const cert = createSelfSignedCert();
-      const bean = await service.updateCertByPipelineId(1, cert, "pipeline");
+      const bean = await service.updateCertByPipelineId({ pipelineId: 1, cert, fromType: "pipeline" });
 
       assert.equal(bean.id, 100);
       assert.equal(newBean.pipelineId, 1);
@@ -112,7 +136,7 @@ describe("CertInfoService", () => {
       };
 
       const cert = createSelfSignedCert();
-      const bean = await service.updateCertByPipelineId(1, cert, "pipeline");
+      const bean = await service.updateCertByPipelineId({ pipelineId: 1, cert, fromType: "pipeline" });
 
       assert.equal(newId, 100);
       assert.equal(bean.pipelineId, 1);
@@ -150,7 +174,7 @@ describe("CertInfoService", () => {
       };
 
       const cert = createSelfSignedCert();
-      const bean = await service.updateCertByPipelineId(1, cert, "pipeline");
+      const bean = await service.updateCertByPipelineId({ pipelineId: 1, cert, fromType: "pipeline" });
 
       assert.equal(bean.fromType, "pipeline");
       assert.equal(bean.pipelineId, 1);
@@ -187,7 +211,7 @@ describe("CertInfoService", () => {
       };
 
       const cert = createSelfSignedCert();
-      await service.updateCertByPipelineId(1, cert, "pipeline", "apply-step-1");
+      await service.updateCertByPipelineId({ pipelineId: 1, cert, fromType: "pipeline", taskId: "apply-step-1" });
 
       // 新证书记录了申请任务 id
       assert.equal(newBean.taskId, "apply-step-1");
@@ -231,7 +255,7 @@ describe("CertInfoService", () => {
       };
 
       const cert = createSelfSignedCert();
-      const bean = await service.updateCertByPipelineId(209, cert, "pipeline", "PgaUhdeO1DWB_BLbIlzqV");
+      const bean = await service.updateCertByPipelineId({ pipelineId: 209, cert, fromType: "pipeline", taskId: "PgaUhdeO1DWB_BLbIlzqV" });
 
       // 直接更新占位记录（id 不变），写入证书内容并保持激活，不再新建一条
       assert.equal(newBean.id, 184);
@@ -294,7 +318,7 @@ describe("CertInfoService", () => {
       };
 
       const cert = createSelfSignedCert();
-      await service.updateCertByPipelineId(1, cert, "pipeline");
+      await service.updateCertByPipelineId({ pipelineId: 1, cert, fromType: "pipeline" });
 
       assert.equal(newBean.acmeAccountAccessId, 9);
     });

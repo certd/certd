@@ -7,6 +7,10 @@ title: 火山引擎-部署证书至VOD
 icon: svg:icon-volcengine
 group: volcengine
 desc: 部署至火山引擎视频点播
+i18n:
+  en-US:
+    title: Volcengine-Deploy to VOD Plugin
+    desc: Deploy certificates to Volcengine VOD listeners.
 input:
   cert:
     title: 域名证书

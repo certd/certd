@@ -6,9 +6,10 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
 const dataDir = "./data";
 @IsTaskPlugin({
   name: "CopyToLocal",
-  title: "主机-复制到本机",
+  title: "主机-复制证书到本机",
   icon: "solar:copy-bold-duotone",
   desc: "【仅管理员使用】实际上是复制证书到docker容器内的某个路径，需要做目录映射到宿主机",
+  i18n: { "en-US": { title: "Host - Copy Cert to Local", desc: "[Administrators only] Copy certificates to a path inside the Docker container, mapped to the host." } },
   group: pluginGroups.host.key,
   default: {
     strategy: {

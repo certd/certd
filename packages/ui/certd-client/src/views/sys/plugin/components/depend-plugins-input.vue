@@ -67,9 +67,9 @@ const loadingOptions = ref(false);
 const DEFAULT_GROUP = "默认";
 
 const TYPE_LABELS: Record<string, string> = {
-  access: t("certd.auth"),
-  plugin: t("certd.deployPlugin"),
-  dnsProvider: t("certd.dns"),
+  access: t("certd.sys.plugin.auth"),
+  plugin: t("certd.sys.plugin.deployPlugin"),
+  dnsProvider: t("certd.sys.plugin.dns"),
   notification: "通知",
   addon: "Addon",
 };

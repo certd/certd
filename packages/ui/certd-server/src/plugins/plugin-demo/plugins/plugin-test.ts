@@ -7,6 +7,7 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名
   name: "DemoTest",
   title: "Demo-测试插件",
+  i18n: { "en-US": { title: "Demo - Test Plugin" } },
   icon: "clarity:plugin-line",
   //插件分组
   group: pluginGroups.other.key,

@@ -9,6 +9,11 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   title: "易盾rcdn授权",
   icon: "material-symbols:shield-outline",
   desc: "易盾CDN，每月免费30G，[注册即领](https://rhcdn.yiduncdn.com/register?code=8mn536rrzfbf8)",
+  i18n: {
+    "en-US": {
+      title: "Yidun - RCDN Access",
+    },
+  },
 })
 export class YidunRcdnAccess extends BaseAccess {
   @AccessInput({

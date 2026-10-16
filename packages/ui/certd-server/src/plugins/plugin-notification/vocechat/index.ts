@@ -4,6 +4,7 @@ import { BaseNotification, IsNotification, NotificationBody, NotificationInput }
   name: "vocechat",
   title: "VoceChat通知",
   desc: "https://voce.chat",
+  i18n: { "en-US": { title: "VoceChat Notification", desc: "Send pipeline notifications to VoceChat." } },
   needPlus: true,
 })
 export class VoceChatNotification extends BaseNotification {

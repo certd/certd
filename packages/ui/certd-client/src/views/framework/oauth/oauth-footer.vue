@@ -39,7 +39,7 @@ const props = defineProps<{
 
 const { t } = useI18n();
 const computedTitle = computed(() => {
-  return props.oauthOnly ? t("authentication.oauthOnlyLoginTitle") : t("authentication.oauthLoginTitle");
+  return props.oauthOnly ? t("certd.auth.oauthOnlyLoginTitle") : t("certd.auth.oauthLoginTitle");
 });
 
 const settingStore = useSettingStore();

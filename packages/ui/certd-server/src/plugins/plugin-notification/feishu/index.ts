@@ -4,6 +4,7 @@ import { BaseNotification, IsNotification, NotificationBody, NotificationInput }
   name: "feishu",
   title: "飞书通知",
   desc: "飞书群聊webhook通知",
+  i18n: { "en-US": { title: "Feishu Notification", desc: "Send pipeline notifications to Feishu." } },
   needPlus: true,
 })
 // https://open.dingtalk.com/document/orgapp/the-creation-and-installation-of-the-application-robot-in-the?spm=ding_open_doc.document.0.0.242d1563cDgZz3

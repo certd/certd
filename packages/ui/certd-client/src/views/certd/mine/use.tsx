@@ -42,20 +42,20 @@ export function useUserProfile() {
       onSubmit: doSubmit,
       columns: {
         nickName: {
-          title: t("certd.nickName"),
+          title: t("certd.common.nickName"),
           type: "text",
           form: {
             col: {
               span: 24,
             },
             component: {
-              placeholder: t("certd.nickName"),
+              placeholder: t("certd.common.nickName"),
             },
-            rules: [{ required: true, message: t("certd.nickName") }],
+            rules: [{ required: true, message: t("certd.common.nickName") }],
           },
         },
         avatar: {
-          title: t("certd.avatar"),
+          title: t("certd.common.avatar"),
           type: "cropper-uploader",
           column: {
             width: 70,
@@ -114,7 +114,7 @@ export function usePasskeyRegister() {
     const { t } = useI18n();
 
     await openFormDialog({
-      title: t("authentication.registerPasskey"),
+      title: t("certd.auth.registerPasskey"),
       wrapper: {
         width: 500,
       },
@@ -126,7 +126,7 @@ export function usePasskeyRegister() {
       },
       columns: {
         deviceName: {
-          title: t("authentication.deviceName"),
+          title: t("certd.auth.deviceName"),
           type: "text",
           form: {
             component: {
@@ -135,8 +135,8 @@ export function usePasskeyRegister() {
             col: {
               span: 24,
             },
-            helper: t("authentication.deviceNameHelper"),
-            rules: [{ required: true, message: t("authentication.deviceName") }],
+            helper: t("certd.auth.deviceNameHelper"),
+            rules: [{ required: true, message: t("certd.auth.deviceName") }],
           },
         },
       },

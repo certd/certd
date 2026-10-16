@@ -1,4 +1,4 @@
-﻿import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
@@ -11,6 +11,12 @@ import { AliyunClientV2 } from "../../../plugin-lib/aliyun/lib/aliyun-client-v2.
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "ALB,更新监听器的默认证书",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Deploy Certificate to ALB",
+      desc: "Deploy a certificate to an Alibaba Cloud ALB.",
+    },
+  },
   needPlus: false,
   default: {
     strategy: {

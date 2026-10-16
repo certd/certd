@@ -8,6 +8,12 @@ import { UniCloudClient } from "@certd/plugin-plus";
   title: "uniCloud",
   icon: "material-symbols:shield-outline",
   desc: "unicloud授权",
+  i18n: {
+    "en-US": {
+      title: "Unicloud Access",
+      input: { username: { title: "Account", helper: "UniCloud login email." }, password: { title: "Password" }, testRequest: { title: "Test", helper: "Test the API connection." } },
+    },
+  },
 })
 export class UniCloudAccess extends BaseAccess {
   @AccessInput({

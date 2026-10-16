@@ -9,6 +9,12 @@ import { AccessInput, BaseAccess, IsAccess, PageSearch } from "@certd/pipeline";
   title: "新网互联授权",
   icon: "svg:icon-xinnet",
   desc: "仅支持代理账号，ip需要加入白名单",
+  i18n: {
+    "en-US": {
+      title: "Xinnet Connect Access",
+      desc: "Xinnet connect IAM access.",
+    },
+  },
 })
 export class XinnetConnectAccess extends BaseAccess {
   /**

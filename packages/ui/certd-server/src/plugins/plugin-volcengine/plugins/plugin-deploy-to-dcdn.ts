@@ -16,6 +16,12 @@ import { VolcengineClient } from "../ve-client.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Volcengine-Deploy to CDN Plugin",
+      desc: "Deploy certificates to Volcengine CDN acceleration domains",
+    },
+  },
 })
 export class VolcengineDeployToDCDN extends AbstractTaskPlugin {
   @TaskInput({

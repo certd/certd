@@ -1,5 +1,5 @@
 <template>
-  <fs-button icon="mdi:format-list-group" class="need-plus" type="link" :text="t('certd.editSchedule')" @click="openFormDialog"></fs-button>
+  <fs-button icon="mdi:format-list-group" class="need-plus" type="link" :text="t('certd.pipeline.editSchedule')" @click="openFormDialog"></fs-button>
 </template>
 
 <script setup lang="ts">
@@ -102,7 +102,7 @@ async function openFormDialog() {
         },
       },
       "props.cron": {
-        title: t("certd.schedule"),
+        title: t("certd.pipeline.schedule"),
         form: {
           component: {
             name: "cron-editor",
@@ -111,7 +111,7 @@ async function openFormDialog() {
           show: compute(({ form }) => {
             return form.clear !== true && form?.random !== true;
           }),
-          rules: [{ required: true, message: t("certd.selectCron") }],
+          rules: [{ required: true, message: t("certd.pipeline.selectCron") }],
         },
       },
     },
@@ -133,7 +133,7 @@ async function openFormDialog() {
         },
       },
       wrapper: {
-        title: t("certd.batchEditSchedule"),
+        title: t("certd.pipeline.batchEditSchedule"),
         width: 600,
       },
     },

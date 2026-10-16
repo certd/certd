@@ -6,6 +6,7 @@ import { BuildLoginUrlReq, BuildLogoutUrlReq, IOauthProvider, OnCallbackReq } fr
   name: "microsoft",
   title: "Microsoft认证",
   desc: "Microsoft OAuth2登录",
+  i18n: { "en-US": { title: "Microsoft OAuth", desc: "Sign in with a Microsoft account." } },
   icon: "simple-icons:microsoft",
   showTest: false,
 })

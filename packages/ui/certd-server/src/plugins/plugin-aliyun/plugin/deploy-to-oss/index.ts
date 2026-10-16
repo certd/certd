@@ -11,6 +11,12 @@ import { CasCertId } from "../../../plugin-lib/aliyun/lib/index.js";
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "部署域名证书至阿里云OSS自定义域名，不是上传到阿里云oss",
+  i18n: {
+    "en-US": {
+      title: "Aliyun - Deploy Certificate to OSS",
+      desc: "Deploy a certificate to Aliyun OSS.",
+    },
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,

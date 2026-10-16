@@ -8,6 +8,23 @@ icon: ant-design:baidu-outlined
 group: baidu
 desc: 部署到百度云负载均衡，包括BLB、APPBLB
 needPlus: false
+i18n:
+  en-US:
+    title: Baidu - Deploy to BLB
+    desc: Update the certificate of the Baidu BLB.
+    input:
+      cert:
+        title: Certificate
+        helper: Select the certificate output by a previous task.
+      region:
+        title: Region
+        helper: Select the region of the BLB.
+      blbType:
+        title: BLB Type
+        helper: Select the BLB type.
+      accessId:
+        title: Access ID
+        helper: Select the Baidu Access ID.
 input:
   cert:
     title: 域名证书

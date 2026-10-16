@@ -15,6 +15,11 @@ import { SynologyAccess } from "../access.js";
     },
   },
   needPlus: true,
+  i18n: {
+    "en-US": {
+      title: "Synology - Keep Alive",
+    },
+  },
 })
 export class SynologyKeepAlivePlugin extends AbstractPlusTaskPlugin {
   @TaskInput({

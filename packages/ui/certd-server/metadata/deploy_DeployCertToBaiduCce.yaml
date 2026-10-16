@@ -105,6 +105,10 @@ input:
       vModel: checked
     order: 0
 output: {}
+i18n:
+  en-US:
+    title: Baidu - Deploy to CCE
+    desc: Update the certificate of the Baidu CCE.
 pluginType: deploy
 type: builtIn
 scriptFilePath: /plugins/plugin-plus/baidu/plugins/plugin-deploy-to-cce.js

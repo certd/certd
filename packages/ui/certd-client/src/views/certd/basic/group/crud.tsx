@@ -73,7 +73,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         group: {
           editable: {
             edit: {
-              text: t("certd.edit"),
+              text: t("certd.common.edit"),
               order: -1,
               type: "primary",
               click({ row, index }) {
@@ -119,7 +119,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         name: {
-          title: t("certd.groupName"),
+          title: t("certd.common.groupName"),
           search: {
             show: true,
           },
@@ -128,7 +128,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             rules: [
               {
                 required: true,
-                message: t("certd.enterGroupName"),
+                message: t("certd.common.enterGroupName"),
               },
             ],
           },

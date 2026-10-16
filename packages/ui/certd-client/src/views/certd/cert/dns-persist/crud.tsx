@@ -4,6 +4,7 @@ import * as api from "./api";
 import { Dicts } from "/@/components/plugins/lib/dicts";
 import { createAccessApi } from "/@/views/certd/access/api";
 import { useDnsPersistSettingDialog } from "./use-setting-dialog";
+import { useI18n } from "/src/locales";
 
 function parseAccount(account: any) {
   if (!account) {
@@ -16,6 +17,7 @@ function parseAccount(account: any) {
 }
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+  const { t } = useI18n();
   const accessApi = createAccessApi();
   const { openDnsPersistSettingDialog } = useDnsPersistSettingDialog();
   const accessDict = dict({
@@ -32,11 +34,11 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   });
   const statusDict = dict({
     data: [
-      { value: "pending", label: "待设置", color: "warning" },
-      { value: "created", label: "已创建", color: "blue" },
-      { value: "validating", label: "校验中", color: "blue" },
-      { value: "valid", label: "有效", color: "green" },
-      { value: "failed", label: "请重试", color: "red" },
+      { value: "pending", label: t("certd.dnsPersist.pending"), color: "warning" },
+      { value: "created", label: t("certd.dnsPersist.created"), color: "blue" },
+      { value: "validating", label: t("certd.dnsPersist.validating"), color: "blue" },
+      { value: "valid", label: t("certd.dnsPersist.valid"), color: "green" },
+      { value: "failed", label: t("certd.dnsPersist.retry"), color: "red" },
     ],
   });
 
@@ -51,7 +53,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     const res = await api.DelObj(row.id);
     if (res?.message) {
       notification.warning({
-        message: "请到供应商删除TXT记录",
+        message: t("certd.dnsPersist.deleteTxtTip"),
         description: res.message,
         duration: 0,
       });
@@ -70,7 +72,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     const setting = JSON.parse(access.setting || "{}");
     const account = parseAccount(setting.account);
     if (!account?.accountUri) {
-      notification.error({ message: "ACME账号授权缺少accountUri，请重新生成账号" });
+      notification.error({ message: t("certd.dnsPersist.accountUriMissing") });
       return;
     }
     const record = await api.BuildRecord({
@@ -88,7 +90,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
 
   async function verifyRecord(row: any) {
     const ok = await api.Verify(row.id);
-    notification[ok ? "success" : "error"]({ message: ok ? "校验成功" : "未找到匹配的TXT记录，请稍后重试" });
+    notification[ok ? "success" : "error"]({ message: ok ? t("certd.dnsPersist.verifySuccess") : t("certd.dnsPersist.verifyFailed") });
     await crudExpose.doRefresh();
     return ok;
   }

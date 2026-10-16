@@ -7,6 +7,10 @@ title: 火山引擎-部署证书至DCDN
 icon: svg:icon-volcengine
 group: volcengine
 desc: 部署至火山引擎全站加速
+i18n:
+  en-US:
+    title: Volcengine-Deploy to CDN Plugin
+    desc: Deploy certificates to Volcengine CDN acceleration domains
 input:
   cert:
     title: 域名证书

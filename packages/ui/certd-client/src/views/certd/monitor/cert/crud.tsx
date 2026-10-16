@@ -1,4 +1,4 @@
-﻿// @ts-ignore
+// @ts-ignore
 import { useI18n } from "/src/locales";
 //
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, useFormWrapper, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
@@ -45,14 +45,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const viewCert = async (row: any) => {
     const cert = await api.GetCert(row.id);
     if (!cert) {
-      notification.error({ message: t("certd.certificateNotGenerated") });
+      notification.error({ message: t("certd.monitor.certificateNotGenerated") });
       return;
     }
 
     model.success({
-      title: t("certd.modal.viewCertificateTitle"),
+      title: t("certd.monitor.modal.viewCertificateTitle"),
       maskClosable: true,
-      okText: t("certd.modal.close"),
+      okText: t("certd.monitor.modal.close"),
       width: 800,
       content: () => {
         return <CertView cert={cert}></CertView>;
@@ -99,7 +99,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         show: true,
         buttons: {
           add: {
-            text: t("certd.uploadCustomCert"),
+            text: t("certd.monitor.uploadCustomCert"),
             type: "primary",
             show: false,
             async click() {
@@ -119,7 +119,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           view: { show: false },
           viewCert: {
             order: 3,
-            title: t("certd.viewCert.title"),
+            title: t("certd.monitor.viewCert.title"),
             type: "link",
             icon: "ph:certificate",
             async click({ row }) {
@@ -134,7 +134,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           revoke: {
             order: 8,
-            title: t("certd.revoke.title"),
+            title: t("certd.monitor.revoke.title"),
             type: "link",
             icon: "ant-design:stop-outlined",
             // 只有未激活状态的证书才允许执行吊销
@@ -143,13 +143,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
             async click({ row }) {
               Modal.confirm({
-                title: t("certd.revoke.confirmTitle"),
-                content: t("certd.revoke.confirmContent"),
-                okText: t("certd.revoke.confirmOk"),
-                cancelText: t("certd.cancel"),
+                title: t("certd.monitor.revoke.confirmTitle"),
+                content: t("certd.monitor.revoke.confirmContent"),
+                okText: t("certd.monitor.revoke.confirmOk"),
+                cancelText: t("certd.common.cancel"),
                 onOk: async () => {
                   await api.Revoke(row.id);
-                  notification.success({ message: t("certd.revoke.success") });
+                  notification.success({ message: t("certd.monitor.revoke.success") });
                   await crudExpose.doRefresh();
                 },
               });
@@ -157,7 +157,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           download: {
             order: 9,
-            title: t("certd.download.title"),
+            title: t("certd.monitor.download.title"),
             type: "link",
             icon: "ant-design:download-outlined",
             async click({ row }) {
@@ -190,15 +190,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         fromType: {
-          title: t("certd.sourcee"),
+          title: t("certd.common.sourcee"),
           search: {
             show: true,
           },
           type: "dict-select",
           dict: dict({
             data: [
-              { label: t("certd.sourcePipeline"), value: "pipeline" },
-              { label: t("certd.sourceManualUpload"), value: "upload" },
+              { label: t("certd.monitor.sourcePipeline"), value: "pipeline" },
+              { label: t("certd.monitor.sourceManualUpload"), value: "upload" },
             ],
           }),
           form: {
@@ -219,16 +219,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         status: {
-          title: t("certd.status"),
+          title: t("certd.common.status"),
           search: {
             show: true,
           },
           type: "dict-select",
           dict: dict({
             data: [
-              { label: t("certd.revoke.statusActive"), value: "active", color: "green" },
-              { label: t("certd.revoke.statusInactive"), value: "inactive", color: "orange" },
-              { label: t("certd.revoke.statusRevoked"), value: "revoked", color: "red" },
+              { label: t("certd.monitor.revoke.statusActive"), value: "active", color: "green" },
+              { label: t("certd.monitor.revoke.statusInactive"), value: "inactive", color: "orange" },
+              { label: t("certd.monitor.revoke.statusRevoked"), value: "revoked", color: "red" },
             ],
           }),
           form: {
@@ -249,13 +249,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         domains: {
-          title: t("certd.domains"),
+          title: t("certd.monitor.domains"),
           search: {
             show: true,
           },
           type: "text",
           form: {
-            rules: [{ required: true, message: t("certd.enterDomain") }],
+            rules: [{ required: true, message: t("certd.monitor.enterDomain") }],
           },
           column: {
             width: 450,
@@ -267,7 +267,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         domainCount: {
-          title: t("certd.domainCount"),
+          title: t("certd.common.domainCount"),
           type: "number",
           form: {
             show: false,
@@ -279,16 +279,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         expiresLeft: {
-          title: t("certd.validDays"),
+          title: t("certd.monitor.validDays"),
           search: {
             show: true,
             component: {
               name: "fs-dict-select",
               dict: dict({
                 data: [
-                  { label: t("monitor.cert.expired"), value: "expired" },
-                  { label: t("monitor.cert.expiring"), value: "expiring" },
-                  { label: t("monitor.cert.noExpired"), value: "noExpired" },
+                  { label: t("certd.monitor.cert.expired"), value: "expired" },
+                  { label: t("certd.monitor.cert.expiring"), value: "expiring" },
+                  { label: t("certd.monitor.cert.noExpired"), value: "noExpired" },
                 ],
               }),
             },
@@ -324,15 +324,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               const percent = (leftDays / effectiveDays) * 100;
               const textColor = leftDays < DEFAULT_WILL_EXPIRE_DAYS ? "red" : leftDays > 60 ? "#389e0d" : "";
               const format = () => {
-                return <span style={{ color: textColor }}>{`${leftDays}${t("certd.days")}`}</span>;
+                return <span style={{ color: textColor }}>{`${leftDays}${t("certd.common.days")}`}</span>;
               };
               // console.log('cellRender', 'effectiveDays', effectiveDays, 'expiresTime', expiresTime, 'applyTime', applyTime, 'percent', percent, row)
-              return <a-progress title={expireDate + t("certd.expires")} percent={percent} strokeColor={color} format={format} />;
+              return <a-progress title={expireDate + t("certd.common.expires")} percent={percent} strokeColor={color} format={format} />;
             },
           },
         },
         effectiveTime: {
-          title: t("certd.effectiveTime"),
+          title: t("certd.monitor.effectiveTime"),
           search: {
             show: false,
           },
@@ -346,7 +346,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         expiresTime: {
-          title: t("certd.expireTime"),
+          title: t("certd.monitor.expireTime"),
           search: {
             show: false,
           },
@@ -359,7 +359,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certProvider: {
-          title: t("certd.certIssuer"),
+          title: t("certd.monitor.certIssuer"),
           search: {
             show: false,
           },
@@ -372,7 +372,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         applyTime: {
-          title: t("certd.applyTime"),
+          title: t("certd.monitor.applyTime"),
           search: {
             show: false,
           },
@@ -385,7 +385,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         "pipeline.title": {
-          title: t("certd.relatedPipeline"),
+          title: t("certd.monitor.relatedPipeline"),
           search: { show: false },
           type: "link",
           form: {
@@ -404,7 +404,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         projectId: {
-          title: t("certd.fields.projectName"),
+          title: t("certd.common.fields.projectName"),
           type: "dict-select",
           dict: myProjectDict,
           form: {

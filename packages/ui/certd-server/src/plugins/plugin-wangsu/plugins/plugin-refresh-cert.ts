@@ -18,6 +18,12 @@ import { WangsuAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Wangsu-Refresh Cert Plugin",
+      desc: "Refresh Wangsu certificates.",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class WangsuRefreshCert extends AbstractTaskPlugin {

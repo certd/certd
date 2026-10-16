@@ -18,6 +18,12 @@ import { UCloudAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Ucloud-Deploy to WAF Plugin",
+      desc: "Integration plugin for UCloudDeployToWaf",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class UCloudDeployToWaf extends AbstractTaskPlugin {

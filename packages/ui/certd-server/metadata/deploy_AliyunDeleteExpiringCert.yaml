@@ -7,6 +7,10 @@ title: 阿里云-删除即将过期证书
 icon: ant-design:aliyun-outlined
 group: aliyun
 desc: 仅删除未使用的证书
+i18n:
+  en-US:
+    title: Aliyun - Delete Expiring Certificates
+    desc: Delete certificates that are about to expire from Alibaba Cloud.
 needPlus: true
 input:
   accessId:

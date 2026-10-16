@@ -15,6 +15,18 @@ import { UniCloudClient } from "@certd/plugin-plus";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Unicloud - Deploy to Space",
+      input: {
+        cert: { title: "Domain Certificate", helper: "Select the certificate output by a previous task." },
+        accessId: { title: "UniCloud Access", helper: "UniCloud access credentials." },
+        spaceId: { title: "Service Space ID", helper: "Enter the spaceId." },
+        provider: { title: "Space Provider", helper: "Select the space provider." },
+        domains: { title: "Space Domain", helper: "Select the space domain." },
+      },
+    },
+  },
 })
 export class UniCloudDeployToSpace extends AbstractTaskPlugin {
   //证书选择，此项必须要有

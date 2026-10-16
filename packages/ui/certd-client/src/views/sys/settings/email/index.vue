@@ -2,45 +2,45 @@
   <fs-page class="page-setting-email">
     <template #header>
       <div class="title">
-        {{ t("certd.emailServerSettings") }}
-        <span class="sub">{{ t("certd.setEmailSendingServer") }}</span>
+        {{ t("certd.sys.settings.emailServerSettings") }}
+        <span class="sub">{{ t("certd.sys.settings.setEmailSendingServer") }}</span>
       </div>
     </template>
 
     <div class="email-form">
       <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" class="" @finish="onFinish">
-        <h2>{{ t("certd.sys.setting.email.serverSetting") }}</h2>
+        <h2>{{ t("certd.sys.settings.email.serverSetting") }}</h2>
         <a-tabs v-model:active-key="activeKey" @change="onChangeActiveKey">
-          <a-tab-pane key="custom" :tab="t('certd.useCustomEmailServer')">
+          <a-tab-pane key="custom" :tab="t('certd.sys.settings.useCustomEmailServer')">
             <div>
-              <a-form-item :label="t('certd.smtpDomain')" name="host" :rules="[{ required: true, message: t('certd.pleaseEnterSmtpDomain') }]">
+              <a-form-item :label="t('certd.sys.settings.smtpDomain')" name="host" :rules="[{ required: true, message: t('certd.sys.settings.pleaseEnterSmtpDomain') }]">
                 <a-input v-model:value="formState.host" />
                 <div class="helper">
-                  {{ t("certd.sendFailHelpDoc") }}<a href="https://certd.docmirror.cn/guide/use/email/" target="_blank">{{ t("certd.emailConfigHelpDoc") }}</a>
+                  {{ t("certd.sys.settings.sendFailHelpDoc") }}<a href="https://certd.docmirror.cn/guide/use/email/" target="_blank">{{ t("certd.sys.settings.emailConfigHelpDoc") }}</a>
                 </div>
               </a-form-item>
 
-              <a-form-item :label="t('certd.smtpPort')" name="port" :rules="[{ required: true, message: t('certd.pleaseEnterSmtpPort') }]">
+              <a-form-item :label="t('certd.sys.settings.smtpPort')" name="port" :rules="[{ required: true, message: t('certd.sys.settings.pleaseEnterSmtpPort') }]">
                 <a-input v-model:value="formState.port" />
-                <div class="helper">{{ t("certd.pleaseEnterSmtpPort") }}</div>
+                <div class="helper">{{ t("certd.sys.settings.pleaseEnterSmtpPort") }}</div>
               </a-form-item>
 
-              <a-form-item :label="t('certd.username')" :name="['auth', 'user']" :rules="[{ required: true, message: t('certd.pleaseEnterUsername') }]">
+              <a-form-item :label="t('certd.common.username')" :name="['auth', 'user']" :rules="[{ required: true, message: t('certd.sys.settings.pleaseEnterUsername') }]">
                 <a-input v-model:value="formState.auth.user" />
               </a-form-item>
-              <a-form-item :label="t('certd.password')" :name="['auth', 'pass']" :rules="[{ required: true, message: t('certd.pleaseEnterPassword') }]">
+              <a-form-item :label="t('certd.common.password')" :name="['auth', 'pass']" :rules="[{ required: true, message: t('certd.sys.settings.pleaseEnterPassword') }]">
                 <a-input-password v-model:value="formState.auth.pass" />
-                <div class="helper">{{ t("certd.qqEmailAuthCodeHelper") }}</div>
+                <div class="helper">{{ t("certd.sys.settings.qqEmailAuthCodeHelper") }}</div>
               </a-form-item>
-              <a-form-item :label="t('certd.senderEmail')" name="sender" :rules="[{ required: true, message: t('certd.pleaseEnterSenderEmail') }]">
+              <a-form-item :label="t('certd.sys.settings.senderEmail')" name="sender" :rules="[{ required: true, message: t('certd.sys.settings.pleaseEnterSenderEmail') }]">
                 <a-input v-model:value="formState.sender" />
-                <div class="helper">{{ t("certd.senderEmailHelper") }}</div>
+                <div class="helper">{{ t("certd.sys.settings.senderEmailHelper") }}</div>
               </a-form-item>
-              <a-form-item :label="t('certd.useSsl')" name="secure">
+              <a-form-item :label="t('certd.sys.settings.useSsl')" name="secure">
                 <a-switch v-model:checked="formState.secure" />
-                <div class="helper">{{ t("certd.sslPortNote") }}</div>
+                <div class="helper">{{ t("certd.sys.settings.sslPortNote") }}</div>
               </a-form-item>
-              <a-form-item :label="t('certd.ignoreCertValidation')" :name="['tls', 'rejectUnauthorized']">
+              <a-form-item :label="t('certd.sys.settings.ignoreCertValidation')" :name="['tls', 'rejectUnauthorized']">
                 <a-switch v-model:checked="formState.tls.rejectUnauthorized" />
               </a-form-item>
             </div>
@@ -48,34 +48,34 @@
           <a-tab-pane v-if="formState.usePlus" key="plus" class="plus" :disabled="!settingStore.isPlus">
             <template #tab>
               <span class="flex items-center">
-                {{ t("certd.useOfficialEmailServer") }}
+                {{ t("certd.sys.settings.useOfficialEmailServer") }}
                 <vip-button class="ml-5" mode="button"></vip-button>
               </span>
             </template>
-            <a-form-item :label="t('certd.useOfficialEmailServer')" name="usePlus">
+            <a-form-item :label="t('certd.sys.settings.useOfficialEmailServer')" name="usePlus">
               <div class="flex-o">
                 <a-switch v-model:checked="formState.usePlus" :disabled="!settingStore.isPlus" @change="onUsePlusChanged" />
               </div>
-              <div class="helper">{{ t("certd.useOfficialEmailServerHelper") }}</div>
+              <div class="helper">{{ t("certd.sys.settings.useOfficialEmailServerHelper") }}</div>
             </a-form-item>
           </a-tab-pane>
         </a-tabs>
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
-          <a-button type="primary" html-type="submit">{{ t("certd.save") }}</a-button>
+          <a-button type="primary" html-type="submit">{{ t("certd.common.save") }}</a-button>
         </a-form-item>
 
         <div class="flex items-center">
-          <h2>{{ t("certd.sys.setting.email.templateSetting") }}</h2>
+          <h2>{{ t("certd.sys.settings.email.templateSetting") }}</h2>
           <vip-button class="ml-10" mode="button"></vip-button>
         </div>
 
-        <a-form-item :label="t('certd.sys.setting.email.templates')" :name="['templates']">
+        <a-form-item :label="t('certd.sys.settings.email.templates')" :name="['templates']">
           <div class="flex flex-wrap">
             <table class="w-full table-auto border-collapse border border-gray-400">
               <thead>
                 <tr>
-                  <th class="border border-gray-300 px-4 py-2 w-1/3">{{ t("certd.sys.setting.email.templateType") }}</th>
-                  <th class="border border-gray-300 px-4 py-2 w-1/3">{{ t("certd.sys.setting.email.templateProvider") }}</th>
+                  <th class="border border-gray-300 px-4 py-2 w-1/3">{{ t("certd.sys.settings.email.templateType") }}</th>
+                  <th class="border border-gray-300 px-4 py-2 w-1/3">{{ t("certd.sys.settings.email.templateProvider") }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -93,7 +93,7 @@
                       addon-type="emailTemplate"
                       from="sys"
                       :type="item.name"
-                      :placeholder="t('certd.sys.setting.email.templateProviderSelectorPlaceholder')"
+                      :placeholder="t('certd.sys.settings.email.templateProviderSelectorPlaceholder')"
                     />
                   </td>
                 </tr>
@@ -103,22 +103,22 @@
         </a-form-item>
 
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
-          <a-button type="primary" html-type="submit">{{ t("certd.save") }}</a-button>
+          <a-button type="primary" html-type="submit">{{ t("certd.common.save") }}</a-button>
         </a-form-item>
       </a-form>
     </div>
     <div class="email-form">
       <a-form :model="testFormState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onTestSend">
-        <h2>{{ t("certd.sys.setting.email.sendTest") }}</h2>
-        <a-form-item :label="t('certd.testReceiverEmail')" name="receiver" :rules="[{ required: true, message: t('certd.pleaseEnterTestReceiverEmail') }]">
+        <h2>{{ t("certd.sys.settings.email.sendTest") }}</h2>
+        <a-form-item :label="t('certd.sys.settings.testReceiverEmail')" name="receiver" :rules="[{ required: true, message: t('certd.sys.settings.pleaseEnterTestReceiverEmail') }]">
           <a-input v-model:value="testFormState.receiver" />
-          <div class="helper">{{ t("certd.saveBeforeTest") }}</div>
+          <div class="helper">{{ t("certd.sys.settings.saveBeforeTest") }}</div>
           <div class="helper">
-            {{ t("certd.sendFailHelpDoc") }}<a href="https://certd.docmirror.cn/guide/use/email/" target="_blank">{{ t("certd.emailConfigHelpDoc") }}</a>
+            {{ t("certd.sys.settings.sendFailHelpDoc") }}<a href="https://certd.docmirror.cn/guide/use/email/" target="_blank">{{ t("certd.sys.settings.emailConfigHelpDoc") }}</a>
           </div>
         </a-form-item>
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
-          <a-button type="primary" :loading="testFormState.loading" html-type="submit">{{ t("certd.test") }}</a-button>
+          <a-button type="primary" :loading="testFormState.loading" html-type="submit">{{ t("certd.common.test") }}</a-button>
         </a-form-item>
       </a-form>
     </div>
@@ -205,7 +205,7 @@ const onFinish = async (form: any) => {
   fillEmailTemplates(form);
   await api.EmailSettingsSave(form);
   notification.success({
-    message: t("certd.saveSuccess"),
+    message: t("certd.common.saveSuccess"),
   });
 };
 
@@ -244,7 +244,7 @@ async function onTestSend() {
   try {
     await emailApi.TestSend(testFormState.receiver);
     notification.success({
-      message: t("certd.sendSuccess"),
+      message: t("certd.sys.settings.sendSuccess"),
     });
   } finally {
     testFormState.loading = false;

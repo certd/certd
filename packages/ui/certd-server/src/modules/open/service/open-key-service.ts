@@ -14,6 +14,7 @@ export type OpenKey = {
   keySecret: string;
   encrypt: boolean;
   scope: string;
+  returnCertPassword: boolean;
 };
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -31,10 +32,10 @@ export class OpenKeyService extends BaseService<OpenKeyEntity> {
   }
 
   async add(bean: OpenKeyEntity) {
-    return await this.generate({ userId: bean.userId, projectId: bean.projectId, scope: bean.scope, remark: bean.remark });
+    return await this.generate({ userId: bean.userId, projectId: bean.projectId, scope: bean.scope, remark: bean.remark, returnCertPassword: bean.returnCertPassword });
   }
 
-  async generate(req: { userId: number; projectId?: number; scope?: string; remark?: string }) {
+  async generate(req: { userId: number; projectId?: number; scope?: string; remark?: string; returnCertPassword?: boolean }) {
     const { userId, projectId, scope, remark } = req;
     const keyId = utils.id.simpleNanoId(18) + "_key";
     const secretKey = crypto.randomBytes(32);
@@ -46,6 +47,7 @@ export class OpenKeyService extends BaseService<OpenKeyEntity> {
     entity.keySecret = keySecret;
     entity.scope = scope ?? "open";
     entity.remark = remark;
+    entity.returnCertPassword = req.returnCertPassword ?? false;
     await this.repository.save(entity);
     return entity;
   }
@@ -95,6 +97,7 @@ export class OpenKeyService extends BaseService<OpenKeyEntity> {
       encrypt: encrypt,
       projectId: entity.projectId,
       scope: entity.scope,
+      returnCertPassword: entity.returnCertPassword ?? false,
     };
   }
 

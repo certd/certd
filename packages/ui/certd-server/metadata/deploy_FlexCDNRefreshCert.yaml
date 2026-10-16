@@ -7,6 +7,9 @@ title: FlexCDN-更新证书
 icon: svg:icon-lucky
 group: cdn
 needPlus: false
+i18n:
+  en-US:
+    title: FlexCDN-Refresh Certificate
 input:
   cert:
     title: 域名证书

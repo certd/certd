@@ -9,6 +9,12 @@ import crypto from "crypto";
   title: "新网授权（代理方式）",
   icon: "svg:icon-xinnet",
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "Xinnet Agent Access",
+      desc: "Xinnet agent IAM access.",
+    },
+  },
 })
 export class XinnetAgentAccess extends BaseAccess {
   /**

@@ -17,6 +17,12 @@ import { OnePanelClient } from "../client.js";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "1Panel - Deploy to Website",
+      desc: "Update the certificate of the 1Panel.",
+    },
+  },
 })
 export class OnePanelDeployToWebsitePlugin extends AbstractTaskPlugin {
   //证书选择，此项必须要有

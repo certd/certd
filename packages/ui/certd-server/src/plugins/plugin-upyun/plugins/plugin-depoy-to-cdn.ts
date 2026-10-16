@@ -20,6 +20,12 @@ import { UpyunClient } from "../client.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Upyun-Deploy to CDN Plugin",
+      desc: "Support Upyun CDN and USS",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class UpyunDeployToCdn extends AbstractTaskPlugin {

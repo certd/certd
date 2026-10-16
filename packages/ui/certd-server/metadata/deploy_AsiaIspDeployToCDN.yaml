@@ -7,6 +7,10 @@ title: 橙域网络-部署证书到CDN
 desc: 部署证书到橙域网络(asia-isp) CDN加速域名
 icon: clarity:plugin-line
 group: cdn
+i18n:
+  en-US:
+    title: AsiaIsp-Deploy to CDN Plugin
+    desc: Deploy certificates to AsiaIsp CDN domains
 input:
   cert:
     title: 域名证书

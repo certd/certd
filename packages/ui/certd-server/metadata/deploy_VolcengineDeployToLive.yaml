@@ -7,6 +7,10 @@ title: 火山引擎-部署证书至Live
 icon: svg:icon-volcengine
 group: volcengine
 desc: 部署至火山引擎视频直播
+i18n:
+  en-US:
+    title: Volcengine-Deploy to Live Plugin
+    desc: Deploy certificates to Volcengine Live listeners.
 input:
   cert:
     title: 域名证书

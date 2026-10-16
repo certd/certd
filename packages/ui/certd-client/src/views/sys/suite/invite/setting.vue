@@ -1,11 +1,11 @@
 <template>
   <fs-page class="page-sys-invite-setting">
     <template #header>
-      <div class="title">激励计划设置</div>
+      <div class="title">{{ $t("certd.navigation.sysResources.inviteCommissionSetting") }}</div>
     </template>
     <div class="page-body">
       <a-form ref="formRef" :model="settings" :label-col="{ style: { width: '140px' } }" class="settings-form">
-        <a-form-item label="开启激励计划" name="enabled">
+        <a-form-item :label="$t('certd.suite.enable')" name="enabled">
           <a-switch v-model:checked="settings.enabled" />
         </a-form-item>
         <a-form-item label="启用推广等级" name="levelEnabled">
@@ -30,7 +30,7 @@
           <fs-editor-wang5
             v-model="settings.agreementContent"
             :toolbar-config="{}"
-            :editor-config="{ placeholder: '请输入用户开通激励计划前需要确认的推广协议内容' }"
+            :editor-config="{ placeholder: $t('certd.suite.agreementPlaceholder') }"
             :uploader="editorUploader"
             :container="{ class: 'agreement-editor' }"
             style="height: 400px"

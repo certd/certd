@@ -148,7 +148,7 @@
             <fs-icon icon="fluent-color:puzzle-piece-24" class="mr-5 fs-28" />
             <div class="mr-5">{{ t("certd.dashboard.supportedTasks") }}</div>
             <a-tag color="green">{{ pluginGroups.groups.all.plugins.length }}</a-tag>
-            <div class="helper">列表仅做展示，请创建流水线来使用它们</div>
+            <div class="helper">{{ t("certd.dashboard.supportedTasksHelper") }}</div>
           </div>
         </template>
         <a-row :gutter="10">

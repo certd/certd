@@ -8,6 +8,7 @@ import { get } from "lodash-es";
   title: "邮件发送证书",
   icon: "ion:mail-outline",
   desc: "通过邮件发送证书",
+  i18n: { "en-US": { title: "Send Certificate by Email", desc: "Send certificates by email." } },
   group: pluginGroups.other.key,
   showRunStrategy: false,
   default: {

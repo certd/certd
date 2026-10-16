@@ -7,6 +7,7 @@ import { TencentAccess } from "../../plugin-lib/tencent/access.js";
   name: "tencent",
   title: "腾讯云验证码",
   desc: "",
+  i18n: { "en-US": { title: "Tencent Cloud CAPTCHA", desc: "Verify user requests with Tencent Cloud CAPTCHA." } },
   showTest: false,
   dependPackages: {
     "tencentcloud-sdk-nodejs": "^4.1.112",

@@ -1252,22 +1252,21 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
     for (const item of list) {
       const pipeline = JSON.parse(item.content);
-      pipeline.notifications = [
-        {
-          id: nanoid(),
-          title: "通知",
-          /**
-           * type: NotificationType;
-           *   when: NotificationWhen[];
-           *   options: EmailOptions;
-           *   notificationId: number;
-           *   title: string;
-           *   subType: string;
-           */
-          type: "other",
-          ...notification,
-        },
-      ];
+      const newNotification = {
+        id: nanoid(),
+        title: "通知",
+        /**
+         * type: NotificationType;
+         *   when: NotificationWhen[];
+         *   options: EmailOptions;
+         *   notificationId: number;
+         *   title: string;
+         *   subType: string;
+         */
+        type: "other",
+        ...notification,
+      };
+      pipeline.notifications = [newNotification];
       await this.doUpdatePipelineJson(item, pipeline);
     }
     return list.length;

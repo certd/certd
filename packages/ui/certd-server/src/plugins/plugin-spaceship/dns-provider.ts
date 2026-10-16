@@ -13,6 +13,11 @@ export type SpaceshipRecord = {
   icon: "clarity:plugin-line",
   accessType: "spaceship",
   order: 99,
+  i18n: {
+    "en-US": {
+      title: "Spaceship DNS Provider",
+    },
+  },
 })
 export class SpaceshipProvider extends AbstractDnsProvider<SpaceshipRecord> {
   access!: SpaceshipAccess;

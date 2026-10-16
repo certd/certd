@@ -9,6 +9,11 @@ import { DomainRecord } from "@certd/plugin-lib";
   title: "Technitium DNS Server",
   icon: "clarity:server-line",
   desc: "Technitium DNS Server 自建DNS服务器授权",
+  i18n: {
+    "en-US": {
+      title: "Technitium Access",
+    },
+  },
 })
 export class TechnitiumAccess extends BaseAccess {
   /**

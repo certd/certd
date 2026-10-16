@@ -7,6 +7,10 @@ title: 阿里云-部署至NLB（网络负载均衡）
 icon: svg:icon-aliyun
 group: aliyun
 desc: NLB,网络负载均衡,更新监听器的默认证书
+i18n:
+  en-US:
+    title: Aliyun - Deploy Certificate to NLB
+    desc: Deploy a certificate to Aliyun NLB.
 needPlus: false
 input:
   cert:

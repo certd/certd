@@ -3,6 +3,7 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   name: "ssh",
   title: "主机登录授权",
   desc: "",
+  i18n: { "en-US": { title: "Ssh Access" } },
   icon: "clarity:host-line",
   input: {},
   order: 0,

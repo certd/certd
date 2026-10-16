@@ -2,7 +2,7 @@
   <a-drawer v-model:open="notificationDrawerVisible" placement="right" :closable="true" width="600px" class="pi-notification-form" @after-open-change="notificationDrawerOnAfterVisibleChange">
     <template #title>
       <div>
-        {{ t("certd.edit_notification") }}
+        {{ t("certd.notification.edit_notification") }}
         <a-button v-if="mode === 'edit'" danger @click="notificationDelete()">
           <template #icon>
             <DeleteOutlined />
@@ -17,7 +17,7 @@
             v-if="currentNotification.type === 'email'"
             v-model="currentNotification.type"
             :item="{
-              title: t('certd.type'),
+              title: t('certd.common.type'),
               key: 'type',
               value: 'email',
               component: {
@@ -25,17 +25,17 @@
                 vModel: 'value',
                 disabled: !editMode,
                 options: [
-                  { value: 'email', label: t('certd.email') },
-                  { value: 'other', label: t('certd.other_notification_method') },
+                  { value: 'email', label: t('certd.notification.email') },
+                  { value: 'other', label: t('certd.notification.other_notification_method') },
                 ],
               },
-              rules: [{ required: true, message: t('certd.required') }],
+              rules: [{ required: true, message: t('certd.common.required') }],
             }"
           />
           <fs-form-item
             v-model="currentNotification.when"
             :item="{
-              title: t('certd.trigger_time'),
+              title: t('certd.pipeline.trigger_time'),
               key: 'when',
               value: ['error'],
               component: {
@@ -44,14 +44,14 @@
                 disabled: !editMode,
                 mode: 'multiple',
                 options: [
-                  { value: 'start', label: t('certd.start_time') },
-                  { value: 'success', label: t('certd.success_time') },
-                  { value: 'turnToSuccess', label: t('certd.fail_to_success_time') },
-                  { value: 'error', label: t('certd.fail_time') },
+                  { value: 'start', label: t('certd.pipeline.start_time') },
+                  { value: 'success', label: t('certd.pipeline.success_time') },
+                  { value: 'turnToSuccess', label: t('certd.pipeline.fail_to_success_time') },
+                  { value: 'error', label: t('certd.pipeline.fail_time') },
                 ],
               },
-              helper: t('certd.helper_suggest_fail_only'),
-              rules: [{ required: true, message: t('certd.required') }],
+              helper: t('certd.pipeline.helper_suggest_fail_only'),
+              rules: [{ required: true, message: t('certd.common.required') }],
             }"
           />
           <pi-notification-form-email v-if="currentNotification.type === 'email'" ref="optionsRef" v-model:options="currentNotification.options"></pi-notification-form-email>
@@ -60,22 +60,22 @@
             v-else
             v-model="currentNotification.notificationId"
             :item="{
-              title: t('certd.notification_config'),
+              title: t('certd.pipeline.notification_config'),
               key: 'notificationId',
               component: {
                 disabled: !editMode,
                 name: NotificationSelector,
                 onSelectedChange,
               },
-              helper: t('certd.please_select_notification'),
-              rules: [{ required: true, message: t('certd.required') }],
+              helper: t('certd.pipeline.please_select_notification'),
+              rules: [{ required: true, message: t('certd.common.required') }],
             }"
           />
         </a-form>
 
         <template #footer>
           <a-form-item v-if="editMode" :wrapper-col="{ span: 14, offset: 4 }">
-            <a-button type="primary" @click="notificationSave"> {{ t("certd.confirm") }} </a-button>
+            <a-button type="primary" @click="notificationSave"> {{ t("certd.common.confirm") }} </a-button>
           </a-form-item>
         </template>
       </pi-container>
@@ -121,21 +121,21 @@ const rules = ref({
     {
       type: "string",
       required: true,
-      message: t("certd.please_select_type"),
+      message: t("certd.pipeline.please_select_type"),
     },
   ],
   when: [
     {
       type: "string",
       required: true,
-      message: t("certd.please_select_trigger_time"),
+      message: t("certd.pipeline.please_select_trigger_time"),
     },
   ],
   notificationId: [
     {
       type: "number",
       required: true,
-      message: t("certd.please_select_notification_config"),
+      message: t("certd.pipeline.please_select_notification_config"),
     },
   ],
 });
@@ -192,8 +192,8 @@ const notificationSave = async (e: any) => {
 
 const notificationDelete = () => {
   Modal.confirm({
-    title: t("certd.confirm"),
-    content: t("certd.confirm_delete_trigger"),
+    title: t("certd.common.confirm"),
+    content: t("certd.pipeline.confirm_delete_trigger"),
     async onOk() {
       callback.value("delete");
       notificationDrawerClose();

@@ -22,6 +22,12 @@ type SiteItem = {
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Baota - Deploy Web Site Win",
+      desc: "Deploy the certificate to the web site.",
+    },
+  },
 })
 export class BaotaDeployWebSiteWin extends AbstractTaskPlugin {
   //证书选择，此项必须要有

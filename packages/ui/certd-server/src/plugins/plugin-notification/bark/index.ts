@@ -19,6 +19,7 @@ import { BaseNotification, IsNotification, NotificationBody, NotificationInput }
   name: "bark",
   title: "Bark 通知",
   desc: "Bark 推送通知插件",
+  i18n: { "en-US": { title: "Bark Notification", desc: "Send pipeline notifications using Bark." } },
   needPlus: true,
 })
 export class BarkNotification extends BaseNotification {

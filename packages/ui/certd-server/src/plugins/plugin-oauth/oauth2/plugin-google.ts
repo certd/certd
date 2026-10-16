@@ -6,6 +6,7 @@ import { BuildLoginUrlReq, BuildLogoutUrlReq, IOauthProvider, OnCallbackReq } fr
   name: "google",
   title: "Google认证",
   desc: "Google OAuth2登录",
+  i18n: { "en-US": { title: "Google OAuth", desc: "Sign in with a Google account." } },
   icon: "simple-icons:google",
   showTest: false,
 })

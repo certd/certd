@@ -8,6 +8,7 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   name: "ftp",
   title: "FTP授权",
   desc: "",
+  i18n: { "en-US": { title: "FTP Access" } },
   icon: "mdi:folder-upload-outline",
 })
 export class FtpAccess extends BaseAccess {

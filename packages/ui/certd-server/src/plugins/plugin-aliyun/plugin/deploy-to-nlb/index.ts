@@ -1,4 +1,4 @@
-﻿import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { CertApplyPluginNames } from "@certd/plugin-cert";
@@ -11,6 +11,12 @@ import { AliyunClientV2 } from "../../../plugin-lib/aliyun/lib/aliyun-client-v2.
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "NLB,网络负载均衡,更新监听器的默认证书",
+  i18n: {
+    "en-US": {
+      title: "Aliyun - Deploy Certificate to NLB",
+      desc: "Deploy a certificate to Aliyun NLB.",
+    },
+  },
   needPlus: false,
   default: {
     strategy: {

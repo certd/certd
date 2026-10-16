@@ -2,14 +2,14 @@
   <fs-page class="page-cert">
     <template #header>
       <div class="title">
-        {{ t("certd.subdomainHosting") }}
+        {{ t("certd.pipeline.subdomainHosting") }}
         <span class="sub">
-          {{ t("certd.subdomainHostingHint") }}；
+          {{ t("certd.pipeline.subdomainHostingHint") }}；
 
           <span v-comm="false">
-            {{ t("certd.subdomainHelpText") }}
+            {{ t("certd.pipeline.subdomainHelpText") }}
             <a href="https://certd.docmirror.cn/guide/use/cert/subdomain.html" target="_blank">
-              {{ t("certd.subdomainManagement") }}
+              {{ t("certd.pipeline.subdomainManagement") }}
             </a>
           </span>
         </span>
@@ -17,7 +17,7 @@
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #pagination-left>
-        <a-tooltip v-if="hasActionPermission('write')" :title="t('certd.batchDelete')">
+        <a-tooltip v-if="hasActionPermission('write')" :title="t('certd.common.batchDelete')">
           <fs-button icon="DeleteOutlined" @click="handleBatchDelete"></fs-button>
         </a-tooltip>
       </template>
@@ -52,17 +52,17 @@ const selectedRowKeys = context.selectedRowKeys;
 const handleBatchDelete = () => {
   if (selectedRowKeys.value?.length > 0) {
     Modal.confirm({
-      title: t("certd.confirm"),
-      content: t("certd.batchDeleteConfirm", { count: selectedRowKeys.value.length }),
+      title: t("certd.common.confirm"),
+      content: t("certd.common.batchDeleteConfirm", { count: selectedRowKeys.value.length }),
       async onOk() {
         await DeleteBatch(selectedRowKeys.value);
-        notification.info({ message: t("certd.deleteSuccess") });
+        notification.info({ message: t("certd.common.deleteSuccess") });
         crudExpose.doRefresh();
         selectedRowKeys.value = [];
       },
     });
   } else {
-    notification.error({ message: t("certd.selectRecordFirst") });
+    notification.error({ message: t("certd.common.selectRecordFirst") });
   }
 };
 

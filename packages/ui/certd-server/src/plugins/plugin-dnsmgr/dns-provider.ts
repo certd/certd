@@ -15,6 +15,12 @@ type DnsmgrRecord = {
   icon: "clarity:plugin-line",
   accessType: "dnsmgr",
   order: 99,
+  i18n: {
+    "en-US": {
+      title: "Dnsmgr DNS Provider",
+      desc: "Configure Dnsmgr DNS provider credentials.",
+    },
+  },
 })
 export class DnsmgrDnsProvider extends AbstractDnsProvider<DnsmgrRecord> {
   access!: DnsmgrAccess;

@@ -15,6 +15,12 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "LeCDN - Update Cert",
+      desc: "Update the certificate to the CDN.",
+    },
+  },
 })
 export class LeCDNUpdateCert extends AbstractTaskPlugin {
   //授权选择框

@@ -9,6 +9,17 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   title: "cloudflare授权",
   icon: "simple-icons:cloudflare",
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "Cloudflare",
+      desc: "Cloudflare access credentials.",
+      input: {
+        apiToken: { title: "API Token", helper: "Create a token with Zone Read and DNS Edit permissions." },
+        proxy: { title: "HTTP Proxy", helper: "Optional HTTP proxy URL." },
+        testRequest: { title: "Test", helper: "Test whether the credentials are valid." },
+      },
+    },
+  },
 })
 export class CloudflareAccess extends BaseAccess {
   /**

@@ -7,6 +7,10 @@ title: Gcore-刷新Gcore证书
 desc: 刷新现有的证书
 icon: clarity:plugin-line
 group: cdn
+i18n:
+  en-US:
+    title: Gcore-Refresh Certificate
+    desc: Configure Gcore refresh credentials.
 input:
   certName:
     title: 证书名称

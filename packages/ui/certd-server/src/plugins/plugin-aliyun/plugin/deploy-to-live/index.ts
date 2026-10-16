@@ -1,4 +1,4 @@
-﻿import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames } from "@certd/plugin-cert";
 import { CertInfo, createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
@@ -10,6 +10,12 @@ import { AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/index
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "部署证书到阿里云视频直播（Live）域名",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Deploy Certificate to Live",
+      desc: "Deploy a certificate to Aliyun Live.",
+    },
+  },
   needPlus: false,
   default: {
     strategy: {

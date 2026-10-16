@@ -1,21 +1,25 @@
-﻿<template>
+<template>
   <div class="sys-settings-form sys-settings-mode">
     <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
-      <a-form-item :label="t('certd.sys.setting.adminMode')" :name="['public', 'adminMode']">
+      <a-form-item :label="t('certd.sys.settings.adminMode')" :name="['public', 'adminMode']">
         <div class="w-full flex items-center">
           <fs-dict-radio v-model:value="formState.public.adminMode" :disabled="!settingsStore.isPlus" :dict="adminModeDict" />
           <vip-button class="ml-5" mode="button"></vip-button>
         </div>
-        <div class="helper">SaaS模式：每个用户管理自己的流水线和授权资源，独立使用。</div>
-        <div class="helper">企业模式：通过项目合作管理流水线证书和授权资源，所有用户视为企业内部员工。</div>
-        <div class="helper"><a @click="adminModeIntroOpen = true">更多管理模式介绍</a></div>
-        <div class="helper text-red-500">建议在开始使用时固定一个合适的模式，之后就不要随意切换了。</div>
-        <div v-if="formState.public.adminMode === 'enterprise'" class="helper">设置为企业模式之后，之前创建的个人数据不会显示，您可以选择<a @click="goCurrentProject"> 将个人数据迁移到项目</a></div>
-        <div v-if="settingsStore.isComm" class="helper text-red-500">商业版不建议设置为企业模式，除非你确定要转成企业内部使用</div>
+        <div class="helper">{{ t("certd.sys.settings.modeSaasHelper") }}</div>
+        <div class="helper">{{ t("certd.sys.settings.modeEnterpriseHelper") }}</div>
+        <div class="helper">
+          <a @click="adminModeIntroOpen = true">{{ t("certd.sys.settings.modeMore") }}</a>
+        </div>
+        <div class="helper text-red-500">{{ t("certd.sys.settings.modeFixedWarning") }}</div>
+        <div v-if="formState.public.adminMode === 'enterprise'" class="helper">
+          {{ t("certd.sys.settings.modeMigrate") }}<a @click="goCurrentProject"> {{ t("certd.sys.settings.switchModeNow") }}</a>
+        </div>
+        <div v-if="settingsStore.isComm" class="helper text-red-500">{{ t("certd.sys.settings.modeCommWarning") }}</div>
       </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
-        <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
+        <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.sys.settings.saveButton") }}</a-button>
       </a-form-item>
     </a-form>
 
@@ -46,11 +50,11 @@ const adminModeIntroOpen = ref(false);
 const adminModeDict = dict({
   data: [
     {
-      label: t("certd.sys.setting.saasMode"),
+      label: t("certd.sys.settings.saasMode"),
       value: "saas",
     },
     {
-      label: t("certd.sys.setting.enterpriseMode"),
+      label: t("certd.sys.settings.enterpriseMode"),
       value: "enterprise",
     },
   ],
@@ -78,7 +82,7 @@ const onFinish = async (form: any) => {
     await settingsStore.loadSysSettings();
     await projectStore.reload();
     notification.success({
-      message: t("certd.saveSuccess"),
+      message: t("certd.common.saveSuccess"),
     });
 
     if (formState.public.adminMode === "enterprise") {

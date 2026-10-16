@@ -5,6 +5,28 @@ import * as acme from "@certd/acme-client";
   name: "eab",
   title: "EAB授权",
   desc: "ZeroSSL证书申请需要EAB授权",
+  i18n: {
+    "en-US": {
+      title: "EAB Credentials",
+      desc: "EAB credentials required for certificate requests with ZeroSSL and other CAs.",
+      input: {
+        eabType: { title: "EAB Provider", helper: "Select the EAB provider." },
+        kid: { title: "KID", helper: "EAB KID. Google calls this keyId; SSL.com calls it Account/ACME Key." },
+        hmacKey: { title: "HMAC Key", helper: "EAB HMAC Key. Google calls this b64MacKey." },
+        email: {
+          title: "Email",
+          component: { placeholder: "Email associated with this account" },
+          helper: "Bind an email address to help prevent the credentials from expiring.",
+          rules: [{ type: "email", message: "Enter a valid email address." }],
+        },
+        accountKey: {
+          title: "ACME Account Private Key",
+          component: { buttonText: "Generate", successMessage: "Account private key generated. Save this access configuration." },
+          helper: "If you change the KID, generate a new account private key. Google EAB can only create an account key once; obtain new EAB credentials before replacing it.",
+        },
+      },
+    },
+  },
   icon: "ic:outline-lock",
 })
 export class EabAccess extends BaseAccess {

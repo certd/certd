@@ -16,6 +16,20 @@ import dayjs from "dayjs";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Volcengine-Deploy to ALB Plugin",
+      desc: "Deploy certificates to Volcengine Application Load Balancer listeners",
+      input: {
+        cert: { title: "Certificate", helper: "Select the certificate output from a previous task" },
+        certDomains: { title: "Certificate domains" },
+        accessId: { title: "Access credentials", helper: "Volcengine access key ID and secret" },
+        regionId: { title: "Region", helper: "Select the ALB region" },
+        listenerList: { title: "Listener list", helper: "Select listeners where the certificate will be deployed" },
+        certType: { title: "Certificate deployment type", helper: "Choose the default or an additional certificate", optionsMapping: { default: "Default certificate", extension: "Additional certificate" } },
+      },
+    },
+  },
 })
 export class VolcengineDeployToALB extends AbstractTaskPlugin {
   @TaskInput({

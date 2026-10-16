@@ -43,10 +43,11 @@ export class CertInfoFacade {
     format?: string;
     autoApplyTemplateId?: number;
     autoApplyParams?: CertApplyTemplateParams;
+    returnCertPassword?: boolean;
   }) {
     const { domains, certId, pipelineId, userId, projectId } = req;
     if (certId) {
-      return await this.certInfoService.getCertInfoById({ id: certId, userId, projectId });
+      return await this.certInfoService.getCertInfoById({ id: certId, userId, projectId, format: req.format, returnCertPassword: req.returnCertPassword });
     }
     if (!domains) {
       throw new CodeException({
@@ -91,7 +92,7 @@ export class CertInfoFacade {
       }
     }
 
-    return await this.certInfoService.getCertInfoById({ id: matched.id, userId: userId, projectId, format: req.format });
+    return await this.certInfoService.getCertInfoById({ id: matched.id, userId: userId, projectId, format: req.format, returnCertPassword: req.returnCertPassword });
   }
 
   public getMinixMatched(matchedList: CertInfoEntity[]) {

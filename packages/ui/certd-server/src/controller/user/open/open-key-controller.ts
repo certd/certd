@@ -76,6 +76,7 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
       id: bean.id,
       remark: bean.remark,
       scope: bean.scope,
+      returnCertPassword: bean.returnCertPassword,
     };
     await this.service.update(upd);
     this.auditLog({

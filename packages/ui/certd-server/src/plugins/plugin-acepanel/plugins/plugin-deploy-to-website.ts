@@ -16,6 +16,12 @@ import { AcePanelAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "AcePanel Deploy to Website Plugin",
+      desc: "Deploy AcePanel certificate to website.",
+    },
+  },
 })
 export class AcePanelDeployToWebsite extends AbstractPlusTaskPlugin {
   @TaskInput({

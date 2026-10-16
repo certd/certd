@@ -4,6 +4,7 @@ import { BaseNotification, IsNotification, NotificationBody, NotificationInput }
   name: "dingtalk",
   title: "钉钉通知",
   desc: "钉钉群聊通知",
+  i18n: { "en-US": { title: "DingTalk Notification", desc: "Send pipeline notifications to DingTalk." } },
   needPlus: true,
 })
 // https://open.dingtalk.com/document/orgapp/the-creation-and-installation-of-the-application-robot-in-the?spm=ding_open_doc.document.0.0.242d1563cDgZz3

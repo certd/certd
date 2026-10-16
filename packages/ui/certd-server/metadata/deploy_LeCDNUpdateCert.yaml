@@ -7,6 +7,10 @@ title: LeCDN-更新证书
 icon: material-symbols:shield-outline
 group: cdn
 needPlus: false
+i18n:
+  en-US:
+    title: LeCDN - Update Cert
+    desc: Update the certificate to the CDN.
 input:
   accessId:
     title: LeCDN授权

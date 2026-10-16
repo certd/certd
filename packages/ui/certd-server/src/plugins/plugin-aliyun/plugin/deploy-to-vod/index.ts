@@ -9,6 +9,12 @@ import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "部署证书到阿里云视频点播（vod）",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Deploy Certificate to VOD",
+      desc: "Deploy a certificate to Aliyun VOD.",
+    },
+  },
   needPlus: false,
   default: {
     strategy: {

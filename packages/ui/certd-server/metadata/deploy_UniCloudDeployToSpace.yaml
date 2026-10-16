@@ -8,6 +8,25 @@ icon: material-symbols:shield-outline
 group: panel
 desc: 部署到服务空间
 needPlus: false
+i18n:
+  en-US:
+    title: Unicloud - Deploy to Space
+    input:
+      cert:
+        title: Domain Certificate
+        helper: Select the certificate output by a previous task.
+      accessId:
+        title: UniCloud Access
+        helper: UniCloud access credentials.
+      spaceId:
+        title: Service Space ID
+        helper: Enter the spaceId.
+      provider:
+        title: Space Provider
+        helper: Select the space provider.
+      domains:
+        title: Space Domain
+        helper: Select the space domain.
 input:
   cert:
     title: 域名证书

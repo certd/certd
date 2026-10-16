@@ -1,4 +1,4 @@
-﻿import { AbstractTaskPlugin, CertTargetItem, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
+import { AbstractTaskPlugin, CertTargetItem, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import dayjs from "dayjs";
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
@@ -12,6 +12,12 @@ import { AliyunClient, AliyunSslClient, CasCertId } from "../../../plugin-lib/al
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "依赖证书申请前置任务，自动部署域名证书至阿里云DCDN",
+  i18n: {
+    "en-US": {
+      title: "Aliyun - Deploy Certificate to DCDN",
+      desc: "Deploy a certificate to Aliyun DCDN.",
+    },
+  },
   runStrategy: RunStrategy.AlwaysRun,
   // default: {
   //   strategy: {

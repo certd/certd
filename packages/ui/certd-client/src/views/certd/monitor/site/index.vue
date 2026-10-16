@@ -1,15 +1,15 @@
-﻿<template>
+<template>
   <fs-page>
     <template #header>
       <div class="title flex items-center">
-        {{ t("monitor.title") }}
+        {{ t("certd.monitor.title") }}
         <div class="sub flex-1">
           <div>
-            {{ t("monitor.description") }}
-            <router-link to="/cert/monitor/setting">{{ t("monitor.settingLink") }}</router-link>
+            {{ t("certd.monitor.description") }}
+            <router-link to="/cert/monitor/setting">{{ t("certd.monitor.settingLink") }}</router-link>
           </div>
           <div class="flex items-center">
-            {{ t("monitor.limitInfo") }}
+            {{ t("certd.monitor.limitInfo") }}
             <vip-button class="ml-5" mode="nav"></vip-button>
           </div>
         </div>
@@ -17,7 +17,7 @@
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #pagination-left>
-        <a-tooltip :title="t('monitor.batchDelete')">
+        <a-tooltip :title="t('certd.monitor.batchDelete')">
           <fs-button icon="DeleteOutlined" @click="handleBatchDelete"></fs-button>
         </a-tooltip>
       </template>

@@ -34,7 +34,7 @@ export function usePluginConfig() {
               },
             },
             async afterSubmit() {
-              notification.success({ message: t("certd.operationSuccess") });
+              notification.success({ message: t("certd.common.operationSuccess") });
               if (onSuccess) {
                 await onSuccess();
               }

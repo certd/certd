@@ -8,6 +8,19 @@ icon: svg:icon-safeline
 desc: 更新长亭雷池WAF的证书，支持更新控制台和防护应用的证书。
 group: panel
 needPlus: false
+i18n:
+  en-US:
+    title: Safeline - Deploy to Website
+    input:
+      cert:
+        title: Domain Certificate
+        helper: Select the certificate output by a previous task.
+      accessId:
+        title: Safeline Access
+        helper: Safeline API credentials.
+      certIds:
+        title: Safeline Certificate
+        helper: Select the certificate ID to update, or 0 to create a new certificate.
 input:
   cert:
     title: 域名证书

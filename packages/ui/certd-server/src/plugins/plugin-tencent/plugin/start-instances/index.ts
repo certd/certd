@@ -8,6 +8,12 @@ import { TencentAccess } from "../../../plugin-lib/tencent/access.js";
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "腾讯云实例开关机",
+  i18n: {
+    "en-US": {
+      title: "Tencent-Start or Stop Instances",
+      desc: "Start or stop Tencent Cloud instances.",
+    },
+  },
   dependPlugins: {
     "access:tencent": "*",
   },

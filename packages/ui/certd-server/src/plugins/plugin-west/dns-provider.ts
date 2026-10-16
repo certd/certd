@@ -20,6 +20,12 @@ type westRecord = {
   icon: "svg:icon-xibushuma",
   // 这里是对应的云平台的access类型名称
   accessType: "west",
+  i18n: {
+    "en-US": {
+      title: "West DNS Provider",
+      desc: "West DNS provider.",
+    },
+  },
 })
 export class WestDnsProvider extends AbstractDnsProvider<westRecord> {
   access!: WestAccess;

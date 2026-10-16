@@ -10,6 +10,6 @@ export default {
     "postcss-import": {},
     "postcss-preset-env": {},
     tailwindcss: { config },
-    "tailwindcss/nesting": {}
-  }
+    "tailwindcss/nesting": {},
+  },
 };

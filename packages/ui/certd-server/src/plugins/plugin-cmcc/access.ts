@@ -12,6 +12,12 @@ import { CmccClient } from "./cmcc-client.js";
   title: "中国移动CND授权",
   desc: "",
   icon: "svg:cmcc",
+  i18n: {
+    "en-US": {
+      title: "Cmcc Plugin",
+      desc: "Integration plugin for cmcc",
+    },
+  },
 })
 export class CmccAccess extends BaseAccess {
   @AccessInput({

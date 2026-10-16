@@ -2,9 +2,9 @@
   <fs-page>
     <template #header>
       <div class="title flex-baseline">
-        我的套餐
+        {{ $t("certd.suite.mySuite") }}
         <div class="sub">
-          <div class="flex-o flex-wrap">当前套餐：<suite-card></suite-card></div>
+          <div class="flex-o flex-wrap">{{ $t("certd.suite.title") }}：<suite-card></suite-card></div>
         </div>
       </div>
     </template>

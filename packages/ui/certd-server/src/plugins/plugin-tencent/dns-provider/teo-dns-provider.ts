@@ -5,6 +5,12 @@ import { TencentAccess } from "../../plugin-lib/tencent/access.js";
   name: "tencent-eo",
   title: "腾讯云EO DNS",
   desc: "腾讯云EO DNS解析提供者",
+  i18n: {
+    "en-US": {
+      title: "Tencent Cloud EO DNS Provider",
+      desc: "Tencent Cloud EO DNS provider.",
+    },
+  },
   accessType: "tencent",
   icon: "svg:icon-tencentcloud",
   order: 0,

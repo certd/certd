@@ -6,6 +6,12 @@ import { AwsClient } from "./libs/aws-client.js";
   name: "aws",
   title: "亚马逊云aws授权",
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "AWS Access",
+      desc: "Configure AWS access credentials.",
+    },
+  },
   icon: "svg:icon-aws",
 })
 export class AwsAccess extends BaseAccess {

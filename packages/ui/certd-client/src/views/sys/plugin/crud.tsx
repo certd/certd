@@ -72,9 +72,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const syncButtonTitle = computed(() => {
     if (!lastSyncTime.value) {
-      return t("certd.onlinePluginNotSynced");
+      return t("certd.sys.plugin.onlinePluginNotSynced");
     }
-    return t("certd.onlinePluginLastSyncTime", {
+    return t("certd.sys.plugin.onlinePluginLastSyncTime", {
       time: formatSyncTime(lastSyncTime.value),
     });
   });
@@ -100,7 +100,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         return plugin.installed && plugin.upgradeAvailable && !!plugin.fullName && !!plugin.latest;
       });
       if (pluginsToUpgrade.length === 0) {
-        notification.info({ message: t("certd.onlinePluginNoUpgradeAvailable") });
+        notification.info({ message: t("certd.sys.plugin.onlinePluginNoUpgradeAvailable") });
         return;
       }
 
@@ -119,11 +119,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       crudExpose.doRefresh();
 
       if (failedPlugins.length === 0) {
-        notification.success({ message: t("certd.onlinePluginUpgradeAllSuccess", { count: pluginsToUpgrade.length }) });
+        notification.success({ message: t("certd.sys.plugin.onlinePluginUpgradeAllSuccess", { count: pluginsToUpgrade.length }) });
         return;
       }
       notification.warning({
-        message: t("certd.onlinePluginUpgradeAllPartialFailure", {
+        message: t("certd.sys.plugin.onlinePluginUpgradeAllPartialFailure", {
           successCount: pluginsToUpgrade.length - failedPlugins.length,
           failedNames: failedPlugins.join("、"),
         }),
@@ -160,12 +160,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           add: {
             show: true,
             icon: "ion:ios-add-circle-outline",
-            text: t("certd.customPlugin"),
+            text: t("certd.sys.plugin.customPlugin"),
           },
           import: {
             show: true,
             icon: "ion:cloud-upload-outline",
-            text: t("certd.import"),
+            text: t("certd.common.import"),
             type: "primary",
             async click() {
               await openImportDialog({ crudExpose });
@@ -184,7 +184,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
             icon: "ion:sync-outline",
             type: "primary",
-            text: t("certd.onlinePluginSync"),
+            text: t("certd.sys.plugin.onlinePluginSync"),
             tooltip: { title: syncButtonTitle },
             loading: syncLoading,
             async click() {
@@ -195,7 +195,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
             icon: "carbon:upgrade",
             type: "primary",
-            text: t("certd.onlinePluginUpgradeAll"),
+            text: t("certd.sys.plugin.onlinePluginUpgradeAll"),
             loading: upgradeAllLoading,
             async click() {
               await upgradeAllOnlinePlugins();
@@ -204,17 +204,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           clearRuntimeDeps: {
             show: true,
             icon: "ion:trash-outline",
-            text: t("certd.clearRuntimeDeps"),
-            tooltip: { title: t("certd.clearRuntimeDepsTooltip") },
+            text: t("certd.sys.plugin.clearRuntimeDeps"),
+            tooltip: { title: t("certd.sys.plugin.clearRuntimeDepsTooltip") },
             type: "primary",
             danger: true,
             async click() {
               Modal.confirm({
-                title: t("certd.confirm"),
-                content: t("certd.clearRuntimeDepsConfirm"),
+                title: t("certd.common.confirm"),
+                content: t("certd.sys.plugin.clearRuntimeDepsConfirm"),
                 async onOk() {
                   await api.ClearRuntimeDeps();
-                  notification.success({ message: t("certd.clearRuntimeDepsSuccess") });
+                  notification.success({ message: t("certd.sys.plugin.clearRuntimeDepsSuccess") });
                 },
               });
             },
@@ -264,7 +264,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           export: {
             text: null,
             icon: "ion:cloud-download-outline",
-            title: t("certd.export"),
+            title: t("certd.common.export"),
             type: "link",
             //@ts-ignore
             show: compute(({ row }) => {
@@ -317,7 +317,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       columns: {
         pluginType: {
-          title: t("certd.pluginType"),
+          title: t("certd.sys.plugin.pluginType"),
           type: "dict-select",
           search: {
             show: true,
@@ -342,9 +342,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           dict: dict({
             data: [
-              { label: t("certd.auth"), value: "access" },
-              { label: t("certd.dns"), value: "dnsProvider" },
-              { label: t("certd.deployPlugin"), value: "deploy" },
+              { label: t("certd.sys.plugin.auth"), value: "access" },
+              { label: t("certd.sys.plugin.dns"), value: "dnsProvider" },
+              { label: t("certd.sys.plugin.deployPlugin"), value: "deploy" },
               { label: "通知", value: "notification" },
               // { label: "Addon", value: "addon" },
             ],
@@ -358,7 +358,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         icon: {
-          title: t("certd.icon"),
+          title: t("certd.sys.plugin.icon"),
           type: "icon",
           form: {
             rules: [{ required: true }],
@@ -376,7 +376,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         name: {
-          title: t("certd.pluginName"),
+          title: t("certd.sys.plugin.pluginName"),
           type: "text",
           search: {
             show: true,
@@ -386,13 +386,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             show: true,
-            helper: t("certd.pluginNameHelper"),
+            helper: t("certd.sys.plugin.pluginNameHelper"),
             rules: [
               { required: true },
               {
                 type: "pattern",
                 pattern: /^[a-zA-Z][a-zA-Z0-9]+$/,
-                message: t("certd.pluginNameRuleMsg"),
+                message: t("certd.sys.plugin.pluginNameRuleMsg"),
               },
             ],
           },
@@ -408,7 +408,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         author: {
-          title: t("certd.author"),
+          title: t("certd.sys.plugin.author"),
           type: "text",
           search: {
             component: {
@@ -480,7 +480,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           }),
         },
         title: {
-          title: t("certd.titlea"),
+          title: t("certd.sys.plugin.titlea"),
           type: "text",
           search: {
             show: false,
@@ -489,7 +489,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           form: {
-            helper: t("certd.titleHelper"),
+            helper: t("certd.sys.plugin.titleHelper"),
             rules: [{ required: true }],
           },
           column: {
@@ -500,16 +500,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         desc: {
-          title: t("certd.description"),
+          title: t("certd.common.description"),
           type: "textarea",
-          helper: t("certd.descriptionHelper"),
+          helper: t("certd.sys.plugin.descriptionHelper"),
           column: {
             width: 300,
             show: false,
           },
         },
         type: {
-          title: t("certd.sourcee"),
+          title: t("certd.common.sourcee"),
           type: "dict-select",
           search: {
             show: true,
@@ -528,8 +528,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           dict: dict({
             data: [
-              { label: t("certd.builtIn"), value: "builtIn" },
-              { label: t("certd.store"), value: "store" },
+              { label: t("certd.sys.plugin.builtIn"), value: "builtIn" },
+              { label: t("certd.sys.plugin.store"), value: "store" },
             ],
           }),
           column: {
@@ -557,7 +557,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         version: {
-          title: t("certd.version"),
+          title: t("certd.sys.plugin.version"),
           type: "text",
           column: {
             width: 100,
@@ -565,14 +565,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         dependPlugins: {
-          title: t("certd.pluginDependencies"),
+          title: t("certd.sys.plugin.pluginDependencies"),
           type: "text",
           form: {
             component: {
               name: DependPluginsInput,
               vModel: "modelValue",
             },
-            helper: t("certd.pluginDependenciesHelper"),
+            helper: t("certd.sys.plugin.pluginDependenciesHelper"),
           },
           column: {
             show: false,
@@ -589,26 +589,26 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         "extra.dependPackages": {
-          title: t("certd.thirdPartyDependencies"),
+          title: t("certd.sys.plugin.thirdPartyDependencies"),
           type: "text",
           form: {
             component: {
               name: KvInput,
               vModel: "modelValue",
             },
-            helper: t("certd.thirdPartyDependenciesHelper"),
+            helper: t("certd.sys.plugin.thirdPartyDependenciesHelper"),
           },
           column: {
             show: false,
           },
         },
         "extra.showRunStrategy": {
-          title: t("certd.editableRunStrategy"),
+          title: t("certd.sys.plugin.editableRunStrategy"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { value: true, label: t("certd.editable") },
-              { value: false, label: t("certd.notEditable") },
+              { value: true, label: t("certd.sys.plugin.editable") },
+              { value: false, label: t("certd.sys.plugin.notEditable") },
             ],
           }),
           form: {
@@ -622,18 +622,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         "extra.default.strategy.runStrategy": {
-          title: t("certd.runStrategy"),
+          title: t("certd.sys.plugin.runStrategy"),
           type: "dict-select",
           dict: dict({
             data: [
-              { value: 0, label: t("certd.normalRun") },
-              { value: 1, label: t("certd.skipOnSuccess") },
+              { value: 0, label: t("certd.sys.plugin.normalRun") },
+              { value: 1, label: t("certd.sys.plugin.skipOnSuccess") },
             ],
           }),
           form: {
             value: 1,
             rules: [{ required: true }],
-            helper: t("certd.defaultRunStrategyHelper"),
+            helper: t("certd.sys.plugin.defaultRunStrategyHelper"),
             show: compute(({ form }) => {
               return form.extra.showRunStrategy;
             }),
@@ -658,28 +658,28 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         disabled: {
-          title: t("certd.clickToToggle"),
+          title: t("certd.common.clickToToggle"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("certd.enabled"), value: false, color: "success" },
-              { label: t("certd.disabled"), value: true, color: "error" },
+              { label: t("certd.common.enabled"), value: false, color: "success" },
+              { label: t("certd.common.disabled"), value: true, color: "error" },
             ],
           }),
           form: {
-            title: t("certd.enableDisable"),
+            title: t("certd.sys.plugin.enableDisable"),
             value: false,
           },
           column: {
             width: 120,
             align: "center",
             component: {
-              title: t("certd.clickToToggle"),
+              title: t("certd.common.clickToToggle"),
               on: {
                 async click({ value, row }) {
                   Modal.confirm({
-                    title: t("certd.confirm"),
-                    content: `${t("certd.confirmToggle")} ${!value ? t("certd.disable") : t("certd.enable")}?`,
+                    title: t("certd.common.confirm"),
+                    content: `${t("certd.sys.plugin.confirmToggle")} ${!value ? t("certd.common.disable") : t("certd.common.enable")}?`,
                     maskClosable: true,
                     onOk: async () => {
                       await api.SetDisabled({
@@ -697,7 +697,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         group: {
-          title: t("certd.pluginGroup"),
+          title: t("certd.sys.plugin.pluginGroup"),
           type: "dict-select",
           search: {
             show: true,
@@ -725,7 +725,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         createTime: {
-          title: t("certd.createTime"),
+          title: t("certd.common.createTime"),
           type: "datetime",
           form: {
             show: false,
@@ -737,7 +737,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         updateTime: {
-          title: t("certd.updateTime"),
+          title: t("certd.common.updateTime"),
           type: "datetime",
           form: {
             show: false,

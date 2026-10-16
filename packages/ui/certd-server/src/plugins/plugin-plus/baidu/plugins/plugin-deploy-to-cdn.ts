@@ -15,6 +15,12 @@ import { createCertDomainGetterInputDefine } from "@certd/plugin-lib";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Baidu - Deploy to CDN",
+      desc: "Update the certificate of the Baidu CDN.",
+    },
+  },
 })
 export class BaiduDeployToCDNPlugin extends AbstractTaskPlugin {
   //证书选择，此项必须要有

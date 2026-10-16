@@ -7,6 +7,10 @@ title: 阿里云-部署至直播（Live）
 icon: svg:icon-aliyun
 group: aliyun
 desc: 部署证书到阿里云视频直播（Live）域名
+i18n:
+  en-US:
+    title: Aliyun-Deploy Certificate to Live
+    desc: Deploy a certificate to Aliyun Live.
 needPlus: false
 input:
   cert:

@@ -10,6 +10,11 @@ import { CertInfo } from "@certd/plugin-cert";
   desc: "https://app.rainyun.com/",
   icon: "svg:icon-rainyun",
   order: 100,
+  i18n: {
+    "en-US": {
+      title: "Rainyun Access",
+    },
+  },
 })
 export class RainyunAccess extends BaseAccess {
   @AccessInput({

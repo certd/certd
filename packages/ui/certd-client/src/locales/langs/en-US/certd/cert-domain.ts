@@ -1,5 +1,6 @@
 export default {
   domain: {
+    dnsPersistDescription: "Currently, only Google certificates support DNS persistent validation.",
     domainManager: "Domain Manager",
     domainDescription: "used to auto apply for certificate", //管理域名的校验方式，用于申请证书时自动选择验证方式
     domain: "Domain",

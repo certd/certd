@@ -11,6 +11,7 @@ export type CustomScriptContext = {
   title: "自定义js脚本",
   icon: "ri:javascript-line",
   desc: "【仅管理员】运行自定义js脚本执行",
+  i18n: { "en-US": { title: "Custom JavaScript Script", desc: "[Administrators only] Run a custom JavaScript script." } },
   group: pluginGroups.admin.key,
   showRunStrategy: true,
   onlyAdmin: true,

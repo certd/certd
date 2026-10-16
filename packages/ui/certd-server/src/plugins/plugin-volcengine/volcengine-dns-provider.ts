@@ -11,6 +11,12 @@ import { PageSearch } from "@certd/pipeline";
   accessType: "volcengine",
   icon: "svg:icon-volcengine",
   order: 1,
+  i18n: {
+    "en-US": {
+      title: "Volcengine DNS Provider",
+      desc: "Volcengine DNS provider.",
+    },
+  },
 })
 export class VolcengineDnsProvider extends AbstractDnsProvider {
   client: VolcengineDnsClient;

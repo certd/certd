@@ -15,6 +15,12 @@ import { VolcengineClient } from "../ve-client.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Volcengine-Upload to Cert Center Plugin",
+      desc: "Upload certificates to Volcengine Cert Center.",
+    },
+  },
 })
 export class VolcengineUploadToCertCenter extends AbstractTaskPlugin {
   @TaskInput({

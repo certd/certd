@@ -8,6 +8,12 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "已废弃，请使用v2版",
+  i18n: {
+    "en-US": {
+      title: "Tencent-Deploy to CDN (Deprecated)",
+      desc: "Deploy a certificate to Tencent Cloud CDN.",
+    },
+  },
   dependPlugins: {
     "access:tencent": "*",
   },

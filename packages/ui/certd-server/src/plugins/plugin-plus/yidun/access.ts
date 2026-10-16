@@ -9,6 +9,16 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   title: "易盾DCDN授权",
   icon: "material-symbols:shield-outline",
   desc: "https://user.yiduncdn.com",
+  i18n: {
+    "en-US": {
+      title: "Yidun Access",
+      input: {
+        apiKey: { title: "API Key", helper: "Enable API access in the Yidun console and copy the API key." },
+        apiSecret: { title: "API Secret", helper: "Enable API access in the Yidun console and copy the API secret." },
+        testRequest: { title: "Test", helper: "Test the API connection." },
+      },
+    },
+  },
 })
 export class YidunAccess extends BaseAccess {
   @AccessInput({

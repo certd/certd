@@ -28,6 +28,12 @@ const regionDict = [
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "上传证书到阿里云证书管理服务（CAS），如果不想在阿里云上同一份证书上传多次，可以把此任务作为前置任务，其他阿里云任务证书那一项选择此任务的输出",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Upload Certificate",
+      desc: "Upload a certificate to Aliyun.",
+    },
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,

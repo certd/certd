@@ -4,6 +4,7 @@ import AccessSelector from "/@/views/certd/access/access-selector/index.vue";
 import DnsProviderSelector from "/@/components/plugins/cert/dns-provider-selector/index.vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import { CreateTxt, TriggerVerify } from "./api";
+import { useI18n } from "/src/locales";
 
 export type DnsPersistSettingRecord = {
   id?: number;
@@ -15,6 +16,7 @@ export type DnsPersistSettingRecord = {
 };
 
 export function useDnsPersistSettingDialog() {
+  const { t } = useI18n();
   const { openFormDialog } = useFormDialog();
 
   function copyableRow(label: string, value?: string) {
@@ -43,24 +45,24 @@ export function useDnsPersistSettingDialog() {
       }
       if (form.mode === "manual") {
         await TriggerVerify(record.id);
-        notification.success({ message: "已提交校验" });
+        notification.success({ message: t("certd.dnsPersist.submitted") });
         await req.onDone?.();
         return;
       }
       if (!form.dnsProviderType || !form.dnsProviderAccess) {
-        throw new Error("请选择DNS服务商和授权");
+        throw new Error(t("certd.dnsPersist.selectProviderAndAccess"));
       }
       await CreateTxt({
         id: record.id,
         dnsProviderType: form.dnsProviderType,
         dnsProviderAccess: form.dnsProviderAccess,
       });
-      notification.success({ message: "TXT记录已创建" });
+      notification.success({ message: t("certd.dnsPersist.txtCreated") });
       await req.onDone?.();
     }
 
     await openFormDialog({
-      title: "设置DNS TXT记录",
+      title: t("certd.dnsPersist.settingTitle"),
       wrapper: {
         width: 680,
         buttons: {
@@ -69,29 +71,29 @@ export function useDnsPersistSettingDialog() {
           },
           ok: {
             show: true,
-            text: "确定",
+            text: t("certd.common.confirm"),
           },
         },
       },
       body: () => (
         <div>
           <a-radio-group value={form.mode} buttonStyle="solid" class="mb-10" onUpdate:value={(value: string) => (form.mode = value)}>
-            <a-radio-button value="manual">手动添加</a-radio-button>
-            <a-radio-button value="auto">选择授权添加</a-radio-button>
+            <a-radio-button value="manual">{t("certd.dnsPersist.manualAdd")}</a-radio-button>
+            <a-radio-button value="auto">{t("certd.dnsPersist.autoAdd")}</a-radio-button>
           </a-radio-group>
           {form.mode === "manual" ? (
             <div>
-              <a-alert class="mb-10" type="info" show-icon message="请到DNS解析控制台添加以下TXT记录，添加后点击确定会立即校验。" />
-              {copyableRow("主域名", record.mainDomain)}
-              {copyableRow("TXT主机名", record.hostRecord)}
-              {copyableRow("TXT值", record.recordValue)}
+              <a-alert class="mb-10" type="info" show-icon message={t("certd.dnsPersist.manualTip")} />
+              {copyableRow(t("certd.dnsPersist.mainDomain"), record.mainDomain)}
+              {copyableRow(t("certd.dnsPersist.txtHost"), record.hostRecord)}
+              {copyableRow(t("certd.dnsPersist.txtValue"), record.recordValue)}
             </div>
           ) : (
             <div>
-              <a-alert class="mb-10" type="info" show-icon message="请选择DNS服务商和授权，系统会创建TXT记录，后续校验由后台完成。" />
-              {copyableRow("主域名", record.mainDomain)}
+              <a-alert class="mb-10" type="info" show-icon message={t("certd.dnsPersist.autoTip")} />
+              {copyableRow(t("certd.dnsPersist.mainDomain"), record.mainDomain)}
               <div class="mb-10 flex items-center">
-                <div style={{ width: "90px", flexShrink: 0 }}>DNS服务商</div>
+                <div style={{ width: "90px", flexShrink: 0 }}>{t("certd.dnsPersist.provider")}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <DnsProviderSelector
                     class="w-full"
@@ -108,7 +110,7 @@ export function useDnsPersistSettingDialog() {
                 </div>
               </div>
               <div class="mb-10 flex items-center">
-                <div style={{ width: "90px", flexShrink: 0 }}>DNS授权</div>
+                <div style={{ width: "90px", flexShrink: 0 }}>{t("certd.dnsPersist.access")}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <AccessSelector
                     modelValue={form.dnsProviderAccess}

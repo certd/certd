@@ -4,6 +4,7 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   name: "qiniuoss",
   title: "七牛OSS授权",
   desc: "",
+  i18n: { "en-US": { title: "Qiniu OSS Access" } },
   icon: "svg:icon-qiniuyun",
   input: {},
 })

@@ -7,6 +7,10 @@ title: 京东云-更新已有证书
 icon: svg:icon-jdcloud
 group: jdcloud
 desc: 更新SSL数字证书中的证书
+i18n:
+  en-US:
+    title: Jdcloud Update Cert
+    desc: Update certificates in JDCloud.
 input:
   cert:
     title: 域名证书

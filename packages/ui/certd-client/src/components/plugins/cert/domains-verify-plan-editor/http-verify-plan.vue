@@ -2,10 +2,10 @@
   <table class="http-verify-plan">
     <thead>
       <tr>
-        <td style="width: 160px">{{ t("certd.verifyPlan.websiteDomain") }}</td>
-        <td style="width: 100px; text-align: center">{{ t("certd.verifyPlan.uploadMethod") }}</td>
-        <td style="width: 150px">{{ t("certd.verifyPlan.uploadAccess") }}</td>
-        <td style="width: 200px">{{ t("certd.verifyPlan.websiteRootPath") }}</td>
+        <td style="width: 160px">{{ t("certd.certdomain.verifyPlan.websiteDomain") }}</td>
+        <td style="width: 100px; text-align: center">{{ t("certd.certdomain.verifyPlan.uploadMethod") }}</td>
+        <td style="width: 150px">{{ t("certd.certdomain.verifyPlan.uploadAccess") }}</td>
+        <td style="width: 200px">{{ t("certd.certdomain.verifyPlan.websiteRootPath") }}</td>
       </tr>
     </thead>
     <tbody v-if="records" class="http-record-body">
@@ -21,7 +21,7 @@
             <access-selector v-model="item.httpUploaderAccess" :type="item.httpUploaderType" @change="onRecordChange"></access-selector>
           </td>
           <td>
-            <a-input v-model:value="item.httpUploadRootDir" :placeholder="t('certd.verifyPlan.websiteRootPlaceholder')" @change="onRecordChange"></a-input>
+            <a-input v-model:value="item.httpUploadRootDir" :placeholder="t('certd.certdomain.verifyPlan.websiteRootPlaceholder')" @change="onRecordChange"></a-input>
           </td>
         </tr>
       </template>

@@ -15,6 +15,12 @@ import { VolcengineClient } from "../ve-client.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Volcengine-Deploy to VOD Plugin",
+      desc: "Deploy certificates to Volcengine VOD listeners.",
+    },
+  },
 })
 export class VolcengineDeployToVOD extends AbstractTaskPlugin {
   @TaskInput({

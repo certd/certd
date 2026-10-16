@@ -6,6 +6,7 @@ import { SshClient } from "../../../plugin-lib/ssh/index.js";
   icon: "tabler:brand-powershell",
   group: pluginGroups.host.key,
   desc: "可以执行重启nginx等操作让证书生效",
+  i18n: { "en-US": { title: "Host - Execute Remote Script", desc: "Execute commands such as restarting Nginx to activate certificates." } },
   input: {},
   showRunStrategy: true,
   default: {

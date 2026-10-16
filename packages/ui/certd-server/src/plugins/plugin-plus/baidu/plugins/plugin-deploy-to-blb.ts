@@ -15,6 +15,18 @@ import { BaiduYunCertClient, BaiduYunClient } from "../client.js";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Baidu - Deploy to BLB",
+      desc: "Update the certificate of the Baidu BLB.",
+      input: {
+        cert: { title: "Certificate", helper: "Select the certificate output by a previous task." },
+        region: { title: "Region", helper: "Select the region of the BLB." },
+        blbType: { title: "BLB Type", helper: "Select the BLB type." },
+        accessId: { title: "Access ID", helper: "Select the Baidu Access ID." },
+      },
+    },
+  },
 })
 export class BaiduDeployToBLBPlugin extends AbstractTaskPlugin {
   //证书选择，此项必须要有

@@ -7,6 +7,12 @@ import { BaseEmailTemplateProvider } from "./plugin-base.js";
   name: "forgotPassword",
   title: "忘记密码邮件模版",
   desc: "您正在重置密码，您的验证码为xxxx，请勿泄露",
+  i18n: {
+    "en-US": {
+      title: "Password Reset Email Template",
+      desc: "Email template for password reset codes.",
+    },
+  },
   icon: "simple-icons:email:blue",
   showTest: false,
 })

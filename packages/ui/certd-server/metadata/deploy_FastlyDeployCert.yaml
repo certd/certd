@@ -7,6 +7,10 @@ title: Fastly-部署TLS激活
 desc: 部署 Fastly 证书 (创建 TLS Activation 绑定证书到域名)
 icon: simple-icons:fastly
 group: cdn
+i18n:
+  en-US:
+    title: Fastly-Deploy TLS Certificate
+    desc: Deploy a TLS certificate to a Fastly service.
 input:
   cert:
     title: 域名证书

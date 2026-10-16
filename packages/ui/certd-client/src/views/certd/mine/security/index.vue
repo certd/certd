@@ -1,12 +1,12 @@
 <template>
   <fs-page class="page-user-settings page-two-factor">
     <template #header>
-      <div class="title">{{ t("certd.securitySettings") }}</div>
+      <div class="title">{{ t("certd.mine.securitySettings") }}</div>
     </template>
 
     <div class="user-settings-form settings-form">
       <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off">
-        <a-form-item :label="t('certd.twoFactorAuth')" :name="['authenticator', 'enabled']">
+        <a-form-item :label="t('certd.mine.twoFactorAuth')" :name="['authenticator', 'enabled']">
           <div class="flex mt-5">
             <a-switch v-model:checked="formState.authenticator.enabled" :disabled="!settingsStore.isPlus" @change="onAuthenticatorEnabledChanged" />
 
@@ -18,21 +18,21 @@
               type="primary"
               @click="authenticatorForm.open = true"
             >
-              {{ t("certd.rebind") }}
+              {{ t("certd.mine.rebind") }}
             </a-button>
 
             <vip-button class="ml-5" mode="button"></vip-button>
           </div>
 
-          <div class="helper">{{ t("certd.twoFactorAuthHelper") }}</div>
+          <div class="helper">{{ t("certd.mine.twoFactorAuthHelper") }}</div>
         </a-form-item>
 
-        <a-form-item v-if="authenticatorOpenRef" :label="t('certd.bindDevice')" class="authenticator-config">
-          <h3 class="font-bold m-5">{{ t("certd.step1") }}</h3>
+        <a-form-item v-if="authenticatorOpenRef" :label="t('certd.mine.bindDevice')" class="authenticator-config">
+          <h3 class="font-bold m-5">{{ t("certd.mine.step1") }}</h3>
           <div class="ml-20">
             <ul>
               <li>
-                <a-tooltip :title="t('certd.tooltipGoogleServiceError')">
+                <a-tooltip :title="t('certd.mine.tooltipGoogleServiceError')">
                   <a href="https://appgallery.huawei.com/app/C100262999" target="_blank">Microsoft Authenticator</a>
                 </a-tooltip>
               </li>
@@ -43,7 +43,7 @@
                 <a href="https://www.synology.cn/zh-cn/dsm/feature/authentication" target="_blank">群晖身份验证器</a>
               </li>
               <li>
-                <a-tooltip :title="t('certd.tooltipGoogleServiceError')">
+                <a-tooltip :title="t('certd.mine.tooltipGoogleServiceError')">
                   <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank">Google Authenticator</a>
                 </a-tooltip>
               </li>
@@ -52,7 +52,7 @@
               </li>
             </ul>
           </div>
-          <h3 class="font-bold m-10">{{ t("certd.step2") }}</h3>
+          <h3 class="font-bold m-10">{{ t("certd.mine.step2") }}</h3>
           <div v-if="authenticatorForm.qrcodeSrc" class="qrcode">
             <div class="ml-20">
               <img class="full-w" :src="authenticatorForm.qrcodeSrc" />
@@ -69,13 +69,13 @@
               </div>
             </div>
           </div>
-          <h3 class="font-bold m-10">{{ t("certd.step3") }}</h3>
+          <h3 class="font-bold m-10">{{ t("certd.mine.step3") }}</h3>
           <div class="ml-20">
-            <a-input v-model:value="authenticatorForm.verifyCode" :placeholder="t('certd.inputVerifyCode')" />
+            <a-input v-model:value="authenticatorForm.verifyCode" :placeholder="t('certd.mine.inputVerifyCode')" />
           </div>
           <div class="ml-20 flex mt-10">
-            <loading-button type="primary" html-type="button" :click="doAuthenticatorSave">{{ t("certd.confirm") }}</loading-button>
-            <a-button class="ml-1" @click="authenticatorForm.open = false">{{ t("certd.cancel") }}</a-button>
+            <loading-button type="primary" html-type="button" :click="doAuthenticatorSave">{{ t("certd.common.confirm") }}</loading-button>
+            <a-button class="ml-1" @click="authenticatorForm.open = false">{{ t("certd.common.cancel") }}</a-button>
           </div>
         </a-form-item>
       </a-form>
@@ -147,7 +147,7 @@ const doAuthenticatorSave = async (form: any) => {
     verifyCode: authenticatorForm.verifyCode,
   });
   notification.success({
-    message: t("certd.saveSuccess"),
+    message: t("certd.common.saveSuccess"),
   });
   authenticatorForm.open = false;
   formState.authenticator.verified = true;
@@ -158,12 +158,12 @@ function onAuthenticatorEnabledChanged(value: any) {
     //要关闭
     if (formState.authenticator.verified) {
       Modal.confirm({
-        title: t("certd.confirm"),
-        content: t("certd.confirmDisable2FA"),
+        title: t("certd.common.confirm"),
+        content: t("certd.mine.confirmDisable2FA"),
         async onOk() {
           await api.TwoFactorAuthenticatorOff();
           notification.success({
-            message: t("certd.disabledSuccess"),
+            message: t("certd.common.disabledSuccess"),
           });
           loadUserSettings();
         },

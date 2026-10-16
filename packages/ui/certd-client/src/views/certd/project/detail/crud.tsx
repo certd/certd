@@ -121,7 +121,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         permission: {
-          title: t("certd.ent.projectPermission"),
+          title: t("certd.project.ent.projectPermission"),
           type: "dict-select",
           dict: projectPermissionDict,
           search: {
@@ -136,7 +136,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         status: {
-          title: t("certd.ent.projectMemberStatus"),
+          title: t("certd.project.ent.projectMemberStatus"),
           type: "dict-select",
           dict: projectMemberStatusDict,
           search: {
@@ -182,7 +182,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         createTime: {
-          title: t("certd.createTime"),
+          title: t("certd.common.createTime"),
           type: "datetime",
           form: {
             show: false,
@@ -194,7 +194,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         updateTime: {
-          title: t("certd.updateTime"),
+          title: t("certd.common.updateTime"),
           type: "datetime",
           form: {
             show: false,

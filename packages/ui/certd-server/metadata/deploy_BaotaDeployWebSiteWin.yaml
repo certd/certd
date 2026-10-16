@@ -8,6 +8,10 @@ icon: svg:icon-bt
 group: panel
 desc: 部署到Windows版宝塔管理的站点的ssl证书
 needPlus: false
+i18n:
+  en-US:
+    title: Baota - Deploy Web Site Win
+    desc: Deploy the certificate to the web site.
 input:
   cert:
     title: 域名证书

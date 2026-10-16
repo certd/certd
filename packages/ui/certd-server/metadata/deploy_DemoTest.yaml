@@ -4,6 +4,9 @@ default:
     runStrategy: 1
 name: DemoTest
 title: Demo-测试插件
+i18n:
+  en-US:
+    title: Demo - Test Plugin
 icon: clarity:plugin-line
 group: other
 input:

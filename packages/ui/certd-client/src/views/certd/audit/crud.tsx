@@ -67,7 +67,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           form: { show: false },
         },
         createTime: {
-          title: "操作时间",
+          title: t("certd.audit.createTime"),
           type: "datetime",
           search: {
             show: true,
@@ -79,7 +79,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           form: { show: false },
         },
         type: {
-          title: "操作类型",
+          title: t("certd.audit.type"),
           type: "dict-select",
           dict: typeDict,
           search: { show: true },
@@ -87,19 +87,19 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           form: { show: false },
         },
         action: {
-          title: "操作动作",
+          title: t("certd.audit.action"),
           type: "text",
           search: { show: true },
           column: { width: 200, tooltip: true },
           form: { show: false },
         },
         success: {
-          title: "结果",
+          title: t("certd.audit.result"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { value: true, label: "成功", color: "success" },
-              { value: false, label: "失败", color: "error" },
+              { value: true, label: t("certd.audit.success"), color: "success" },
+              { value: false, label: t("certd.audit.failed"), color: "error" },
             ],
           }),
           column: { width: 100, align: "center" },
@@ -107,20 +107,20 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           search: { show: true },
         },
         content: {
-          title: "备注",
+          title: t("certd.audit.remark"),
           type: "text",
           search: { show: true },
           column: { width: 700, tooltip: true },
           form: { show: false },
         },
         ipAddress: {
-          title: "IP地址",
+          title: t("certd.audit.ipAddress"),
           type: "text",
           column: { width: 140 },
           form: { show: false },
         },
         projectId: {
-          title: t("certd.fields.projectName"),
+          title: t("certd.common.fields.projectName"),
           type: "dict-select",
           dict: myProjectDict,
           form: {

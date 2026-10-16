@@ -2,10 +2,10 @@
   <fs-page>
     <template #header>
       <div class="title flex items-center">
-        {{ t("monitor.history.title") }}
+        {{ t("certd.monitor.history.title") }}
         <div class="sub flex-1">
           <div>
-            {{ t("monitor.history.description") }}
+            {{ t("certd.monitor.history.description") }}
           </div>
         </div>
       </div>

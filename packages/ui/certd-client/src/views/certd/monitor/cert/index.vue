@@ -2,8 +2,8 @@
   <fs-page>
     <template #header>
       <div class="title">
-        {{ t("certd.certificateRepo.title") }}
-        <span class="sub">{{ t("certd.certificateRepo.sub") }}</span>
+        {{ t("certd.monitor.certificateRepo.title") }}
+        <span class="sub">{{ t("certd.monitor.certificateRepo.sub") }}</span>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>

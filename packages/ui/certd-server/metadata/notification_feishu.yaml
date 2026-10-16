@@ -1,6 +1,10 @@
 name: feishu
 title: 飞书通知
 desc: 飞书群聊webhook通知
+i18n:
+  en-US:
+    title: Feishu Notification
+    desc: Send pipeline notifications to Feishu.
 needPlus: true
 input:
   webhook:

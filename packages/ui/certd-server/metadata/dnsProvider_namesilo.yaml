@@ -3,6 +3,9 @@ title: namesilo
 desc: namesilo dns provider
 icon: simple-icons:namesilo
 accessType: namesilo
+i18n:
+  en-US:
+    title: Namesilo Access
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-namesilo/dns-provider.js

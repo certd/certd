@@ -13,6 +13,12 @@ import { CertReader, createRemoteSelectInputDefine } from "@certd/plugin-lib";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "NextTerminal-Refresh Cert",
+      desc: "Update Next Terminal certificate",
+    },
+  },
 })
 export class NextTerminalRefreshCert extends AbstractTaskPlugin {
   /**

@@ -8,6 +8,10 @@ icon: svg:icon-volcengine
 group: volcengine
 desc: 替换火山引擎VKE集群中的TLS Secret证书
 needPlus: true
+i18n:
+  en-US:
+    title: Volcengine-Deploy to VKE Plugin
+    desc: Deploy certificates to Volcengine VKE clusters.
 input:
   cert:
     title: 域名证书

@@ -6,6 +6,12 @@ import { PageRes, PageSearch } from "@certd/pipeline";
   name: "azure-dns",
   title: "Azure DNS",
   desc: "Azure DNS 解析提供商",
+  i18n: {
+    "en-US": {
+      title: "Azure DNS",
+      desc: "Azure DNS provider.",
+    },
+  },
   accessType: "azure",
   icon: "simple-icons:microsoftazure",
   order: 1,

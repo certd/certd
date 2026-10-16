@@ -9,6 +9,7 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
   icon: "line-md:uploading-loop",
   group: pluginGroups.host.key,
   desc: "上传证书到主机覆盖原来的证书文件，然后自动执行部署脚本命令使证书生效",
+  i18n: { "en-US": { title: "Host - Deploy Certificate to SSH Host", desc: "Upload certificates to an SSH host and run a deployment script to activate them." } },
   order: 1,
   default: {
     strategy: {

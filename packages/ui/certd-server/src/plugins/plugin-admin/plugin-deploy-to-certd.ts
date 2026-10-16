@@ -10,6 +10,7 @@ import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-lib";
   title: "部署证书到Certd本身",
   icon: "mdi:restart",
   desc: "【仅管理员可用】 部署证书到 certd的https服务，用于更新 Certd 的 ssl 证书，建议将此任务放在流水线的最后一步",
+  i18n: { "en-US": { title: "Deploy Certificate to Certd", desc: "[Administrators only] Deploy a certificate to Certd's HTTPS service. Recommended as the final pipeline step." } },
   group: pluginGroups.admin.key,
   onlyAdmin: true,
   default: {

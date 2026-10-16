@@ -1,4 +1,6 @@
 export default {
+  required: "必填项",
+  no: "否",
   usera: "用户",
   disabledSuccess: "关闭成功",
   app: {
@@ -25,6 +27,14 @@ export default {
   add: "生成新的Key",
   edit: "编辑",
   deleteSuccess: "删除成功",
+  fastCrud: {
+    view: "查看",
+    copy: "复制",
+    edit: "编辑",
+    remove: "删除",
+    addSuccess: "添加成功",
+    saveSuccess: "保存成功",
+  },
   saveSuccess: "保存成功",
   cancel: "取消",
   yes: "是",

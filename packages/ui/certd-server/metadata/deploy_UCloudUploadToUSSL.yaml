@@ -8,6 +8,10 @@ desc: 将证书上传到UCloud USSL
 icon: svg:icon-ucloud
 group: ucloud
 needPlus: false
+i18n:
+  en-US:
+    title: Ucloud-Upload to USSL Plugin
+    desc: Integration plugin for UCloudUploadToUSSL
 input:
   cert:
     title: 域名证书

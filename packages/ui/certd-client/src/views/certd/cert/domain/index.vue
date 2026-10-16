@@ -2,15 +2,15 @@
   <fs-page class="page-cert">
     <template #header>
       <div class="title">
-        {{ t("certd.domain.domainManager") }}
+        {{ t("certd.certdomain.domain.domainManager") }}
         <span class="sub">
-          {{ t("certd.domain.domainDescription") }}
+          {{ t("certd.certdomain.domain.domainDescription") }}
         </span>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #pagination-left>
-        <a-tooltip v-if="hasActionPermission('write')" :title="t('certd.batch_delete')">
+        <a-tooltip v-if="hasActionPermission('write')" :title="t('certd.common.batch_delete')">
           <fs-button icon="DeleteOutlined" @click="handleBatchDelete"></fs-button>
         </a-tooltip>
       </template>
@@ -46,17 +46,17 @@ const selectedRowKeys = context.selectedRowKeys;
 const handleBatchDelete = () => {
   if (selectedRowKeys.value?.length > 0) {
     Modal.confirm({
-      title: t("certd.confirm"),
-      content: t("certd.confirm_delete_count", { count: selectedRowKeys.value.length }),
+      title: t("certd.common.confirm"),
+      content: t("certd.common.confirm_delete_count", { count: selectedRowKeys.value.length }),
       async onOk() {
         await DeleteBatch(selectedRowKeys.value);
-        notification.info({ message: t("certd.delete_successful") });
+        notification.info({ message: t("certd.common.delete_successful") });
         crudExpose.doRefresh();
         selectedRowKeys.value = [];
       },
     });
   } else {
-    notification.error({ message: t("certd.please_select_records") });
+    notification.error({ message: t("certd.common.please_select_records") });
   }
 };
 

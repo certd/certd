@@ -4,6 +4,7 @@ import { BaseNotification, IsNotification, NotificationBody, NotificationInput }
   name: "slack",
   title: "Slack通知",
   desc: "Slack消息推送通知",
+  i18n: { "en-US": { title: "Slack Notification", desc: "Send pipeline notifications to Slack." } },
   needPlus: true,
 })
 export class SlackNotification extends BaseNotification {

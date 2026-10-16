@@ -13,6 +13,12 @@ export type SearchRecordOptions = {
   name: "huawei",
   title: "华为云",
   desc: "华为云DNS解析提供商",
+  i18n: {
+    "en-US": {
+      title: "Huawei Cloud DNS",
+      desc: "Huawei Cloud DNS provider.",
+    },
+  },
   accessType: "huawei",
   icon: "svg:icon-huawei",
   order: 1,

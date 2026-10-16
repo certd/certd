@@ -1536,8 +1536,9 @@ export class PluginService extends BaseService<PluginEntity> {
     });
 
     const metadata = {
-      input: loaded.input,
-      output: loaded.output,
+      input: loaded.input ?? loaded.metadata?.input,
+      output: loaded.output ?? loaded.metadata?.output,
+      i18n: loaded.metadata?.i18n || loaded.i18n,
     };
     const extra = {
       dependPackages: loaded.dependPackages,

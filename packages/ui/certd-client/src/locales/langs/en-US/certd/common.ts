@@ -1,4 +1,6 @@
 export default {
+  required: "Required",
+  no: "No",
   usera: "User",
   disabledSuccess: "Disabled successfully",
   app: {
@@ -21,12 +23,18 @@ export default {
   add: "Generate New Key",
   edit: "Edit",
   deleteSuccess: "Delete successful",
+  fastCrud: {
+    view: "View",
+    copy: "Copy",
+    edit: "Edit",
+    remove: "Delete",
+    addSuccess: "Added successfully",
+    saveSuccess: "Saved successfully",
+  },
   saveSuccess: "Saved successfully",
   cancel: "Cancel",
   yes: "Yes",
-  no: "No",
   all: "All",
-  required: "This field is required",
   requiredField: "This field is required",
   fieldRequired: "This field is required",
   field_required: "This field is required",

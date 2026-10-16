@@ -9,6 +9,17 @@ import { CertInfo, CertReader } from "@certd/plugin-cert";
   title: "APISIX授权",
   desc: "",
   icon: "svg:icon-lucky",
+  i18n: {
+    "en-US": {
+      title: "Apisix Access",
+      input: {
+        endpoint: { title: "APISIX endpoint", helper: "APISIX Admin API address" },
+        apiKey: { title: "API key", helper: "Configure the Admin API key in APISIX" },
+        version: { title: "Version", helper: "APISIX system version", optionsMapping: { "3": "v3.x", "2": "v2.x" } },
+        testRequest: { title: "Test", helper: "Test whether the API is available" },
+      },
+    },
+  },
 })
 export class ApisixAccess extends BaseAccess {
   @AccessInput({

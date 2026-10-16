@@ -4,6 +4,10 @@ default:
     runStrategy: 1
 name: HostDeployToIIS
 title: IIS-部署到IIS站点
+i18n:
+  en-US:
+    title: IIS - Deploy to IIS Site
+    desc: Deploy a certificate to an IIS site.
 icon: devicon:windows8
 group: host
 needPlus: true

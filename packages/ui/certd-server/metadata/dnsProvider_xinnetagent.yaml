@@ -4,6 +4,10 @@ desc: 新网域名解析(代理方式)
 icon: svg:icon-xinnet
 accessType: xinnetagent
 order: 7
+i18n:
+  en-US:
+    title: Xinnet Agent DNS Provider
+    desc: Xinnet agent DNS provider.
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-xinnet/dns-provider-agent.js

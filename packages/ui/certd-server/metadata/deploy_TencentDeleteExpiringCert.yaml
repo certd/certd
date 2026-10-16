@@ -7,6 +7,10 @@ title: 腾讯云-删除即将过期证书
 icon: svg:icon-tencentcloud
 group: tencent
 desc: 仅删除即将过期且未使用的证书
+i18n:
+  en-US:
+    title: 'Tencent-Delete Expiring Certificates '
+    desc: Delete certificates that are about to expire from Tencent Cloud.
 dependPlugins:
   access:tencent: '*'
 needPlus: true

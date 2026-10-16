@@ -14,6 +14,12 @@ import { FastlyAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Fastly-Deploy TLS Certificate",
+      desc: "Deploy a TLS certificate to a Fastly service.",
+    },
+  },
 })
 export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
   @TaskInput({

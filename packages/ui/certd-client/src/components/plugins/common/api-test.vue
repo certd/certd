@@ -1,7 +1,7 @@
 <template>
   <div class="api-test">
     <div>
-      <fs-button :loading="loading" type="primary" :text="t('certd.pluginCommon.test')" icon="ion:refresh-outline" @click="doTest"></fs-button>
+      <fs-button :loading="loading" type="primary" :text="t('certd.common.pluginCommon.test')" icon="ion:refresh-outline" @click="doTest"></fs-button>
     </div>
 
     <div class="helper" :class="{ error: hasError }">
@@ -64,14 +64,14 @@ const doTest = async () => {
       {
         onError(err: any) {
           hasError.value = true;
-          message.value = t("certd.pluginCommon.errorWithMessage", { message: err.message });
+          message.value = t("certd.common.pluginCommon.errorWithMessage", { message: err.message });
         },
         showErrorNotify: false,
       }
     );
-    message.value = t("certd.pluginCommon.testRequestSuccess");
+    message.value = t("certd.common.pluginCommon.testRequestSuccess");
     if (res) {
-      message.value += t("certd.pluginCommon.responseSuffix", { response: JSON.stringify(res) });
+      message.value += t("certd.common.pluginCommon.responseSuffix", { response: JSON.stringify(res) });
     }
   } finally {
     loading.value = false;
