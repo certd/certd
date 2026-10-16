@@ -165,6 +165,9 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const client = this.client;
 
+    if (this.cert == null){
+      throw new Error("证书不能为空");
+    }
 
     const access = await this.getAccess<TencentAccess>(this.accessId);
     let tencentCertId = this.cert as string;
@@ -281,7 +284,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     }
     return name + "-" + dayjs().format("YYYYMMDD-HHmmss");
   }
-  async buildProps(tencentCertId:string) {
+  buildProps(tencentCertId:string) {
     return {
         Certificate: {
           SSLMode: "UNIDIRECTIONAL", // 单向认证
