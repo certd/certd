@@ -1,8 +1,8 @@
 import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import dayjs from "dayjs";
-import { TencentAccess } from "../../../plugin-lib/tencent/index.js";
+import { TencentAccess, TencentSslClient } from "../../../plugin-lib/tencent/index.js";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
-import { createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { CertReader, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 
 const clbRegionOptions = [
   // { value: "default", label: "就近地域接入（推荐，只支持非金融区）", endpoint: "clb.tencentcloudapi.com" },
@@ -165,15 +165,30 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const client = this.client;
 
+
+    const access = await this.getAccess<TencentAccess>(this.accessId);
+    let tencentCertId = this.cert as string;
+    if (typeof this.cert !== "string") {
+      const sslClient = new TencentSslClient({
+        access,
+        logger: this.logger,
+      });
+      const certReader = new CertReader(this.cert);
+      tencentCertId = await sslClient.uploadToTencent({
+        certName: certReader.buildCertName(),
+        cert: this.cert,
+      });
+    }
+
     if (!this.domain || this.domain.length === 0) {
-      await this.updateListener(client);
+      await this.updateListener(client,tencentCertId);
     } else {
       const domains = Array.isArray(this.domain) ? this.domain : [this.domain];
       for (const domain of domains) {
         this.logger.info(`开始更新域名证书:${domain},请确保已经开启了sni`);
         // const lastCertId = await this.getCertIdFromProps(client, domain);
 
-        await this.updateByDomainAttr(client, domain);
+        await this.updateByDomainAttr(client, domain,tencentCertId);
 
         // 不要做检查，相同的证书，不会生成新的证书id
         // const checkDeployed = async (wait = 5) => {
@@ -228,16 +243,16 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     return certId;
   }
 
-  async updateListener(client: any) {
-    const params = this.buildProps();
+  async updateListener(client: any, tencentCertId :string) {
+    const params = this.buildProps(tencentCertId);
     const ret = await client.ModifyListener(params);
     this.checkRet(ret);
     this.logger.info("设置腾讯云CLB证书成功:", ret.RequestId, "->loadBalancerId:", this.loadBalancerId, "listenerId", this.listenerId);
     return ret;
   }
 
-  async updateByDomainAttr(client: any, domain) {
-    const params: any = this.buildProps();
+  async updateByDomainAttr(client: any, domain:any,tencentCertId:string) {
+    const params: any = this.buildProps(tencentCertId);
 
     params.Domain = domain;
     const ret = await client.ModifyDomainAttributes(params);
@@ -266,29 +281,15 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     }
     return name + "-" + dayjs().format("YYYYMMDD-HHmmss");
   }
-  buildProps() {
-    const certId = this.cert as string;
-    const certInfo = this.cert as CertInfo;
-    if (typeof this.cert === "string") {
-      return {
+  async buildProps(tencentCertId:string) {
+    return {
         Certificate: {
           SSLMode: "UNIDIRECTIONAL", // 单向认证
-          CertId: certId,
+          CertId: tencentCertId,
         },
         LoadBalancerId: this.loadBalancerId,
         ListenerId: this.listenerId,
       };
-    }
-    return {
-      Certificate: {
-        SSLMode: "UNIDIRECTIONAL", // 单向认证
-        CertName: this.appendTimeSuffix(this.certName || "certd"),
-        CertKey: certInfo.key,
-        CertContent: certInfo.crt,
-      },
-      LoadBalancerId: this.loadBalancerId,
-      ListenerId: this.listenerId,
-    };
   }
 
   async getCLBList(client: any) {
