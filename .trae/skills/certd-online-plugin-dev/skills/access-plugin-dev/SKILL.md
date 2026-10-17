@@ -14,6 +14,42 @@ description: 用于开发 Certd 在线 Access 插件。输出完整 YAML，conte
 - 敏感字段在 input 中设置加密或密码类组件。
 - `content` 中实现授权 class 和 API 方法。
 
+## Metadata 示例
+
+顶层 metadata 描述插件身份和展示信息。新插件应填写 `name`、`author`、`title`、`desc`、`icon`、`group`、`version` 和 `pluginType`；`fullName` 按 `author/name` 生成：
+
+```yaml
+name: DemoAccess
+author: certd
+fullName: certd/DemoAccess
+title: Demo-授权
+desc: Demo 平台授权配置
+icon: clarity:plugin-line
+group: other
+version: 1.0.0
+pluginType: access
+input:
+  demoKeyId:
+    title: Key ID
+    required: true
+    component:
+      name: a-input
+      vModel: value
+  demoKeySecret:
+    title: Key Secret
+    required: true
+    encrypt: true
+    component:
+      name: a-input-password
+      vModel: value
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: onTestRequest
+    helper: 点击测试接口是否正常
+```
+
 ## `content` 模板
 
 ```javascript
@@ -29,7 +65,7 @@ return class DemoAccess extends BaseAccess {
   }
 
   async getDomainList(req) {
-    this.logger.info("获取域名列表", { searchKey: req.searchKey })
+    this.ctx.logger.info("获取域名列表", { searchKey: req.searchKey })
     const res = await this.ctx.http.request({
       url: "https://api.example.com/domains",
       method: "GET",
@@ -56,7 +92,8 @@ return class DemoAccess extends BaseAccess {
 - 所有敏感授权值只通过 `this` 和 Certd 授权上下文使用，不打印真实值。
 - `onTestRequest` 应调用实际 API 方法并在失败时抛出异常。
 - 对外 API 方法应统一处理分页、错误和返回字段。
-- 使用 `this.logger` 或框架提供的 logger，禁止 `console.log`。
+- 在线 Access 使用 `this.ctx.logger` 打印日志，禁止使用未注入的 `this.logger` 和 `console.log`。
+- 优先复用 `this.ctx.utils` 中的现成工具，例如 `this.ctx.utils.hash.md5` 和 `this.ctx.utils.hash.base64`；HTTP 返回值和 Cookie 处理规则见父 Skill 的 `references/context-utils.md`。
 - 一般将API接口方法封装到Access中，其他plugin调用access的方法当做client sdk使用
 
 ## 字段动态显隐
@@ -81,7 +118,6 @@ input:
       name: a-input
       vModel: value
     mergeScript: |2-
-
           return {
             show: ctx.compute(({form})=>{
               return !form.access.authType || form.access.authType === 'aksk';

@@ -49,6 +49,7 @@ export type AccessContext = {
 
 export abstract class BaseAccess implements IAccess {
   ctx!: AccessContext;
+  logger!: ILogger;
 
   async importRuntime(specifier: string) {
     return await getRuntimeDepsService().importRuntime(specifier, this.ctx.logger);
@@ -56,6 +57,7 @@ export abstract class BaseAccess implements IAccess {
 
   async setCtx(ctx: AccessContext) {
     this.ctx = ctx;
+    this.logger = ctx.logger;
   }
 
   async onRequest(req: AccessRequestHandleReq) {

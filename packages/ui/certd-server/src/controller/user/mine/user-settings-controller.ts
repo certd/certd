@@ -74,10 +74,31 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
 
   @Post("/get", { description: Constants.per.authOnly, summary: "获取用户设置" })
   async get(@Query("key") key: string) {
-    const { projectId, userId } = await this.getProjectUserIdRead();
-    const entity = await this.service.getByKey(key, userId, projectId);
+    const userId = this.getUserId();
+    const entity = await this.service.getByKey(key, userId, null);
     return this.ok(entity);
   }
+
+
+  @Post("/project/save", { description: Constants.per.authOnly, summary: "保存项目设置" })
+  async projectSave(@Body(ALL) bean: UserSettingsEntity) {
+    const { projectId,userId } = await this.getProjectUserIdWrite();
+    bean.userId = userId;
+    bean.projectId = projectId;
+    await this.service.save(bean);
+    this.auditLog({ content: "保存了项目设置" });
+    return this.ok({});
+  }
+
+  @Post("/project/get", { description: Constants.per.authOnly, summary: "获取项目设置" })
+  async projectGet(@Query("key") key: string) {
+    const { projectId,userId } = await this.getProjectUserIdRead();
+    const entity = await this.service.getByKey(key,  userId,projectId);
+    return this.ok(entity);
+  }
+
+
+
   @Post("/grant/get", { description: Constants.per.authOnly, summary: "获取授权设置" })
   async grantSettingsGet() {
     const userId = this.getUserId();

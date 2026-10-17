@@ -174,7 +174,6 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
         await this.deployOne(client, domain, certId);
       }
     }
-
     this.logger.info("部署完成");
   }
 

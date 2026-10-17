@@ -125,7 +125,7 @@ export class BaotaAutoDeploySiteCert extends AbstractPlusTaskPlugin {
     });
     this.deployedList = [...new Set([...firstDeployResult.deployedList, ...dockerDeployResult.deployedList])];
     const result = firstDeployResult.result === "success" || dockerDeployResult.result === "success" ? "success" : "skip";
-    return { result, deployedList: this.deployedList };
+    return result;
   }
 
   /**

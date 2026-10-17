@@ -125,6 +125,10 @@ export const useProjectStore = defineStore("app.project", () => {
     return false;
   }
 
+  function getProjectId() {
+    return isEnterprise.value ? currentProjectId.value : undefined;
+  }
+
   return {
     projects,
     myProjects,
@@ -141,5 +145,6 @@ export const useProjectStore = defineStore("app.project", () => {
     init,
     $reset,
     hasPermission,
+    getProjectId,
   };
 });

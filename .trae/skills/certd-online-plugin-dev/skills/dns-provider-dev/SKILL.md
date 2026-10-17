@@ -13,6 +13,22 @@ description: 用于开发 Certd 在线 DNS Provider 插件。输出完整 YAML�
 - `input` 中配置授权选择、域名或平台所需的参数。
 - `content` 中实现创建和删除 DNS 记录的 class。
 
+## Metadata 示例
+
+顶层 metadata 描述插件身份和展示信息。新插件应填写 `name`、`author`、`title`、`desc`、`icon`、`group`、`version` 和 `pluginType`；`fullName` 按 `author/name` 生成：
+
+```yaml
+name: DemoDnsProvider
+author: certd
+fullName: certd/DemoDnsProvider
+title: Demo-DNS 解析
+desc: Demo 平台 DNS-01 验证
+icon: clarity:plugin-line
+group: dns
+version: 1.0.0
+pluginType: dnsProvider
+```
+
 ## `content` 模板
 
 ```javascript
@@ -21,10 +37,10 @@ const { DemoAccess } = await _ctx.import("/@/plugins/plugin-lib/demo/access/inde
 _ctx.logger.info("DemoAccess:", DemoAccess)
 
 return class DemoDnsProvider extends AbstractDnsProvider {
-  accessId
+  access!: DemoAccess;
 
   async onInstance() {
-    this.access = await this.getAccess(this.accessId)
+    this.access = this.ctx.access as DemoAccess;
   }
 
   async createRecord(options) {

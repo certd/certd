@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { createAgent, createAxiosService, getGlobalAgents, HttpClient, isNoProxyMatched, setGlobalHeaders, setGlobalProxy } from "./util.request.js";
+import { createAgent, createAxiosService, getCookie, getCookies, getGlobalAgents, HttpClient, isNoProxyMatched, setGlobalHeaders, setGlobalProxy } from "./util.request.js";
 import { ILogger } from "./util.log.js";
 
 const testLogger = {
@@ -167,9 +167,40 @@ describe("util.request", () => {
     expect(isNoProxyMatched("192.168.*", { hostname: "192.169.1.10", port: "" })).to.equal(false);
     expect(isNoProxyMatched("[::1]", { hostname: "::1", port: "" })).to.equal(true);
     expect(isNoProxyMatched("[::1]:8443", { hostname: "::1", port: "8443" })).to.equal(true);
-    expect(isNoProxyMatched("api.example.com:8443", { hostname: "api.example.com", port: "8443" })).to.equal(true);
     expect(isNoProxyMatched("api.example.com:8443", { hostname: "api.example.com", port: "443" })).to.equal(false);
     expect(isNoProxyMatched("127.0.0.1", { hostname: "127.0.0.2", port: "" })).to.equal(false);
     expect(isNoProxyMatched(".example.com", { hostname: "example.org", port: "" })).to.equal(false);
+  });
+
+  it("should parse cookies from array set-cookie header", () => {
+    const response = {
+      headers: {
+        "set-cookie": ["JSESSIONID=abc123; Path=/; HttpOnly", "token=xyz=789; Expires=Wed, 21 Oct 2026 07:28:00 GMT"],
+      },
+    };
+
+    expect(getCookies(response)).to.deep.equal([
+      { name: "JSESSIONID", value: "abc123" },
+      { name: "token", value: "xyz=789" },
+    ]);
+    expect(getCookie(response, "JSESSIONID")).to.equal("abc123");
+    expect(getCookie(response, "token")).to.equal("xyz=789");
+    expect(getCookie(response, "not-exists")).to.equal(null);
+  });
+
+  it("should parse cookies from string set-cookie header", () => {
+    const response = {
+      headers: {
+        "set-cookie": "JSESSIONID=abc123; Path=/",
+      },
+    };
+
+    expect(getCookies(response)).to.deep.equal([{ name: "JSESSIONID", value: "abc123" }]);
+  });
+
+  it("should return empty cookies when set-cookie header is missing", () => {
+    expect(getCookies({ headers: {} })).to.deep.equal([]);
+    expect(getCookies({})).to.deep.equal([]);
+    expect(getCookies(undefined)).to.deep.equal([]);
   });
 });

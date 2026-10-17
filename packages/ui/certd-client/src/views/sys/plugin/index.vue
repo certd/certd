@@ -46,7 +46,7 @@ async function syncOnlinePlugins(options?: { showSuccess?: boolean }) {
     await api.OnlinePluginSync();
     const setting = await api.OnlinePluginSetting();
     lastSyncTime.value = setting.lastSyncTime || Date.now();
-    await pluginStore.clear();
+    await pluginStore.reload();
     crudExpose.doRefresh();
     if (options?.showSuccess !== false) {
       notification.success({ message: t("certd.sys.plugin.onlinePluginSyncSuccess") });

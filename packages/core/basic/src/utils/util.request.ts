@@ -1,4 +1,4 @@
-import axios, { AxiosHeaders, AxiosRequestConfig } from "axios";
+import axios, { AxiosHeaders, AxiosRequestConfig, AxiosResponse } from "axios";
 import { ILogger, logger } from "./util.log.js";
 import { HttpProxyAgent } from "http-proxy-agent";
 import { HttpsProxyAgent } from "https-proxy-agent";
@@ -118,7 +118,7 @@ export function getGlobalHeaders() {
 /**
  * @description 创建请求实例
  */
-export function createAxiosService({ logger }: { logger: ILogger }) {
+export function createAxiosService({ logger }: { logger: ILogger }): HttpClient {
   // 创建一个 axios 实例
   const service = axios.create();
 
@@ -344,14 +344,24 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       return Promise.reject(err);
     }
   );
-  return service;
+
+  return {
+    ...service,
+    request: service.request,
+    getCookies,
+    getCookie,
+    download,
+  };
 }
 
+//@ts-ignore
 export const http = createAxiosService({ logger }) as HttpClient;
+
+//默认返回 response.data 。 可以通过 returnOriginRes 来返回原始响应。
 export type HttpClientResponse<R> = any;
 export type HttpRequestConfig<D = any> = {
   skipSslVerify?: boolean;
-  skipCheckRes?: boolean;
+  skipCheckRes?: boolean; //非标参数，不需要让用户知道
   logReq?: boolean;
   logParams?: boolean;
   logRes?: boolean;
@@ -359,8 +369,18 @@ export type HttpRequestConfig<D = any> = {
   httpProxy?: string;
   returnOriginRes?: boolean;
 } & AxiosRequestConfig<D>;
+
+export type DownloadReq = {
+  http: HttpClient;
+  config: HttpRequestConfig;
+  savePath: string;
+  logger: ILogger;
+};
 export type HttpClient = {
   request<D = any, R = any>(config: HttpRequestConfig<D>): Promise<HttpClientResponse<R>>;
+  getCookies: (response: AxiosResponse) => { name: string; value: string }[];
+  getCookie: (response: AxiosResponse, name: string) => string | null;
+  download: (config: DownloadReq) => Promise<boolean>;
 };
 
 // const http_proxy_backup = process.env.HTTP_PROXY || process.env.http_proxy;
@@ -540,7 +560,7 @@ function splitNoProxyRules(noProxy?: string) {
     .filter(Boolean);
 }
 
-export async function download(req: { http: HttpClient; config: HttpRequestConfig; savePath: string; logger: ILogger }) {
+export async function download(req: DownloadReq): Promise<boolean> {
   const { http, config, savePath, logger } = req;
   return safePromise((resolve, reject) => {
     http
@@ -581,13 +601,44 @@ export async function download(req: { http: HttpClient; config: HttpRequestConfi
   });
 }
 
+/**
+ * 解析响应头中的 set-cookie
+ *
+ * Node 环境下 set-cookie 是字符串数组，每个元素是一个完整 Cookie：
+ * `name=value; Path=/; HttpOnly; Expires=Wed, 21 Oct 2026 07:28:00 GMT`。
+ * 只取分号前的 name=value，避免把 Path、Expires 等属性误解析成 Cookie；
+ * value 本身可能包含 "="（如 base64），所以按第一个 "=" 切分。
+ */
+export function getCookies(response: any): { name: string; value: string }[] {
+  const setCookie = response?.headers?.["set-cookie"];
+  if (!setCookie) {
+    return [];
+  }
+
+  const cookieList: string[] = Array.isArray(setCookie) ? setCookie : [setCookie];
+  const cookies: { name: string; value: string }[] = [];
+  for (const cookieItem of cookieList) {
+    const cookiePair = String(cookieItem).split(";")[0].trim();
+    if (!cookiePair) {
+      continue;
+    }
+
+    const equalIndex = cookiePair.indexOf("=");
+    if (equalIndex <= 0) {
+      continue;
+    }
+
+    const name = cookiePair.substring(0, equalIndex).trim();
+    const value = cookiePair.substring(equalIndex + 1).trim();
+    cookies.push({ name, value });
+  }
+  return cookies;
+}
 export function getCookie(response: any, name: string) {
-  const cookies = response.headers["set-cookie"];
-  //根据name 返回对应的cookie
-  const found = cookies.find((cookie: any) => cookie.includes(name));
+  const cookies = getCookies(response);
+  const found = cookies.find((cookie: any) => cookie.name === name);
   if (!found) {
     return null;
   }
-  const cookie = found.split(";")[0];
-  return cookie.substring(cookie.indexOf("=") + 1);
+  return found.value;
 }

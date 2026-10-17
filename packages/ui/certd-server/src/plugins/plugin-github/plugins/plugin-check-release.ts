@@ -76,9 +76,10 @@ export class GithubCheckRelease extends AbstractTaskPlugin {
   @TaskInput({
     title: "shell脚本命令",
     component: {
-      name: "a-textarea",
+      name: "TemplateTextarea",
       vModel: "value",
       rows: 6,
+      templateType: "githubCheckRelease",
       placeholder: `
 # 拉取最新镜像
 docker pull registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest

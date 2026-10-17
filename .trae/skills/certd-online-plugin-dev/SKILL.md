@@ -129,13 +129,15 @@ const response = await fetch(`${apiBase}/scoped/sys/ai/plugin/find`, {
 - `"/@/..."` 表示以绝对路径引用 `server/src/` 下的模块。
 - 最后返回继承目标基类的 class。
 - 不使用 `import`、`export`、装饰器或独立源码文件语法。
-- 使用 `this.logger` 打印插件执行日志。
-- 使用 `this.ctx.http` 访问 HTTP 能力。
+- 使用目标基类提供的 logger 打印插件执行日志；在线 Access 使用 `this.ctx.logger`。
+- 使用 `this.ctx.http` 访问 HTTP 能力；默认返回响应体 `response.data`，需要响应头、状态码或 Cookie 时必须设置 `returnOriginRes: true`，再从 `response.data` 读取响应体。详见 `references/context-utils.md`。
+- 优先复用 `this.ctx.utils` 中的现成工具，尤其是 `this.ctx.utils.hash` 的摘要和编码方法；完整分类见 `references/context-utils.md`。
 - 失败时抛出 `Error`。
 
 需要字段格式时读取 `references/online-yaml-format.md`。
 需要组件示例时读取 `references/component-examples.md`。
 需要按其他字段动态显隐/必填/联动时读取 `references/merge-script.md`。
+需要查找 `this.ctx.utils` 工具或确认 HTTP 返回结构时读取 `references/context-utils.md`。
 
 ### 字段动态显隐（mergeScript）
 
