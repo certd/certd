@@ -14,6 +14,38 @@ description: 用于开发 Certd 在线 Task 插件。输出完整 YAML，脚本�
 - 输入配置放在 YAML 的 `input` 字段。
 - 执行脚本放在 YAML 顶层 `content` 字段。
 
+## Metadata 示例
+
+顶层 metadata 描述插件身份和展示信息。新插件应填写 `name`、`author`、`title`、`desc`、`icon`、`group`、`version` 和 `pluginType`；`fullName` 按 `author/name` 生成：
+
+```yaml
+name: DemoTask
+author: certd
+fullName: certd/DemoTask
+title: Demo-执行任务
+desc: 调用 Demo 平台 API 执行操作
+icon: clarity:plugin-line
+group: other
+version: 1.0.0
+pluginType: task
+input:
+  cert:
+    title: 前置任务证书
+    required: true
+    component:
+      name: cert-select
+  certDomains:
+    title: 当前证书域名
+    required: true
+    component:
+      name: cert-domains-getter
+  accessId:
+    title: Demo 授权
+    required: true
+    component:
+      name: access-selector
+      type: demo/DemoAccess  # 如果是在线Access插件，要写全称, author/name, 如果是本地插件，只需要写插件名即可
+```
 
 ## runStrategy
 
@@ -26,10 +58,11 @@ description: 用于开发 Certd 在线 Task 插件。输出完整 YAML，脚本�
   - 0 表示成功后跳过，1 表示正常运行。 
   - 设置任务的默认运行策略runStrategy。
 
-当证书申请任务，申请证书成功后，会清空后续任务状态。此时后续`runStrategy = 0` 的任务，会重新执行。
-这样可以保证相同的证书不会重复部署。
-
-在其他场景的部署任务，可能希望每次运行都检查是否需要部署，如果即将过期就部署，没有过期就跳过。
+有如下三种场景：
+1、证书申请任务，设置为 `default.strategy.runStrategy = 1`，表示正常运行，此时executor每次都会执行plugin的execute方法，当无需更新证书时，返回 `"skip"`。
+当申请证书成功后，调用`this.clearLastStatus();`清空后续任务的成功状态，后续任务就都会重新执行。
+2、直接部署任务，建议设置为 `default.strategy.runStrategy = 0`，表示成功后跳过，executor参数与状态，如果参数没有变化，且上次的状态是成功或跳过，则直接跳过该任务，这样可以保证相同的证书不会重复部署。
+3、检查后再部署的任务，可能希望每次运行都检查是否需要部署，如果即将过期就部署，没有过期就跳过。
 此时可以设置 `default.strategy.runStrategy = 1`，然后在`execute`方法中，如果没有过期，就返回 `"skip"`。
 
 ## `content` 模板

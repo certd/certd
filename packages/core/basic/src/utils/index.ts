@@ -59,5 +59,6 @@ export const utils = {
   locker,
   mitter,
   amount: amountUtils,
+  //废弃
   request,
 };

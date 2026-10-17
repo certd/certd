@@ -257,9 +257,13 @@ export const usePluginStore = defineStore({
       return this.group.get(name);
     },
     async getPluginConfig(query: any) {
+      await this.init();
       return await api.GetPluginConfig(query);
     },
     getPluginDefineSync(name: string) {
+      if (!this.group) {
+        return null;
+      }
       return this.group.get(name);
     },
   },

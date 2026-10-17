@@ -53,7 +53,8 @@ content: |
 - 最后返回继承目标基类的 class。
 - 不使用 `import`、`export`、装饰器或独立源码文件语法。
 - 输入字段在 class 中声明为同名属性，并与 YAML 的 `input` 配置保持一致。
-- HTTP 使用 `this.ctx.http`；
+- HTTP 使用 `this.ctx.http`。默认 `request()` 返回响应体 `response.data`；需要 headers、status 或 Set-Cookie 时设置 `returnOriginRes: true`，此时返回原始响应对象，响应体从 `response.data` 读取。请求扩展参数 `skipSslVerify`、`skipCheckRes`、`logReq`、`logParams`、`logRes`、`logData`、`httpProxy`、`returnOriginRes` 的说明见 `context-utils.md`。
+- 优先使用 `this.ctx.utils` 中已有的哈希、编码、字符串、域名和请求工具，详见 `context-utils.md`。
 - 不要使用 `console.log`。
 - 读取授权使用 `await this.getAccess(accessId)` 或目标基类规定的授权方式。
 - 失败时抛出 `Error`，不要吞掉错误。

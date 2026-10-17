@@ -74,7 +74,7 @@ export class KuocaiCdnAccess extends BaseAccess {
       throw new Error(res.data?.message);
     }
 
-    const jsessionId = this.ctx.utils.request.getCookie(res, "JSESSIONID");
+    const jsessionId = this.ctx.utils.http.getCookie(res, "JSESSIONID");
     const token = res.data?.data;
     return {
       jsessionId,

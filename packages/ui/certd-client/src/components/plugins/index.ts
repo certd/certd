@@ -14,6 +14,7 @@ import CertInfoUpdater from "/@/views/certd/pipeline/cert-upload/index.vue";
 import ApiTest from "./common/api-test.vue";
 import RefreshInput from "./common/refresh-input.vue";
 import ParamsShow from "./common/params-show.vue";
+import TemplateTextarea from "./common/template-textarea.vue";
 export * from "./cert/index.js";
 export default {
   install(app: any) {
@@ -35,5 +36,6 @@ export default {
     app.component("DomainSelector", DomainSelector);
     app.component("InputPassword", InputPassword);
     app.component("ParamsShow", ParamsShow);
+    app.component("TemplateTextarea", TemplateTextarea);
   },
 };
