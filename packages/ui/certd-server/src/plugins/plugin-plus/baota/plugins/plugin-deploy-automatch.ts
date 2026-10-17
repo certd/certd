@@ -71,7 +71,7 @@ export class BaotaAutoDeploySiteCert extends AbstractPlusTaskPlugin {
     // 宝塔并发部署会导致nginx的conf错乱，用锁串行化
     const lockKey = `baota-lock-${this.accessId}`;
 
-    const { result, deployedList } = await this.autoMatchedDeploy({
+    const firstDeployResult = await this.autoMatchedDeploy({
       targetName: "宝塔站点",
       // 1. 获取证书域名列表
       getCertDomains: async () => {
@@ -100,8 +100,32 @@ export class BaotaAutoDeploySiteCert extends AbstractPlusTaskPlugin {
       },
     });
 
-    this.deployedList = deployedList;
-    return result;
+    const dockerDeployResult = await this.autoMatchedDeploy({
+      targetName: "宝塔Docker站点",
+      getCertDomains: async () => {
+        return this.certDomains;
+      },
+      uploadCert: async () => {
+        return { key: this.cert.key, crt: this.cert.crt };
+      },
+      deployOne: async (req: { target: CertTargetItem; cert: any }) => {
+        await this.ctx.utils.locker.execute(lockKey, async () => {
+          this.logger.info(`为Docker站点: ${req.target.label} 设置证书`);
+          const res = await client.doRequest("/mod/docker/com/set_ssl", "", {
+            site_name: req.target.value,
+            key: req.cert.key,
+            csr: req.cert.crt,
+          });
+          this.logger.info(res?.msg || `Docker站点 ${req.target.label} 部署证书成功`);
+        });
+      },
+      getDeployTargetList: async (data: PageSearch) => {
+        return await this.queryDockerSiteList(client);
+      },
+    });
+    this.deployedList = [...new Set([...firstDeployResult.deployedList, ...dockerDeployResult.deployedList])];
+    const result = firstDeployResult.result === "success" || dockerDeployResult.result === "success" ? "success" : "skip";
+    return { result, deployedList: this.deployedList };
   }
 
   /**
@@ -116,6 +140,22 @@ export class BaotaAutoDeploySiteCert extends AbstractPlusTaskPlugin {
     const res = await client.doRequest(url, null, data, { skipCheckRes: false });
     this.logger.info(`获取到站点数量: ${res?.total ?? res?.all?.length ?? 0}`);
     const all: string[] = res.all || [];
+    const options: CertTargetItem[] = all.map((item: string) => ({
+      value: item,
+      label: item,
+      domain: item,
+    }));
+    return {
+      list: options,
+      total: options.length,
+    };
+  }
+
+  /** 从宝塔查询 Docker 站点列表，按证书域名匹配分组 */
+  private async queryDockerSiteList(client: BaotaClient): Promise<{ list: CertTargetItem[]; total: number }> {
+    const res = await client.doRequest("/mod/docker/com/get_site_list", null, {});
+    const all: string[] = (res?.data || []).map((item: { name: string }) => item.name);
+    this.logger.info(`获取到Docker站点数量: ${all.length}`);
     const options: CertTargetItem[] = all.map((item: string) => ({
       value: item,
       label: item,
