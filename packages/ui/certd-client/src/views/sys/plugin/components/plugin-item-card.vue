@@ -945,7 +945,7 @@ function handleVersionClick() {
 
   &.is-simple {
     .ant-card-body {
-      min-height: 128px;
+      min-height: 122px;
     }
 
     .plugin-card__desc {
