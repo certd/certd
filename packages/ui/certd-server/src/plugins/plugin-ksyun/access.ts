@@ -113,9 +113,9 @@ export class KsyunAccess extends BaseAccess {
       accessKeyId: this.accessKeyId,
       secretAccessKey: this.accessKeySecret,
       region: "cn-beijing-6",
-      service: "cdn",
       endpoint: "cdn.api.ksyun.com",
       logger: this.ctx.logger,
+      service: "cdn",
       http: this.ctx.http,
     });
   }

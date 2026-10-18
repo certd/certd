@@ -33,16 +33,14 @@ export class KsyunClient {
       const query = querystring.stringify(requestData);
       url = `${url}${url.includes("?") ? "&" : "?"}${query}`;
     } else {
-      const query = querystring.stringify({ Action: opts.action, Version: opts.version });
-      url = `${url}${url.includes("?") ? "&" : "?"}${query}`;
-      data = JSON.stringify(opts.data || {});
+      data = querystring.stringify(requestData);
     }
     const config = this.signRequest({
       method,
       url,
       baseURL: `https://${this.endpoint}`,
       params: opts.params,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       data,
     });
 
