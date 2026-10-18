@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.45.2](https://github.com/certd/certd/compare/v1.45.1...v1.45.2) (2026-10-18)
+
+### Bug Fixes
+
+* 修复腾讯云CLB部署证书逻辑 ([a67d5bc](https://github.com/certd/certd/commit/a67d5bca2dd12e157e45ec1b8abff54efcbdfa84))
+
+### Performance Improvements
+
+* 新增更新金山云KCM SLB证书插件 ([62751be](https://github.com/certd/certd/commit/62751bee7a5e00245bb4dd840a5f4ea35565616a))
+* 支持ikuai部署证书 ([5f83693](https://github.com/certd/certd/commit/5f83693423ec5ccd08d7bb03e4fb8315dbb8b931))
+* **baota:** 宝塔站点全自动部署插件支持部署docker站点 ([61ef971](https://github.com/certd/certd/commit/61ef971518eeccbc31b09c06ec1b48589929d6bb))
+
 ## [1.45.1](https://github.com/certd/certd/compare/v1.45.0...v1.45.1) (2026-10-14)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.45.2](https://github.com/certd/certd/compare/v1.45.1...v1.45.2) (2026-10-18)
+
+### Performance Improvements
+
+* 支持ikuai部署证书 ([5f83693](https://github.com/certd/certd/commit/5f83693423ec5ccd08d7bb03e4fb8315dbb8b931))
+
 ## [1.45.1](https://github.com/certd/certd/compare/v1.45.0...v1.45.1) (2026-10-14)
 
 ### Performance Improvements
