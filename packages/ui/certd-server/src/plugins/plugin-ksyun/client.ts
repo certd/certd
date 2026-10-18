@@ -21,22 +21,35 @@ export class KsyunClient {
   }
 
   async doRequest(opts: { action: string; version: string } & HttpRequestConfig) {
+    const method = (opts.method || "GET").toUpperCase();
+    const requestData = {
+      ...(opts.data || {}),
+      Action: opts.action,
+      Version: opts.version,
+    };
+    let url = opts.url || "/";
+    let data: any;
+    if (method === "GET") {
+      const query = querystring.stringify(requestData);
+      url = `${url}${url.includes("?") ? "&" : "?"}${query}`;
+    } else {
+      const query = querystring.stringify({ Action: opts.action, Version: opts.version });
+      url = `${url}${url.includes("?") ? "&" : "?"}${query}`;
+      data = JSON.stringify(opts.data || {});
+    }
     const config = this.signRequest({
-      method: opts.method || "GET",
-      url: opts.url || "/2016-09-01/domain/GetCdnDomains",
+      method,
+      url,
       baseURL: `https://${this.endpoint}`,
       params: opts.params,
-      headers: {
-        "X-Action": opts.action,
-        "X-Version": opts.version,
-      },
-      data: opts.data,
+      headers: { "Content-Type": "application/json" },
+      data,
     });
 
     try {
       return await this.http.request({
         ...config,
-        data: opts.data,
+        data: config.data,
       });
     } catch (e) {
       this.logger.error(e.request);

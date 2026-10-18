@@ -140,6 +140,7 @@
     "why-is-node-running": "^3.2.2"
   },
   "lazyDependencies": {
+    "ksyun-sdk-node": "1.5.78",
     "@alicloud/fc20230330": "^4.1.7",
     "@alicloud/tea-typescript": "^1.8.0",
     "@alicloud/openapi-client": "^0.4.12",

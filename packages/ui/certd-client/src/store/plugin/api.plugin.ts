@@ -1,28 +1,13 @@
-import { request } from "/src/api/service";
 import * as _ from "lodash-es";
-import { PluginConfigBean, PluginSysSetting } from "/@/views/sys/plugin/api";
+import { initComponentDefine } from "./define";
+import { PluginConfigBean } from "/@/views/sys/plugin/api";
+import { request } from "/src/api/service";
 const apiPrefix = "/pi/plugin";
 
-const defaultInputDefine = {
-  component: {
-    name: "a-input",
-    vModel: "modelValue",
-  },
-};
-
 function initPlugins(plugins: any) {
-  const checkedComponents = ["a-checkbox", "a-radio", "a-switch"];
   for (const plugin of plugins) {
     for (const key in plugin.input) {
-      const field = _.merge({}, defaultInputDefine, plugin.input[key]);
-      const componentName = field.component.name;
-      if (componentName.startsWith("a-")) {
-        if (checkedComponents.includes(componentName)) {
-          field.component.vModel = "checked";
-        } else {
-          field.component.vModel = "value";
-        }
-      }
+      const field = initComponentDefine(plugin.input[key]);
       //嵌套对象
       field.key = ["input", key];
       if (field.required) {

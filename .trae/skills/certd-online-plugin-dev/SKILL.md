@@ -122,7 +122,7 @@ const response = await fetch(`${apiBase}/scoped/sys/ai/plugin/find`, {
 
 ## YAML 和脚本规范
 
-插件始终以完整 YAML 传递和保存，脚本源码放在顶层 `content` 字段。
+插件始终以完整 YAML 传递和保存，脚本源码放在顶层 `content` 字段。`content` 必须使用 YAML 字面块 `|` 保留 JavaScript 换行，禁止使用折叠块 `>`，避免语句拼接导致 `Unexpected token 'const'` 等解析错误。
 
 - 新插件的 `author` 必须使用启动提示词中给出的插件作者，不要自行编造作者名；修改已有插件时保留原 `author`，不要改成其他作者。
 - 统一使用 `await _ctx.import(...)` 引用模块。
@@ -133,6 +133,13 @@ const response = await fetch(`${apiBase}/scoped/sys/ai/plugin/find`, {
 - 使用 `this.ctx.http` 访问 HTTP 能力；默认返回响应体 `response.data`，需要响应头、状态码或 Cookie 时必须设置 `returnOriginRes: true`，再从 `response.data` 读取响应体。详见 `references/context-utils.md`。
 - 优先复用 `this.ctx.utils` 中的现成工具，尤其是 `this.ctx.utils.hash` 的摘要和编码方法；完整分类见 `references/context-utils.md`。
 - 失败时抛出 `Error`。
+- 日志打印对象时必须使用 `JSON.stringify(value)`，禁止直接字符串拼接对象导致输出 `[object Object]`；需要可读日志时先构造明确的 JSON 字符串。
+
+### 证书域名匹配与列表组件
+
+- 需要从前置证书获取域名时，优先在 `input` 前置配置 `certDomains` 字段，使用 `cert-domains-getter`，并通过 `inputKey` 指向证书字段。
+- 远程证书或资源列表如果需要按证书域名匹配，必须为每个选项提供 `domain` 字段；`domain` 可以是单个域名字符串，也可以是域名数组。只有满足此前提，才能使用 `this.ctx.utils.options.buildGroupOptions(options, this.certDomains)` 返回分组后的列表。
+- 如果服务商接口不支持分页或服务端搜索，列表组件不要设置 `pager: true` 或 `search: true`；确需搜索时在插件中获取完整列表后执行本地过滤。
 
 需要字段格式时读取 `references/online-yaml-format.md`。
 需要组件示例时读取 `references/component-examples.md`。

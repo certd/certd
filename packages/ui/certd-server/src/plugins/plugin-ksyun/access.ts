@@ -90,7 +90,6 @@ export class KsyunAccess extends BaseAccess {
     this.ctx.logger.info(res);
     return res;
   }
-
   async getCert(opts: { client: KsyunClient; certId: string }) {
     const res = await opts.client.doRequest({
       action: "GetCertificates",

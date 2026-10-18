@@ -1,7 +1,8 @@
 import { DynamicType, FormItemProps, useMerge } from "@fast-crud/fast-crud";
-import { cloneDeep, merge, set } from "lodash-es";
+import { cloneDeep, merge } from "lodash-es";
 import { defineStore } from "pinia";
 import * as api from "./api.plugin";
+import { initComponentDefine } from "./define";
 import { i18n } from "/src/locales/i18n";
 interface PluginState {
   group?: PluginGroups;
@@ -29,17 +30,7 @@ export function resolvePluginLocale(plugin: any, locale = i18n.global.locale.val
 export function fillPluginDefine(plugin: any) {
   const columns = plugin.input;
   for (const key in columns) {
-    const column = columns[key];
-    if (!column.component) {
-      column.component = {
-        name: "a-input",
-        vModel: "value",
-      };
-    } else {
-      if (column.component.vModel == null && column.component.name?.startsWith("a-")) {
-        column.component.vModel = "value";
-      }
-    }
+    columns[key] = initComponentDefine(columns[key]);
   }
 
   if (plugin.sysSetting?.metadata) {
@@ -205,22 +196,6 @@ export class PluginGroups {
     }
     return steps;
   }
-}
-
-function filterInstalledPluginGroups(groups: { [key: string]: PluginGroup }) {
-  const filteredGroups: { [key: string]: PluginGroup } = {};
-  for (const [key, group] of Object.entries(groups)) {
-    filteredGroups[key] = {
-      ...group,
-      plugins: group.plugins.filter(plugin => {
-        if (plugin.type !== "store") {
-          return true;
-        }
-        return plugin.installed === true;
-      }),
-    };
-  }
-  return filteredGroups;
 }
 
 export const usePluginStore = defineStore({
