@@ -77,7 +77,6 @@ export default {
     searchPluginMarket: "搜索插件市场",
     searchLocalPlugins: "搜索本地插件",
     loadingPluginMarket: "正在加载插件市场...",
-    noPluginFound: "没有找到插件",
     triggerManually: "手动触发",
     triggerSource: "触发源",
     scheduledTrigger: "触发源（定时）",

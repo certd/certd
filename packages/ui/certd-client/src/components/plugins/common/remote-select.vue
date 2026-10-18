@@ -37,7 +37,7 @@
 </template>
 <script setup lang="ts">
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
-import { defineComponent, inject, ref, useAttrs, watch, Ref } from "vue";
+import { defineComponent, inject, ref, useAttrs, watch, Ref, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { PluginDefine } from "@certd/pipeline";
 import { getInputFromForm } from "./utils";
@@ -81,6 +81,7 @@ const emit = defineEmits<{
 }>();
 
 function updateValue(value: any) {
+  debugger;
   if (props.single === true) {
     const last = value?.[value.length - 1];
     emit("update:value", last);
@@ -103,8 +104,18 @@ function emitSelectedChange(value: any) {
   emit("selected-change", props.single === true ? options[0] : options);
 }
 
-const attrs = useAttrs();
-
+const originalAttrs = useAttrs();
+const attrs = computed(() => {
+  const tags = {
+    mode: "tags",
+    allowClear: true,
+    single: false,
+  };
+  return {
+    ...tags,
+    ...originalAttrs,
+  };
+});
 const getCurrentPluginDefine: any = inject("getCurrentPluginDefine", () => {
   return {};
 });

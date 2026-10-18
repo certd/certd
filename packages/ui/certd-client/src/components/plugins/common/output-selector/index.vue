@@ -8,6 +8,7 @@ import { usePluginStore } from "/@/store/plugin";
 
 export default {
   name: "OutputSelector",
+  // inheritAttrs: false,
   props: {
     modelValue: {
       type: String,
@@ -29,6 +30,9 @@ export default {
     const currentTask = inject("currentTask") as Ref<any>;
 
     const pluginStore = usePluginStore();
+
+    // const attrs = ctx.attrs;
+    // console.log(attrs);
 
     async function onCreate() {
       await pluginStore.init();

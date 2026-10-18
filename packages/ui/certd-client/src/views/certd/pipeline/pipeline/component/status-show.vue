@@ -30,6 +30,9 @@ export default defineComponent({
     const { t } = useI18n();
     const statusRef = computed(() => {
       const status = statusUtil.get(props.status as string);
+      if (!status) {
+        return null;
+      }
       return { ...status, label: t(`certd.pipeline.editor.status${String(status.value).replace(/(^|_)(\w)/g, (_, _separator, letter) => letter.toUpperCase())}`) };
     });
 
