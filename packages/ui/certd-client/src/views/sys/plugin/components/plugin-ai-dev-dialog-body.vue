@@ -140,10 +140,10 @@ const step = ref(0);
 const mode = ref<"new" | "edit">(props.pluginId ? "edit" : "new");
 const pluginType = ref<string>();
 const pluginTypeOptions = [
-  { value: "access", label: "授权插件", desc: "接入云厂商或第三方服务凭据" },
-  { value: "dnsProvider", label: "DNS Provider", desc: "管理 DNS 记录并完成域名验证" },
-  { value: "deploy", label: "部署插件", desc: "将证书部署到服务器或云服务" },
-  { value: "notification", label: "通知插件", desc: "通过消息、邮件等方式发送通知" },
+  { value: "access", label: "授权插件", desc: "接入云厂商或第三方服务凭据，接入一个新平台前一般要开发这个插件" },
+  { value: "dnsProvider", label: "DNS Provider", desc: "你想要接入新的DNS校验提供商选这个" },
+  { value: "deploy", label: "部署插件", desc: "将证书部署到服务器或云服务的插件" },
+  { value: "notification", label: "通知插件", desc: "新的通知渠道插件" },
   // { value: "addon", label: "Addon", desc: "扩展流水线的通用辅助能力" },
 ];
 const author = ref("");
