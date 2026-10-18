@@ -215,9 +215,10 @@ input:
   scriptPre:
     title: 前置命令
     component:
-      name: a-textarea
+      name: TemplateTextarea
       vModel: value
       rows: 3
+      templateType: uploadToHost-scriptPre
       placeholder: mkdir /app/ssl
     helper: 上传前执行脚本命令，做上传前的准备工作
     required: false
@@ -225,9 +226,10 @@ input:
   script:
     title: 后置命令
     component:
-      name: a-textarea
+      name: TemplateTextarea
       vModel: value
       rows: 5
+      templateType: uploadToHost-script
       placeholder: 'systemctl restart nginx '
     helper: |-
       上传后执行脚本命令，让证书生效（比如重启nginx），不填则不执行
