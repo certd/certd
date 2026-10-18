@@ -303,11 +303,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       tabs: {
-        name: "type",
+        name: "pluginType",
         show: true,
-        defaultOption: {
-          show: false,
-        },
       },
       form: {
         onSuccess(opts: any) {
@@ -512,7 +509,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.common.sourcee"),
           type: "dict-select",
           search: {
-            show: true,
+            show: false,
             col: {
               span: 3,
             },

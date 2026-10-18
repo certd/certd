@@ -6,6 +6,18 @@
         <span class="sub">{{ t("certd.sys.plugin.pluginBetaWarning") }}</span>
       </div>
     </template>
+    <a-tabs :active-key="activeSource" class="plugin-source-tabs" @change="changeSource">
+      <a-tab-pane key="store">
+        <template #tab
+          ><span class="plugin-source-tab-label"><fs-icon icon="ion:storefront-outline" />{{ t("certd.sys.plugin.store") }}</span></template
+        >
+      </a-tab-pane>
+      <a-tab-pane key="builtIn">
+        <template #tab
+          ><span class="plugin-source-tab-label"><fs-icon icon="ion:extension-puzzle-outline" />{{ t("certd.sys.plugin.builtIn") }}</span></template
+        >
+      </a-tab-pane>
+    </a-tabs>
     <fs-crud ref="crudRef" class="plugin-card-crud" v-bind="crudBinding">
       <a-empty v-if="pluginList.length === 0" class="plugin-card-empty" />
       <div v-else class="plugin-card-grid">
@@ -32,6 +44,7 @@ const pluginStore = usePluginStore();
 const { openFormDialog } = useFormDialog();
 const lastSyncTime = ref<number>(0);
 const syncLoading = ref(false);
+const activeSource = ref("store");
 const autoSyncInterval = 3 * 24 * 60 * 60 * 1000;
 defineOptions({
   name: "SysPlugin",
@@ -58,6 +71,11 @@ async function syncOnlinePlugins(options?: { showSuccess?: boolean }) {
 
 const context = { lastSyncTime, syncLoading, syncOnlinePlugins };
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
+function changeSource(source: string) {
+  activeSource.value = source;
+  crudExpose.setSearchFormData({ form: { type: source }, mergeForm: true });
+  crudExpose.doRefresh();
+}
 const pluginList = computed(() => {
   const rows = crudBinding.value?.data || [];
   return rows.map((row: any) => {
@@ -132,6 +150,7 @@ async function autoSyncOnlinePlugins() {
 useMounted(async () => {
   await pluginStore.init();
   autoSyncOnlinePlugins();
+  crudExpose.setSearchFormData({ form: { type: activeSource.value }, mergeForm: true });
   crudExpose.doRefresh();
 });
 
@@ -145,6 +164,28 @@ onBeforeUnmount(() => {
 </script>
 <style lang="less">
 .page-sys-plugin {
+  .plugin-source-tabs {
+    flex: none;
+    padding: 0 10px;
+
+    .plugin-source-tab-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ant-tabs-nav {
+      margin-bottom: 0;
+      .ant-tabs-tab {
+        padding: 10px 4px;
+      }
+    }
+
+    .ant-tabs-content-holder {
+      display: none;
+    }
+  }
+
   .fs-page-content {
     display: flex;
     min-height: 0;
