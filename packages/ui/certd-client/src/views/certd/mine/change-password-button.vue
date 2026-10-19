@@ -35,7 +35,7 @@ const validatePass1 = async (rule: any, value: any) => {
   }
   const formData = passwordFormRef.value.getFormData();
   if (formData.confirmNewPassword !== "") {
-    passwordFormRef.value.formRef.formRef.validateFields(["confirmNewPassword"]);
+    passwordFormRef.value.formRef.value.formRef.validateFields(["confirmNewPassword"]);
   }
   if (formData.password === formData.newPassword) {
     throw new Error(t("certd.auth.newPasswordNotSameOld"));
