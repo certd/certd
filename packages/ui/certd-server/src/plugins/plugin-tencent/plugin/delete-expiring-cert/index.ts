@@ -128,11 +128,19 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
     });
     this.logger.info("删除任务已提交: ", JSON.stringify(deleteRes));
     const ids = deleteRes?.CertTaskIds;
-    if (!ids && !ids.length) {
-      this.logger.error("没有找到任务ID");
-      return;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new Error("删除任务提交结果异常：没有有效任务ID");
     }
-    const taskIds = ids.map((id: any) => id.TaskId);
+    const taskIds: string[] = [];
+    for (const entry of ids) {
+      const taskId = entry?.TaskId;
+      if (typeof taskId !== "string" || taskId.trim().length === 0) {
+        throw new Error("删除任务提交结果异常：存在无效任务ID");
+      }
+      if (!taskIds.includes(taskId)) {
+        taskIds.push(taskId);
+      }
+    }
     const startTime = Date.now();
     const results: Record<string, { certId?: string; status: unknown; reason: string }> = {};
 
@@ -150,12 +158,17 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
       const taskResultRes = await sslClient.doRequest("DescribeDeleteCertificatesTaskResult", {
         TaskIds: taskIds,
       });
-      const result = taskResultRes.DeleteTaskResult;
-      if (!result || result.length === 0) {
+      const result = taskResultRes?.DeleteTaskResult;
+      if (!Array.isArray(result) || result.length === 0) {
         this.logger.info("暂未获取到有效的任务结果");
+        await this.ctx.utils.sleep(10000);
         continue;
       }
       for (const item of result) {
+        const taskId = item?.TaskId;
+        if (!taskIds.includes(taskId)) {
+          continue;
+        }
         // Status : 0表示任务进行中、 1表示任务成功、 2表示任务失败、3表示未授权服务角色导致任务失败、4表示有未解绑的云资源导致任务失败、5表示查询关联云资源超时导致任务失败
         const status = item.Status;
         let reason = "";
@@ -180,15 +193,15 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
           reason = `未知状态:${String(status)}`;
           statusCount.failed++;
         }
-        results[item.TaskId] = { certId: item.CertId, status, reason };
-        const message = `任务${item.TaskId}<${item.CertId}>: ${reason}`;
+        results[taskId] = { certId: item.CertId, status, reason };
+        const message = `任务${taskId}<${item.CertId}>: ${reason}`;
         if (status === 0 || status === 1) {
           this.logger.info(message);
         } else {
           this.logger.error(message);
         }
         if (status !== 0) {
-          remove(taskIds, id => id === item.TaskId);
+          remove(taskIds, id => id === taskId);
         }
       }
       this.logger.info(

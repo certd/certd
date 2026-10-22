@@ -305,4 +305,131 @@ describe("TencentDeleteExpiringCert", () => {
     const sentIds = run.sent.map(request => request.id);
     assert.deepEqual(sentIds, [2]);
   });
+
+  for (const response of [undefined, null, {}, { CertTaskIds: [] }, { CertTaskIds: {} }, { CertTaskIds: [{}] }, { CertTaskIds: [{ TaskId: " " }] }, { CertTaskIds: [{ TaskId: "task-0" }, {}] }]) {
+    it("提交结果不完整时不允许误判成功或依赖偶然TypeError", async () => {
+      const fixture = await createFixture([1]);
+      fixture.state.deleteResponse = response;
+      await assert.rejects(
+        () => fixture.plugin.execute(),
+        (error: Error) => {
+          assert.notEqual(error.name, "TypeError");
+          assert.match(error.message, /删除任务提交结果异常/);
+          return true;
+        }
+      );
+      const queries = fixture.calls.filter(call => call.action === "DescribeDeleteCertificatesTaskResult");
+      assert.equal(queries.length, 0);
+    });
+  }
+
+  it("重复、无关和缺少TaskId的结果不污染计数", async () => {
+    const fixture = await createFixture([1, 4]);
+    fixture.state.responses = [
+      {
+        DeleteTaskResult: [
+          { TaskId: "task-0", CertId: "cert-0", Status: 1 },
+          { TaskId: "task-0", CertId: "cert-0", Status: 1 },
+          { TaskId: "other-task", CertId: "other-cert", Status: 4 },
+          { Status: 4 },
+          { TaskId: "task-1", CertId: "cert-1", Status: 0 },
+        ],
+      },
+      {
+        DeleteTaskResult: [
+          { TaskId: "task-0", CertId: "cert-0", Status: 1 },
+          { TaskId: "task-1", CertId: "cert-1", Status: 4 },
+        ],
+      },
+    ];
+    await assert.rejects(
+      () => fixture.plugin.execute(),
+      (error: Error) => {
+        assert.match(error.message, /成功[:：]\s*1/);
+        assert.match(error.message, /失败[:：]\s*1/);
+        assert.doesNotMatch(error.message, /other-task/);
+        return true;
+      }
+    );
+    assert.equal(fixture.state.pollCount, 2);
+    const queries = fixture.calls.filter(call => call.action === "DescribeDeleteCertificatesTaskResult");
+    assert.deepEqual(queries[1].params.TaskIds, ["task-1"]);
+  });
+
+  it("重复的已提交任务ID仅处理一次", async () => {
+    const fixture = await createFixture([1]);
+    fixture.state.deleteResponse = { CertTaskIds: [{ TaskId: "task-0" }, { TaskId: "task-0" }] };
+    await fixture.plugin.execute();
+    const query = fixture.calls.find(call => call.action === "DescribeDeleteCertificatesTaskResult");
+    assert.deepEqual(query?.params.TaskIds, ["task-0"]);
+  });
+
+  for (const response of [{ DeleteTaskResult: [] }, {}]) {
+    it("无有效查询结果时等待而不是忙等", async () => {
+      const fixture = await createFixture([0]);
+      fixture.state.responses = [response];
+      await assert.rejects(() => fixture.plugin.execute(), /超时/);
+      assert.ok(fixture.sleeps.length > 0);
+      const allWaitsUseExistingInterval = fixture.sleeps.every(ms => ms === 10000);
+      assert.ok(allWaitsUseExistingInterval);
+      assert.ok(fixture.state.pollCount < 20);
+    });
+  }
+
+  for (const noCandidates of ["empty", "not-expiring"]) {
+    it(`没有符合条件的证书时正常结束：${noCandidates}`, async () => {
+      const fixture = await createFixture([1]);
+      if (noCandidates === "empty") {
+        fixture.state.certificates = [];
+      } else {
+        fixture.state.certificates[0].CertEndTime = "2999-01-01 00:00:00";
+      }
+      await fixture.plugin.execute();
+      const deleteWasRequested = fixture.calls.some(call => call.action === "DeleteCertificates");
+      assert.equal(deleteWasRequested, false);
+    });
+  }
+
+  for (const action of ["DescribeCertificates", "DeleteCertificates", "DescribeDeleteCertificatesTaskResult"]) {
+    it(`接口异常原样传播：${action}`, async () => {
+      const fixture = await createFixture([1]);
+      fixture.state.failAction = action;
+      await assert.rejects(
+        () => fixture.plugin.execute(),
+        error => error === fixture.state.requestError
+      );
+    });
+  }
+
+  it("取消信号不被转换为成功或普通超时", async () => {
+    const fixture = await createFixture([0]);
+    fixture.signal.abort();
+    await assert.rejects(
+      () => fixture.plugin.execute(),
+      (error: Error) => {
+        // CancelError 未设置 this.name，依赖侧 .name 仍为 Error；用构造名确认取消语义
+        assert.equal(error.constructor.name, "CancelError");
+        assert.match(error.message, /取消/);
+        assert.doesNotMatch(error.message, /超时/);
+        return true;
+      }
+    );
+  });
+
+  it("超时通过真实执行链产生失败历史及失败通知", async () => {
+    const fixture = await createFixture([0]);
+    const run = await runPipelineFixture();
+    assert.equal(run.result, ResultType.error);
+    const pipeline = run.executor.pipeline;
+    const stage = pipeline.stages[0];
+    const task = stage.tasks[0];
+    for (const runnable of [task.steps[0], task, stage, pipeline]) {
+      assert.equal(runnable.status?.status, ResultType.error);
+    }
+    assert.equal(run.finished[0].status.status, ResultType.error);
+    const sentIds = run.sent.map(request => request.id);
+    assert.deepEqual(sentIds, [1]);
+    assert.match(run.sent[0].body.content, /超时/);
+    assert.ok(fixture.sleeps.length > 0);
+  });
 });
