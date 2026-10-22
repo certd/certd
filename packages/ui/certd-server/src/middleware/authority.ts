@@ -187,6 +187,9 @@ export class AuthorityMiddleware implements IWebMiddleware {
     const openKeyRes = await this.openKeyService.verifyOpenKey(openKey);
     let roles = []
     if (isEnterprise()) {
+      if (!openKeyRes.projectId || openKeyRes.projectId <= 0) {
+        throw new Error("projectId不能为空");
+      }
       roles = [1]
     }else {
       if (openKeyRes.projectId !=null) {
