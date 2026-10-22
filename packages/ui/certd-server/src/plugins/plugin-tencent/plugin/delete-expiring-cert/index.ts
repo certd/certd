@@ -127,11 +127,53 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
       IsSync: true,
     });
     this.logger.info("删除任务已提交: ", JSON.stringify(deleteRes));
+
+    const results: Record<string, { certId?: string; status: unknown; reason: string }> = {};
+    const statusCount = {
+      success: 0,
+      failed: 0,
+      unauthorized: 0,
+      unbind: 0,
+      timeout: 0,
+    };
+
+    const failList = deleteRes?.Fail;
+    if (failList != null && !Array.isArray(failList)) {
+      throw new Error("删除证书任务失败；提交阶段失败明细格式异常");
+    }
+    if (Array.isArray(failList)) {
+      for (let i = 0; i < failList.length; i++) {
+        const failItem = failList[i];
+        let failCertId = failItem?.CertId;
+        if (typeof failCertId !== "string" || failCertId.trim().length === 0) {
+          failCertId = `unknown-${i}`;
+        }
+        let failReason = failItem?.Msg;
+        if (typeof failReason !== "string" || failReason.trim().length === 0) {
+          failReason = "未知原因";
+        }
+        const failKey = `submit-fail:${failCertId}`;
+        results[failKey] = {
+          certId: failCertId,
+          status: "submit-fail",
+          reason: failReason,
+        };
+        statusCount.failed++;
+        this.logger.error(`提交阶段删除失败 证书${failCertId}: ${failReason}`);
+      }
+    }
+    const submitFailCount = Array.isArray(failList) ? failList.length : 0;
+
     const ids = deleteRes?.CertTaskIds;
     if (!Array.isArray(ids) || ids.length === 0) {
+      if (submitFailCount > 0) {
+        const failSummary = `任务总数:0，成功:0，失败:${statusCount.failed}，未完成:0，任务结果:${JSON.stringify(results)}，未完成任务:`;
+        throw new Error(`删除证书任务失败；${failSummary}`);
+      }
       throw new Error("删除任务提交结果异常：没有有效任务ID");
     }
     const taskIds: string[] = [];
+    const certIdByTaskId: Record<string, string> = {};
     for (const entry of ids) {
       const taskId = entry?.TaskId;
       if (typeof taskId !== "string" || taskId.trim().length === 0) {
@@ -140,17 +182,21 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
       if (!taskIds.includes(taskId)) {
         taskIds.push(taskId);
       }
+      const submitCertId = entry?.CertId;
+      if (typeof submitCertId === "string" && submitCertId.trim().length > 0) {
+        certIdByTaskId[taskId] = submitCertId;
+        if (!results[taskId]) {
+          results[taskId] = {
+            certId: submitCertId,
+            status: undefined,
+            reason: "待查询",
+          };
+        } else if (!results[taskId].certId) {
+          results[taskId].certId = submitCertId;
+        }
+      }
     }
     const startTime = Date.now();
-    const results: Record<string, { certId?: string; status: unknown; reason: string }> = {};
-
-    const statusCount = {
-      success: 0,
-      failed: 0,
-      unauthorized: 0,
-      unbind: 0,
-      timeout: 0,
-    };
     const total = taskIds.length;
 
     while (Date.now() < startTime + this.checkTimeout * 60 * 1000) {
@@ -193,8 +239,18 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
           reason = `未知状态:${String(status)}`;
           statusCount.failed++;
         }
-        results[taskId] = { certId: item.CertId, status, reason };
-        const message = `任务${taskId}<${item.CertId}>: ${reason}`;
+        let certId = item.CertId;
+        const hasPollCertId = typeof certId === "string" && certId.trim().length > 0;
+        if (!hasPollCertId) {
+          const previousCertId = results[taskId]?.certId;
+          if (previousCertId) {
+            certId = previousCertId;
+          } else {
+            certId = certIdByTaskId[taskId];
+          }
+        }
+        results[taskId] = { certId, status, reason };
+        const message = `任务${taskId}<${certId}>: ${reason}`;
         if (status === 0 || status === 1) {
           this.logger.info(message);
         } else {
@@ -217,7 +273,16 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
 
     const failedCount = statusCount.failed + statusCount.unauthorized + statusCount.unbind + statusCount.timeout;
     const resultDetails = JSON.stringify(results);
-    const pendingTaskDetails = taskIds.join(",");
+    const pendingParts: string[] = [];
+    for (const pendingTaskId of taskIds) {
+      const pendingCertId = results[pendingTaskId]?.certId ?? certIdByTaskId[pendingTaskId];
+      if (pendingCertId) {
+        pendingParts.push(`${pendingTaskId}<${pendingCertId}>`);
+      } else {
+        pendingParts.push(pendingTaskId);
+      }
+    }
+    const pendingTaskDetails = pendingParts.join(",");
     let summary = `任务总数:${total}，成功:${statusCount.success}，失败:${failedCount}，未完成:${taskIds.length}，任务结果:${resultDetails}，未完成任务:${pendingTaskDetails}`;
     if (statusCount.unauthorized > 0) {
       summary += "；有未授权服务角色导致任务失败，需给Access授权服务角色SSL_QCSLinkedRoleInReplaceLoadCertificate";
