@@ -1,7 +1,7 @@
 import { Init, Inject, MidwayWebRouterService, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { IMidwayKoaContext, IWebMiddleware, NextFunction } from "@midwayjs/koa";
 import jwt from "jsonwebtoken";
-import { Constants, SysPrivateSettings, SysSettingsService } from "@certd/lib-server";
+import { Constants, isEnterprise, SysPrivateSettings, SysSettingsService } from "@certd/lib-server";
 import { logger } from "@certd/basic";
 import { AuthService } from "../modules/sys/authority/service/auth-service.js";
 import { OpenKeyService } from "../modules/open/service/open-key-service.js";
@@ -183,11 +183,18 @@ export class AuthorityMiddleware implements IWebMiddleware {
     if (!openKey) {
       return null;
     }
-
     //校验 openKey
     const openKeyRes = await this.openKeyService.verifyOpenKey(openKey);
-    let roles = [1];
-    if (!openKeyRes.projectId || openKeyRes.projectId <= 0) {
+    let roles = []
+    if (isEnterprise()) {
+      if (!openKeyRes.projectId || openKeyRes.projectId <= 0) {
+        throw new Error("projectId不能为空");
+      }
+      roles = [3]
+    }else {
+      if (openKeyRes.projectId !=null) {
+        throw new Error("对不起，您无权进行此操作");
+      }
       roles = await this.roleService.getRoleIdsByUserId(openKeyRes.userId);
     }
     ctx.user = { id: openKeyRes.userId, roles, projectId: openKeyRes.projectId };
