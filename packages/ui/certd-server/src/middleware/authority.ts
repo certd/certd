@@ -190,7 +190,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
       if (!openKeyRes.projectId || openKeyRes.projectId <= 0) {
         throw new Error("projectId不能为空");
       }
-      roles = [0]
+      roles = [3]
     }else {
       if (openKeyRes.projectId !=null) {
         throw new Error("对不起，您无权进行此操作");
