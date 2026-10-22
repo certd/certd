@@ -83,4 +83,50 @@ describe("PipelineService", () => {
     };
     assert.doesNotThrow(() => (service as any).checkTriggers(pipeline));
   });
+
+  describe("registerCron normalizes every-minute cron like the client editor does", () => {
+    function createService() {
+      const service = new PipelineService();
+      const registered: any[] = [];
+      service.cron = {
+        remove() {},
+        register(req: any) {
+          registered.push(req);
+        },
+        getTaskSize() {
+          return registered.length;
+        },
+      } as any;
+      return { service, registered };
+    }
+
+    it('normalizes "* * 15 * *" to "0 0 15 * *" without eating the first digit of the day field', () => {
+      //与客户端 cron-editor 的归一化结果保持一致：分钟与小时均为 * 时，置为 0 0，其余字段原样保留
+      const { service, registered } = createService();
+      service.registerCron(1, 1, { id: "t1", type: "timer", props: { cron: "* * 15 * *" } });
+      assert.equal(registered.length, 1);
+      assert.equal(registered[0].cron, "0 0 15 * *");
+    });
+
+    it('keeps registration for "* * 1 * *" (single-digit day must not be dropped)', () => {
+      const { service, registered } = createService();
+      service.registerCron(1, 1, { id: "t1", type: "timer", props: { cron: "* * 1 * *" } });
+      assert.equal(registered.length, 1);
+      assert.equal(registered[0].cron, "0 0 1 * *");
+    });
+
+    it('normalizes "* * * * *" to "0 0 * * *"', () => {
+      const { service, registered } = createService();
+      service.registerCron(1, 1, { id: "t1", type: "timer", props: { cron: "* * * * *" } });
+      assert.equal(registered.length, 1);
+      assert.equal(registered[0].cron, "0 0 * * *");
+    });
+
+    it('keeps the existing correct normalization for "* 12 * * *"', () => {
+      const { service, registered } = createService();
+      service.registerCron(1, 1, { id: "t1", type: "timer", props: { cron: "* 12 * * *" } });
+      assert.equal(registered.length, 1);
+      assert.equal(registered[0].cron, "0 12 * * *");
+    });
+  });
 });

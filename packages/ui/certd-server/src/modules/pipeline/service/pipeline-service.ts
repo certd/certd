@@ -590,7 +590,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
     cron = cron.trim();
     if (cron.startsWith("* * ")) {
-      cron = "0 0 " + cron.substring(5);
+      // "* * " 为4个字符，需要跳过整个前缀，否则会吃掉第3个字段（日）的首字符
+      cron = "0 0 " + cron.substring(4);
     }
     if (cron.startsWith("* ")) {
       cron = "0 " + cron.substring(2);
