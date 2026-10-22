@@ -134,7 +134,7 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
     }
     const taskIds = ids.map((id: any) => id.TaskId);
     const startTime = Date.now();
-    const results = {};
+    const results: Record<string, { certId?: string; status: unknown; reason: string }> = {};
 
     const statusCount = {
       success: 0,
@@ -156,37 +156,39 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
         continue;
       }
       for (const item of result) {
-        //遍历结果
-        const status = item.Status;
-        if (status !== 0) {
-          remove(taskIds, id => id === item.TaskId);
-        }
         // Status : 0表示任务进行中、 1表示任务成功、 2表示任务失败、3表示未授权服务角色导致任务失败、4表示有未解绑的云资源导致任务失败、5表示查询关联云资源超时导致任务失败
+        const status = item.Status;
+        let reason = "";
         if (status === 0) {
-          this.logger.info(`任务${item.TaskId}<${item.CertId}>: 进行中`);
+          reason = "进行中";
         } else if (status === 1) {
-          this.logger.info(`任务${item.TaskId}<${item.CertId}>: 成功`);
-          results[item.TaskId] = "成功";
+          reason = "成功";
           statusCount.success++;
         } else if (status === 2) {
-          this.logger.error(`任务${item.TaskId}<${item.CertId}>: 失败`);
-          results[item.TaskId] = "失败";
+          reason = "失败";
           statusCount.failed++;
         } else if (status === 3) {
-          this.logger.error(`任务${item.TaskId}<${item.CertId}>: 未授权服务角色导致任务失败`);
-          results[item.TaskId] = "未授权服务角色导致任务失败";
+          reason = "未授权服务角色导致任务失败";
           statusCount.unauthorized++;
         } else if (status === 4) {
-          this.logger.error(`任务${item.TaskId}<${item.CertId}>: 有未解绑的云资源导致任务失败`);
-          results[item.TaskId] = "有未解绑的云资源导致任务失败";
+          reason = "有未解绑的云资源导致任务失败";
           statusCount.unbind++;
         } else if (status === 5) {
-          this.logger.error(`任务${item.TaskId}<${item.CertId}>: 查询关联云资源超时导致任务失败`);
-          results[item.TaskId] = "查询关联云资源超时导致任务失败";
+          reason = "查询关联云资源超时导致任务失败";
           statusCount.timeout++;
         } else {
-          this.logger.info(`任务${item.TaskId}<${item.CertId}>: 未知状态:${status}`);
+          reason = `未知状态:${String(status)}`;
           statusCount.failed++;
+        }
+        results[item.TaskId] = { certId: item.CertId, status, reason };
+        const message = `任务${item.TaskId}<${item.CertId}>: ${reason}`;
+        if (status === 0 || status === 1) {
+          this.logger.info(message);
+        } else {
+          this.logger.error(message);
+        }
+        if (status !== 0) {
+          remove(taskIds, id => id === item.TaskId);
         }
       }
       this.logger.info(
@@ -195,16 +197,25 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
       );
       if (taskIds.length === 0) {
         this.logger.info("任务已全部完成");
-
-        if (statusCount.unauthorized > 0) {
-          throw new Error("有未授权服务角色导致任务失败，需给Access授权服务角色SSL_QCSLinkedRoleInReplaceLoadCertificate");
-        }
-
-        return;
+        break;
       }
       await this.ctx.utils.sleep(10000);
     }
-    this.logger.error("检查任务结果超时", JSON.stringify(results));
+
+    const failedCount = statusCount.failed + statusCount.unauthorized + statusCount.unbind + statusCount.timeout;
+    const resultDetails = JSON.stringify(results);
+    const pendingTaskDetails = taskIds.join(",");
+    let summary = `任务总数:${total}，成功:${statusCount.success}，失败:${failedCount}，未完成:${taskIds.length}，任务结果:${resultDetails}，未完成任务:${pendingTaskDetails}`;
+    if (statusCount.unauthorized > 0) {
+      summary += "；有未授权服务角色导致任务失败，需给Access授权服务角色SSL_QCSLinkedRoleInReplaceLoadCertificate";
+    }
+    if (taskIds.length > 0) {
+      throw new Error(`检查任务结果超时；${summary}`);
+    }
+    if (failedCount > 0) {
+      throw new Error(`删除证书任务失败；${summary}`);
+    }
+    this.logger.info(`删除证书任务全部成功；${summary}`);
   }
 }
 
