@@ -1,13 +1,13 @@
 ﻿ARG base_type=alpine
 
 # 根据 base_type 参数选择基础镜像系列
-FROM --platform=linux/amd64 node:22-alpine AS base-amd64-alpine
-FROM --platform=linux/arm64 node:22-alpine AS base-arm64-alpine
-FROM --platform=linux/arm/v7 node:22-alpine AS base-arm-v7-alpine
+FROM --platform=linux/amd64 node:22.23.4-alpine AS base-amd64-alpine
+FROM --platform=linux/arm64 node:22.23.4-alpine AS base-arm64-alpine
+FROM --platform=linux/arm/v7 node:22.23.4-alpine AS base-arm-v7-alpine
 
-FROM --platform=linux/amd64 node:22-trixie-slim AS base-amd64-slim
-FROM --platform=linux/arm64 node:22-trixie-slim AS base-arm64-slim
-FROM --platform=linux/arm/v7 node:22-alpine AS base-arm-v7-slim
+FROM --platform=linux/amd64 node:22.23.4-trixie-slim AS base-amd64-slim
+FROM --platform=linux/arm64 node:22.23.4-trixie-slim AS base-arm64-slim
+FROM --platform=linux/arm/v7 node:22.23.4-alpine AS base-arm-v7-slim
 
 FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT}-${base_type} AS builder
 
