@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.45.4](https://github.com/certd/certd/compare/v1.45.3...v1.45.4) (2026-10-22)
+
+### Bug Fixes
+
+* **docker:** 将构建和运行镜像的 Node.js 固定到 22.23.4 安全版本 ([#817](https://github.com/certd/certd/issues/817)) ([113c96b](https://github.com/certd/certd/commit/113c96b866e2ec5c85e37e42150445ed8b0eefbe))
+* **pipeline:** 修复定时触发器cron归一化截取位置错误导致日期字段被吃掉的问题 ([#813](https://github.com/certd/certd/issues/813)) ([7ac9101](https://github.com/certd/certd/commit/7ac9101266f2821fb13ff68ea6d36969c9485675))
+
 ## [1.45.3](https://github.com/certd/certd/compare/v1.45.2...v1.45.3) (2026-10-19)
 
 ### Bug Fixes

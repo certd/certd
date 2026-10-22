@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.45.4](https://github.com/certd/certd/compare/v1.45.3...v1.45.4) (2026-10-22)
+
+### Bug Fixes
+
+* **pipeline:** 修复定时触发器cron归一化截取位置错误导致日期字段被吃掉的问题 ([#813](https://github.com/certd/certd/issues/813)) ([7ac9101](https://github.com/certd/certd/commit/7ac9101266f2821fb13ff68ea6d36969c9485675))
+
 ## [1.45.3](https://github.com/certd/certd/compare/v1.45.2...v1.45.3) (2026-10-19)
 
 **Note:** Version bump only for package @certd/ui-server
