@@ -1,5 +1,5 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
-import { Constants, CrudController } from "@certd/lib-server";
+import { Constants, CrudController, isEnterprise } from "@certd/lib-server";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 import { OpenKeyService } from "../../../modules/open/service/open-key-service.js";
 import { ApiTags } from "@midwayjs/swagger";
@@ -60,6 +60,10 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
     const { projectId, userId } = await this.getProjectUserIdRead();
     body.projectId = projectId;
     body.userId = userId;
+    if (!isEnterprise()) {
+      //如果是非企业模式，禁止指定projectId
+      delete body.projectId;
+    }
     const res = await this.service.add(body);
     this.auditLog({
       content: `新增了API密钥(ID:${res.id}, scope:${body.scope}, remark:${body.remark})`,
