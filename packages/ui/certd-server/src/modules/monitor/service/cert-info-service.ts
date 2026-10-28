@@ -94,12 +94,6 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     if (!entity) {
       throw new CodeException(Constants.res.openCertNotFound);
     }
-    if (!entity.certInfo) {
-      throw new CodeException({
-        ...Constants.res.openCertNotFound,
-        message: "证书数据未生成，无法删除",
-      });
-    }
     await this.repository.delete({
       id,
       ...userProjectQuery,
