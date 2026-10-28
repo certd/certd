@@ -343,7 +343,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
 
   async sendCheckErrorNotify(siteId: number, fromIpCheck = false, setting: UserSiteMonitorSetting) {
     const site = await this.info(siteId);
-    const url = await this.notificationService.getBindUrl("#/certd/monitor/site");
+    const url = await this.notificationService.getBindUrl("#/cert/monitor/site");
     // 发邮件
     await this.notificationService.send(
       {
@@ -367,7 +367,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     const site = await this.info(siteId);
     const expires = site.certExpiresTime;
     const validDays = dayjs(expires).diff(dayjs(), "day");
-    const url = await this.notificationService.getBindUrl("#/certd/monitor/site");
+    const url = await this.notificationService.getBindUrl("#/cert/monitor/site");
     const content = `站点名称： ${site.name} \n站点域名： ${site.domain} \n证书域名： ${site.certDomains} \n颁发机构： ${site.certProvider} \n过期时间： ${dayjs(site.certExpiresTime).format("YYYY-MM-DD")} \n`;
     if (validDays >= 0 && validDays < tipDays) {
       // 发通知

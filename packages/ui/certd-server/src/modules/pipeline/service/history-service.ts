@@ -119,7 +119,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
       //   }
       // }
       const ids = list.map(item => item.id);
-      await this.deleteByIds(ids, null);
+      await this.deleteByIds(ids, null, null);
       shouldDeleteCount -= deleteCountBatch;
     }
   }
@@ -149,7 +149,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
     return files;
   }
 
-  async deleteByIds(ids: number[], userId: number) {
+  async deleteByIds(ids: number[], userId: number, projectId: number) {
     if (!ids || ids.length === 0) {
       return;
     }
@@ -159,8 +159,19 @@ export class HistoryService extends BaseService<HistoryEntity> {
     if (userId != null) {
       condition.userId = userId;
     }
-    await this.repository.delete(condition);
-    await this.logService.deleteByHistoryIds(ids);
+    if (projectId != null) {
+      condition.projectId = projectId;
+    }
+    const histories = await this.repository.find({
+      select: { id: true },
+      where: condition,
+    });
+    const deletedIds = histories.map(history => history.id);
+    if (deletedIds.length === 0) {
+      return;
+    }
+    await this.repository.delete({ id: In(deletedIds) });
+    await this.logService.deleteByHistoryIds(deletedIds);
   }
 
   async deleteByPipelineId(id: number) {

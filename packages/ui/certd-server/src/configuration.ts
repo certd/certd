@@ -23,6 +23,7 @@ import { setLogger } from "@certd/acme-client";
 import { HiddenMiddleware } from "./middleware/hidden.js";
 import { shouldSetDefaultNoCache } from "./configuration-cache.js";
 import { compressResponse } from "./middleware/compression.js";
+import { RiskRecognitionMiddleware } from "@certd/commercial-core";
 // import * as swagger from '@midwayjs/swagger';
 //@ts-ignore
 // process.env.UV_THREADPOOL_SIZE = 2
@@ -115,6 +116,7 @@ export class MainConfiguration {
       PreviewMiddleware,
       //授权处理
       AuthorityMiddleware,
+      RiskRecognitionMiddleware,
       AuditLogMiddleware,
       //resetPasswd,重置密码模式下不提供服务
       ResetPasswdMiddleware,

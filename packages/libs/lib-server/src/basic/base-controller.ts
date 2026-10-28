@@ -84,6 +84,11 @@ export abstract class BaseController {
     const projectId = await this.getProjectId(permission);
     if (projectId) {
       userId = -1; // 企业管理模式下，用户id固定-1
+    } else {
+      //非企业模式
+      if (userId <= 0) {
+        throw new Error("userId 不能为空");
+      }
     }
     return {
       projectId,
@@ -111,18 +116,22 @@ export abstract class BaseController {
    * @param id
    */
   async checkOwner(service: any, id: number, permission: string, allowAdmin: boolean = false) {
+    const recordId = Number(id);
+    if (!Number.isInteger(recordId) || recordId <= 0) {
+      throw new Error("id 不能为空");
+    }
     const { projectId, userId } = await this.getProjectUserId(permission);
     const authService: any = await this.applicationContext.getAsync("authService");
     if (projectId) {
-      await authService.checkProjectId(service, id, projectId);
+      await authService.checkProjectId(service, recordId, projectId);
     } else {
       if (userId === Constants.systemUserId) {
         //系统级别，不检查权限
       } else {
         if (allowAdmin) {
-          await authService.checkUserIdButAllowAdmin(this.ctx, service, id);
+          await authService.checkUserIdButAllowAdmin(this.ctx, service, recordId);
         } else {
-          await authService.checkUserId(service, id, userId);
+          await authService.checkUserId(service, recordId, userId);
         }
       }
     }

@@ -14,7 +14,17 @@ export class KsyunClientV2 {
   private readonly method: string;
   private readonly actionMethods: Record<string, string>;
 
-  constructor(opts: { accessKeyId: string; secretAccessKey: string; region?: string; endpoint: string; logger: ILogger; clientClass?: string; contentType?: string; method?: string; actionMethods?: Record<string, string> }) {
+  constructor(opts: {
+    accessKeyId: string;
+    secretAccessKey: string;
+    region?: string;
+    endpoint: string;
+    logger: ILogger;
+    clientClass?: string;
+    contentType?: string;
+    method?: string;
+    actionMethods?: Record<string, string>;
+  }) {
     this.accessKeyId = opts.accessKeyId;
     this.secretAccessKey = opts.secretAccessKey;
     this.region = opts.region || "cn-beijing-6";
