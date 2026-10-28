@@ -84,6 +84,9 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   }
 
   async deleteCertificate(id: number, userId: number, projectId?: number) {
+    if (!id) {
+      throw new Error("id is required");
+    }
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const entity = await this.repository.findOne({
       where: {
