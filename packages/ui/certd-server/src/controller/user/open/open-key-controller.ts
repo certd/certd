@@ -57,7 +57,7 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加开放API密钥" })
   async add(@Body(ALL) body: any) {
-    const { projectId, userId } = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     body.projectId = projectId;
     body.userId = userId;
     if (!isEnterprise()) {

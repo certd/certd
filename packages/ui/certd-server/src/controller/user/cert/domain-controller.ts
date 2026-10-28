@@ -60,7 +60,7 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加域名" })
   async add(@Body(ALL) bean: any) {
-    const { projectId, userId } = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.projectId = projectId;
     bean.userId = userId;
     const res = await super.add(bean);
@@ -94,7 +94,7 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post("/deleteByIds", { description: Constants.per.authOnly, summary: "批量删除域名" })
   async deleteByIds(@Body(ALL) body: any) {
-    const { projectId, userId } = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     await this.service.batchDelete(body.ids, userId, projectId);
     this.auditLog({ content: `批量删除了${body.ids.length}条域名` });
     return this.ok();
@@ -103,7 +103,7 @@ export class DomainController extends CrudController<DomainService> {
   @Post("/import/start", { description: Constants.per.authOnly, summary: "开始域名导入任务" })
   async importStart(@Body(ALL) body: any) {
     checkPlus();
-    const { projectId, userId } = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     const { key } = body;
     const req = {
       key,
@@ -128,7 +128,7 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post("/import/delete", { description: Constants.per.authOnly, summary: "删除域名导入任务" })
   async importDelete(@Body(ALL) body: any) {
-    const { projectId, userId } = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     const { key } = body;
     const req = {
       userId: userId,
@@ -143,7 +143,7 @@ export class DomainController extends CrudController<DomainService> {
   @Post("/import/save", { description: Constants.per.authOnly, summary: "保存域名导入任务" })
   async importSave(@Body(ALL) body: any) {
     checkPlus();
-    const { projectId, userId } = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     const { dnsProviderType, dnsProviderAccessId, key } = body;
     const req = {
       userId: userId,

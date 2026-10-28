@@ -153,7 +153,7 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加流水线执行历史" })
   async add(@Body(ALL) bean: PipelineEntity) {
-    const { projectId, userId } = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.projectId = projectId;
     bean.userId = userId;
     return super.add(bean);

@@ -58,7 +58,7 @@ export class AddonController extends CrudController<AddonService> {
 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加Addon" })
   async add(@Body(ALL) bean) {
-    const { userId, projectId } = await this.getProjectUserIdRead();
+    const { userId, projectId } = await this.getProjectUserIdWrite();
     bean.userId = userId;
     bean.projectId = projectId;
     const type = bean.type;

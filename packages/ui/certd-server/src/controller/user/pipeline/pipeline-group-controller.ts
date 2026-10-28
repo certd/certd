@@ -54,7 +54,7 @@ export class PipelineGroupController extends CrudController<PipelineGroupService
 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加流水线分组" })
   async add(@Body(ALL) bean: any) {
-    const { projectId, userId } = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.userId = userId;
     bean.projectId = projectId;
     const res = await super.add(bean);
