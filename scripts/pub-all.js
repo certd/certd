@@ -1,13 +1,13 @@
-import childProcess from "child_process";
-import fs from "fs";
-import path from "path";
+import childProcess from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 function run(command, args, options = {}) {
   const result = childProcess.spawnSync(command, args, {
-    stdio: options.stdio ?? "pipe",
-    shell: process.platform === "win32",
-    encoding: "utf-8",
+    stdio: options.stdio ?? 'pipe',
+    encoding: 'utf-8',
     ...options,
+    shell: false,
   });
 
   if (result.error) {
@@ -26,31 +26,39 @@ function printOutput(result) {
   }
 }
 
+function runPnpm(args, options = {}) {
+  const pnpmCli = process.env.npm_execpath;
+  if (process.platform === 'win32' && pnpmCli) {
+    return run(process.execPath, [pnpmCli, ...args], options);
+  }
+  return run('pnpm', args, options);
+}
+
 function isAlreadyPublishedError(result) {
-  const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
-  return output.includes("You cannot publish over the previously published versions");
+  const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
+  return output.includes('You cannot publish over the previously published versions');
 }
 
 function getWorkspacePackages() {
-  const result = run("pnpm", ["list", "-r", "--depth", "-1", "--json"], {
-    stdio: "pipe",
+  const result = runPnpm(['list', '-r', '--depth', '-1', '--json'], {
+    stdio: 'pipe',
   });
 
   if (result.status !== 0) {
     console.error(result.stderr);
-    throw new Error("获取 workspace 包列表失败");
+    throw new Error('获取 workspace 包列表失败');
   }
 
   return JSON.parse(result.stdout);
 }
 
 function hasPubScript(packagePath) {
-  const packageJsonPath = path.join(packagePath, "package.json");
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+  const packageJsonPath = path.join(packagePath, 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
   return Boolean(packageJson.scripts?.pub);
 }
 
-const packages = getWorkspacePackages().filter(item => item.name !== "root");
+const packages = getWorkspacePackages().filter(item => item.name !== 'root');
 let skippedCount = 0;
 let alreadyPublishedCount = 0;
 
@@ -64,7 +72,7 @@ for (const item of packages) {
   }
 
   console.log(`\n[pub_all] 开始发布 ${item.name}`);
-  const result = run("pnpm", ["--dir", packagePath, "run", "pub"]);
+  const result = runPnpm(['--dir', packagePath, 'run', 'pub']);
   printOutput(result);
 
   if (result.status === 0) {

@@ -1,29 +1,30 @@
-import assert from "assert";
+import assert from "node:assert/strict";
 import esmock from "esmock";
+import type { Context } from "mocha";
 
-describe("NetTestService.telnet", () => {
-  it("treats nc succeeded output as a successful port connection", async () => {
+describe("NetTestService input validation", () => {
+  it("rejects shell syntax before starting ping", async function (this: Context) {
+    this.timeout(10000);
+    let spawnCount = 0;
     const { NetTestService } = await esmock("./nettest-service.js", {
       "@certd/basic": {
         http: {},
-        logger: {
-          error() {},
-        },
+        logger: { error() {} },
         utils: {
           sp: {
             async spawn() {
-              return "Connection to baidu.com (110.242.74.102) 443 port [tcp/*] succeeded!";
+              spawnCount++;
+              return "";
             },
           },
         },
       },
     });
     const service = new NetTestService();
-    (service as any).isWindows = () => false;
 
-    const result = await service.telnet("baidu.com", 443);
+    const result = await service.ping("example.com; echo injected");
 
-    assert.equal(result.success, true);
-    assert.equal(result.message, "端口连接测试成功");
+    assert.equal(result.success, false);
+    assert.equal(spawnCount, 0);
   });
 });

@@ -1,11 +1,8 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, Step, TaskInput } from "@certd/pipeline";
-import { CertReader } from "@certd/plugin-lib";
+import type { CertReader } from "@certd/plugin-lib";
 import { CertApplyBasePlugin } from "../base.js";
-import fs from "fs";
-import { EabAccess } from "../../../access/index.js";
-import path from "path";
-import JSZip from "jszip";
 import { PrivateKeyType } from "./dns.js";
+import { EabAccess } from "../../../access/index.js";
 
 @IsTaskPlugin({
   name: "CertApplyLego",
@@ -172,112 +169,8 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
   }
   async onInit(): Promise<void> {}
 
-  async doCertApply() {
-    if(true){
-      throw new Error("当前调用Lego存在xss注入风险，暂时禁用Lego插件，请使用JS版证书插件生成证书");
-    }
-    const env: any = {};
-    const env_lines = this.environment.split("\n");
-    for (const line of env_lines) {
-      const [key, value] = line.trim().split("=");
-      env[key] = value.trim();
-    }
-
-    let domainArgs = "";
-    for (const domain of this.domains) {
-      domainArgs += ` -d "${domain}"`;
-    }
-    this.logger.info(`环境变量:${JSON.stringify(env)}`);
-    let eabArgs = "";
-    if (this.eab) {
-      eabArgs = ` --eab --kid "${this.eab.kid}" --hmac "${this.eab.hmacKey}"`;
-    }
-    const keyType = `-k ${this.privateKeyType?.replaceAll("_", "")}`;
-
-    const saveDir = `./data/.lego/pipeline_${this.pipeline.id}/`;
-    const savePathArgs = `--path "${saveDir}"`;
-    const os_type = process.platform === "win32" ? "windows" : "linux";
-    const legoDir = "./tools/lego";
-    const legoPath = path.resolve(legoDir, os_type === "windows" ? "lego.exe" : "lego");
-    if (!fs.existsSync(legoPath)) {
-      //解压缩
-      const arch = process.arch;
-      let platform = "amd64";
-      if (arch === "arm64" || arch === "arm") {
-        platform = "arm64";
-      }
-      const LEGO_VERSION = process.env.LEGO_VERSION;
-      let legoZipFileName = `lego_v${LEGO_VERSION}_windows_${platform}.zip`;
-      if (os_type === "linux") {
-        legoZipFileName = `lego_v${LEGO_VERSION}_linux_${platform}.tar.gz`;
-      }
-      const legoZipFilePath = `${legoDir}/${legoZipFileName}`;
-      if (!fs.existsSync(legoZipFilePath)) {
-        this.logger.info(`lego文件不存在:${legoZipFilePath},准备下载`);
-        const downloadUrl = `https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/${legoZipFileName}`;
-        await this.ctx.download(
-          {
-            url: downloadUrl,
-            method: "GET",
-            logRes: false,
-          },
-          legoZipFilePath
-        );
-        this.logger.info("下载lego成功");
-      }
-
-      if (os_type === "linux") {
-        //tar是否存在
-        await this.ctx.utils.sp.spawn({
-          cmd: `tar -zxvf ${legoZipFilePath} -C ${legoDir}/`,
-        });
-        await this.ctx.utils.sp.spawn({
-          cmd: `chmod +x ${legoDir}/*`,
-        });
-        this.logger.info("解压lego成功");
-      } else {
-        const zip = new JSZip();
-        const data = fs.readFileSync(legoZipFilePath);
-        const zipData = await zip.loadAsync(data);
-        const files = Object.keys(zipData.files);
-        for (const file of files) {
-          const content = await zipData.files[file].async("nodebuffer");
-          fs.writeFileSync(`${legoDir}/${file}`, content);
-        }
-        this.logger.info("解压lego成功");
-      }
-    }
-    let serverArgs = "";
-    if (this.acmeServer) {
-      serverArgs = ` --server ${this.acmeServer}`;
-    }
-    const cmds = [`${legoPath} -a --email "${this.email}" --dns ${this.dnsType} ${keyType} ${domainArgs} ${serverArgs} ${eabArgs} ${savePathArgs} ${this.customArgs || ""} run ${this.customCommandOptions || ""}`];
-
-    await this.ctx.utils.sp.spawn({
-      cmd: cmds,
-      logger: this.logger,
-      env,
-    });
-
-    //读取证书文件
-    // example.com.crt
-    // example.com.issuer.crt
-    // example.com.json
-    // example.com.key
-
-    let domain1 = this.domains[0];
-    domain1 = domain1.replaceAll("*", "_");
-    const crtPath = path.resolve(saveDir, "certificates", `${domain1}.crt`);
-    if (fs.existsSync(crtPath) === false) {
-      throw new Error(`证书文件不存在,证书申请失败:${crtPath}`);
-    }
-    const crt = fs.readFileSync(crtPath, "utf8");
-    const keyPath = path.resolve(saveDir, "certificates", `${domain1}.key`);
-    const key = fs.readFileSync(keyPath, "utf8");
-    const csr = "";
-    const cert = { crt, key, csr };
-    const certInfo = this.formatCerts(cert);
-    return new CertReader(certInfo);
+  async doCertApply(): Promise<CertReader> {
+    throw new Error("当前调用Lego存在命令注入风险，暂时禁用Lego插件，请使用JS版证书插件生成证书");
   }
 }
 

@@ -17,6 +17,14 @@ export class CertConverter {
     jks: string;
     p7b: string;
   }> {
+    let pfxArgs: string[] = [];
+    if (opts.pfxArgs === "-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES") {
+      pfxArgs = ["-macalg", "SHA1", "-keypbe", "PBE-SHA1-3DES", "-certpbe", "PBE-SHA1-3DES"];
+    } else if (opts.pfxArgs === "-nomac -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES") {
+      pfxArgs = ["-nomac", "-keypbe", "PBE-SHA1-3DES", "-certpbe", "PBE-SHA1-3DES"];
+    } else if (opts.pfxArgs !== "") {
+      throw new Error("不支持的PFX转换参数");
+    }
     const certReader = new CertReader(opts.cert);
     let pfx: string;
     let der: string;
@@ -24,7 +32,7 @@ export class CertConverter {
     let p7b: string;
     const handle = async (ctx: CertReaderHandleContext) => {
       // 调用openssl 转pfx
-      pfx = await this.convertPfx(ctx, opts.pfxPassword, opts.pfxArgs);
+      pfx = await this.convertPfx(ctx, opts.pfxPassword, pfxArgs);
 
       // 转der
       der = await this.convertDer(ctx);
@@ -44,10 +52,11 @@ export class CertConverter {
     };
   }
 
-  async exec(cmd: string) {
+  async exec(cmd: string, args: string[]) {
     process.env.LANG = "zh_CN.GBK";
     await sp.spawn({
       cmd: cmd,
+      args,
       logger: this.logger,
     });
   }
@@ -117,7 +126,8 @@ export class CertConverter {
     fs.copyFileSync(jksGoFilePath, finalPath);
     if (osType === "linux") {
       await sp.spawn({
-        cmd: `chmod +x ${finalPath}`,
+        cmd: "chmod",
+        args: ["+x", finalPath],
       });
     }
 
@@ -127,7 +137,7 @@ export class CertConverter {
     return finalPath;
   }
 
-  private async convertPfx(opts: CertReaderHandleContext, pfxPassword: string, pfxArgs: string) {
+  private async convertPfx(opts: CertReaderHandleContext, pfxPassword: string, pfxArgs: string[]) {
     const { tmpCrtPath, tmpKeyPath } = opts;
 
     const pfxPath = path.join(os.tmpdir(), "/certd/tmp/", Math.floor(Math.random() * 1000000) + "_cert.pfx");
@@ -137,14 +147,14 @@ export class CertConverter {
       fs.mkdirSync(dir, { recursive: true });
     }
 
-    let passwordArg = "-passout pass:";
+    const args = ["pkcs12", ...pfxArgs, "-export", "-out", pfxPath, "-inkey", tmpKeyPath, "-in", tmpCrtPath, "-password"];
     if (pfxPassword) {
-      passwordArg = `-password pass:${pfxPassword}`;
+      args.push(`pass:${pfxPassword}`);
+    } else {
+      args.push("pass:");
     }
     // 兼容server 2016，旧版本不能用sha256
-    const oldPfxCmd = `openssl pkcs12 ${pfxArgs} -export -out ${pfxPath} -inkey ${tmpKeyPath} -in ${tmpCrtPath} ${passwordArg}`;
-    // const newPfx = `openssl pkcs12 -export -out ${pfxPath} -inkey ${tmpKeyPath} -in ${tmpCrtPath} ${passwordArg}`;
-    await this.exec(oldPfxCmd);
+    await this.exec("openssl", args);
     const fileBuffer = fs.readFileSync(pfxPath);
     const pfxCert = fileBuffer.toString("base64");
     fs.unlinkSync(pfxPath);
@@ -165,7 +175,7 @@ export class CertConverter {
       fs.mkdirSync(dir, { recursive: true });
     }
 
-    await this.exec(`openssl x509 -outform der -in ${tmpCrtPath} -out ${derPath}`);
+    await this.exec("openssl", ["x509", "-outform", "der", "-in", tmpCrtPath, "-out", derPath]);
     const fileBuffer = fs.readFileSync(derPath);
     const derCert = fileBuffer.toString("base64");
     fs.unlinkSync(derPath);
@@ -183,7 +193,7 @@ export class CertConverter {
     //     -certfile your_domain.crt \
     //     -certfile intermediate.crt \
     //     -out chain.p7b
-    await this.exec(`openssl crl2pkcs7 -nocrl -certfile ${tmpCrtPath} -out ${p7bPath}`);
+    await this.exec("openssl", ["crl2pkcs7", "-nocrl", "-certfile", tmpCrtPath, "-out", p7bPath]);
     const fileBuffer = fs.readFileSync(p7bPath);
     const p7bCert = fileBuffer.toString();
     fs.unlinkSync(p7bPath);
@@ -207,7 +217,7 @@ export class CertConverter {
       const jksPath = path.join(os.tmpdir(), "/certd/tmp/", randomStr + `_cert.jks`);
 
       const jksGoPath = await this.getJksGoPath();
-      await this.exec(`${jksGoPath} -importkeystore -srckeystore ${bundlePath} -srcstoretype PEM -destkeystore ${jksPath} -deststorepass "${jksPassword}"`);
+      await this.exec(jksGoPath, ["-importkeystore", "-srckeystore", bundlePath, "-srcstoretype", "PEM", "-destkeystore", jksPath, "-deststorepass", jksPassword]);
       fs.unlinkSync(bundlePath);
 
       const fileBuffer = fs.readFileSync(jksPath);

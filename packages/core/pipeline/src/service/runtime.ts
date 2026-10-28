@@ -149,7 +149,7 @@ class DefaultCommandRunner implements CommandRunner {
       let stdout = "";
       let stderr = "";
       let settled = false;
-      const child = spawn(command, args, { cwd: options.cwd, env: options.env, windowsHide: true, shell: process.platform === "win32" });
+      const child = spawn(command, args, { cwd: options.cwd, env: options.env, windowsHide: true, shell: false });
       const timer = setTimeout(() => {
         if (settled) {
           return;
@@ -377,9 +377,10 @@ export class RuntimeDepsService {
     const allRegistryUrls = await this.registryResolver.resolveOrdered();
     const urlsToTry = allRegistryUrls.length > 0 ? allRegistryUrls : [""];
     const command = this.getPnpmCommand();
+    const commandPrefixArgs = this.getPnpmPrefixArgs();
     let lastError: string | undefined;
     for (const tryUrl of urlsToTry) {
-      const args = ["install", "--prod", "--ignore-scripts", "--ignore-workspace", "--no-frozen-lockfile", "--reporter=append-only"];
+      const args = [...commandPrefixArgs, "install", "--prod", "--ignore-scripts", "--ignore-workspace", "--no-frozen-lockfile", "--reporter=append-only"];
       if (tryUrl) {
         args.push(`--registry=${tryUrl}`);
       }
@@ -481,7 +482,17 @@ export class RuntimeDepsService {
   }
 
   private getPnpmCommand() {
+    if (!this.pnpmCommand && process.platform === "win32" && process.env.npm_execpath) {
+      return process.execPath;
+    }
     return this.pnpmCommand || "pnpm";
+  }
+
+  private getPnpmPrefixArgs() {
+    if (!this.pnpmCommand && process.platform === "win32" && process.env.npm_execpath) {
+      return [process.env.npm_execpath];
+    }
+    return [];
   }
 
   private buildChildEnv(registryUrl: string) {
