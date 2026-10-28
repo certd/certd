@@ -100,7 +100,7 @@ const development = {
 
   auth: {
     jwt: {
-      expire: 7 * 24 * 60 * 60, //单位秒
+      expire: 3 * 24 * 60 * 60, //单位秒
     },
   },
   certd: {
