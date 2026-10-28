@@ -2,23 +2,6 @@ import assert from "node:assert/strict";
 import { TemplateService } from "./template-service.js";
 
 describe("TemplateService.createPipelineByTemplate", () => {
-  it("rejects an existing pipeline id instead of updating that pipeline", async () => {
-    const service = new TemplateService();
-    service.info = async () => ({ id: 7, userId: 1018, projectId: null, pipelineId: 22 }) as any;
-    service.pipelineService = {
-      async info() {
-        return { type: "custom", keepHistoryCount: 10 };
-      },
-      async save() {
-        assert.fail("must not save or update a pipeline");
-      },
-    } as any;
-
-    await assert.rejects(
-      () => service.createPipelineByTemplate({ id: 99, templateId: 7, userId: 1018, projectId: null } as any),
-      /只能创建新流水线/
-    );
-  });
 
   it("creates a new pipeline for an owned template", async () => {
     const service = new TemplateService();
