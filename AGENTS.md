@@ -106,6 +106,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 ## 后端规则
 
 - 后端主包是 `packages/ui/certd-server`，使用 Node.js、ESM、TypeScript、MidwayJS 3、Koa、TypeORM 和 SQL 迁移。
+- `packages/ui/certd-server/src/controller/sys` 下所有 HTTP Controller 方法的权限必须为 `sys:settings:view`（查询）或 `sys:settings:edit`（新增、修改、删除及其他副作用操作）；不得使用 `authOnly` 或普通用户权限，authority里面保持原有的权限字符串不变。
 - 做后端任务时，先定位 `packages/ui/certd-server/src/modules` 下的模块，以及相关 entity/service/controller。
 - 表结构变更必须添加或更新 `packages/ui/certd-server/db/migration/*.sql`；不要依赖 TypeORM 自动同步。
 - 文件上传接口 `/basic/file/upload` 返回临时 key；业务保存前必须调用 `FileService.saveFile(userId, key, "public" | "private")` 转成永久 key，不能直接保存 `tmpfile_key_...`。
