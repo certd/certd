@@ -53,7 +53,7 @@ export class TemplateController extends CrudController<TemplateService> {
 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加流水线模版" })
   async add(@Body(ALL) bean) {
-    const { projectId, userId } = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.userId = userId;
     bean.projectId = projectId;
     checkPlus();
