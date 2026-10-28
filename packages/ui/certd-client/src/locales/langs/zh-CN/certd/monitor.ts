@@ -37,6 +37,7 @@ export default {
   columnDisabled: "禁用启用",
   columnRemark: "备注",
   certificateNotGenerated: "证书还未生成，请先运行流水线",
+  deleteConfirmContent: "确定删除该证书吗？删除后无法恢复。请至少一条流水线保留一张证书",
   viewCertificateTitle: "查看证书",
   viewCert: {
     title: "查看证书",

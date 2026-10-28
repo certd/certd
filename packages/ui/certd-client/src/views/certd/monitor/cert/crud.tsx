@@ -77,6 +77,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         editRequest,
         delRequest,
       },
+      table: {
+        remove: {
+          confirmMessage: t("certd.monitor.deleteConfirmContent"),
+        },
+      },
       search: {
         initialForm: searchInitForm,
       },
@@ -113,7 +118,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         show: true,
       },
       rowHandle: {
-        width: 160,
+        width: 190,
         fixed: "right",
         buttons: {
           view: { show: false },
@@ -130,7 +135,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           edit: { show: false },
           remove: {
             order: 10,
-            show: false,
+            show: ({ row }) => Boolean(row.expiresTime),
           },
           revoke: {
             order: 8,
