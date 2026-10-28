@@ -141,7 +141,7 @@
       </a-row>
     </div>
 
-    <div v-if="pluginGroups" class="plugin-list">
+    <div v-if="pluginGroups && !settingsStore.sysPublic.hideHomePluginList" class="plugin-list">
       <a-card>
         <template #title>
           <div class="flex items-center">

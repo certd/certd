@@ -34,7 +34,8 @@ export default {
 
   showRunStrategy: "Show RunStrategy",
   showRunStrategyHelper: "Allow modify the run strategy of the task",
-  homePageEnabled: "Enable Home Page",
+  homePageEnabled: "Disable Promo Page",
+  hideHomePluginList: "Hide Home Plugin List",
 
   captchaEnabled: "Enable Login Captcha",
   captchaHelper: "Whether to enable captcha verification for login",

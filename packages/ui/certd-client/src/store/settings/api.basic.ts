@@ -50,6 +50,7 @@ export type SysPublicSetting = {
   robots?: boolean;
   aiChatEnabled?: boolean;
   homePageEnabled?: boolean;
+  hideHomePluginList?: boolean;
 
   showRunStrategy?: boolean;
 
