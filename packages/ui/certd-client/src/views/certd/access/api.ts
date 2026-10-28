@@ -1,5 +1,8 @@
 import { request } from "/src/api/service";
 
+let secretVerifyToken = "";
+let secretVerifyExpiresAt = 0;
+
 export function createAccessApi(from = "user") {
   const apiPrefix = from === "sys" ? "/sys/access" : "/pi/access";
   return {
@@ -68,8 +71,23 @@ export function createAccessApi(from = "user") {
       return await request({
         url: apiPrefix + "/getSecretPlain",
         method: "post",
-        data: { id, key },
+        data: { id, key, verifyToken: secretVerifyToken },
       });
+    },
+
+    async VerifySecretAccess(verifyCode: string) {
+      const token = await request({
+        url: "/user/settings/twoFactor/verifySecretAccess",
+        method: "post",
+        data: { verifyCode },
+      });
+      secretVerifyToken = token;
+      secretVerifyExpiresAt = Date.now() + 10 * 60 * 1000;
+      return token;
+    },
+
+    HasSecretAccess() {
+      return secretVerifyToken && Date.now() < secretVerifyExpiresAt;
     },
 
     async GetProviderDefine(type: string) {
