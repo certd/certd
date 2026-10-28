@@ -3,6 +3,7 @@ import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
 import { PasskeyService } from "../../../modules/login/service/passkey-service.js";
 import { RoleService } from "../../../modules/sys/authority/service/role-service.js";
 import { UserService } from "../../../modules/sys/authority/service/user-service.js";
+import { PermissionService } from "../../../modules/sys/authority/service/permission-service.js";
 import { NotificationService } from "../../../modules/pipeline/service/notification-service.js";
 import { newAccess } from "@certd/pipeline";
 import { http, logger, utils } from "@certd/basic";
@@ -23,6 +24,9 @@ export class MineController extends BaseController {
 
   @Inject()
   roleService: RoleService;
+
+  @Inject()
+  permissionService: PermissionService;
 
   @Inject()
   passkeyService: PasskeyService;
@@ -75,6 +79,28 @@ export class MineController extends BaseController {
     }
 
     return this.ok(user);
+  }
+
+  @Post("/mine", { description: Constants.per.authOnly })
+  public async mine() {
+    const id = this.getUserId();
+    const info = await this.userService.info(id, ["password"]);
+    return this.ok(info);
+  }
+
+  @Post("/permissions", { description: Constants.per.authOnly })
+  public async permissions() {
+    const id = this.getUserId();
+    const permissions = await this.userService.getUserPermissions(id);
+    return this.ok(permissions);
+  }
+
+  @Post("/permissionTree", { description: Constants.per.authOnly })
+  public async permissionTree() {
+    const id = this.getUserId();
+    const permissions = await this.userService.getUserPermissions(id);
+    const tree = this.permissionService.buildTree(permissions);
+    return this.ok(tree);
   }
 
   @Post("/changePassword", { description: Constants.per.authOnly, summary: "修改密码" })

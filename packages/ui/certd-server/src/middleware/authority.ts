@@ -6,6 +6,7 @@ import { logger } from "@certd/basic";
 import { AuthService } from "../modules/sys/authority/service/auth-service.js";
 import { OpenKeyService } from "../modules/open/service/open-key-service.js";
 import { RoleService } from "../modules/sys/authority/service/role-service.js";
+import { UserService } from "../modules/sys/authority/service/user-service.js";
 
 /**
  * 权限校验
@@ -19,6 +20,8 @@ export class AuthorityMiddleware implements IWebMiddleware {
   authService: AuthService;
   @Inject()
   roleService: RoleService;
+  @Inject()
+  userService: UserService;
   @Inject()
   openKeyService: OpenKeyService;
   @Inject()
@@ -62,6 +65,14 @@ export class AuthorityMiddleware implements IWebMiddleware {
         } catch (err) {
           logger.error("token verify error: ", err);
           return this.notAuth(ctx);
+        }
+        const tokenUser = ctx.user as { id?: number };
+        if (tokenUser?.id == null) {
+          return this.notAuth(ctx);
+        }
+        const user = await this.userService.findOne({ id: tokenUser.id });
+        if (!user || user.status === 0) {
+          return this.notAuth(ctx,"用户不存在或已被禁用");
         }
         if (!this.isScopedTokenPathAllowed(ctx)) {
           return this.notScoped(ctx);

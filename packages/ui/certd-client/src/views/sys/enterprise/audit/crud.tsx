@@ -43,7 +43,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       okType: "danger",
       cancelText: "取消",
       async onOk() {
-        await api.Clean(90);
+        await api.Clean();
         crudExpose.doRefresh();
       },
     });
@@ -90,6 +90,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       rowHandle: {
+        show: false,
         width: 120,
         fixed: "right",
         buttons: {
@@ -119,6 +120,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           column: { width: 170, sorter: true },
+          form: { show: false },
+        },
+        userId: {
+          title: "用户ID",
+          type: "text",
+          search: { show: true },
+          column: { width: 100 },
           form: { show: false },
         },
         username: {
