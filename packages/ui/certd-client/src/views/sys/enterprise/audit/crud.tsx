@@ -121,6 +121,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: { width: 170, sorter: true },
           form: { show: false },
         },
+        userId: {
+          title: "用户ID",
+          type: "text",
+          search: { show: true },
+          column: { width: 100 },
+          form: { show: false },
+        },
         username: {
           title: "操作人",
           type: "text",

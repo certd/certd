@@ -1,57 +1,12 @@
 //转换为import
-//@ts-ignore
 import childProcess from "child_process";
 import { safePromise } from "./util.promise.js";
 import { ILogger, logger } from "./util.log.js";
 //@ts-ignore
 import iconv from "iconv-lite";
-export type ExecOption = {
-  cmd: string | string[];
-  env: any;
-  logger?: ILogger;
-  options?: any;
-};
-
-async function exec(opts: ExecOption): Promise<string> {
-  let cmd = "";
-  const log = opts.logger || logger;
-  if (opts.cmd instanceof Array) {
-    for (const item of opts.cmd) {
-      if (cmd) {
-        cmd += " && " + item;
-      } else {
-        cmd = item;
-      }
-    }
-  }
-  log.info(`执行命令: ${cmd}`);
-  return safePromise((resolve, reject) => {
-    childProcess.exec(
-      cmd,
-      {
-        env: {
-          //@ts-ignore
-          ...process.env,
-          ...opts.env,
-        },
-        ...opts.options,
-      },
-      (error: any, stdout: { toString: (arg0: string) => any }, stderr: any) => {
-        if (error) {
-          log.error(`exec error: ${error}`);
-          reject(error);
-        } else {
-          const res = stdout.toString("utf-8");
-          log.info(`stdout: ${res}`);
-          resolve(res);
-        }
-      }
-    );
-  });
-}
-
 export type SpawnOption = {
-  cmd: string | string[];
+  cmd: string;
+  args?: string[];
   onStdout?: (data: string) => void;
   onStderr?: (data: string) => void;
   env?: any;
@@ -78,40 +33,31 @@ function convert(buffer: any) {
 // }
 
 async function spawn(opts: SpawnOption): Promise<string> {
-  let cmd = "";
+  const args = opts.args || [];
   const log = opts.logger || logger;
-  if (opts.cmd instanceof Array) {
-    for (const item of opts.cmd) {
-      if (cmd) {
-        cmd += " && " + item;
-      } else {
-        cmd = item;
-      }
-    }
-  } else {
-    cmd = opts.cmd;
-  }
-  log.info(`执行命令: ${cmd}`);
+  log.info(`执行本地程序: ${opts.cmd}`);
   let stdout = "";
   let stderr = "";
   return safePromise((resolve, reject) => {
-    const ls = childProcess.spawn(cmd, {
-      shell: true,
+    const ls = childProcess.spawn(opts.cmd, args, {
       env: {
         //@ts-ignore
         ...process.env,
         ...opts.env,
       },
       ...opts.options,
+      shell: false,
     });
     ls.stdout.on("data", (data: string) => {
       data = convert(data);
+      opts.onStdout?.(String(data));
       log.info(`stdout: ${data}`);
       stdout += data;
     });
 
     ls.stderr.on("data", (data: string) => {
       data = convert(data);
+      opts.onStderr?.(String(data));
       log.warn(`stderr: ${data}`);
       stderr += data;
     });
@@ -142,5 +88,4 @@ async function spawn(opts: SpawnOption): Promise<string> {
 
 export const sp = {
   spawn,
-  exec,
 };
