@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.46.0](https://github.com/certd/certd/compare/v1.45.6...v1.46.0) (2026-10-28)
+
+### Features
+
+* 增加查看加密密钥的2FA二次验证 ([a32a9f9](https://github.com/certd/certd/commit/a32a9f98bedb6f3990cba13a4882f201f7b451ef))
+
+### Performance Improvements
+
+* 新增IP黑名单与用户访问控制功能 ([3a10e16](https://github.com/certd/certd/commit/3a10e16394cd128514e7ec69380c989a0f30b772))
+
 ## [1.45.6](https://github.com/certd/certd/compare/v1.45.5...v1.45.6) (2026-10-28)
 
 ### Bug Fixes
