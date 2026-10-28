@@ -14,6 +14,11 @@ function createMiddleware(permission: string) {
       return { description: permission, summary: "测试路由" };
     },
   } as any;
+  middleware.userService = {
+    async findOne() {
+      return { id: 1, status: 1 };
+    },
+  } as any;
   return middleware;
 }
 
@@ -53,6 +58,30 @@ describe("AuthorityMiddleware guestOptionalAuth", () => {
 
     assert.equal(ctx.user.id, 1);
     assert.deepEqual(ctx.user.roles, [1]);
+  });
+});
+
+describe("AuthorityMiddleware token user", () => {
+  it("rejects a token whose user does not exist", async () => {
+    const middleware = createMiddleware(Constants.per.authOnly);
+    middleware.userService.findOne = (async () => null) as any;
+    const token = jwt.sign({ id: 1, roles: [1] }, middleware.secret);
+    const ctx = createCtx(token);
+
+    await middleware.resolve()(ctx, async () => {});
+
+    assert.equal(ctx.status, 401);
+  });
+
+  it("rejects a token whose user is disabled", async () => {
+    const middleware = createMiddleware(Constants.per.authOnly);
+    middleware.userService.findOne = (async () => ({ id: 1, status: 0 })) as any;
+    const token = jwt.sign({ id: 1, roles: [1] }, middleware.secret);
+    const ctx = createCtx(token);
+
+    await middleware.resolve()(ctx, async () => {});
+
+    assert.equal(ctx.status, 401);
   });
 });
 
