@@ -37,6 +37,7 @@ export default {
   columnDisabled: "Enabled/Disabled",
   columnRemark: "Remark",
   certificateNotGenerated: "Certificate not yet generated, please run the pipeline first",
+  deleteConfirmContent: "Are you sure you want to delete this certificate? This cannot be undone. Please ensure at least one pipeline is using this certificate.",
   viewCertificateTitle: "View Certificate",
   viewCert: {
     title: "View Certificate",

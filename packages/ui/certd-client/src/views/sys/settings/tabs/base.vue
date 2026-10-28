@@ -15,7 +15,10 @@
         <a-switch v-model:checked="formState.public.robots" />
       </a-form-item>
       <a-form-item :label="t('certd.sys.settings.homePageEnabled')" :name="['public', 'homePageEnabled']">
-        <a-switch v-model:checked="formState.public.homePageEnabled" />
+        <a-switch v-model:checked="homePageDisabled" />
+      </a-form-item>
+      <a-form-item :label="t('certd.sys.settings.hideHomePluginList')" :name="['public', 'hideHomePluginList']">
+        <a-switch v-model:checked="formState.public.hideHomePluginList" />
       </a-form-item>
 
       <a-form-item :label="t('certd.sys.settings.enableCommonCnameService')" :name="['private', 'commonCnameEnabled']">
@@ -49,7 +52,7 @@
 <script setup lang="tsx">
 import { notification } from "ant-design-vue";
 import { merge } from "lodash-es";
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useSettingStore } from "/@/store/settings";
 import * as api from "/@/views/sys/settings/api";
 import { SysSettings } from "/@/views/sys/settings/api";
@@ -66,8 +69,16 @@ const formState = reactive<Partial<SysSettings>>({
     icpNo: "",
     mpsNo: "",
     homePageEnabled: true,
+    hideHomePluginList: false,
   },
   private: {},
+});
+
+const homePageDisabled = computed({
+  get: () => formState.public.homePageEnabled === false,
+  set: value => {
+    formState.public.homePageEnabled = !value;
+  },
 });
 
 async function loadSysSettings() {

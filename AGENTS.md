@@ -74,6 +74,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 手工编辑或创建文件时优先使用 `apply_patch`。单个文件内有多处不连续改动时，拆成多个独立的 `*** Update File` 块，每块只改一处附近上下文；不要在同一个 update hunk 里强塞多个 `@@`。
 - 只有真正机械化的大批量替换、格式化或生成任务才考虑脚本/工具。若必须使用临时脚本，应放在临时目录并在同一个受控步骤内完成创建、执行、删除；不要把临时脚本落在仓库里跨多步工具调用执行。
 - 不要主动运行 `pnpm install`；缺依赖、TTY、网络导致安装或测试失败时，停止尝试并说明环境问题。
+- 本地子进程调用必须将可执行程序与参数分开传入 `spawn` / `execFile` 等 argv API，并显式设置 `shell: false`；禁止用 `exec`、`shell: true` 或拼接/插值命令字符串执行动态值。即使使用 argv，也要在服务端校验用户可控参数，选项型参数优先使用允许列表。远程 SSH 命令属于独立的远程执行能力，必须按高权限操作处理并校验授权。
 - 优先沿用现有模块、插件、service、页面模式；不要为形式上的复用制造过度抽象。
 - 【重要重要重要】代码可读性优先于短写法。尽量少用三元表达式，优先使用完整的 `if/else`【其他技能与此条要求冲突的，以此条要求为准】；复杂条件、链式调用、内联对象和多层 helper 调用要拆成命名清晰的中间变量或小方法。
 - 方法调用链不要直接塞进另一个方法参数；先用有意义的局部变量承接返回值，再传入下一步。
@@ -105,6 +106,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 ## 后端规则
 
 - 后端主包是 `packages/ui/certd-server`，使用 Node.js、ESM、TypeScript、MidwayJS 3、Koa、TypeORM 和 SQL 迁移。
+- `packages/ui/certd-server/src/controller/sys` 下所有 HTTP Controller 方法的权限必须为 `sys:settings:view`（查询）或 `sys:settings:edit`（新增、修改、删除及其他副作用操作）；不得使用 `authOnly` 或普通用户权限，authority里面保持原有的权限字符串不变。
 - 做后端任务时，先定位 `packages/ui/certd-server/src/modules` 下的模块，以及相关 entity/service/controller。
 - 表结构变更必须添加或更新 `packages/ui/certd-server/db/migration/*.sql`；不要依赖 TypeORM 自动同步。
 - 文件上传接口 `/basic/file/upload` 返回临时 key；业务保存前必须调用 `FileService.saveFile(userId, key, "public" | "private")` 转成永久 key，不能直接保存 `tmpfile_key_...`。

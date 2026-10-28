@@ -33,6 +33,7 @@ export class SysPublicSettings extends BaseSettings {
   robots?: boolean = true;
   aiChatEnabled = true;
   homePageEnabled = true;
+  hideHomePluginList = false;
 
   //验证码是否开启
   captchaEnabled = false;
