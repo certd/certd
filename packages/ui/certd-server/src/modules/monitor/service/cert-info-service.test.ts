@@ -39,15 +39,21 @@ describe("CertInfoService", () => {
   });
 
   describe("deleteCertificate", () => {
-    it("rejects deleting an empty pipeline placeholder", async () => {
+    it("deletes an empty pipeline placeholder", async () => {
       const service = new CertInfoService();
+      let deleted: any;
       service.repository = {
         async findOne() {
           return { id: 1, userId: 2, projectId: 3, certInfo: null };
         },
+        async delete(where: any) {
+          deleted = where;
+        },
       } as any;
 
-      await assert.rejects(() => service.deleteCertificate(1, 2, 3), /证书数据未生成/);
+      await service.deleteCertificate(1, 2, 3);
+
+      assert.deepEqual(deleted, { id: 1, userId: 2, projectId: 3 });
     });
 
     it("deletes a certificate owned by the current user and project", async () => {
