@@ -12,6 +12,7 @@ import { PrivateKeyType } from "./dns.js";
   icon: "ph:certificate",
   title: "证书申请（Lego）",
   group: pluginGroups.cert.key,
+  deprecated: "暂时禁用此插件，请使用JS版证书插件生成证书",
   desc: "支持海量DNS解析提供商，推荐使用，一样的免费通配符域名证书申请，支持多个域名打到同一个证书上",
   i18n: {
     "en-US": {
@@ -172,6 +173,9 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
   async onInit(): Promise<void> {}
 
   async doCertApply() {
+    if(true){
+      throw new Error("当前调用Lego存在xss注入风险，暂时禁用Lego插件，请使用JS版证书插件生成证书");
+    }
     const env: any = {};
     const env_lines = this.environment.split("\n");
     for (const line of env_lines) {
