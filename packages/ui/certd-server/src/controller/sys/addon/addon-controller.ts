@@ -1,5 +1,5 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
-import { AddonRequestHandleReq, AddonService, Constants } from "@certd/lib-server";
+import { AddonRequestHandleReq, AddonService } from "@certd/lib-server";
 import { AddonController } from "../../user/addon/addon-controller.js";
 
 @Provide()
@@ -51,37 +51,37 @@ export class SysAddonController extends AddonController {
   async delete(@Query("id") id: number) {
     return await super.delete(id);
   }
-  @Post("/define", { description: Constants.per.authOnly })
+  @Post("/define", { description: "sys:settings:edit" })
   async define(@Query("type") type: string, @Query("addonType") addonType: string) {
     return await super.define(type, addonType);
   }
 
-  @Post("/getTypeDict", { description: Constants.per.authOnly })
+  @Post("/getTypeDict", { description: "sys:settings:view" })
   async getTypeDict(@Query("addonType") addonType: string) {
     return await super.getTypeDict(addonType);
   }
 
-  @Post("/simpleInfo", { description: Constants.per.authOnly })
+  @Post("/simpleInfo", { description: "sys:settings:view" })
   async simpleInfo(@Query("addonType") addonType: string, @Query("id") id: number) {
     return await super.simpleInfo(addonType, id);
   }
 
-  @Post("/getDefaultId", { description: Constants.per.authOnly })
+  @Post("/getDefaultId", { description: "sys:settings:view" })
   async getDefaultId(@Query("addonType") addonType: string) {
     return await super.getDefaultId(addonType);
   }
 
-  @Post("/setDefault", { description: Constants.per.authOnly })
+  @Post("/setDefault", { description: "sys:settings:edit" })
   async setDefault(@Query("addonType") addonType: string, @Query("id") id: number) {
     return await super.setDefault(addonType, id);
   }
 
-  @Post("/options", { description: Constants.per.authOnly })
+  @Post("/options", { description: "sys:settings:view" })
   async options(@Query("addonType") addonType: string) {
     return await super.options(addonType);
   }
 
-  @Post("/handle", { description: Constants.per.authOnly })
+  @Post("/handle", { description: "sys:settings:edit" })
   async handle(@Body(ALL) body: AddonRequestHandleReq) {
     return await super.handle(body);
   }

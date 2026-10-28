@@ -3,7 +3,6 @@ import { UserService } from "../../../modules/sys/authority/service/user-service
 import { CrudController } from "@certd/lib-server";
 import { RoleService } from "../../../modules/sys/authority/service/role-service.js";
 import { PermissionService } from "../../../modules/sys/authority/service/permission-service.js";
-import { Constants } from "@certd/lib-server";
 import { In } from "typeorm";
 import { LoginService } from "../../../modules/login/service/login-service.js";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
@@ -153,34 +152,4 @@ export class UserController extends CrudController<UserService> {
     return this.ok(info);
   }
 
-  /**
-   * 当前登录用户的个人信息
-   */
-  @Post("/mine", { description: Constants.per.authOnly })
-  public async mine() {
-    const id = this.getUserId();
-    const info = await this.service.info(id, ["password"]);
-    return this.ok(info);
-  }
-
-  /**
-   * 当前登录用户的权限列表
-   */
-  @Post("/permissions", { description: Constants.per.authOnly })
-  public async permissions() {
-    const id = this.getUserId();
-    const permissions = await this.service.getUserPermissions(id);
-    return this.ok(permissions);
-  }
-
-  /**
-   * 当前登录用户的权限树形列表
-   */
-  @Post("/permissionTree", { description: Constants.per.authOnly })
-  public async permissionTree() {
-    const id = this.getUserId();
-    const permissions = await this.service.getUserPermissions(id);
-    const tree = this.permissionService.buildTree(permissions);
-    return this.ok(tree);
-  }
 }

@@ -43,7 +43,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       okType: "danger",
       cancelText: "取消",
       async onOk() {
-        await api.Clean(90);
+        await api.Clean();
         crudExpose.doRefresh();
       },
     });
@@ -90,6 +90,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       rowHandle: {
+        show: false,
         width: 120,
         fixed: "right",
         buttons: {

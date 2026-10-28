@@ -18,11 +18,10 @@ export function createSysAuditApi() {
         params: { id },
       });
     },
-    async Clean(retentionDays: number) {
+    async Clean() {
       return await request({
         url: apiPrefix + "/clean",
         method: "post",
-        data: { retentionDays },
       });
     },
     async GetDict() {
