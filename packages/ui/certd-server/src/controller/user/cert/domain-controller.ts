@@ -47,7 +47,6 @@ export class DomainController extends CrudController<DomainService> {
     });
     return this.ok(pageRet);
   }
-
   @Post("/list", { description: Constants.per.authOnly, summary: "查询域名列表" })
   async list(@Body(ALL) body: any) {
     const { projectId, userId } = await this.getProjectUserIdRead();
