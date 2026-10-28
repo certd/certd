@@ -72,7 +72,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
         }
         const user = await this.userService.findOne({ id: tokenUser.id });
         if (!user || user.status === 0) {
-          return this.notAuth(ctx);
+          return this.notAuth(ctx,"用户不存在或已被禁用");
         }
         if (!this.isScopedTokenPathAllowed(ctx)) {
           return this.notScoped(ctx);
