@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.45.6](https://github.com/certd/certd/compare/v1.45.5...v1.45.6) (2026-10-28)
+
+### Bug Fixes
+
+* 禁止删除审计日志，仅保留删除90天前的日志 ([178f9b1](https://github.com/certd/certd/commit/178f9b1e902a6acf8a794bfcd5ee51e955fd09ea))
+* 临时禁用存在XSS注入风险的Lego证书插件 ([bec2f11](https://github.com/certd/certd/commit/bec2f11ecae779718d1c7cdf1eae398c6a783671))
+* 权限中间件验证禁用用户的token，不允许继续访问 ([aeeb90b](https://github.com/certd/certd/commit/aeeb90b66d70c7bec1204b0432035bee26f6c7f6))
+* 缩短JWT过期时间并重启后自动更新密钥 ([afe102a](https://github.com/certd/certd/commit/afe102a3361dd82be2c2aeae0268fff55f3b7a9a))
+* 修复 IIS 部署插件的网站解析逻辑 ([8291097](https://github.com/certd/certd/commit/8291097d635d69d226320992cbd2124c083b99d3))
+* 修复子进程调用命令注入风险并重构spawn实现 ([0523c69](https://github.com/certd/certd/commit/0523c69451bb2418718390c334ee4b19180aa676))
+* **iis-deploy:** 兼容旧版 IIS 移除冗余代码简化输出逻辑 ([afc0626](https://github.com/certd/certd/commit/afc06268ff7f6a0978c1ee7a1a4e9addbde188d2))
+* **tencent:** 腾讯云删除即将过期证书失败时不再误报成功 ([#820](https://github.com/certd/certd/issues/820)) [@aomsir](https://github.com/aomsir) ([b99e78f](https://github.com/certd/certd/commit/b99e78f2459a353439e8dec4e4fab90e2d5c8b48))
+
+### Performance Improvements
+
+* 新增隐藏首页插件列表的设置项 ([abaf374](https://github.com/certd/certd/commit/abaf374a4528143cdd3b0d161644b212eab962f3))
+* 重构审计日志模块，迁移权限至sys:settings相关接口 ([c726428](https://github.com/certd/certd/commit/c72642819f93b65a19d1b6aa7da8043048fa8d58))
+* **cert:** 添加证书删除确认提示与删除逻辑 ([e90cfaf](https://github.com/certd/certd/commit/e90cfafb285cece924817bb9a2ffa262a5de55f3))
+
 ## [1.45.5](https://github.com/certd/certd/compare/v1.45.4...v1.45.5) (2026-10-22)
 
 ### Bug Fixes
