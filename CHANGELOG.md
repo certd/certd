@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.45.5](https://github.com/certd/certd/compare/v1.45.4...v1.45.5) (2026-10-22)
+
+### Bug Fixes
+
+* 非企业模式下禁止API密钥指定项目ID并校验权限【安全加强】 ([f50651e](https://github.com/certd/certd/commit/f50651ef91813b529b8498ddefe0f66b8b7946da))
+* **authority:** 修复权限校验时角色值错误的问题 ([5326d7d](https://github.com/certd/certd/commit/5326d7dff3967974d70090b45f8580a155c1a032))
+
 ## [1.45.4](https://github.com/certd/certd/compare/v1.45.3...v1.45.4) (2026-10-22)
 
 ### Bug Fixes
