@@ -144,8 +144,9 @@ export class CertInfoController extends CrudController<CertInfoService> {
 
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除证书" })
   async delete(@Query("id") id: number) {
-    await this.checkOwner(this.service, id, "write");
-    const res = await super.delete(id);
+    const { userId, projectId } = await this.getProjectUserIdWrite();
+    await this.service.deleteCertificate(id, userId, projectId);
+    const res = this.ok(true);
     this.auditLog({ content: `删除了证书(ID:${id})` });
     return res;
   }
