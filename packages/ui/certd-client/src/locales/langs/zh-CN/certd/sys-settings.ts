@@ -36,7 +36,8 @@ export default {
 
   showRunStrategy: "显示运行策略选择",
   showRunStrategyHelper: "任务设置中是否允许选择运行策略",
-  homePageEnabled: "启用首页",
+  homePageEnabled: "关闭宣传页",
+  hideHomePluginList: "隐藏首页插件列表",
 
   captchaEnabled: "启用登录验证码",
   captchaHelper: "登录时是否启用验证码",
