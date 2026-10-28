@@ -284,5 +284,4 @@ try{
 }
 `;
 
-
 new HostDeployToIIS();

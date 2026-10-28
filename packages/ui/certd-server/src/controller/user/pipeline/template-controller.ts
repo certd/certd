@@ -102,9 +102,12 @@ export class TemplateController extends CrudController<TemplateService> {
   @Post("/createPipelineByTemplate", { description: Constants.per.authOnly, summary: "根据模版创建流水线" })
   async createPipelineByTemplate(@Body(ALL) body: any) {
     const { userId, projectId } = await this.getProjectUserIdWrite();
+    delete body.id;
     body.userId = userId;
     body.projectId = projectId;
     checkPlus();
+    const templateId = body.templateId
+    await this.checkOwner(this.service, templateId, "read");
     const res = await this.service.createPipelineByTemplate(body);
     this.auditLog({ content: `根据模版创建了流水线(ID:${res.id})` });
     return this.ok(res);

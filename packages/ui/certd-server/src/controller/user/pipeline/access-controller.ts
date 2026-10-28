@@ -136,7 +136,7 @@ export class AccessController extends CrudController<AccessService> {
 
   @Post("/simpleInfo", { description: Constants.per.authOnly, summary: "查询授权配置简单信息" })
   async simpleInfo(@Query("id") id: number) {
-    // await this.authService.checkUserIdButAllowAdmin(this.ctx, this.service, id);
+    await this.authService.checkUserIdButAllowAdmin(this.ctx, this.service, id);
     // await this.checkOwner(this.getService(), id, "read",true);
     const res = await this.service.getSimpleInfo(id);
     return this.ok(res);

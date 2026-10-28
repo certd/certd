@@ -207,10 +207,13 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post("/deleteByIds", { description: Constants.per.authOnly, summary: "批量删除流水线执行历史" })
   async deleteByIds(@Body(ALL) body: any) {
-    let { userId } = await this.checkOwner(this.getService(), body.ids, "write", true);
-    const isAdmin = await this.authService.isAdmin(this.ctx);
-    userId = isAdmin ? null : userId;
-    await this.getService().deleteByIds(body.ids, userId);
+    let { userId ,projectId} = await this.getProjectUserIdWrite();
+    const isAdmin = this.authService.isAdmin(this.ctx);
+    if (isAdmin) {
+      userId = null;
+      projectId = null;
+    }
+    await this.getService().deleteByIds(body.ids, userId, projectId);
     return this.ok();
   }
 

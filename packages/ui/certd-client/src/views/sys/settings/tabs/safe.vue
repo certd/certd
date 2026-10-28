@@ -42,6 +42,15 @@
       <a-form-item v-if="formState.hidden.enabled" :label="t('certd.sys.settings.hideSiteImmediately')">
         <loading-button class="ml-1" type="primary" html-type="button" :click="doHiddenImmediate">{{ t("certd.sys.settings.hideImmediately") }}</loading-button>
       </a-form-item>
+      <h2>{{ t("certd.sys.settings.ipAccessControl") }}</h2>
+      <a-form-item :label="t('certd.sys.settings.ipBlacklist')">
+        <a-textarea v-model:value="formState.ipBlacklistText" :rows="4" />
+        <div class="helper">{{ t("certd.sys.settings.ipBlacklistHelper") }}</div>
+      </a-form-item>
+      <a-form-item :label="t('certd.sys.settings.userWhitelist')">
+        <a-textarea v-model:value="formState.userWhitelistText" :rows="3" />
+        <div class="helper">{{ t("certd.sys.settings.userWhitelistHelper") }}</div>
+      </a-form-item>
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 16 }">
         <loading-button type="primary" html-type="button" :click="onClick">{{ t("certd.common.save") }}</loading-button>
       </a-form-item>
@@ -104,9 +113,17 @@ type SiteHidden = {
 const formState = reactive<
   Partial<{
     hidden: SiteHidden;
+    ipBlacklist: string[];
+    userWhitelist: number[];
+    ipBlacklistText: string;
+    userWhitelistText: string;
   }>
 >({
   hidden: { enabled: false },
+  ipBlacklist: [],
+  userWhitelist: [],
+  ipBlacklistText: "",
+  userWhitelistText: "",
 });
 
 function changeOpenPath() {
@@ -116,6 +133,10 @@ function changeOpenPath() {
 async function loadSettings() {
   const data: any = await api.SettingGet();
   merge(formState, defaultState, formState, data);
+  formState.ipBlacklist = data.ipBlacklist || [];
+  formState.userWhitelist = data.userWhitelist || [];
+  formState.ipBlacklistText = formState.ipBlacklist.join("\n");
+  formState.userWhitelistText = formState.userWhitelist.join("\n");
   if (!formState.hidden.openPath) {
     changeOpenPath();
   }
@@ -134,6 +155,17 @@ const openUrl = computed(() => {
 
 const onClick = async () => {
   const form = await formRef.value.validateFields();
+  form.ipBlacklist = formState.ipBlacklistText.split(/[\s,]+/).filter(Boolean);
+  form.userWhitelist = formState.userWhitelistText
+    .split(/[\s,]+/)
+    .filter(Boolean)
+    .map(Number);
+  if (form.userWhitelist.some((userId: number) => !Number.isInteger(userId) || userId <= 0)) {
+    notification.error({ message: t("certd.sys.settings.userWhitelistInvalid") });
+    return;
+  }
+  delete form.ipBlacklistText;
+  delete form.userWhitelistText;
   //密码md5
   // if (form.hidden?.openPassword) {
   //   form.hidden.openPassword = util.hash.md5(form.hidden.openPassword);
