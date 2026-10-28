@@ -244,36 +244,19 @@ try{
   # 导入 WebAdministration 模块
   Import-Module WebAdministration
   
-  # 获取所有 IIS 站点
-  $sites = Get-IISSite
-  
-  # 创建一个列表用于存储结果
-  $result = @()
-  
-  # 遍历每个站点
-  foreach ($site in $sites) {
-      # 获取该站点的所有绑定
-      $bindings = Get-WebBinding -Name $site.Name
-  
-      # 筛选出 HTTPS 绑定
-      $httpsBindings = $bindings | Where-Object { $_.protocol -eq "https" }
-      
-      # 将站点名称和 HTTPS 绑定信息添加到结果
-      $result += [PSCustomObject]@{
-          SiteName = $site.Name
-          HttpsBindings = if ($httpsBindings) {
-              $httpsBindings | ForEach-Object { $_.bindingInformation }
-          } else {
-              "No HTTPS bindings"
-          }
-      }
-  }
-  
-  # 显示结果
-  $result | Format-Table -AutoSize
+  # Get-Website 来自 WebAdministration，兼容不提供 Get-IISSite 的旧版 IIS。
+  $sites = Get-Website
+
   Write-Output "-------result start--------"
-  foreach ($item in $result) {
-      Write-Output  "$($item.SiteName) | $($item.HttpsBindings)"
+  foreach ($site in $sites) {
+      $bindings = Get-WebBinding -Name $site.Name -Protocol https
+      if ($bindings) {
+          foreach ($binding in $bindings) {
+              Write-Output "$($site.Name) | $($binding.bindingInformation)"
+          }
+      } else {
+          Write-Output "$($site.Name) | No HTTPS bindings"
+      }
   }
   Write-Output "-------result end--------"
 } catch {
