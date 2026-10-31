@@ -51,11 +51,11 @@ export class RoleController extends CrudController<RoleService> {
     @Body(ALL)
     bean
   ) {
-    const res = await super.update(bean);
+    await this.service.update(bean);
     await this.auditLog({
       content: `修改了角色「${bean.name}」(ID:${bean.id})`,
     });
-    return res;
+    return this.ok(null);
   }
   @Post("/delete", { description: "sys:auth:role:remove", summary: "删除角色" })
   async delete(

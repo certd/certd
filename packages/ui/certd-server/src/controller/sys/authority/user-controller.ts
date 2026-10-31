@@ -113,11 +113,11 @@ export class UserController extends CrudController<UserService> {
     @Body(ALL)
     bean
   ) {
-    const res = await super.update(bean);
+    await this.service.update(bean);
     await this.auditLog({
       content: `修改了用户「${bean.username}」(ID:${bean.id})`,
     });
-    return res;
+    return this.ok(null);
   }
 
   @Post("/delete", { description: "sys:auth:user:remove", summary: "删除用户" })

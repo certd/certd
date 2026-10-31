@@ -47,10 +47,9 @@ export class CnameRecordController extends CrudController<CnameProviderService> 
 
   @Post("/update", { description: "sys:settings:edit", summary: "更新CNAME服务" })
   async update(@Body(ALL) bean: any) {
-    bean.userId = this.getUserId();
-    const res = await super.update(bean);
+    await this.service.update(bean);
     await this.auditLog({ content: `更新了CNAME服务(ID:${bean.id})` });
-    return res;
+    return this.ok(null);
   }
 
   @Post("/info", { description: "sys:settings:view" })

@@ -151,53 +151,6 @@ export class HistoryController extends CrudController<HistoryService> {
     return this.ok(listRet);
   }
 
-  @Post("/add", { description: Constants.per.authOnly, summary: "添加流水线执行历史" })
-  async add(@Body(ALL) bean: PipelineEntity) {
-    const { projectId, userId } = await this.getProjectUserIdWrite();
-    bean.projectId = projectId;
-    bean.userId = userId;
-    return super.add(bean);
-  }
-
-  @Post("/update", { description: Constants.per.authOnly, summary: "更新流水线执行历史" })
-  async update(@Body(ALL) bean) {
-    await this.checkOwner(this.getService(), bean.id, "write", true);
-    delete bean.userId;
-    delete bean.projectId;
-    return super.update(bean);
-  }
-
-  @Post("/save", { description: Constants.per.authOnly, summary: "保存流水线执行历史" })
-  async save(@Body(ALL) bean: HistoryEntity) {
-    const { projectId, userId } = await this.getProjectUserIdWrite();
-    bean.userId = userId;
-    bean.projectId = projectId;
-    if (bean.id > 0) {
-      //修改
-      delete bean.projectId;
-      delete bean.userId;
-      await this.checkOwner(this.getService(), bean.id, "write", true);
-    }
-
-    await this.service.save(bean);
-    return this.ok(bean.id);
-  }
-
-  @Post("/saveLog", { description: Constants.per.authOnly, summary: "保存流水线执行日志" })
-  async saveLog(@Body(ALL) bean: HistoryLogEntity) {
-    const { projectId, userId } = await this.getProjectUserIdWrite();
-    bean.projectId = projectId;
-    bean.userId = userId;
-    if (bean.id > 0) {
-      //修改
-      delete bean.projectId;
-      delete bean.userId;
-      await this.checkOwner(this.logService, bean.id, "write", true);
-    }
-    await this.logService.save(bean);
-    return this.ok(bean.id);
-  }
-
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除流水线执行历史" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write", true);
