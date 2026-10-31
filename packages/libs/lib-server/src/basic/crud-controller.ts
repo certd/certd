@@ -40,6 +40,8 @@ export abstract class CrudController<T> extends BaseController {
 
   @Post("/update")
   async update(@Body(ALL) bean: any) {
+    delete bean.userId;
+    delete bean.projectId;
     await this.getService().update(bean);
     return this.ok(null);
   }
