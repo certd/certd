@@ -131,41 +131,61 @@ export class HostDeployToIIS extends AbstractPlusTaskPlugin {
 
     /**
      *
-     * SiteName HttpsBindings
-     * -------- -------------
-     * first    *:443:first.handfree.work
-     */
+
+    -------result start--------
+Default Web Site | *:14431:handfree.work
+Default Web Site | *:2443:*.handfree.work
+-------result end--------
+    */
     // 解析获取网站名称
-    const siteOptions = [];
+    const sites = new Map<string, string[]>();
     let start = false;
     const lines = res.split("\n");
-    lines.map((item: any) => {
+    for (let item of lines) {
       if (item.includes("-------result start--------")) {
         start = true;
-        return;
+        continue;
       }
       if (item.includes("-------result end--------")) {
         start = false;
-        return;
+        continue;
       }
       if (!start) {
-        return;
+        continue;
       }
       item = item.trim();
       if (item === "" || !item.includes(" | ")) {
-        return;
+        continue;
       }
       const [name, value] = item.split(" | ");
       const siteName = name.trim();
-      let domain = value;
-      if (value.includes(":")) {
-        domain = value.split(":")[2].trim();
+      if (value === "No HTTPS bindings") {
+        continue;
       }
-      siteOptions.push({
-        label: `${siteName}<${domain}>`,
+      const domain = value.split(":").slice(2).join(":").trim();
+      if (!domain) {
+        continue;
+      }
+      const domains = sites.get(siteName) ?? [];
+      if (!domains.includes(domain)) {
+        domains.push(domain);
+      }
+      sites.set(siteName, domains);
+    }
+
+    const siteOptions = Array.from(sites, ([siteName, domains]) => {
+      const extraDomainCount = domains.length - 1;
+      let label = `${siteName}<${domains[0]}`;
+      if (extraDomainCount > 0) {
+        label += `+${extraDomainCount}`;
+      }
+      label += ">";
+      return {
+        label,
         value: siteName,
-        domain: domain,
-      });
+        domain: domains,
+        domains,
+      };
     });
 
     return utils.options.buildGroupOptions(siteOptions, this.certDomains);

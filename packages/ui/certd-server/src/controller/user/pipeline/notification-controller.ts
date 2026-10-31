@@ -55,7 +55,7 @@ export class NotificationController extends CrudController<NotificationService> 
 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加通知配置" })
   async add(@Body(ALL) bean) {
-    const { projectId, userId } = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.userId = userId;
     bean.projectId = projectId;
     const type = bean.type;

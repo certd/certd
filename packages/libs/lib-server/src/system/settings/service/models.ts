@@ -316,6 +316,9 @@ export class SysSafeSetting extends BaseSettings {
     hiddenOpenApi: false,
     autoHiddenTimes: 5,
   };
+
+  ipBlacklist: string[] = [];
+  userWhitelist: number[] = [];
 }
 
 export class SysPluginSetting extends BaseSettings {

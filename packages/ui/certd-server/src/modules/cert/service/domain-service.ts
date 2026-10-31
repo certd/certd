@@ -636,7 +636,7 @@ export class DomainService extends BaseService<DomainEntity> {
     const taskService = this.taskServiceBuilder.create({ userId: userId, projectId: projectId });
 
     const notificationService = await taskService.getNotificationService();
-    const url = await notificationService.getBindUrl("#/certd/cert/domain");
+    const url = await notificationService.getBindUrl("#/cert/cert/domain");
     await notificationService.send({
       id: setting.notificationId,
       useDefault: true,

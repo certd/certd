@@ -519,7 +519,7 @@ describe("CertInfoService", () => {
           projectId: null,
           status: CertStatus.active,
           certInfo: "{}",
-        }) as any;
+        } as any);
 
       await assert.rejects(() => service.revoke(1, 2), /只有未激活状态的证书才允许执行吊销/);
     });
@@ -533,7 +533,7 @@ describe("CertInfoService", () => {
           projectId: null,
           status: CertStatus.revoked,
           certInfo: "{}",
-        }) as any;
+        } as any);
 
       await assert.rejects(() => service.revoke(1, 2), /只有未激活状态的证书才允许执行吊销/);
     });
@@ -549,7 +549,7 @@ describe("CertInfoService", () => {
           status: CertStatus.inactive,
           certInfo: JSON.stringify(cert),
           pipelineId: 5,
-        }) as any;
+        } as any);
       service.pipelineRepository = {
         async findOne() {
           return {
@@ -618,7 +618,7 @@ describe("CertInfoService", () => {
           certInfo: JSON.stringify(cert),
           pipelineId: 5,
           acmeAccountAccessId: 9,
-        }) as any;
+        } as any);
       // 若吊销仍解析流水线，会触发 pipelineRepository 查询 → 直接抛错证明未走旧逻辑
       service.pipelineRepository = {
         async findOne() {
@@ -672,7 +672,7 @@ describe("CertInfoService", () => {
           status: CertStatus.inactive,
           certInfo: JSON.stringify(cert),
           pipelineId: 5,
-        }) as any;
+        } as any);
       service.pipelineRepository = {
         async findOne() {
           return null;

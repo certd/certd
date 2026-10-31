@@ -165,7 +165,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const client = this.client;
 
-    if (this.cert == null){
+    if (this.cert == null) {
       throw new Error("证书不能为空");
     }
 
@@ -184,14 +184,14 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     }
 
     if (!this.domain || this.domain.length === 0) {
-      await this.updateListener(client,tencentCertId);
+      await this.updateListener(client, tencentCertId);
     } else {
       const domains = Array.isArray(this.domain) ? this.domain : [this.domain];
       for (const domain of domains) {
         this.logger.info(`开始更新域名证书:${domain},请确保已经开启了sni`);
         // const lastCertId = await this.getCertIdFromProps(client, domain);
 
-        await this.updateByDomainAttr(client, domain,tencentCertId);
+        await this.updateByDomainAttr(client, domain, tencentCertId);
 
         // 不要做检查，相同的证书，不会生成新的证书id
         // const checkDeployed = async (wait = 5) => {
@@ -246,7 +246,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     return certId;
   }
 
-  async updateListener(client: any, tencentCertId :string) {
+  async updateListener(client: any, tencentCertId: string) {
     const params = this.buildProps(tencentCertId);
     const ret = await client.ModifyListener(params);
     this.checkRet(ret);
@@ -254,7 +254,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     return ret;
   }
 
-  async updateByDomainAttr(client: any, domain:any,tencentCertId:string) {
+  async updateByDomainAttr(client: any, domain: any, tencentCertId: string) {
     const params: any = this.buildProps(tencentCertId);
 
     params.Domain = domain;
@@ -284,15 +284,15 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     }
     return name + "-" + dayjs().format("YYYYMMDD-HHmmss");
   }
-  buildProps(tencentCertId:string) {
+  buildProps(tencentCertId: string) {
     return {
-        Certificate: {
-          SSLMode: "UNIDIRECTIONAL", // 单向认证
-          CertId: tencentCertId,
-        },
-        LoadBalancerId: this.loadBalancerId,
-        ListenerId: this.listenerId,
-      };
+      Certificate: {
+        SSLMode: "UNIDIRECTIONAL", // 单向认证
+        CertId: tencentCertId,
+      },
+      LoadBalancerId: this.loadBalancerId,
+      ListenerId: this.listenerId,
+    };
   }
 
   async getCLBList(client: any) {
