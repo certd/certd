@@ -68,9 +68,9 @@ export class PluginController extends CrudController<PluginService> {
   @Post("/update", { description: "sys:settings:edit", summary: "更新插件" })
   async update(@Body(ALL) bean: any) {
     await this.service.ensurePluginEditable(bean.id);
-    const res = await super.update(bean);
+    await this.service.update(bean);
     await this.auditLog({ content: `修改了插件「${bean.name}」(ID:${bean.id})` });
-    return res;
+    return this.ok(null);
   }
 
   @Post("/info", { description: "sys:settings:view" })

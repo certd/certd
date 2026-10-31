@@ -53,9 +53,9 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   @Post("/update", { description: "sys:settings:edit", summary: "更新系统设置" })
   async update(@Body(ALL) bean) {
     await this.service.checkUserId(bean.id, this.getUserId());
-    const res = await super.update(bean);
+    await this.service.update(bean);
     await this.auditLog({ content: "更新了系统设置" });
-    return res;
+    return this.ok(null);
   }
   @Post("/info", { description: "sys:settings:view", summary: "查询系统设置详情" })
   async info(@Query("id") id: number) {
