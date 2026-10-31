@@ -227,6 +227,7 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Get("/download", { description: Constants.per.authOnly, summary: "下载流水线执行文件" })
   async download(@Query("pipelineId") pipelineId: number, @Query("historyId") historyId: number, @Query("fileId") fileId: string) {
+    // 里面有校验权限逻辑
     const files = await this.getFiles(historyId, pipelineId);
     const file = files.find(f => f.id === fileId);
     if (file == null) {
