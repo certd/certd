@@ -66,7 +66,7 @@ export class SubDomainController extends CrudController<SubDomainService> {
 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加子域名" })
   async add(@Body(ALL) bean) {
-    const { userId, projectId } = await this.getProjectUserIdRead();
+    const { userId, projectId } = await this.getProjectUserIdWrite();
     bean.userId = userId;
     bean.projectId = projectId;
     const res = await super.add(bean);

@@ -5,6 +5,7 @@ import { AuthService } from "../../../modules/sys/authority/service/auth-service
 import { AccessDefine } from "@certd/pipeline";
 import { ApiTags } from "@midwayjs/swagger";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { cache } from "@certd/basic";
 
 /**
  * 授权
@@ -103,7 +104,11 @@ export class AccessController extends CrudController<AccessService> {
   }
 
   @Post("/getSecretPlain", { description: Constants.per.authOnly, summary: "获取授权配置明文密钥" })
-  async getSecretPlain(@Body(ALL) body: { id: number; key: string }) {
+  async getSecretPlain(@Body(ALL) body: { id: number; key: string; verifyToken: string }) {
+    const tokenUserId = cache.get(`secret_access_2fa:${body.verifyToken}`);
+    if (tokenUserId !== this.getUserId()) {
+      throw new Error("请先验证 2FA 后再查看加密密钥");
+    }
     const { userId, projectId } = await this.checkOwner(this.getService(), body.id, "read");
     const value = await this.service.getById(body.id, userId, projectId);
     return this.ok(value[body.key]);
@@ -136,7 +141,7 @@ export class AccessController extends CrudController<AccessService> {
 
   @Post("/simpleInfo", { description: Constants.per.authOnly, summary: "查询授权配置简单信息" })
   async simpleInfo(@Query("id") id: number) {
-    // await this.authService.checkUserIdButAllowAdmin(this.ctx, this.service, id);
+    await this.authService.checkUserIdButAllowAdmin(this.ctx, this.service, id);
     // await this.checkOwner(this.getService(), id, "read",true);
     const res = await this.service.getSimpleInfo(id);
     return this.ok(res);

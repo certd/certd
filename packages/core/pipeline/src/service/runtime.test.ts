@@ -7,7 +7,7 @@ import { RuntimeDepsService, NpmRegistryResolver } from "./runtime.js";
 describe("RuntimeDepsService", () => {
   it("builds a runtime package manifest in the target directory", async () => {
     const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-deps-"));
-    const service = new RuntimeDepsService({ rootDir }, null);
+    const service = new RuntimeDepsService({ rootDir, pnpmCommand: "pnpm" }, null);
     service.registryResolver = {
       async resolveOrdered() {
         return ["https://registry.npmmirror.com"];
@@ -29,7 +29,7 @@ describe("RuntimeDepsService", () => {
 
   it("installs direct dependency maps without plugin metadata", async () => {
     const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-deps-direct-"));
-    const service = new RuntimeDepsService({ rootDir }, null);
+    const service = new RuntimeDepsService({ rootDir, pnpmCommand: "pnpm" }, null);
     service.registryResolver = {
       async resolveOrdered() {
         return [""];
@@ -88,7 +88,7 @@ describe("RuntimeDepsService", () => {
 
   it("installs configured lazy dependency when import target is missing", async () => {
     const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-deps-lazy-"));
-    const service = new RuntimeDepsService({ rootDir, lazyDependencies: { "lazy-pkg": "^1.2.3" } }, null);
+    const service = new RuntimeDepsService({ rootDir, pnpmCommand: "pnpm", lazyDependencies: { "lazy-pkg": "^1.2.3" } }, null);
     service.registryResolver = {
       async resolveOrdered() {
         return [""];
@@ -112,7 +112,7 @@ describe("RuntimeDepsService", () => {
 
   it("reports lazy dependency installation failure without falling back to project dependencies", async () => {
     const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-deps-lazy-failed-"));
-    const service = new RuntimeDepsService({ rootDir, lazyDependencies: { "failed-pkg": "^1.2.3" } }, null);
+    const service = new RuntimeDepsService({ rootDir, pnpmCommand: "pnpm", lazyDependencies: { "failed-pkg": "^1.2.3" } }, null);
     service.registryResolver = {
       async resolveOrdered() {
         return [""];
@@ -130,7 +130,7 @@ describe("RuntimeDepsService", () => {
 
   it("resolves scoped package names for lazy imports", async () => {
     const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-deps-scoped-"));
-    const service = new RuntimeDepsService({ rootDir, lazyDependencies: { "@scope/lazy": "^2.0.0" } }, null);
+    const service = new RuntimeDepsService({ rootDir, pnpmCommand: "pnpm", lazyDependencies: { "@scope/lazy": "^2.0.0" } }, null);
     service.registryResolver = {
       async resolveOrdered() {
         return [""];
@@ -237,7 +237,7 @@ describe("RuntimeDepsService", () => {
 
   it("keeps previously installed dependencies when adding a later package", async () => {
     const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-deps-merge-"));
-    const service = new RuntimeDepsService({ rootDir }, null);
+    const service = new RuntimeDepsService({ rootDir, pnpmCommand: "pnpm" }, null);
     service.registryResolver = {
       async resolveOrdered() {
         return [""];

@@ -7,6 +7,7 @@ import { TwoFactorService } from "../../../modules/mine/service/two-factor-servi
 import { isPlus } from "@certd/plus-core";
 import { ApiTags } from "@midwayjs/swagger";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { cache, utils } from "@certd/basic";
 
 /**
  */
@@ -78,5 +79,14 @@ export class UserTwoFactorSettingController extends BaseController {
     await this.twoFactorService.offAuthenticator(userId);
     this.auditLog({ content: "关闭了验证器" });
     return this.ok();
+  }
+
+  @Post("/verifySecretAccess", { description: Constants.per.authOnly, summary: "验证查看加密密钥" })
+  async verifySecretAccess(@Body(ALL) bean: { verifyCode: string }) {
+    const userId = this.getUserId();
+    await this.twoFactorService.verifyAuthenticatorCode(userId, bean.verifyCode);
+    const token = utils.id.simpleNanoId(32);
+    cache.set(`secret_access_2fa:${token}`, userId, { ttl: 10 * 60 * 1000 });
+    return this.ok(token);
   }
 }

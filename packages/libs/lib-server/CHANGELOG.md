@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.46.0](https://github.com/certd/certd/compare/v1.45.6...v1.46.0) (2026-10-28)
+
+### Performance Improvements
+
+* 新增IP黑名单与用户访问控制功能 ([3a10e16](https://github.com/certd/certd/commit/3a10e16394cd128514e7ec69380c989a0f30b772))
+
+## [1.45.6](https://github.com/certd/certd/compare/v1.45.5...v1.45.6) (2026-10-28)
+
+### Performance Improvements
+
+* 新增隐藏首页插件列表的设置项 ([abaf374](https://github.com/certd/certd/commit/abaf374a4528143cdd3b0d161644b212eab962f3))
+
 ## [1.45.5](https://github.com/certd/certd/compare/v1.45.4...v1.45.5) (2026-10-22)
 
 **Note:** Version bump only for package @certd/lib-server

@@ -1,6 +1,7 @@
 import { AccessService } from "@certd/lib-server";
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
 import { AccessController } from "../../user/pipeline/access-controller.js";
+import { cache } from "@certd/basic";
 
 /**
  * 授权
@@ -62,7 +63,11 @@ export class SysAccessController extends AccessController {
   }
 
   @Post("/getSecretPlain", { description: "sys:settings:view" })
-  async getSecretPlain(@Body(ALL) body: { id: number; key: string }) {
+  async getSecretPlain(@Body(ALL) body: { id: number; key: string; verifyToken: string }) {
+    const tokenUserId = cache.get(`secret_access_2fa:${body.verifyToken}`);
+    if (tokenUserId !== this.ctx.user?.id) {
+      throw new Error("请先验证 2FA 后再查看加密密钥");
+    }
     const value = await this.service.getById(body.id, 0);
     return this.ok(value[body.key]);
   }

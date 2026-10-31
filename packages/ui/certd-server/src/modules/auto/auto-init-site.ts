@@ -37,13 +37,12 @@ export class AutoInitSite {
 
     //private信息
     const privateInfo = await this.sysSettingsService.getSetting<SysPrivateSettings>(SysPrivateSettings);
-    if (!isDev()){
+    if (!isDev()) {
       //重启后生成新的jwt密钥
       privateInfo.jwtKey = nanoid();
       await this.sysSettingsService.saveSetting(privateInfo);
       logger.info("jwt密钥已更新");
     }
-   
 
     if (!privateInfo.encryptSecret) {
       const secretKey = crypto.randomBytes(32);

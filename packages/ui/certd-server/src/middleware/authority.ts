@@ -72,7 +72,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
         }
         const user = await this.userService.findOne({ id: tokenUser.id });
         if (!user || user.status === 0) {
-          return this.notAuth(ctx,"用户不存在或已被禁用");
+          return this.notAuth(ctx, "用户不存在或已被禁用");
         }
         if (!this.isScopedTokenPathAllowed(ctx)) {
           return this.notScoped(ctx);
@@ -196,14 +196,14 @@ export class AuthorityMiddleware implements IWebMiddleware {
     }
     //校验 openKey
     const openKeyRes = await this.openKeyService.verifyOpenKey(openKey);
-    let roles = []
+    let roles = [];
     if (isEnterprise()) {
       if (!openKeyRes.projectId || openKeyRes.projectId <= 0) {
         throw new Error("projectId不能为空");
       }
-      roles = [3]
-    }else {
-      if (openKeyRes.projectId !=null) {
+      roles = [3];
+    } else {
+      if (openKeyRes.projectId != null) {
         throw new Error("对不起，您无权进行此操作");
       }
       roles = await this.roleService.getRoleIdsByUserId(openKeyRes.userId);

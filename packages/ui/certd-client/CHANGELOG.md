@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.46.0](https://github.com/certd/certd/compare/v1.45.6...v1.46.0) (2026-10-28)
+
+### Features
+
+* 增加查看加密密钥的2FA二次验证 ([a32a9f9](https://github.com/certd/certd/commit/a32a9f98bedb6f3990cba13a4882f201f7b451ef))
+
+### Performance Improvements
+
+* 新增IP黑名单与用户访问控制功能 ([3a10e16](https://github.com/certd/certd/commit/3a10e16394cd128514e7ec69380c989a0f30b772))
+
+## [1.45.6](https://github.com/certd/certd/compare/v1.45.5...v1.45.6) (2026-10-28)
+
+### Bug Fixes
+
+* 禁止删除审计日志，仅保留删除90天前的日志 ([178f9b1](https://github.com/certd/certd/commit/178f9b1e902a6acf8a794bfcd5ee51e955fd09ea))
+* 临时禁用存在XSS注入风险的Lego证书插件 ([bec2f11](https://github.com/certd/certd/commit/bec2f11ecae779718d1c7cdf1eae398c6a783671))
+* 修复子进程调用命令注入风险并重构spawn实现 ([0523c69](https://github.com/certd/certd/commit/0523c69451bb2418718390c334ee4b19180aa676))
+
+### Performance Improvements
+
+* 新增隐藏首页插件列表的设置项 ([abaf374](https://github.com/certd/certd/commit/abaf374a4528143cdd3b0d161644b212eab962f3))
+* 重构审计日志模块，迁移权限至sys:settings相关接口 ([c726428](https://github.com/certd/certd/commit/c72642819f93b65a19d1b6aa7da8043048fa8d58))
+* **cert:** 添加证书删除确认提示与删除逻辑 ([e90cfaf](https://github.com/certd/certd/commit/e90cfafb285cece924817bb9a2ffa262a5de55f3))
+
 ## [1.45.5](https://github.com/certd/certd/compare/v1.45.4...v1.45.5) (2026-10-22)
 
 **Note:** Version bump only for package @certd/ui-client

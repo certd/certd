@@ -3,6 +3,7 @@ import { SiteHidden, SysSafeSetting, SysSettingsService } from "@certd/lib-serve
 import fs from "fs";
 import { logger, utils } from "@certd/basic";
 import { cloneDeep, merge } from "lodash-es";
+import { isIP } from "node:net";
 
 export class HiddenStatus {
   isHidden = false;
@@ -75,13 +76,18 @@ export class SafeService {
   }
 
   async saveSafeSetting(body: SysSafeSetting) {
-    // 更新hidden配置
-    if (body.hidden.openPassword) {
+    if (body.hidden?.openPassword) {
       body.hidden.openPassword = utils.hash.md5(body.hidden.openPassword);
     }
     const blankSetting = new SysSafeSetting();
     const setting = await this.getSafeSetting();
     const newSetting = merge(blankSetting, cloneDeep(setting), body);
+    if (body.ipBlacklist !== undefined) {
+      newSetting.ipBlacklist = body.ipBlacklist;
+    }
+    if (body.userWhitelist !== undefined) {
+      newSetting.userWhitelist = body.userWhitelist;
+    }
     if (newSetting.hidden?.enabled && !newSetting.hidden?.openPassword) {
       throw new Error("首次设置需要填写解锁密码");
     }
@@ -89,6 +95,14 @@ export class SafeService {
     if (isNaN(newSetting.hidden.autoHiddenTimes) || newSetting.hidden.autoHiddenTimes < 1) {
       newSetting.hidden.autoHiddenTimes = 1;
     }
+    newSetting.ipBlacklist = Array.isArray(newSetting.ipBlacklist) ? [...new Set(newSetting.ipBlacklist.map(ip => String(ip).trim()).filter(Boolean))] : [];
+    if (newSetting.ipBlacklist.some(ip => isIP(ip) === 0)) {
+      throw new Error("IP 黑名单包含无效地址");
+    }
+    if (!Array.isArray(newSetting.userWhitelist) || newSetting.userWhitelist.some(userId => !Number.isInteger(userId) || userId <= 0)) {
+      throw new Error("用户白名单包含无效用户 ID");
+    }
+    newSetting.userWhitelist = [...new Set(newSetting.userWhitelist)];
 
     await this.sysSettingsService.saveSetting(newSetting);
 

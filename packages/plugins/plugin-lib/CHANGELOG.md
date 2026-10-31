@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.46.0](https://github.com/certd/certd/compare/v1.45.6...v1.46.0) (2026-10-28)
+
+**Note:** Version bump only for package @certd/plugin-lib
+
+## [1.45.6](https://github.com/certd/certd/compare/v1.45.5...v1.45.6) (2026-10-28)
+
+### Bug Fixes
+
+* 修复子进程调用命令注入风险并重构spawn实现 ([0523c69](https://github.com/certd/certd/commit/0523c69451bb2418718390c334ee4b19180aa676))
+
 ## [1.45.5](https://github.com/certd/certd/compare/v1.45.4...v1.45.5) (2026-10-22)
 
 **Note:** Version bump only for package @certd/plugin-lib

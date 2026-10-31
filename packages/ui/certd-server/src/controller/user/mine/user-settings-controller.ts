@@ -43,6 +43,7 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加用户设置" })
   async add(@Body(ALL) bean) {
     bean.userId = this.getUserId();
+    delete bean.projectId;
     return super.add(bean);
   }
 
@@ -50,6 +51,7 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
   async update(@Body(ALL) bean) {
     await this.service.checkUserId(bean.id, this.getUserId());
     delete bean.userId;
+    delete bean.projectId;
     return super.update(bean);
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询用户设置详情" })
@@ -67,6 +69,7 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
   @Post("/save", { description: Constants.per.authOnly, summary: "保存用户设置" })
   async save(@Body(ALL) bean: UserSettingsEntity) {
     bean.userId = this.getUserId();
+    delete bean.projectId;
     await this.service.save(bean);
     this.auditLog({ content: "保存了用户设置" });
     return this.ok({});
@@ -79,10 +82,9 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
     return this.ok(entity);
   }
 
-
   @Post("/project/save", { description: Constants.per.authOnly, summary: "保存项目设置" })
   async projectSave(@Body(ALL) bean: UserSettingsEntity) {
-    const { projectId,userId } = await this.getProjectUserIdWrite();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.userId = userId;
     bean.projectId = projectId;
     await this.service.save(bean);
@@ -92,12 +94,10 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
 
   @Post("/project/get", { description: Constants.per.authOnly, summary: "获取项目设置" })
   async projectGet(@Query("key") key: string) {
-    const { projectId,userId } = await this.getProjectUserIdRead();
-    const entity = await this.service.getByKey(key,  userId,projectId);
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    const entity = await this.service.getByKey(key, userId, projectId);
     return this.ok(entity);
   }
-
-
 
   @Post("/grant/get", { description: Constants.per.authOnly, summary: "获取授权设置" })
   async grantSettingsGet() {

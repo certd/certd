@@ -54,7 +54,7 @@ export class GroupController extends CrudController<GroupService> {
 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加分组" })
   async add(@Body(ALL) bean: any) {
-    const { projectId, userId } = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.projectId = projectId;
     bean.userId = userId;
     const res = await super.add(bean);
