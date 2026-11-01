@@ -70,23 +70,6 @@ function goHome() {
 .dark {
   .login-container {
     background: #141414 !important;
-    .desc {
-      color: rgba(227, 227, 227, 0.45) !important;
-    }
-    // 浅色态的版权与备案号用的是近黑色，在深色背景上几乎不可见，这里提亮到 antd 暗色次要文字色；
-    // 必须带 !important：浅色规则以 #userLayout 的 id 选择器开头，权重高于本块的 class 选择器
-    .footer {
-      .copyright {
-        color: rgba(255, 255, 255, 0.65) !important;
-        a {
-          color: rgba(255, 255, 255, 0.65) !important;
-
-          &:hover {
-            color: rgba(255, 255, 255, 0.85) !important;
-          }
-        }
-      }
-    }
   }
 }
 #userLayout.user-layout-wrapper {
@@ -153,7 +136,8 @@ function goHome() {
         }
         .desc {
           font-size: 14px;
-          color: rgba(0, 0, 0, 0.45);
+          // 次要文字色取自 vben 设计令牌（design-tokens/default.css、dark.css），夜间模式由 .dark 下的同名令牌自动切换
+          color: hsl(var(--muted-foreground));
           margin-top: 12px;
           margin-bottom: 40px;
         }
@@ -184,7 +168,7 @@ function goHome() {
           }
         }
         .copyright {
-          color: rgba(0, 0, 0, 0.45);
+          color: hsl(var(--muted-foreground));
           font-size: 14px;
           display: flex;
           flex-wrap: wrap;
@@ -195,11 +179,11 @@ function goHome() {
             margin-right: 5px;
           }
           a {
-            color: rgba(0, 0, 0, 0.45);
+            color: hsl(var(--muted-foreground));
             transition: all 0.3s;
 
             &:hover {
-              color: rgba(0, 0, 0, 0.85);
+              color: hsl(var(--foreground));
             }
           }
         }
