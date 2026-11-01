@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "8184793",
+      "name": "douyin",
+      "font_class": "douyin",
+      "unicode": "eb64",
+      "unicode_decimal": 60260
+    },
+    {
       "icon_id": "5466096",
       "name": "wechat",
       "font_class": "wxpay",

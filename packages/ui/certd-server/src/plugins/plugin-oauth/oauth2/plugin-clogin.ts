@@ -16,6 +16,12 @@ const CLOGIN_TYPES = [
   { label: "钉钉", value: "dingtalk", icon: "ant-design:dingding-outlined:#007AFF" },
   { label: "Gitee", value: "gitee", icon: "simple-icons:gitee:#c71d23" },
   { label: "Github", value: "github", icon: "logos:github-icon" },
+  // bilibili
+  { label: "Bilibili", value: "bilibili", icon: "simple-icons:bilibili:#007AFF" },
+  { label: "抖音", value: "douyin", icon: "svg:icon-douyin" },
+  // telegram
+  { label: "Telegram", value: "telegram", icon: "simple-icons:telegram:#007AFF" },
+
 ];
 
 function getCloginType(subtype?: string, loginType?: string | string[]) {
