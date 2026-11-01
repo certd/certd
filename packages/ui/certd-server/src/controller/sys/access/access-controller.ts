@@ -45,7 +45,11 @@ export class SysAccessController extends AccessController {
 
   @Post("/update", { description: "sys:settings:edit", summary: "更新系统授权配置" })
   async update(@Body(ALL) bean: any) {
-    return await super.update(bean);
+    await this.service2.update(bean);
+    this.auditLog({
+      content: `修改了授权「${bean.name}」(ID:${bean.id})`,
+    });
+    return this.ok(null);
   }
   @Post("/info", { description: "sys:settings:view" })
   async info(@Query("id") id: number) {
