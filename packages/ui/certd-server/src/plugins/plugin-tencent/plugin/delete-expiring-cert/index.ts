@@ -271,7 +271,8 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
       await this.ctx.utils.sleep(10000);
     }
 
-    const failedCount = statusCount.failed + statusCount.unauthorized + statusCount.unbind + statusCount.timeout;
+    //目前没有很好的办法检查到证书是否被使用，unbind 不计入失败
+    const failedCount = statusCount.failed + statusCount.unauthorized + statusCount.timeout;
     const resultDetails = JSON.stringify(results);
     const pendingParts: string[] = [];
     for (const pendingTaskId of taskIds) {
