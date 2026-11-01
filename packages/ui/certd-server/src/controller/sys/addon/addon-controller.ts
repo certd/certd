@@ -1,6 +1,7 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
-import { AddonRequestHandleReq, AddonService } from "@certd/lib-server";
+import { AddonRequestHandleReq, AddonService, ValidateException } from "@certd/lib-server";
 import { AddonController } from "../../user/addon/addon-controller.js";
+import { checkPlus } from "@certd/plus-core";
 
 @Provide()
 @Controller("/api/sys/addon")
@@ -40,7 +41,9 @@ export class SysAddonController extends AddonController {
 
   @Post("/update", { description: "sys:settings:edit" })
   async update(@Body(ALL) bean: any) {
-    return await super.update(bean);
+    await this.service2.update(bean);
+    this.auditLog({ content: `修改了Addon「${bean.name}」(ID:${bean.id})` });
+    return this.ok(null);
   }
   @Post("/info", { description: "sys:settings:view" })
   async info(@Query("id") id: number) {

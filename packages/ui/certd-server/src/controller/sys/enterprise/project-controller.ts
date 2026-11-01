@@ -56,12 +56,11 @@ export class SysProjectController extends CrudController<ProjectEntity> {
 
   @Post("/update", { description: "sys:settings:edit", summary: "更新项目" })
   async update(@Body(ALL) bean: any) {
-    bean.userId = this.getUserId();
-    const res = await super.update(bean);
+    await this.service.update(bean);
     await this.auditLog({
       content: `修改了项目「${bean.name}」(ID:${bean.id})`,
     });
-    return res;
+    return this.ok(null);
   }
 
   @Post("/info", { description: "sys:settings:view", summary: "查询项目详情" })

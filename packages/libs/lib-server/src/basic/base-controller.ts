@@ -61,7 +61,7 @@ export abstract class BaseController {
     }
   }
 
-  async getProjectId(permission: string) {
+  async getProjectId(permission: "read" | "write" | "admin") {
     if (!isEnterprise()) {
       return undefined;
     }
@@ -79,7 +79,7 @@ export abstract class BaseController {
     return projectId;
   }
 
-  async getProjectUserId(permission: string) {
+  async getProjectUserId(permission: "read" | "write" | "admin") {
     let userId = this.getUserId();
     const projectId = await this.getProjectId(permission);
     if (projectId) {
@@ -105,7 +105,7 @@ export abstract class BaseController {
     return await this.getProjectUserId("admin");
   }
 
-  async checkProjectPermission(userId: number, projectId: number, permission: string) {
+  async checkProjectPermission(userId: number, projectId: number, permission: "read" | "write" | "admin") {
     const projectService: any = await this.applicationContext.getAsync("projectService");
     await projectService.checkPermission({ userId, projectId, permission });
   }
@@ -115,7 +115,7 @@ export abstract class BaseController {
    * @param service 检查记录是否属于某用户或某项目
    * @param id
    */
-  async checkOwner(service: any, id: number, permission: string, allowAdmin: boolean = false) {
+  async checkOwner(service: any, id: number, permission: "read" | "write" | "admin", allowAdmin: boolean = false) {
     const recordId = Number(id);
     if (!Number.isInteger(recordId) || recordId <= 0) {
       throw new Error("id 不能为空");
