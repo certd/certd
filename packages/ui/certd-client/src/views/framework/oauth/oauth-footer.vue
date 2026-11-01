@@ -3,7 +3,7 @@
     <div class="oauth-title">
       <div class="oauth-title-text">{{ computedTitle }}</div>
     </div>
-    <div class="flex justify-center items-center gap-4 flex-wrap md:flex-nowrap">
+    <div class="flex justify-center items-center gap-2 flex-wrap">
       <passkey-login></passkey-login>
       <template v-for="item in oauthProviderList" :key="buildProviderKey(item)">
         <div v-if="item.addonId" class="oauth-icon-button pointer" @click="goOauthLogin(item)">
@@ -114,10 +114,10 @@ async function goOauthLogin(item: OauthProviderItem) {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 8px;
-    padding: 8px 8px;
+    gap: 5px;
+    padding: 5px 5px;
     border-radius: 100px;
-    width: 100px;
+    width: 80px;
 
     .title {
       width: 100%;

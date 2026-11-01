@@ -146,7 +146,7 @@ function goHome() {
       }
 
       .main {
-        width: 400px;
+        width: 440px;
         max-width: 90vw;
         flex: 1;
       }
