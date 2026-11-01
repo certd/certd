@@ -73,6 +73,20 @@ function goHome() {
     .desc {
       color: rgba(227, 227, 227, 0.45) !important;
     }
+    // 浅色态的版权与备案号用的是近黑色，在深色背景上几乎不可见，这里提亮到 antd 暗色次要文字色；
+    // 必须带 !important：浅色规则以 #userLayout 的 id 选择器开头，权重高于本块的 class 选择器
+    .footer {
+      .copyright {
+        color: rgba(255, 255, 255, 0.65) !important;
+        a {
+          color: rgba(255, 255, 255, 0.65) !important;
+
+          &:hover {
+            color: rgba(255, 255, 255, 0.85) !important;
+          }
+        }
+      }
+    }
   }
 }
 #userLayout.user-layout-wrapper {
