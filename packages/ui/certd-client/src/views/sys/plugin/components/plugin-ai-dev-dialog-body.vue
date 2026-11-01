@@ -667,6 +667,54 @@ watch(mode, value => {
   }
 }
 
+.dark .plugin-ai-dev {
+  &__type-card {
+    border-color: #434343 !important;
+    background: #1f1f1f;
+  }
+
+  &__type-card.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+    border-color: #1677ff !important;
+    background: #111d2c;
+    color: #91caff;
+
+    .plugin-ai-dev__type-title {
+      color: #91caff;
+    }
+
+    .plugin-ai-dev__type-desc {
+      color: #adc6ff;
+    }
+  }
+
+  &__type-title,
+  &__field label,
+  &__label,
+  &__section-title {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  &__type-desc,
+  &__recent-main span,
+  &__recent-main small {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  &__recent-item {
+    border-color: #434343;
+    background: #1f1f1f;
+  }
+
+  &__recent-item.is-selected {
+    border-color: #1677ff;
+    background: #111d2c;
+  }
+
+  &__footer {
+    border-color: #303030;
+  }
+}
+
 @media (max-width: 640px) {
   .plugin-ai-dev__type-grid {
     grid-template-columns: 1fr;
