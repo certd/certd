@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 import { cn } from "/@/vben/shared/utils";
 
-import { ChevronRight } from "lucide-vue-next";
+import { ChevronRight } from "@lucide/vue";
 import { PaginationNext } from "radix-vue";
 
 import { Button } from "../button";

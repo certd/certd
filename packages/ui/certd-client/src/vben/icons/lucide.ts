@@ -28,7 +28,7 @@ export {
   EyeOff,
   FoldHorizontal,
   Fullscreen,
-  Github,
+  // Github,
   Grip,
   GripVertical,
   Menu as IconDefault,
@@ -63,4 +63,4 @@ export {
   UserRoundPen,
   X,
   CircleX,
-} from "lucide-vue-next";
+} from "@lucide/vue";

@@ -44,6 +44,7 @@ export default {
     sysRoot: "System Management",
     sysConsole: "Console",
     sysSettings: "System Settings",
+    securityMonitor: "Security Monitor",
     cnameSetting: "CNAME Service Settings",
     emailSetting: "Email Server Settings",
     siteSetting: "Site Personalization",

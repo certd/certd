@@ -163,6 +163,7 @@ export default {
   limitUserPipelineCount: "Limit user pipeline count",
   limitUserPipelineCountHelper: "0 means no limit",
   enableSelfRegistration: "Enable self-registration",
+  selfRegistrationWarning: "For data security, enabling regular user registration is not recommended",
   enableUserValidityPeriod: "Enable user validity period",
   userValidityPeriodHelper: "Users can use normally within validity; pipelines disabled after expiry",
   enableUsernameRegistration: "Enable username registration",

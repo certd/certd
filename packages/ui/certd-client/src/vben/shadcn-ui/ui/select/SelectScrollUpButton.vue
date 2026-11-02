@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 import { cn } from "/@/vben/shared/utils";
 
-import { ChevronUp } from "lucide-vue-next";
+import { ChevronUp } from "@lucide/vue";
 import { SelectScrollUpButton, useForwardProps } from "radix-vue";
 
 const props = defineProps<SelectScrollUpButtonProps & { class?: any }>();

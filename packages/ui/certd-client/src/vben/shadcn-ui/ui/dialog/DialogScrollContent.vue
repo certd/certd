@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 import { cn } from "/@/vben/shared/utils";
 
-import { X } from "lucide-vue-next";
+import { X } from "@lucide/vue";
 import { DialogClose, DialogContent, DialogOverlay, DialogPortal, useForwardPropsEmits } from "radix-vue";
 
 const props = withDefaults(defineProps<DialogContentProps & { class?: any; zIndex?: number }>(), { zIndex: 1000 });

@@ -11,7 +11,7 @@
     "dev-build": "npm run build",
     "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
     "pub": "npm publish",
-    "compile": "npm run build",
+    "compile": "rollup -c",
     "format": "prettier --write src",
     "lint": "eslint --fix --ext .ts src"
   },

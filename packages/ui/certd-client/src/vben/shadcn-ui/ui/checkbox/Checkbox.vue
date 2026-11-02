@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 import { cn } from "/@/vben/shared/utils";
 
-import { Check } from "lucide-vue-next";
+import { Check } from "@lucide/vue";
 import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from "radix-vue";
 
 const props = defineProps<CheckboxRootProps & { class?: any }>();

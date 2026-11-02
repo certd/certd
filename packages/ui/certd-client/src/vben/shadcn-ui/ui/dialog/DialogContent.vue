@@ -7,7 +7,7 @@ import { computed, ref } from "vue";
 
 import { cn } from "/@/vben/shared/utils";
 
-import { X } from "lucide-vue-next";
+import { X } from "@lucide/vue";
 import { DialogClose, DialogContent, DialogPortal, useForwardPropsEmits } from "radix-vue";
 
 import DialogOverlay from "./DialogOverlay.vue";

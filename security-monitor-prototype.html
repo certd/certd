@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Certd · 安全监控中心</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #172b3a;
+        --muted: #687b88;
+        --line: #dce5e8;
+        --paper: #ffffff;
+        --canvas: #f1f5f4;
+        --teal: #087f76;
+        --teal-pale: #e3f3f0;
+        --amber: #a66617;
+        --amber-pale: #fff3df;
+        --red: #bb3d3d;
+        --red-pale: #fcebea;
+        --blue: #38678c;
+        --blue-pale: #eaf2f8;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--canvas); color: var(--ink); font-family: Inter, "Segoe UI", "Microsoft YaHei", sans-serif; font-size: 14px; }
+      button, input, select { font: inherit; }
+      button { cursor: pointer; }
+      .app { min-height: 100vh; }
+      .topbar { height: 58px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; background: #163a42; color: white; }
+      .brand { display: flex; gap: 11px; align-items: center; font-size: 15px; font-weight: 700; }
+      .brand-mark { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid #72c6b9; color: #9ce0d4; font-size: 12px; font-weight: 800; }
+      .top-meta { display: flex; align-items: center; gap: 16px; color: #c8dadc; font-size: 12px; }
+      .avatar { display: grid; width: 29px; height: 29px; place-items: center; border-radius: 50%; background: #d2e8e4; color: #24554f; font-weight: 700; }
+      .shell { display: grid; grid-template-columns: 214px minmax(0, 1fr); min-height: calc(100vh - 58px); }
+      .sidebar { padding: 22px 12px; background: #e8efed; border-right: 1px solid #d7e2df; }
+      .side-label { padding: 0 12px; margin: 0 0 10px; color: #82928f; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+      .nav-item { display: flex; align-items: center; gap: 12px; height: 39px; padding: 0 12px; margin: 3px 0; color: #536865; border-radius: 4px; text-decoration: none; }
+      .nav-item.active { color: #075e58; background: #d4e9e4; font-weight: 650; }
+      .nav-icon { width: 17px; text-align: center; font-size: 15px; }
+      main { min-width: 0; padding: 27px 30px 32px; }
+      .heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+      .eyebrow { margin-bottom: 7px; color: var(--teal); font-size: 11px; font-weight: 750; text-transform: uppercase; letter-spacing: .6px; }
+      h1 { margin: 0; font-size: 23px; line-height: 1.25; }
+      .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+      .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 4px; background: white; color: #304855; font-weight: 600; }
+      .btn:hover { border-color: #7baca5; color: var(--teal); }
+      .btn.primary { border-color: var(--teal); background: var(--teal); color: white; }
+      .btn.danger { border-color: var(--red); background: var(--red); color: white; }
+      .btn.link { min-height: 27px; padding: 0 5px; border: 0; background: transparent; color: var(--teal); }
+      .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 24px 0 19px; border: 1px solid var(--line); background: var(--paper); }
+      .metric { min-height: 91px; padding: 15px 18px; border-right: 1px solid var(--line); }
+      .metric:last-child { border-right: 0; }
+      .metric-label { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; }
+      .metric-value { margin-top: 9px; font-size: 27px; line-height: 1; font-weight: 700; }
+      .metric-foot { margin-left: 8px; color: #87959b; font-size: 11px; font-weight: 400; }
+      .metric-value.warn { color: var(--amber); }
+      .metric-value.danger { color: var(--red); }
+      .metric-value.safe { color: var(--teal); }
+      .workspace { min-height: 530px; border: 1px solid var(--line); background: var(--paper); }
+      .tabs { display: flex; align-items: center; gap: 25px; height: 49px; padding: 0 19px; border-bottom: 1px solid var(--line); }
+      .tab { position: relative; height: 49px; padding: 0 1px; border: 0; background: transparent; color: #70818a; font-weight: 600; }
+      .tab.active { color: var(--teal); }
+      .tab.active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--teal); content: ""; }
+      .count { margin-left: 6px; color: #93a1a5; font-size: 11px; font-weight: 500; }
+      .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; }
+      .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+      .control { height: 33px; padding: 0 10px; border: 1px solid var(--line); border-radius: 4px; background: white; color: #435761; outline-color: #5aa69c; }
+      .control.search { width: 225px; }
+      .filter-chips { display: flex; gap: 6px; }
+      .chip { min-height: 29px; padding: 0 9px; border: 1px solid transparent; border-radius: 3px; background: transparent; color: #697b84; font-size: 12px; }
+      .chip.active { border-color: #b9d9d3; background: #edf7f5; color: #086a62; font-weight: 650; }
+      .table-scroll { overflow: auto; border-top: 1px solid #e8edef; }
+      table { width: 100%; min-width: 1020px; border-collapse: collapse; table-layout: fixed; }
+      th { height: 39px; padding: 0 13px; background: #f7f9f9; color: #75858c; text-align: left; font-size: 11px; font-weight: 650; white-space: nowrap; }
+      td { height: 61px; padding: 9px 13px; border-top: 1px solid #edf1f2; color: #3c515b; vertical-align: middle; }
+      tbody tr:hover { background: #fbfdfd; }
+      .col-time { width: 145px; }
+      .col-risk { width: 175px; }
+      .col-user { width: 142px; }
+      .col-ip { width: 137px; }
+      .col-pipeline { width: 170px; }
+      .col-status { width: 145px; }
+      .col-action { width: 150px; }
+      .date { color: #526670; font-size: 12px; font-variant-numeric: tabular-nums; }
+      .subtle { display: block; margin-top: 4px; color: #98a5aa; font-size: 11px; }
+      .risk-label { display: flex; align-items: center; gap: 7px; font-weight: 650; }
+      .risk-dot { width: 7px; height: 7px; border-radius: 50%; background: #d19a3f; }
+      .risk-dot.high { background: #c84b46; }
+      .pill { display: inline-flex; align-items: center; min-height: 22px; padding: 0 7px; border-radius: 3px; font-size: 11px; font-weight: 650; white-space: nowrap; }
+      .pill.medium { background: var(--amber-pale); color: var(--amber); }
+      .pill.high { background: var(--red-pale); color: var(--red); }
+      .pill.success { background: var(--teal-pale); color: #087469; }
+      .pill.info { background: var(--blue-pale); color: var(--blue); }
+      .user-name { color: #304d5d; font-weight: 650; }
+      .code { color: #516570; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+      .pipeline-link { color: #286d78; font-weight: 600; text-decoration: none; }
+      .pipeline-link:hover { text-decoration: underline; }
+      .actions { display: flex; align-items: center; gap: 9px; white-space: nowrap; }
+      .action-link { padding: 0; border: 0; background: none; color: var(--teal); font-size: 12px; font-weight: 650; }
+      .action-link.strong { color: var(--red); }
+      .action-link.muted { color: #73848b; }
+      .action-divider { width: 1px; height: 13px; background: #d9e2e4; }
+      .table-bottom { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; color: #87959b; font-size: 12px; }
+      .pagination { display: flex; align-items: center; gap: 5px; }
+      .page { display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid transparent; border-radius: 3px; background: transparent; color: #64767f; }
+      .page.active { border-color: #acd1ca; color: #08766d; background: #eff8f6; font-weight: 700; }
+      .ban-summary { display: flex; gap: 18px; align-items: center; padding: 12px 18px 14px; border-top: 1px solid #edf1f2; color: #73848b; font-size: 12px; }
+      .allow-note { display: flex; align-items: flex-start; gap: 10px; margin: 0 18px 14px; padding: 11px 13px; border-left: 3px solid #4b9c8e; background: #eff8f6; color: #42655f; font-size: 12px; line-height: 1.55; }
+      .allow-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; }
+      .allow-actions { display: flex; align-items: center; gap: 7px; }
+      .legend { display: inline-flex; gap: 6px; align-items: center; }
+      .legend-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+      .legend-dot.amber { background: #ce963a; }
+      .legend-dot.red { background: #c84b46; }
+      .toast { position: fixed; right: 25px; bottom: 22px; padding: 12px 16px; border: 1px solid #b8d9d2; background: white; color: #146e64; box-shadow: 0 8px 28px #183a4220; opacity: 0; transform: translateY(8px); transition: .2s; pointer-events: none; }
+      .toast.show { opacity: 1; transform: translateY(0); }
+      .modal-backdrop { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 20px; background: #122c32a8; }
+      .modal-backdrop.open { display: flex; }
+      .modal { width: min(440px, 100%); border: 1px solid var(--line); background: white; box-shadow: 0 20px 60px #071c2338; }
+      .modal-head { padding: 19px 21px 13px; border-bottom: 1px solid #e9eeef; }
+      .modal-head h2 { margin: 0; font-size: 17px; }
+      .modal-body { padding: 16px 21px 20px; color: #52656e; line-height: 1.7; }
+      .modal-target { margin: 12px 0; padding: 11px 12px; background: #f4f7f7; color: #263f4a; font-weight: 650; }
+      .modal-note { padding: 9px 11px; border-left: 3px solid #d4a04e; background: #fff8eb; color: #805b25; font-size: 12px; }
+      .modal-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 13px 21px; border-top: 1px solid #e9eeef; }
+      @media (max-width: 900px) {
+        .shell { grid-template-columns: 60px minmax(0, 1fr); }
+        .sidebar { padding-right: 8px; padding-left: 8px; }
+        .side-label, .nav-text { display: none; }
+        .nav-item { justify-content: center; padding: 0; }
+        .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .metric:nth-child(2) { border-right: 0; }
+        .metric:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+        main { padding: 23px 18px; }
+      }
+      @media (max-width: 600px) {
+        .topbar { height: 52px; padding: 0 14px; }
+        .top-meta .site-label { display: none; }
+        .shell { min-height: calc(100vh - 52px); grid-template-columns: minmax(0, 1fr); }
+        .sidebar { display: none; }
+        main { padding: 20px 12px; }
+        .heading { align-items: center; }
+        h1 { font-size: 20px; }
+        .subtitle { max-width: 270px; line-height: 1.5; }
+        .metrics { margin-top: 17px; }
+        .metric { min-height: 80px; padding: 12px; }
+        .metric-value { font-size: 24px; }
+        .workspace { min-height: 470px; }
+        .tabs { gap: 17px; padding: 0 13px; }
+        .toolbar { align-items: flex-start; flex-direction: column; padding: 12px; }
+        .allow-toolbar { align-items: stretch; flex-direction: column; padding: 12px; }
+        .allow-actions { flex-wrap: wrap; }
+        .filters { width: 100%; }
+        .filter-chips { overflow-x: auto; width: 100%; }
+        .control.search { flex: 1; min-width: 150px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">C</span><span>Certd</span></div>
+        <div class="top-meta"><span class="site-label">系统管理</span><span>专业版</span><span class="avatar">A</span></div>
+      </header>
+      <div class="shell">
+        <aside class="sidebar">
+          <div class="side-label">系统管理</div>
+          <a class="nav-item" href="#"><span class="nav-icon">⌂</span><span class="nav-text">系统概览</span></a>
+          <a class="nav-item" href="#"><span class="nav-icon">⚙</span><span class="nav-text">系统设置</span></a>
+          <a class="nav-item active" href="#"><span class="nav-icon">◈</span><span class="nav-text">安全监控中心</span></a>
+          <a class="nav-item" href="#"><span class="nav-icon">♙</span><span class="nav-text">用户管理</span></a>
+          <a class="nav-item" href="#"><span class="nav-icon">◇</span><span class="nav-text">访问凭证</span></a>
+        </aside>
+        <main>
+          <div class="heading">
+            <div>
+              <div class="eyebrow">Security / Overview</div>
+              <h1>安全监控中心</h1>
+              <p class="subtitle">风险检测、账号限制与 IP 封禁统一管理</p>
+            </div>
+            <button class="btn" id="refresh"><span aria-hidden="true">↻</span>刷新</button>
+          </div>
+          <section class="metrics" aria-label="安全概览">
+            <div class="metric"><div class="metric-label"><span>近 72 小时风险</span><span>◷</span></div><div class="metric-value warn">12<span class="metric-foot">条记录</span></div></div>
+            <div class="metric"><div class="metric-label"><span>IP 封禁</span><span>⌁</span></div><div class="metric-value">3<span class="metric-foot">个生效中</span></div></div>
+            <div class="metric"><div class="metric-label"><span>禁止运行流水线</span><span>▣</span></div><div class="metric-value danger">2<span class="metric-foot">个用户</span></div></div>
+            <div class="metric"><div class="metric-label"><span>禁止访问</span><span>⊘</span></div><div class="metric-value">1<span class="metric-foot">个用户</span></div></div>
+          </section>
+          <section class="workspace">
+            <nav class="tabs" aria-label="安全监控视图">
+              <button class="tab active" data-view="risks">风险记录<span class="count">12</span></button>
+              <button class="tab" data-view="bans">封禁管理<span class="count">6</span></button>
+              <button class="tab" data-view="allowlist">白名单管理<span class="count">4</span></button>
+            </nav>
+            <section id="risk-view">
+              <div class="toolbar">
+                <div class="filter-chips" aria-label="风险类型筛选">
+                  <button class="chip active" data-risk="all">全部记录 <span class="count">12</span></button>
+                  <button class="chip" data-risk="suspicious">可疑流水线 <span class="count">5</span></button>
+                  <button class="chip" data-risk="scan">扫描与注入 <span class="count">7</span></button>
+                </div>
+                <div class="filters">
+                  <select class="control" id="risk-level" aria-label="风险等级"><option value="all">全部等级</option><option value="medium">中风险</option><option value="high">高风险</option></select>
+                  <input class="control search" id="risk-search" placeholder="搜索用户、IP、流水线" />
+                  <button class="btn" id="search-button" aria-label="搜索">⌕</button>
+                </div>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead><tr><th class="col-time">时间</th><th class="col-risk">风险类型</th><th class="col-user">用户</th><th class="col-ip">来源 IP</th><th class="col-pipeline">关联流水线</th><th class="col-status">检测 / 处置</th><th class="col-action">操作</th></tr></thead>
+                  <tbody id="risk-rows">
+                    <tr data-kind="suspicious" data-level="medium" data-search="li wei 203.0.113.18 probe test probe-test">
+                      <td class="date">2026-11-01<span class="subtle">10:32:08</span></td><td><span class="risk-label"><i class="risk-dot"></i>标题包含 probe</span><span class="subtle">可疑流水线检测</span></td><td><span class="user-name">li-wei</span><span class="subtle">用户 ID 2048</span></td><td class="code">203.0.113.18</td><td><a class="pipeline-link" href="#">probe-test</a><span class="subtle">流水线 #381</span></td><td><span class="pill medium">中风险 · 已通知</span><span class="subtle">未执行封禁</span></td><td><div class="actions"><button class="action-link" data-action="detail" data-target="可疑流水线：probe-test">查看详情</button></div></td>
+                    </tr>
+                    <tr data-kind="suspicious" data-level="high" data-search="chen yu 198.51.100.42 deploy prod deploy-prod">
+                      <td class="date">2026-11-01<span class="subtle">10:18:44</span></td><td><span class="risk-label"><i class="risk-dot high"></i>Input 注入特征</span><span class="subtle">命中字段：tasks[1].input.command</span></td><td><span class="user-name">chen-yu</span><span class="subtle">用户 ID 1032</span></td><td class="code">198.51.100.42</td><td><a class="pipeline-link" href="#">deploy-prod</a><span class="subtle">流水线 #379</span></td><td><span class="pill high">高风险 · 已通知</span><span class="subtle">已禁止运行全部流水线</span></td><td><div class="actions"><button class="action-link strong" data-action="ban-access" data-target="chen-yu（用户 ID 1032）">禁止访问</button><i class="action-divider"></i><button class="action-link" data-action="detail" data-target="Input 注入风险：deploy-prod">详情</button></div></td>
+                    </tr>
+                    <tr data-kind="scan" data-level="high" data-search="203.0.113.77 scanner unknown ip scan">
+                      <td class="date">2026-11-01<span class="subtle">09:56:11</span></td><td><span class="risk-label"><i class="risk-dot high"></i>扫描请求封禁</span><span class="subtle">1 小时内 9 次异常路径</span></td><td>未登录<span class="subtle">—</span></td><td class="code">203.0.113.77</td><td>—</td><td><span class="pill high">高风险 · 已封禁</span><span class="subtle">封禁至 2026-11-02 09:56</span></td><td><div class="actions"><button class="action-link" data-action="release-ip" data-target="203.0.113.77">解除 IP 封禁</button></div></td>
+                    </tr>
+                    <tr data-kind="suspicious" data-level="medium" data-search="wang lin 192.0.2.26 api probe backup probe-backup">
+                      <td class="date">2026-11-01<span class="subtle">09:41:29</span></td><td><span class="risk-label"><i class="risk-dot"></i>标题包含 probe</span><span class="subtle">可疑流水线检测</span></td><td><span class="user-name">wang-lin</span><span class="subtle">用户 ID 2216</span></td><td class="code">192.0.2.26</td><td><a class="pipeline-link" href="#">api-probe-backup</a><span class="subtle">流水线 #376</span></td><td><span class="pill medium">中风险 · 已通知</span><span class="subtle">未执行封禁</span></td><td><div class="actions"><button class="action-link" data-action="detail" data-target="可疑流水线：api-probe-backup">查看详情</button></div></td>
+                    </tr>
+                    <tr data-kind="scan" data-level="high" data-search="198.51.100.93 payload unknown injection request">
+                      <td class="date">2026-11-01<span class="subtle">09:17:05</span></td><td><span class="risk-label"><i class="risk-dot high"></i>注入请求特征</span><span class="subtle">请求路径包含异常载荷</span></td><td>未登录<span class="subtle">—</span></td><td class="code">198.51.100.93</td><td>—</td><td><span class="pill info">已记录</span><span class="subtle">未关联账号</span></td><td><div class="actions"><button class="action-link" data-action="detail" data-target="注入请求：198.51.100.93">查看详情</button></div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="table-bottom"><span id="risk-total">显示 5 条示例记录，共 12 条</span><div class="pagination"><button class="page">‹</button><button class="page active">1</button><button class="page">2</button><button class="page">3</button><button class="page">›</button><span style="margin-left:8px">每页 20 条</span></div></div>
+            </section>
+            <section id="ban-view" hidden>
+              <div class="toolbar">
+                <div class="filter-chips" aria-label="封禁类型筛选">
+                  <button class="chip active" data-ban="all">全部生效中 <span class="count">6</span></button>
+                  <button class="chip" data-ban="ip">IP 封禁 <span class="count">3</span></button>
+                  <button class="chip" data-ban="pipeline">禁止运行流水线 <span class="count">2</span></button>
+                  <button class="chip" data-ban="access">禁止访问 <span class="count">1</span></button>
+                </div>
+                <div class="filters"><input class="control search" id="ban-search" placeholder="搜索 IP、用户名或原因" /><button class="btn" id="ban-search-button" aria-label="搜索">⌕</button></div>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead><tr><th style="width:145px">封禁目标</th><th style="width:175px">类型</th><th style="width:220px">原因 / 来源</th><th style="width:155px">创建时间</th><th style="width:160px">到期时间</th><th style="width:135px">操作人</th><th style="width:145px">操作</th></tr></thead>
+                  <tbody id="ban-rows">
+                    <tr data-ban-kind="pipeline" data-search="chen yu 1032 pipeline input injection deploy-prod">
+                      <td><span class="user-name">chen-yu</span><span class="subtle">用户 ID 1032</span></td><td><span class="pill high">禁止运行流水线</span></td><td>Input 命中注入特征<span class="subtle">关联风险 #R-9081 · deploy-prod</span></td><td class="date">2026-11-01<span class="subtle">10:18:44</span></td><td>永久<span class="subtle">管理员解除后恢复</span></td><td>系统自动<span class="subtle">安全规则</span></td><td><button class="action-link" data-action="release-pipeline" data-target="chen-yu（用户 ID 1032）">解除运行限制</button></td>
+                    </tr>
+                    <tr data-ban-kind="access" data-search="sun mei 1008 access repeated injection manual">
+                      <td><span class="user-name">sun-mei</span><span class="subtle">用户 ID 1008</span></td><td><span class="pill high">禁止访问</span></td><td>多次高风险活动，管理员确认<span class="subtle">关联风险 #R-9072</span></td><td class="date">2026-10-31<span class="subtle">16:22:10</span></td><td>永久<span class="subtle">管理员解除后恢复</span></td><td>admin</td><td><button class="action-link strong" data-action="release-access" data-target="sun-mei（用户 ID 1008）">恢复访问</button></td>
+                    </tr>
+                    <tr data-ban-kind="ip" data-search="203.0.113.77 ip scan requests scan">
+                      <td class="code">203.0.113.77</td><td><span class="pill info">IP 封禁</span></td><td>扫描请求超过阈值<span class="subtle">1 小时内 9 次异常路径</span></td><td class="date">2026-11-01<span class="subtle">09:56:11</span></td><td>2026-11-02<span class="subtle">09:56:11</span></td><td>系统自动<span class="subtle">扫描防护</span></td><td><button class="action-link" data-action="release-ip" data-target="203.0.113.77">解除 IP 封禁</button></td>
+                    </tr>
+                    <tr data-ban-kind="pipeline" data-search="liu fang 2041 pipeline injected script cdn-deploy">
+                      <td><span class="user-name">liu-fang</span><span class="subtle">用户 ID 2041</span></td><td><span class="pill high">禁止运行流水线</span></td><td>Input 命中注入特征<span class="subtle">关联风险 #R-9056 · cdn-deploy</span></td><td class="date">2026-10-30<span class="subtle">11:06:52</span></td><td>永久<span class="subtle">管理员解除后恢复</span></td><td>系统自动<span class="subtle">安全规则</span></td><td><button class="action-link" data-action="release-pipeline" data-target="liu-fang（用户 ID 2041）">解除运行限制</button></td>
+                    </tr>
+                    <tr data-ban-kind="ip" data-search="192.0.2.199 ip scan probe">
+                      <td class="code">192.0.2.199</td><td><span class="pill info">IP 封禁</span></td><td>扫描请求超过阈值<span class="subtle">1 小时内 11 次异常路径</span></td><td class="date">2026-11-01<span class="subtle">08:40:03</span></td><td>2026-11-02<span class="subtle">08:40:03</span></td><td>系统自动<span class="subtle">扫描防护</span></td><td><button class="action-link" data-action="release-ip" data-target="192.0.2.199">解除 IP 封禁</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="ban-summary"><span>显示 5 条示例记录，共 6 条</span><span class="legend"><i class="legend-dot"></i>用户仍可登录与访问</span><span class="legend"><i class="legend-dot red"></i>无法访问系统</span><span class="legend"><i class="legend-dot amber"></i>按 IP 拦截请求</span></div>
+            </section>
+            <section id="allowlist-view" hidden>
+              <div class="allow-note"><span aria-hidden="true">ⓘ</span><span>白名单只影响安全监控规则：IP 白名单跳过 IP 扫描封禁；用户白名单跳过关联账号的风险检测与自动处置。白名单不会绕过账号权限、用户访问封禁或流水线运行限制。</span></div>
+              <div class="allow-toolbar">
+                <div class="filter-chips" aria-label="白名单类型筛选">
+                  <button class="chip active" data-allow="all">全部 <span class="count">4</span></button>
+                  <button class="chip" data-allow="ip">IP 白名单 <span class="count">2</span></button>
+                  <button class="chip" data-allow="user">用户白名单 <span class="count">2</span></button>
+                </div>
+                <div class="allow-actions">
+                  <input class="control search" id="allow-search" placeholder="搜索 IP、用户名或备注" />
+                  <button class="btn" id="allow-search-button" aria-label="搜索">⌕</button>
+                  <button class="btn" data-add-allow="ip">＋ 添加 IP</button>
+                  <button class="btn primary" data-add-allow="user">＋ 添加用户</button>
+                </div>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead><tr><th style="width:160px">白名单目标</th><th style="width:145px">类型</th><th style="width:260px">备注</th><th style="width:165px">添加时间</th><th style="width:145px">添加人</th><th style="width:130px">操作</th></tr></thead>
+                  <tbody id="allow-rows">
+                    <tr data-allow-kind="ip" data-search="203.0.113.10 office nat trusted office出口">
+                      <td class="code">203.0.113.10</td><td><span class="pill info">IP 白名单</span></td><td>办公室固定出口<span class="subtle">仅跳过 IP 扫描封禁</span></td><td class="date">2026-10-28<span class="subtle">14:06:22</span></td><td>admin</td><td><button class="action-link strong" data-action="remove-allow" data-target="203.0.113.10（IP 白名单）">移除</button></td>
+                    </tr>
+                    <tr data-allow-kind="user" data-search="li wei 2048 li-wei internal test developer">
+                      <td><span class="user-name">li-wei</span><span class="subtle">用户 ID 2048</span></td><td><span class="pill success">用户白名单</span></td><td>内部测试账号<span class="subtle">跳过风险检测与自动处置</span></td><td class="date">2026-10-25<span class="subtle">09:30:00</span></td><td>admin</td><td><button class="action-link strong" data-action="remove-allow" data-target="li-wei（用户白名单）">移除</button></td>
+                    </tr>
+                    <tr data-allow-kind="ip" data-search="192.0.2.16 monitoring vendor monitor vendor service">
+                      <td class="code">192.0.2.16</td><td><span class="pill info">IP 白名单</span></td><td>监控服务出口<span class="subtle">避免误判健康检查请求</span></td><td class="date">2026-10-19<span class="subtle">16:42:13</span></td><td>zhang-admin</td><td><button class="action-link strong" data-action="remove-allow" data-target="192.0.2.16（IP 白名单）">移除</button></td>
+                    </tr>
+                    <tr data-allow-kind="user" data-search="wang lin 2216 wang-lin operator trusted">
+                      <td><span class="user-name">wang-lin</span><span class="subtle">用户 ID 2216</span></td><td><span class="pill success">用户白名单</span></td><td>可信运维账号<span class="subtle">跳过风险检测与自动处置</span></td><td class="date">2026-10-12<span class="subtle">11:25:49</span></td><td>admin</td><td><button class="action-link strong" data-action="remove-allow" data-target="wang-lin（用户白名单）">移除</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="ban-summary"><span id="allow-total">显示 4 条白名单</span><span class="legend"><i class="legend-dot amber"></i>IP 白名单仅豁免 IP 扫描封禁</span><span class="legend"><i class="legend-dot"></i>用户白名单豁免风险检测与自动处置</span></div>
+            </section>
+          </section>
+        </main>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+    <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal">
+        <div class="modal-head"><h2 id="modal-title">确认操作</h2></div>
+        <div class="modal-body"><div id="modal-message"></div><div class="modal-target" id="modal-target"></div><div class="modal-note" id="modal-note"></div></div>
+        <div class="modal-actions"><button class="btn" id="cancel-modal">取消</button><button class="btn danger" id="confirm-modal">确认</button></div>
+      </div>
+    </div>
+    <script>
+      const tabs = document.querySelectorAll(".tab");
+      const riskView = document.getElementById("risk-view");
+      const banView = document.getElementById("ban-view");
+      const allowlistView = document.getElementById("allowlist-view");
+      const modal = document.getElementById("modal");
+      const toast = document.getElementById("toast");
+      let pendingAction = null;
+      let toastTimer = null;
+
+      tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+          tabs.forEach(item => item.classList.toggle("active", item === tab));
+          riskView.hidden = tab.dataset.view !== "risks";
+          banView.hidden = tab.dataset.view !== "bans";
+          allowlistView.hidden = tab.dataset.view !== "allowlist";
+        });
+      });
+
+      document.querySelectorAll("[data-risk]").forEach(button => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll("[data-risk]").forEach(item => item.classList.toggle("active", item === button));
+          filterRows("risk-rows", row => button.dataset.risk === "all" || row.dataset.kind === button.dataset.risk);
+        });
+      });
+
+      document.querySelectorAll("[data-ban]").forEach(button => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll("[data-ban]").forEach(item => item.classList.toggle("active", item === button));
+          filterRows("ban-rows", row => button.dataset.ban === "all" || row.dataset.banKind === button.dataset.ban);
+        });
+      });
+
+      document.querySelectorAll("[data-allow]").forEach(button => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll("[data-allow]").forEach(item => item.classList.toggle("active", item === button));
+          filterAllowRows(button.dataset.allow);
+        });
+      });
+
+      function filterAllowRows(selected) {
+        const query = document.getElementById("allow-search").value.trim().toLowerCase();
+        const rows = [...document.querySelectorAll("#allow-rows tr")];
+        let visible = 0;
+        rows.forEach(row => {
+          const matches = (selected === "all" || row.dataset.allowKind === selected) && (!query || row.dataset.search.includes(query));
+          row.hidden = !matches;
+          if (matches) visible += 1;
+        });
+        document.getElementById("allow-total").textContent = `显示 ${visible} 条白名单`;
+      }
+      document.getElementById("allow-search-button").addEventListener("click", () => {
+        filterAllowRows(document.querySelector("[data-allow].active").dataset.allow);
+      });
+      document.getElementById("allow-search").addEventListener("keydown", event => { if (event.key === "Enter") document.getElementById("allow-search-button").click(); });
+      document.querySelectorAll("[data-add-allow]").forEach(button => {
+        button.addEventListener("click", () => {
+          const kind = button.dataset.addAllow;
+          const promptText = kind === "ip" ? "输入 IPv4 或 IPv6 地址" : "输入用户 ID（原型示例：2048）";
+          const value = window.prompt(promptText);
+          if (!value || !value.trim()) return;
+          const target = value.trim();
+          const row = document.createElement("tr");
+          row.dataset.allowKind = kind;
+          row.dataset.search = `${target} 新增白名单` .toLowerCase();
+          const displayTarget = kind === "ip" ? `<td class="code"></td>` : `<td><span class="user-name"></span><span class="subtle">用户 ID</span></td>`;
+          row.innerHTML = `${displayTarget}<td><span class="pill ${kind === "ip" ? "info" : "success"}">${kind === "ip" ? "IP" : "用户"} 白名单</span></td><td>新添加的白名单<span class="subtle">${kind === "ip" ? "仅跳过 IP 扫描封禁" : "跳过风险检测与自动处置"}</span></td><td class="date">刚刚</td><td>admin</td><td><button class="action-link strong" data-action="remove-allow" data-target="${escapeHtml(target)}（${kind === "ip" ? "IP" : "用户"}白名单）">移除</button></td>`;
+          if (kind === "ip") row.querySelector(".code").textContent = target;
+          else row.querySelector(".user-name").textContent = target;
+          document.getElementById("allow-rows").prepend(row);
+          document.querySelectorAll("[data-allow]").forEach(item => item.classList.toggle("active", item.dataset.allow === "all"));
+          filterAllowRows("all");
+          showToast("白名单已添加（原型数据仅保存在当前页面）");
+        });
+      });
+      function escapeHtml(value) {
+        const element = document.createElement("span");
+        element.textContent = value;
+        return element.innerHTML;
+      }
+
+      function filterRows(bodyId, predicate) {
+        const rows = [...document.querySelectorAll(`#${bodyId} tr`)];
+        const searchInput = document.getElementById(bodyId === "risk-rows" ? "risk-search" : "ban-search");
+        const query = searchInput.value.trim().toLowerCase();
+        const level = document.getElementById("risk-level").value;
+        let visible = 0;
+        rows.forEach(row => {
+          const matches = predicate(row) && (!query || row.dataset.search.includes(query)) && (bodyId !== "risk-rows" || level === "all" || row.dataset.level === level);
+          row.hidden = !matches;
+          if (matches) visible += 1;
+        });
+        const total = document.getElementById("risk-total");
+        if (total && bodyId === "risk-rows") total.textContent = `显示 ${visible} 条示例记录，共 12 条`;
+      }
+
+      document.getElementById("search-button").addEventListener("click", () => {
+        const selected = document.querySelector("[data-risk].active").dataset.risk;
+        filterRows("risk-rows", row => selected === "all" || row.dataset.kind === selected);
+      });
+      document.getElementById("risk-search").addEventListener("keydown", event => { if (event.key === "Enter") document.getElementById("search-button").click(); });
+      document.getElementById("risk-level").addEventListener("change", () => document.getElementById("search-button").click());
+      document.getElementById("ban-search-button").addEventListener("click", () => {
+        const selected = document.querySelector("[data-ban].active").dataset.ban;
+        filterRows("ban-rows", row => (selected === "all" || row.dataset.banKind === selected) && (!document.getElementById("ban-search").value.trim() || row.dataset.search.includes(document.getElementById("ban-search").value.trim().toLowerCase())));
+      });
+      document.getElementById("ban-search").addEventListener("keydown", event => { if (event.key === "Enter") document.getElementById("ban-search-button").click(); });
+
+      const actionCopy = {
+        "ban-access": ["禁止该用户访问？", "该用户将无法通过认证访问系统。此操作不会解除其流水线运行限制。", "需由管理员手动恢复访问。"],
+        "release-access": ["恢复该用户访问？", "将解除该用户的访问封禁，允许其重新访问系统。", "流水线运行限制和 IP 封禁不会改变。"],
+        "release-pipeline": ["解除流水线运行限制？", "该用户将可以再次运行其所有流水线。", "若该用户另有“禁止访问”封禁，访问限制仍然生效。"],
+        "release-ip": ["解除 IP 封禁？", "该 IP 的请求将不再被安全监控规则拦截。", "这只会解除该 IP 封禁，不改变关联用户的账号限制。"],
+        "remove-allow": ["移除白名单？", "移除后，目标将重新纳入对应的安全监控规则。", "其他类型的白名单和封禁状态不会改变。"],
+        "detail": ["风险详情", "此风险记录由安全规则检测产生。Input 内容和凭据不会在此原型中展示。", "检测字段：tasks[1].input.command · 规则：input-injection-v1"]
+      };
+      document.addEventListener("click", event => {
+        const button = event.target.closest("[data-action]");
+        if (!button) return;
+        const action = button.dataset.action;
+        const copy = actionCopy[action];
+        pendingAction = action;
+        document.getElementById("modal-title").textContent = copy[0];
+        document.getElementById("modal-message").textContent = copy[1];
+        document.getElementById("modal-target").textContent = button.dataset.target;
+        document.getElementById("modal-note").textContent = copy[2];
+        document.getElementById("confirm-modal").textContent = action === "detail" ? "关闭" : "确认操作";
+        document.getElementById("confirm-modal").classList.toggle("danger", action !== "detail");
+        modal.classList.add("open");
+      });
+      function closeModal() { modal.classList.remove("open"); pendingAction = null; }
+      document.getElementById("cancel-modal").addEventListener("click", closeModal);
+      document.getElementById("confirm-modal").addEventListener("click", () => {
+        if (pendingAction === "remove-allow") {
+          const target = document.getElementById("modal-target").textContent;
+          const row = [...document.querySelectorAll("#allow-rows tr")].find(item => item.querySelector("[data-action='remove-allow']")?.dataset.target === target);
+          if (row) row.remove();
+          filterAllowRows(document.querySelector("[data-allow].active").dataset.allow);
+          showToast("白名单已移除（原型数据仅保存在当前页面）");
+        } else if (pendingAction && pendingAction !== "detail") {
+          showToast("原型交互：操作已确认，实际系统将提交封禁记录并刷新列表");
+        }
+        closeModal();
+      });
+      modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
+      document.getElementById("refresh").addEventListener("click", () => showToast("数据已刷新 · 2026-11-01 10:42:16"));
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+      }
+      document.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
+    </script>
+  </body>
+</html>

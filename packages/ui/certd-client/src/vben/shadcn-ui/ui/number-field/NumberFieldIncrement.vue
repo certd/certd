@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 import { cn } from "/@/vben/shared/utils";
 
-import { Plus } from "lucide-vue-next";
+import { Plus } from "@lucide/vue";
 import { NumberFieldIncrement, useForwardProps } from "radix-vue";
 
 const props = defineProps<NumberFieldIncrementProps & { class?: any }>();

@@ -156,18 +156,19 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 前端用户提示**统一使用 `notification`**（ant-design-vue 的 `notification.success({ message: X })` / `.error` / `.warning` / `.info`），**不要使用 `message` API**；`src/vben/` 目录（vben 框架内置布局/组件）保持原样不动。
 - 不要运行前端 `pnpm tsc` / `vue-tsc`；当前 `vue-tsc@1.8.27` 会抛无效内部错误。前端 `test:unit` 只是占位脚本，也不要跑。
 - 前端 TS/Vue/locale 改动后，只对本次改动文件运行现有 Prettier / ESLint：`packages\ui\certd-client\node_modules\.bin\prettier.cmd --write <files>` 和 `packages\ui\certd-client\node_modules\.bin\eslint.cmd --fix <files>`。
-- 需要手写 render 的地方（如 `Modal.confirm` 的 `content`、`useFormDialog` 的 `body`、动态插槽等），一律用 JSX 编写，禁止使用 `h()` 创建 VNode：
-  - `.vue` 组件：把 `<script lang="ts" setup>` 改为 `<script lang="tsx" setup>`，然后在 JSX 中直接写元素（如 `content: () => (<div class="xxx">...</div>)`）。
+- 组件使用 JSX render 时，统一使用 `<script setup lang="jsx">`，render 内容直接写 JSX；禁止使用 `h()` 创建 VNode，包括 `Modal.confirm` 的 `content`、`useFormDialog` 的 `body` 和动态插槽等场景。
+  - `.vue` 组件：在 `<script setup lang="jsx">` 中直接写 JSX 元素（如 `content: () => (<div class="xxx">...</div>)`）。
   - `.ts` 文件：直接把文件后缀改为 `.tsx`，再写 JSX render。
 - 列表管理、后台管理、记录查询、CRUD 表格页面优先使用 Fast Crud；开发或重构前读 `.trae/skills/fast-crud-page-dev/SKILL.md`。
 - 只有轻量只读展示、强交互自定义界面或既有页面模式明显不适合 Fast Crud 时，才手写 `a-table` / 自定义列表，并在回复中说明。
 - 内嵌 Fast Crud 时，外层必须有稳定高度或完整 `flex: 1; min-height: 0` 链路。
-- 前端组件样式统一写在 `<style>` / Less / CSS 文件里，通过样式名映射到元素；尽量不要在元素上直接写 `style`。
-- 每个组件都要有一个稳定的根样式名，并把组件下方样式全部包在该根样式名内；尽量不要使用 `scoped`。
-- 可复用的公共样式名放在 `packages/ui/certd-client/src/style` 下维护，优先使用 `cd-` 前缀，避免散落在业务组件里重复定义。
+- 前端组件样式统一写在 `<style lang="less">` 中，通过样式名映射到元素；不要在元素上直接写 `style`。
+- 每个组件的顶层元素必须包含以组件名命名的根 class；组件的所有样式都必须置于该根 class 下，并使用 Less 嵌套层级组织；不要使用 `scoped`。
+- 可复用的公共样式名放在 `packages/ui/certd-client/src/style` 下维护，避免散落在业务组件里重复定义。
 - 后台管理列表展示或筛选用户字段时，优先参考 `packages/ui/certd-client/src/views/sys/suite/user-suite/crud.tsx` 的 `userId` 字段模式，用 `table-select` + `/sys/authority/user/getSimpleUserByIds` 字典回显和搜索。
 - 对话框里只做确认可用 `Modal.confirm`；有字段输入、表单校验或提交字段时，必须用 `useFormDialog` / `openFormDialog`。
 - 使用 `table-select` / `fs-table-select` 时，`dict` 必须配置 `getNodesByValues`，支持根据已选 ID 批量懒加载选项，确保编辑回显和异步数据场景正常工作。
+- 在body的样式有个dark表示切换到夜间模式，在组件中要实现白天和夜间模式，组件根样式表示白天模式，使用 `.dark &` 实现夜间模式
 
 ### 前端地图
 

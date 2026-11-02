@@ -158,6 +158,7 @@ export default {
   limitUserPipelineCount: "限制用户流水线数量",
   limitUserPipelineCountHelper: "0为不限制",
   enableSelfRegistration: "开启自助注册",
+  selfRegistrationWarning: "为了您的数据安全，不建议开启普通用户自助注册功能",
   enableUserValidityPeriod: "开启用户有效期",
   userValidityPeriodHelper: "有效期内用户可正常使用，失效后用户的流水线将被停用",
   enableUsernameRegistration: "开启用户名注册",
