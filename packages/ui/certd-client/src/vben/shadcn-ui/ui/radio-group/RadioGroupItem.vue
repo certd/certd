@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 import { cn } from "/@/vben/shared/utils";
 
-import { Circle } from "lucide-vue-next";
+import { Circle } from "@lucide/vue";
 import { RadioGroupIndicator, RadioGroupItem, useForwardProps } from "radix-vue";
 
 const props = defineProps<RadioGroupItemProps & { class?: any }>();

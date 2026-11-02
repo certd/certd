@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PrimitiveProps } from "radix-vue";
 
-import { Dot } from "lucide-vue-next";
+import { Dot } from "@lucide/vue";
 import { Primitive, useForwardProps } from "radix-vue";
 
 const props = defineProps<PrimitiveProps>();

@@ -22,7 +22,7 @@ import { checkPlus, isComm, isPlus } from "@certd/plus-core";
 import { logger, utils } from "@certd/basic";
 import { UrlService } from "./url-service.js";
 import { NotificationService } from "./notification-service.js";
-import { UserSuiteEntity, UserSuiteService } from "@certd/commercial-core";
+import { SecurityBanService, UserSuiteEntity, UserSuiteService } from "@certd/commercial-core";
 import { ApplyTaskInfo, CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { TaskServiceBuilder } from "./getter/task-service-getter.js";
 import { nanoid } from "nanoid";
@@ -70,6 +70,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   @Inject()
   userSuiteService: UserSuiteService;
+
+  @Inject()
+  securityBanService: SecurityBanService;
 
   @Inject()
   cron: Cron;
@@ -656,6 +659,13 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async beforeCheck(entity: PipelineEntity) {
+    const pipelineIds = [entity.id];
+    const securityBanRequest = { userId: entity.userId, pipelineIds, scope: "pipeline" as const };
+    const isSecurityBanned = await this.securityBanService.isBlocked(securityBanRequest);
+    if (isSecurityBanned) {
+      throw new Error(`流水线${entity.id}已被安全策略禁止运行`);
+    }
+
     if (isEnterprise()) {
       checkPlus();
       return {};

@@ -1,18 +1,15 @@
 import { logger } from "@certd/basic";
 import { CommonException, Constants, CrudController, PermissionException, SysSettingsService } from "@certd/lib-server";
 import { ALL, Body, Controller, Get, Inject, Post, Provide, Query } from "@midwayjs/core";
+import { ApiTags } from "@midwayjs/swagger";
 import * as fs from "fs";
 import { In } from "typeorm";
 import { UserGrantSetting } from "../../../modules/mine/service/models.js";
 import { UserSettingsService } from "../../../modules/mine/service/user-settings-service.js";
-import { HistoryLogEntity } from "../../../modules/pipeline/entity/history-log.js";
-import { HistoryEntity } from "../../../modules/pipeline/entity/history.js";
-import { PipelineEntity } from "../../../modules/pipeline/entity/pipeline.js";
 import { HistoryLogService } from "../../../modules/pipeline/service/history-log-service.js";
 import { HistoryService } from "../../../modules/pipeline/service/history-service.js";
 import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
-import { ApiTags } from "@midwayjs/swagger";
 
 /**
  * 证书

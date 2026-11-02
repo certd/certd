@@ -3,6 +3,7 @@
     <a-form :model="formState" name="register" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
       <a-form-item :label="t('certd.sys.settings.enableSelfRegistration')" :name="['public', 'registerEnabled']">
         <a-switch v-model:checked="formState.public.registerEnabled" />
+        <div v-if="!settingsStore.isComm" class="color-red helper">{{ t("certd.sys.settings.selfRegistrationWarning") }}</div>
       </a-form-item>
       <a-form-item :label="t('certd.sys.settings.enableCommonSelfServicePasswordRetrieval')" :name="['public', 'selfServicePasswordRetrievalEnabled']">
         <a-switch v-model:checked="formState.public.selfServicePasswordRetrievalEnabled" />
@@ -211,6 +212,10 @@ const loginTypeOptions = computed(() => [
 <style lang="less">
 .sys-settings-register {
   width: 1000px !important;
+
+  .register-warning {
+    color: #fa8c16;
+  }
 
   .addon-selector {
     .inner {

@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 import { cn } from "/@/vben/shared/utils";
 
-import { Minus } from "lucide-vue-next";
+import { Minus } from "@lucide/vue";
 import { NumberFieldDecrement, useForwardProps } from "radix-vue";
 
 const props = defineProps<NumberFieldDecrementProps & { class?: any }>();

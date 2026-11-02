@@ -44,6 +44,7 @@ export default {
     sysRoot: "系统管理",
     sysConsole: "控制台",
     sysSettings: "系统设置",
+    securityMonitor: "安全监控中心",
     cnameSetting: "CNAME服务设置",
     emailSetting: "邮件服务器设置",
     siteSetting: "站点个性化",

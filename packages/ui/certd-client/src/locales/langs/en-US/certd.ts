@@ -28,6 +28,7 @@ import dnsPersist from "./certd/dns-persist";
 import auth from "./certd/auth";
 import guide from "./certd/guide";
 import vip from "./certd/vip";
+import securityMonitor from "./certd/sys-security-monitor";
 
 // Note: @ is reserved in locale messages; use {'@'} when needed.
 export default {
@@ -48,6 +49,7 @@ export default {
   project,
   sys: {
     settings,
+    securityMonitor,
     plugin,
     authority,
     cname: cnameSettings,

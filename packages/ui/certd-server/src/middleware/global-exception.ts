@@ -2,6 +2,7 @@ import { Provide } from "@midwayjs/core";
 import { IMidwayKoaContext, IWebMiddleware, NextFunction } from "@midwayjs/koa";
 import { logger } from "@certd/basic";
 import { Result, TextException } from "@certd/lib-server";
+import { NotFoundError } from "@midwayjs/core/dist/error/http.js";
 
 @Provide()
 export class GlobalExceptionMiddleware implements IWebMiddleware {
@@ -16,6 +17,10 @@ export class GlobalExceptionMiddleware implements IWebMiddleware {
       } catch (err) {
         if (err instanceof TextException) {
           delete err.stack;
+        }
+        if (err instanceof NotFoundError) {
+          err.message = "Path Not Found";
+          throw err;
         }
         logger.error("请求异常:", url, Date.now() - startTime + "ms", err);
         ctx.status = 200;

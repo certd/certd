@@ -47,6 +47,18 @@ export const sysResources = [
         },
       },
       {
+        title: "certd.navigation.sysResources.securityMonitor",
+        name: "SecurityMonitor",
+        path: "/sys/security/monitor",
+        component: "/sys/security/index.vue",
+        meta: {
+          icon: "ion:shield-checkmark-outline",
+          permission: "sys:settings:view",
+          auth: true,
+          keepAlive: true,
+        },
+      },
+      {
         title: "certd.navigation.sysResources.projectManager",
         name: "ProjectManager",
         path: "/sys/enterprise/project",

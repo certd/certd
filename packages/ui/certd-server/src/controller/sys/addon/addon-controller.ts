@@ -1,7 +1,6 @@
+import { AddonRequestHandleReq, AddonService } from "@certd/lib-server";
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
-import { AddonRequestHandleReq, AddonService, ValidateException } from "@certd/lib-server";
 import { AddonController } from "../../user/addon/addon-controller.js";
-import { checkPlus } from "@certd/plus-core";
 
 @Provide()
 @Controller("/api/sys/addon")

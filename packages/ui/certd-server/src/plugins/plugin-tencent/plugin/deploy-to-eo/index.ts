@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, Pager, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 
 import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-cert";
@@ -71,6 +71,10 @@ export class DeployCertToTencentEO extends AbstractTaskPlugin {
       title: "加速域名",
       helper: "请选择域名或输入域名",
       action: DeployCertToTencentEO.prototype.onGetDomainList.name,
+      pager: true,
+      search: true,
+      pageSize: 20,
+      watches: ["certDomains", "accessId", "zoneId"],
     })
   )
   domainNames!: string[];
@@ -190,20 +194,31 @@ export class DeployCertToTencentEO extends AbstractTaskPlugin {
     });
   }
 
-  async onGetDomainList(data: any) {
+  async onGetDomainList(data: PageSearch = {}) {
     if (!this.accessId) {
       throw new Error("请选择授权");
     }
     const access: TencentAccess = await this.getAccess<TencentAccess>(this.accessId);
     const client = await this.getClient(access);
-    const res = await client.DescribeAccelerationDomains({
-      Limit: 200,
+    const pager = new Pager(data);
+    const params: any = {
+      Limit: pager.pageSize,
+      Offset: pager.getOffset(),
       ZoneId: this.zoneId,
-    });
+    };
+    const searchKey = data.searchKey?.trim();
+    if (searchKey) {
+      params.Filters = [{ Name: "domain-name", Values: [searchKey] }];
+      params.Match = "any";
+    }
+    const res = await client.DescribeAccelerationDomains(params);
     this.checkRet(res);
     const list = res.AccelerationDomains;
     if (!list || list.length === 0) {
-      return [];
+      return {
+        list: [],
+        total: res.TotalCount || 0,
+      };
     }
     const options = list.map((item: any) => {
       return {
@@ -212,7 +227,10 @@ export class DeployCertToTencentEO extends AbstractTaskPlugin {
         domain: item.DomainName,
       };
     });
-    return this.ctx.utils.options.buildGroupOptions(options, this.certDomains);
+    return {
+      list: this.ctx.utils.options.buildGroupOptions(options, this.certDomains),
+      total: res.TotalCount,
+    };
   }
 }
 

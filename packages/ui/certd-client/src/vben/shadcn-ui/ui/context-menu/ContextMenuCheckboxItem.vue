@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 import { cn } from "/@/vben/shared/utils";
 
-import { Check } from "lucide-vue-next";
+import { Check } from "@lucide/vue";
 import { ContextMenuCheckboxItem, ContextMenuItemIndicator, useForwardPropsEmits } from "radix-vue";
 
 const props = defineProps<ContextMenuCheckboxItemProps & { class?: any }>();

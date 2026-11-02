@@ -4,6 +4,23 @@ import { PipelineEntity } from "../entity/pipeline.js";
 import { PipelineService } from "./pipeline-service.js";
 
 describe("PipelineService", () => {
+  it("blocks a pipeline when a matching security ban exists", async () => {
+    const service = new PipelineService();
+    let banQuery: any;
+    service.securityBanService = {
+      async isBlocked(query: any) {
+        banQuery = query;
+        return true;
+      },
+    } as any;
+    const entity = new PipelineEntity();
+    entity.id = 42;
+    entity.userId = 17;
+
+    await assert.rejects(() => service.beforeCheck(entity), /禁止运行/);
+    assert.deepEqual(banQuery, { userId: 17, pipelineIds: [42], scope: "pipeline" });
+  });
+
   it("does not start a pipeline run when beforeCheck fails", async () => {
     const service = new PipelineService();
     let historyStarted = false;

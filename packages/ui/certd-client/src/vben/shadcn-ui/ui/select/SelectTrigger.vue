@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 import { cn } from "/@/vben/shared/utils";
 
-import { ChevronDown } from "lucide-vue-next";
+import { ChevronDown } from "@lucide/vue";
 import { SelectIcon, SelectTrigger, useForwardProps } from "radix-vue";
 
 const props = defineProps<SelectTriggerProps & { class?: any }>();

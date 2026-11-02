@@ -1,0 +1,150 @@
+.cd-table {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  color: #172033;
+}
+.cd-table .cd-table-header {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 14px;
+}
+.cd-table .cd-table-heading h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.cd-table .cd-table-heading p {
+  margin: 4px 0 0;
+  color: #8490a3;
+  font-size: 13px;
+}
+.cd-table .cd-table-search {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+.cd-table .cd-table-tabs {
+  display: flex;
+  flex: none;
+  gap: 24px;
+  margin-bottom: -1px;
+  border-bottom: 1px solid #edf0f4;
+}
+.cd-table .cd-table-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  border-top: 1px solid #edf0f4;
+  border-bottom: 1px solid #edf0f4;
+}
+.cd-table table {
+  width: 100%;
+  height: fit-content;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.cd-table table th,
+.cd-table table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f2f5;
+  text-align: left;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.cd-table table th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  color: #8a95a6;
+  background: #fbfcfd;
+  font-size: 12px;
+  box-shadow: 0 1px 0 #edf0f4;
+}
+.cd-table table td {
+  overflow: hidden;
+}
+.cd-table tbody tr:hover {
+  background: #fafafa;
+}
+.cd-table .cd-table-fixed-left,
+.cd-table .cd-table-fixed-right {
+  position: sticky;
+  z-index: 2;
+  background: #fff;
+}
+.cd-table .cd-table-fixed-left {
+  left: 0;
+  box-shadow: 12px 0 18px -8px rgba(23, 32, 51, 0.18);
+}
+.cd-table .cd-table-fixed-right {
+  right: 0;
+  box-shadow: -12px 0 18px -8px rgba(23, 32, 51, 0.18);
+}
+.cd-table th.cd-table-fixed-left,
+.cd-table th.cd-table-fixed-right {
+  z-index: 3;
+  background: #fbfcfd;
+}
+.cd-table .cd-table-empty {
+  padding: 42px !important;
+  color: #98a2b1;
+  text-align: center !important;
+}
+.cd-table .cd-table-footer {
+  display: flex;
+  flex: none;
+  justify-content: flex-start;
+  padding-top: 12px;
+}
+.dark .cd-table {
+  color: rgba(255, 255, 255, 0.85);
+}
+.dark .cd-table .cd-table-heading p {
+  color: rgba(255, 255, 255, 0.55);
+}
+.dark .cd-table .cd-table-tabs,
+.dark .cd-table .cd-table-scroll,
+.dark .cd-table th,
+.dark .cd-table td {
+  border-color: #303030;
+}
+.dark .cd-table th,
+.dark .cd-table th.cd-table-fixed-left,
+.dark .cd-table th.cd-table-fixed-right {
+  color: rgba(255, 255, 255, 0.65);
+  background: #1f1f1f;
+  box-shadow: 0 1px 0 #303030;
+}
+.dark .cd-table .cd-table-fixed-left,
+.dark .cd-table .cd-table-fixed-right {
+  background: #1f1f1f;
+  box-shadow: -12px 0 18px -8px rgba(0, 0, 0, 0.55);
+}
+.dark .cd-table tbody tr:hover {
+  background: #262626;
+}
+.dark .cd-table tbody tr:hover .cd-table-fixed-left,
+.dark .cd-table tbody tr:hover .cd-table-fixed-right {
+  background: #262626;
+}
+.dark .cd-table .ant-pagination,
+.dark .cd-table .ant-pagination-total-text,
+.dark .cd-table .ant-pagination-item a,
+.dark .cd-table .ant-pagination-prev button,
+.dark .cd-table .ant-pagination-next button {
+  color: rgba(255, 255, 255, 0.75);
+}
+@media (max-width: 900px) {
+  .cd-table .cd-table-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .cd-table .cd-table-search {
+    flex-wrap: wrap;
+  }
+}
