@@ -185,13 +185,13 @@ export class PipelineController extends CrudController<PipelineService> {
     return this.ok(ret);
   }
 
-  // @Post("/add", { description: Constants.per.authOnly })
-  // async add(@Body(ALL) bean: PipelineEntity) {
-  //   const { userId, projectId } = await this.getProjectUserIdWrite();
-  //   bean.userId = userId;
-  //   bean.projectId = projectId;
-  //   return await this.save(bean as any);
-  // }
+  @Post("/add", { description: Constants.per.authOnly })
+  async add(@Body(ALL) bean: PipelineSaveDTO) {
+    const { userId, projectId } = await this.getProjectUserIdWrite();
+    bean.userId = userId;
+    bean.projectId = projectId;
+    return await this.save(bean as any);
+  }
 
   @Post("/save", { description: Constants.per.authOnly, summary: "新增/更新流水线" })
   async save(@Body() bean: PipelineSaveDTO) {
