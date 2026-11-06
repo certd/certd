@@ -1,72 +1,71 @@
 <template>
-  <div class="fn-search">
-    <template v-for="column in columns" :key="column.key">
-      <FnComponentRender v-bind="getComponent(column)" v-model:model-value="searchFormData[column.key]" scope="table-search" @update:model-value="setValue(column.key, $event)" @press-enter="submit" />
-    </template>
-    <a-button :aria-label="options.searchText || '查询'" :title="options.searchText || '查询'" @click="submit">
-      <template #icon><SearchOutlined /></template>
-    </a-button>
-    <a-button v-if="options.showReset !== false" @click="reset">{{ options.resetText || "重置" }}</a-button>
-  </div>
+  <a-form class="fn-search" v-bind="resolvedProps.formProps" :model="modelValue" @submit.prevent="submit">
+    <FnComponentRender
+      v-for="column in searchColumns"
+      :key="column.key"
+      v-bind="getComponent(column)"
+      :model-value="modelValue[column.key]"
+      scope="table-search"
+      @update:model-value="updateField(column.key, $event)"
+      @press-enter="submit"
+    />
+    <FnButton v-for="(button, key) in buttonProps" :key="key" v-bind="button" :context="context" />
+  </a-form>
 </template>
-
 <script setup lang="ts">
 import { computed } from "vue";
+import { RotateCcw, Search } from "@lucide/vue";
 import FnComponentRender from "../fn-component-render";
-import { SearchOutlined } from "@ant-design/icons-vue";
-
-const props = defineProps({
-  options: { type: Object, required: true },
-  getSearchFormData: { type: Function, required: true },
-});
-const emit = defineEmits(["search"]);
-const searchFormData = props.getSearchFormData();
-const columns = computed(() => {
-  const source = Array.isArray(props.options.columns) ? Object.fromEntries(props.options.columns.map(column => [column.key, column])) : props.options.columns;
-  return Object.entries(source)
+import FnButton from "../fn-button.vue";
+import type { FnSearchProps, FnSearchColumnResolved, FnFormContext } from "../types";
+import { resolveComputedValue } from "../compute";
+const props = defineProps<FnSearchProps & { modelValue: Record<string, any> }>();
+const emit = defineEmits<{ search: [form: Record<string, any>]; "update:modelValue": [form: Record<string, any>] }>();
+const context = computed<FnFormContext>(() => ({ type: "search", form: props.modelValue, columns: props.columns, reset }));
+const resolvedProps = computed(() => resolveComputedValue({ columns: props.columns, buttons: props.buttons, formProps: props.formProps }, context.value));
+const searchColumns = computed(() =>
+  Object.entries(resolvedProps.value.columns)
     .map(([key, column]) => ({ ...column, key }))
-    .sort((left, right) => (left.order || 0) - (right.order || 0));
-});
-function getOptions(column) {
-  if (column.dict) {
-    return column.dict.getOptions().value;
-  }
-  return column.options || [];
-}
-
-function getComponent(column) {
-  const component = { ...(column.component || {}) };
+    .filter(column => column.show !== false)
+    .sort((a, b) => (a.order || 0) - (b.order || 0))
+);
+const buttonProps = computed(
+  () =>
+    resolvedProps.value.buttons || {
+      search: { text: "查询", type: "default", icon: Search, onClick: submit },
+      reset: { text: "重置", type: "default", icon: RotateCcw, onClick: reset },
+    }
+);
+function getComponent(column: FnSearchColumnResolved) {
+  const resolvedComponent = resolveComputedValue(column.component || {}, context.value) as Record<string, any>;
+  const component = { ...resolvedComponent };
   if (column.dict && !component.options) {
-    component.options = getOptions(column);
+    component.options = column.dict.getProps().value;
   }
-  if (column.placeholder != null && component.placeholder == null) {
-    component.placeholder = column.placeholder;
-  }
-  if (column.allowClear != null && component.allowClear == null) {
-    component.allowClear = column.allowClear;
-  }
-  if (column.width && component.style == null) {
-    component.style = { width: typeof column.width === "number" ? `${column.width}px` : column.width };
+  if (column.width) {
+    let width = column.width;
+    if (typeof width === "number") {
+      width = `${width}px`;
+    }
+    component.style = { ...component.style, width };
   }
   return component;
 }
-
-function setValue(key, value) {
-  searchFormData[key] = value;
-}
-
 function submit() {
-  emit("search", { ...searchFormData });
+  emit("search", { ...props.modelValue });
 }
-
+function updateField(key: string, value: any) {
+  emit("update:modelValue", { ...props.modelValue, [key]: value });
+}
 function reset() {
-  for (const column of columns.value) {
-    searchFormData[column.key] = "";
+  const form = { ...props.modelValue };
+  for (const column of searchColumns.value) {
+    form[column.key] = "";
   }
-  submit();
+  emit("update:modelValue", form);
+  emit("search", form);
 }
 </script>
-
 <style lang="less">
 .fn-search {
   display: flex;

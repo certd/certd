@@ -1,5 +1,25 @@
 import Validator from "async-validator";
 
+export async function validateIpAddress(_rule: unknown, value: unknown) {
+  if (value === undefined || value === null || value === "") {
+    return;
+  }
+  const address = String(value).trim();
+  let valid = false;
+  if (address.includes(":")) {
+    // 限制为地址字符，避免 URL 解析接受路径、端口等额外内容。
+    if (/^[0-9a-fA-F:.]+$/.test(address)) {
+      valid = isIpv6(address);
+    }
+  } else {
+    const octets = address.split(".");
+    valid = octets.length === 4 && octets.every(octet => /^(0|[1-9]\d{0,2})$/.test(octet) && Number(octet) <= 255);
+  }
+  if (!valid) {
+    throw new Error("请输入有效的 IP 地址");
+  }
+}
+
 function isIpv6(d: string) {
   if (!d) {
     return false;

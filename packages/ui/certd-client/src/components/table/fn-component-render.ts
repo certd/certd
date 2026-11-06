@@ -6,6 +6,7 @@ export default defineComponent({
   props: {
     name: { type: [String, Object] as unknown as () => string | Component, required: true },
     vModel: { type: String, default: "modelValue" },
+    modelValue: { type: null as unknown as () => any },
     scope: String,
   },
   emits: ["update:modelValue"],
@@ -14,9 +15,7 @@ export default defineComponent({
       const component = typeof props.name === "string" ? resolveComponent(props.name) : props.name;
       const modelProp = props.vModel || "modelValue";
       const componentAttrs = { ...attrs } as Record<string, any>;
-      const modelValue = componentAttrs.modelValue;
-      delete componentAttrs.modelValue;
-      componentAttrs[modelProp] = modelValue;
+      componentAttrs[modelProp] = props.modelValue;
       componentAttrs[`onUpdate:${modelProp}`] = (value: any) => emit("update:modelValue", value);
       if (slots.default) componentAttrs.default = slots.default;
       return h(component, componentAttrs);

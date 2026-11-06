@@ -41,7 +41,6 @@ defineEmits(["update:modelValue"]);
   gap: 24px;
   .fn-tabs-item {
     &:first-child {
-      margin-left: 20px;
     }
     display: flex;
     align-items: center;

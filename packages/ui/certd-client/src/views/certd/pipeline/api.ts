@@ -24,7 +24,7 @@ export async function GetSimpleByIds(ids: any) {
 
 export async function AddObj(obj: any) {
   return await request({
-    url: apiPrefix + "/add",
+    url: apiPrefix + "/save",
     method: "post",
     data: obj,
   });
@@ -32,7 +32,7 @@ export async function AddObj(obj: any) {
 
 export async function UpdateObj(obj: any) {
   return await request({
-    url: apiPrefix + "/update",
+    url: apiPrefix + "/save",
     method: "post",
     data: obj,
   });

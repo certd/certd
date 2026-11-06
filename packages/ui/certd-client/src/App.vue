@@ -1,9 +1,11 @@
 <template>
   <AConfigProvider :locale="antdvLocale" :theme="tokenTheme">
-    <FsFormProvider>
-      <contextHolder />
-      <router-view />
-    </FsFormProvider>
+    <FnModalProvider>
+      <FsFormProvider>
+        <contextHolder />
+        <router-view />
+      </FsFormProvider>
+    </FnModalProvider>
   </AConfigProvider>
 </template>
 
@@ -13,6 +15,7 @@ import { preferences, usePreferences } from "/@/vben/preferences";
 import { useAntdDesignTokens } from "/@/vben/hooks";
 import { Modal, theme } from "ant-design-vue";
 import AConfigProvider from "ant-design-vue/es/config-provider";
+import { FnModalProvider } from "/@/components/table";
 import { antdvLocale } from "./locales/antdv";
 import { setI18nLanguage } from "/@/locales";
 import { mitter } from "./utils/util.mitt";

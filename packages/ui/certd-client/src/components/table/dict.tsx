@@ -1,32 +1,21 @@
-import { ref, type Ref, type VNodeChild } from "vue";
+import { ref, type VNodeChild } from "vue";
+import type { DictComponentType, DictOption, DictPropsRef, DictValue, FnDictStore, GetDictPropsRef } from "./types";
 
-export type DictValue = string | number | boolean;
-export type DictComponentType = "select" | "checkbox" | "radio" | "switch";
+export type { DictComponentType, DictOption, DictPropsRef, DictValue, GetDictPropsRef } from "./types";
 
-export type DictOption = {
-  label: string;
-  value: string;
-  color?: string;
-  icon?: string;
-  count?: number;
-};
-
-export type DictOptionsRef = Ref<DictOption[]>;
-export type GetDictOptionsRef = () => DictOptionsRef;
-
-export class DictStore {
-  options: DictOptionsRef = ref([]);
+export class DictStore implements FnDictStore {
+  Props: DictPropsRef = ref([]);
   getData?: () => Promise<DictOption[]>;
   fetching = false;
 
   constructor(opts: { data: DictOption[]; getData?: () => Promise<DictOption[]> }) {
-    this.options.value = opts.data;
+    this.Props.value = opts.data;
     this.getData = opts.getData;
   }
 
-  getOptions(): DictOptionsRef {
+  getProps(): DictPropsRef {
     void this.fetch();
-    return this.options;
+    return this.Props;
   }
 
   async fetch() {
@@ -35,7 +24,7 @@ export class DictStore {
     }
     this.fetching = true;
     try {
-      this.options.value = await this.getData();
+      this.Props.value = await this.getData();
     } finally {
       this.fetching = false;
     }
@@ -66,7 +55,7 @@ export class DictStore {
   private getSelectComponentProps(value: unknown) {
     const label = this.getOption(value)?.label || this.formatValue(value);
     const selectValue = value === null || value === undefined || value === "" ? undefined : String(value);
-    const options = [...this.options.value];
+    const options = [...this.Props.value];
     if (selectValue && !this.getOption(value)) {
       options.push({ label, value: selectValue });
     }
@@ -88,7 +77,7 @@ export class DictStore {
     if (value === null || value === undefined) {
       return undefined;
     }
-    return this.options.value.find(option => String(option.value) === String(value));
+    return this.Props.value.find(option => String(option.value) === String(value));
   }
 
   private formatValue(value: unknown) {

@@ -1,22 +1,21 @@
 <template>
   <div class="security-ban-manager">
-    <FnTable ref="tableRef" :options="tableOptions">
+    <FnCrud ref="tableRef" v-bind="tableOptions">
       <template #header>
         <p>封禁管理</p>
       </template>
-    </FnTable>
+    </FnCrud>
   </div>
 </template>
 
 <script lang="tsx" setup>
-import { computed, reactive, ref } from "vue";
+import { computed, ref } from "vue";
 import { notification } from "ant-design-vue";
-import { DictStore, FnTable, type FnTableOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
+import { compute, DictStore, FnCrud, FnModal, type FnCrudOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
 import { SecurityBan, securityMonitorApi } from "./api";
 
 const emit = defineEmits<{ changed: [] }>();
 const tableRef = ref<{ refresh: () => Promise<void> }>();
-const state = reactive({ removingId: 0 });
 const typeDict = new DictStore({
   data: [
     { label: "全部生效中", value: "" },
@@ -26,15 +25,14 @@ const typeDict = new DictStore({
   ],
 });
 const columns = {
-  targetValue: { key: "targetValue", title: "封禁目标", order: 1, cell: { width: 170, render: ({ row }: { row: SecurityBan }) => renderTarget(row) } },
-  type: { key: "type", title: "类型", order: 2, cell: { width: 180, dict: typeDict, render: ({ row }: { row: SecurityBan }) => renderType(row) } },
-  detail: { key: "detail", title: "原因 / 来源", order: 3, cell: { width: 260, render: ({ row }: { row: SecurityBan }) => renderDetail(row) } },
-  createTime: { key: "createTime", title: "创建时间", order: 4, cell: { width: 165, render: ({ row }: { row: SecurityBan }) => renderDate(row.createTime) } },
-  expiresAt: { key: "expiresAt", title: "到期时间", order: 5, cell: { width: 170, render: ({ row }: { row: SecurityBan }) => renderExpiry(row) } },
-  operator: { key: "operator", title: "操作人", order: 6, cell: { width: 140, render: () => "—" } },
-  action: { key: "action", title: "操作", order: 7, cell: { width: 150, render: ({ row }: { row: SecurityBan }) => renderAction(row) } },
+  targetValue: { key: "targetValue", title: "封禁目标", cell: { order: 1, width: 170, render: ({ row }: { row: SecurityBan }) => renderTarget(row) } },
+  type: { key: "type", title: "类型", cell: { order: 2, width: 180, dict: typeDict, render: ({ row }: { row: SecurityBan }) => renderType(row) } },
+  detail: { key: "detail", title: "原因 / 来源", cell: { order: 3, width: 260, render: ({ row }: { row: SecurityBan }) => renderDetail(row) } },
+  createTime: { key: "createTime", title: "创建时间", cell: { order: 4, width: 165, render: ({ row }: { row: SecurityBan }) => renderDate(row.createTime) } },
+  expiresAt: { key: "expiresAt", title: "到期时间", cell: { order: 5, width: 170, render: ({ row }: { row: SecurityBan }) => renderExpiry(row) } },
+  operator: { key: "operator", title: "操作人", cell: { order: 6, width: 140, render: () => "—" } },
 };
-const tableOptions = computed<FnTableOptions<SecurityBan>>(() => ({
+const tableOptions = computed<FnCrudOptions<SecurityBan>>(() => ({
   layout: [
     {
       style: {},
@@ -51,14 +49,29 @@ const tableOptions = computed<FnTableOptions<SecurityBan>>(() => ({
       ],
     },
   ],
-  search: { columns: { keyword: { order: 1, component: { name: "a-input", vModel: "value" }, placeholder: "搜索 IP、用户名或原因", width: 250, allowClear: true } } },
+  search: { columns: { keyword: { order: 1, component: { name: "a-input", vModel: "value", placeholder: "搜索 IP、用户名或原因", allowClear: true }, width: 250 } } },
   columns,
+  rowHandle: {
+    width: 170,
+    fixed: "right",
+    buttons: {
+      edit: { show: false },
+      delete: { show: false },
+      unblock: {
+        text: compute(({ row }) => getUnblockLabel(row as SecurityBan)),
+        type: "link",
+        onClick: ({ row }) => {
+          if (row) {
+            return confirmUnblock(row as SecurityBan);
+          }
+        },
+      },
+    },
+  },
   request: { pageRequest },
   tabs: { refCol: "type" },
-  rowKey: "id",
-  table: { minWidth: 1120 },
-  pagination: { current: 1, pageSize: 20, pageSizeOptions: ["10", "20", "30", "50"], showTotal: total => `共 ${total} 条` },
-  emptyText: "暂无封禁记录",
+  table: { minWidth: 1120, rowKey: "id", emptyText: "暂无封禁记录" },
+  pagination: { current: 1, pageSize: 20, pageSizeProps: ["10", "20", "30", "50"], showTotal: total => `共 ${total} 条` },
 }));
 
 async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<SecurityBan>> {
@@ -104,24 +117,32 @@ function renderExpiry(record: SecurityBan) {
     );
   return renderDate(record.expiresAt);
 }
-function renderAction(record: SecurityBan) {
-  const label = record.targetType === "ip" ? "解除 IP 封禁" : record.scope === "pipeline" ? "解除运行限制" : "恢复访问";
-  return (
-    <a-button type="link" size="small" loading={state.removingId === record.id} onClick={() => remove(record)}>
-      {label}
-    </a-button>
-  );
-}
-async function remove(record: SecurityBan) {
-  state.removingId = record.id;
-  try {
-    await securityMonitorApi.removeBan(record.id);
-    notification.success({ message: "封禁已解除" });
-    await tableRef.value?.refresh();
-    emit("changed");
-  } finally {
-    state.removingId = 0;
+function getUnblockLabel(record: SecurityBan) {
+  if (record.targetType === "ip") {
+    return "解除 IP 封禁";
   }
+  if (record.scope === "pipeline") {
+    return "解除运行限制";
+  }
+  return "恢复访问";
+}
+function confirmUnblock(record: SecurityBan) {
+  const label = getUnblockLabel(record);
+  return FnModal.confirm({
+    title: label,
+    body: () => `确定对 ${record.targetValue} 执行“${label}”吗？`,
+    buttons: {
+      confirm: {
+        text: label,
+        onClick: async () => {
+          await securityMonitorApi.removeBan(record.id);
+          notification.success({ message: "封禁已解除" });
+          await tableRef.value?.refresh();
+          emit("changed");
+        },
+      },
+    },
+  });
 }
 </script>
 
@@ -131,7 +152,7 @@ async function remove(record: SecurityBan) {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  .fn-table {
+  .fn-crud {
     min-height: 0;
     flex: 1;
   }
