@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import { parse, compileScript } from "@vue/compiler-sfc";
 import ts from "typescript";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 const filename = fileURLToPath(new URL("./fn-modal.vue", import.meta.url));
 const { descriptor } = parse(readFileSync(filename, "utf8"), { filename });
@@ -61,5 +61,37 @@ describe("FnModal footer 默认值", () => {
   it("显式 false/null 仍然隐藏 footer", async () => {
     expect(await resolveFooter({ footer: false })).toBe(false);
     expect(await resolveFooter({ footer: null })).toBeNull();
+  });
+});
+
+describe("FnModal 拖拽边界", () => {
+  it.each([
+    [-1000, -1000, "translate(-380px, -120px)"],
+    [1000, 1000, "translate(580px, 450px)"],
+    [20, 30, "translate(20px, 30px)"],
+  ])("左右最多移出 70%，上下不越界 (%s, %s)", (x, y, expected) => {
+    const listeners = new Map<string, Function>();
+    vi.stubGlobal("document", {
+      documentElement: { clientWidth: 800, clientHeight: 600 },
+      addEventListener: (name: string, callback: Function) => listeners.set(name, callback),
+      removeEventListener: (name: string) => listeners.delete(name),
+    });
+    try {
+      const setup = module.exports.default.setup({ draggable: true }, { expose: () => {}, emit: () => {} });
+      const modal = { style: { transform: "" } };
+      setup.modalElementRef.value = modal;
+      setup.headerRef.value = {
+        addEventListener: () => {},
+        getBoundingClientRect: () => ({ left: 100, right: 500, width: 400, top: 120, bottom: 150 }),
+      };
+      setup.bindDrag();
+      setup.onMouseDown({ clientX: 0, clientY: 0, target: { closest: () => null } });
+      listeners.get("mousemove")!({ clientX: x, clientY: y });
+      expect(modal.style.transform).toBe(expected);
+      listeners.get("mouseup")!();
+      expect(listeners.size).toBe(0);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

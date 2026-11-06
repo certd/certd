@@ -119,8 +119,21 @@ function onMouseDown(event: MouseEvent) {
   let lastX = event.clientX;
   let lastY = event.clientY;
   const onMouseMove = (moveEvent: MouseEvent) => {
-    offsetX += moveEvent.clientX - lastX;
-    offsetY += moveEvent.clientY - lastY;
+    const header = headerRef.value;
+    if (!header) {
+      return;
+    }
+    const bounds = header.getBoundingClientRect();
+    const viewport = document.documentElement;
+    const deltaX = moveEvent.clientX - lastX;
+    const deltaY = moveEvent.clientY - lastY;
+    // 左右允许标题栏移出 70%，上下保持标题栏完整可见。
+    const horizontalOverflow = bounds.width * 0.7;
+    const minDeltaX = -bounds.left - horizontalOverflow;
+    const maxDeltaX = Math.max(minDeltaX, viewport.clientWidth - bounds.right + horizontalOverflow);
+    const maxDeltaY = Math.max(-bounds.top, viewport.clientHeight - bounds.bottom);
+    offsetX += Math.min(Math.max(deltaX, minDeltaX), maxDeltaX);
+    offsetY += Math.min(Math.max(deltaY, -bounds.top), maxDeltaY);
     lastX = moveEvent.clientX;
     lastY = moveEvent.clientY;
     applyPosition();
