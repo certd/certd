@@ -242,12 +242,17 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (bean.id > 0) {
       //修改
       old = await this.info(bean.id);
-      bean.order = old.order;
+      if (bean.order == null) {
+        bean.order = old.order;
+      }
       bean.userId = old.userId;
       bean.projectId = old.projectId;
       if (bean.content == null) {
         bean.content = old.content;
       }
+    }
+    if (bean.order == null) {
+      bean.order = 0;
     }
     if (!old || !old.webhookKey) {
       bean.webhookKey = await this.genWebhookKey();
@@ -285,9 +290,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!bean.status) {
       bean.status = ResultType.none;
     }
-    if (bean.order == null) {
-      bean.order = 0;
-    }
+   
     if (!isUpdate) {
       //如果是添加，先保存一下，获取到id，更新pipeline.id
       await this.addOrUpdate(bean);
