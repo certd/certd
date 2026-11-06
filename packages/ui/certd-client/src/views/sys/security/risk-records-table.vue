@@ -1,22 +1,21 @@
 <template>
   <div class="security-risk-table">
-    <FnTable ref="tableRef" :options="tableOptions">
+    <FnCrud ref="tableRef" v-bind="tableOptions">
       <template #header>
         <p>扫描拦截、注入特征与可疑流水线统一审计</p>
       </template>
-    </FnTable>
+    </FnCrud>
   </div>
 </template>
 
 <script lang="tsx" setup>
-import { reactive, ref } from "vue";
-import { Modal, notification } from "ant-design-vue";
-import { DictStore, FnTable, type FnTableOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
+import { ref } from "vue";
+import { notification } from "ant-design-vue";
+import { compute, model, DictStore, FnCrud, type FnCrudOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
 import { RiskRecord, securityMonitorApi } from "./api";
 
 const emit = defineEmits<{ changed: [] }>();
 const tableRef = ref<{ refresh: () => Promise<void> }>();
-const state = reactive({ unblockingIp: "" });
 const riskTypeDict = new DictStore({
   data: [
     { label: "全部记录", value: "" },
@@ -34,7 +33,7 @@ const riskLevelDict = new DictStore({
     { label: "高风险", value: "high" },
   ],
 });
-const tableOptions: FnTableOptions<RiskRecord> = {
+const tableOptions: FnCrudOptions<RiskRecord> = {
   layout: [
     {
       style: {},
@@ -53,17 +52,17 @@ const tableOptions: FnTableOptions<RiskRecord> = {
   ],
   search: {
     columns: {
-      level: { order: 1, component: { name: "a-select", vModel: "value" }, placeholder: "风险等级", width: 125, allowClear: true, dict: riskLevelDict },
-      keyword: { order: 2, component: { name: "a-input", vModel: "value" }, placeholder: "搜索 IP、路径或流水线", width: 220, allowClear: true },
+      level: { order: 1, component: { name: "a-select", vModel: "value", placeholder: "风险等级", allowClear: true }, width: 125, dict: riskLevelDict },
+      keyword: { order: 2, component: { name: "a-input", vModel: "value", placeholder: "搜索 IP、路径或流水线", allowClear: true }, width: 220 },
     },
   },
   columns: {
-    createTime: { key: "createTime", order: 1, title: "时间", cell: { width: 190, render: ({ row }) => <span class="time">{formatDate(row.createTime)}</span> } },
+    createTime: { key: "createTime", title: "时间", cell: { order: 1, width: 190, render: ({ row }) => <span class="time">{formatDate(row.createTime)}</span> } },
     type: {
       key: "type",
-      order: 2,
       title: "风险类型",
       cell: {
+        order: 2,
         width: 150,
         dict: riskTypeDict,
         render: ({ row }) => (
@@ -74,15 +73,15 @@ const tableOptions: FnTableOptions<RiskRecord> = {
         ),
       },
     },
-    level: { key: "level", order: 3, title: "风险等级", cell: { width: 110, render: ({ row }) => <span class={`pill ${row.level}`}>{levelLabel(row.level)}</span> } },
-    userId: { key: "userId", order: 4, title: "用户 ID", cell: { width: 100 } },
-    ip: { key: "ip", order: 5, title: "来源 IP", cell: { width: 150 } },
-    path: { key: "path", order: 6, title: "请求路径", cell: { width: 260, ellipsis: true } },
+    level: { key: "level", title: "风险等级", cell: { order: 3, width: 110, render: ({ row }) => <span class={`pill ${row.level}`}>{levelLabel(row.level)}</span> } },
+    userId: { key: "userId", title: "用户 ID", cell: { order: 4, width: 100 } },
+    ip: { key: "ip", title: "来源 IP", cell: { order: 5, width: 150 } },
+    path: { key: "path", title: "请求路径", cell: { order: 6, width: 260, ellipsis: true } },
     pipelineName: {
       key: "pipelineName",
-      order: 7,
       title: "关联流水线",
       cell: {
+        order: 7,
         width: 190,
         render: ({ row }) => {
           let pipelineName = row.pipelineName;
@@ -95,9 +94,9 @@ const tableOptions: FnTableOptions<RiskRecord> = {
     },
     status: {
       key: "status",
-      order: 8,
       title: "处理状态",
       cell: {
+        order: 8,
         width: 120,
         render: ({ row }) => {
           let statusClass = "done";
@@ -112,35 +111,31 @@ const tableOptions: FnTableOptions<RiskRecord> = {
         },
       },
     },
-    detail: { key: "detail", order: 9, title: "风险详情", cell: { width: 280, ellipsis: true } },
-    action: {
-      key: "action",
-      order: 10,
-      title: "操作",
-      cell: {
-        width: 110,
-        class: "action-column",
-        fixed: "right",
-        render: ({ row }) => {
-          if (row.type !== "scan-ban" || row.status !== "banned") {
-            return <span>—</span>;
+    detail: { key: "detail", title: "风险详情", cell: { order: 9, width: 280, ellipsis: true } },
+  },
+  rowHandle: {
+    width: 110,
+    fixed: "right",
+    buttons: {
+      edit: { show: false },
+      delete: { show: false },
+      unblock: {
+        text: "解除 IP",
+        type: "link",
+        show: compute(({ row }) => row?.type === "scan-ban" && row?.status === "banned"),
+        onClick: ({ row }) => {
+          if (row?.ip) {
+            return confirmUnblock(row.ip);
           }
-          return (
-            <a-button type="link" size="small" loading={state.unblockingIp === row.ip} onClick={() => confirmUnblock(row.ip)}>
-              解除 IP
-            </a-button>
-          );
         },
       },
     },
   },
-  request: { pageRequest, query: {} },
+  request: { pageRequest },
   tabs: { refCol: "type" },
-  rowKey: "id",
   id: "security-monitor-table",
-  table: { minWidth: 1550 },
-  pagination: { current: 1, pageSize: 20, pageSizeOptions: ["10", "20", "30", "40", "50", "100"], showTotal: total => `共 ${total} 条` },
-  emptyText: "暂无风险记录",
+  table: { minWidth: 1550, rowKey: "id", emptyText: "暂无风险记录" },
+  pagination: { current: 1, pageSize: 20, pageSizeProps: ["10", "20", "30", "40", "50", "100"], showTotal: total => `共 ${total} 条` },
 };
 
 async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<RiskRecord>> {
@@ -166,20 +161,19 @@ function formatDate(value: string | number) {
   return new Date(value).toLocaleString("zh-CN", { hour12: false });
 }
 function confirmUnblock(ip: string) {
-  Modal.confirm({
+  return model.confirm({
     title: "解除 IP 封禁",
-    content: `确定解除 ${ip} 的封禁吗？`,
-    okText: "解除封禁",
-    cancelText: "取消",
-    onOk: async () => {
-      state.unblockingIp = ip;
-      try {
-        await securityMonitorApi.unblock(ip);
-        notification.success({ message: "IP 已解除封禁" });
-        emit("changed");
-      } finally {
-        state.unblockingIp = "";
-      }
+    body: () => `确定解除 ${ip} 的封禁吗？`,
+    buttons: {
+      confirm: {
+        text: "解除封禁",
+        onClick: async () => {
+          await securityMonitorApi.unblock(ip);
+          notification.success({ message: "IP 已解除封禁" });
+          emit("changed");
+          await refresh();
+        },
+      },
     },
   });
 }
@@ -197,7 +191,7 @@ defineExpose({ refresh });
   flex: 1;
   flex-direction: column;
 
-  > .fn-table {
+  > .fn-crud {
     min-height: 0;
     flex: 1;
   }

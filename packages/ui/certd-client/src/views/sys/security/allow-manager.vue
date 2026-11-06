@@ -1,28 +1,44 @@
 <template>
   <div class="security-allow-manager">
-    <FnTable ref="tableRef" :options="tableOptions">
+    <FnCrud ref="tableRef" v-bind="tableOptions">
       <template #header>
         <p class="mb-2">白名单只影响安全监控规则：IP 白名单跳过 IP 扫描封禁；用户白名单跳过关联账号的风险检测与自动处置。白名单不会绕过账号权限、用户访问封禁或流水线运行限制。</p>
       </template>
-      <template #tools>
-        <a-button @click="openAddDialog('ip')">＋ 添加 IP</a-button>
-        <a-button type="primary" @click="openAddDialog('user')">＋ 添加用户</a-button>
-      </template>
-    </FnTable>
+    </FnCrud>
   </div>
 </template>
 
 <script lang="tsx" setup>
-import { computed, reactive, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { notification } from "ant-design-vue";
-import { useFormDialog } from "/@/use/use-dialog";
-import { DictStore, FnTable, type FnTableOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
+import { compute, DictStore, FnCrud, type FnCrudOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
+import { request } from "/@/api/service";
 import { SecurityBan, securityMonitorApi } from "./api";
+import { validateIpAddress } from "/@/plugin/validator";
 
 const emit = defineEmits<{ changed: [] }>();
-const { openFormDialog } = useFormDialog();
-const tableRef = ref<{ refresh: () => Promise<void> }>();
-const state = reactive({ removingId: 0 });
+const tableRef = ref<InstanceType<typeof FnCrud>>();
+const userDict = new DictStore({
+  data: [],
+  getData: async () => {
+    const users = await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST" });
+    return users.map(user => {
+      let label = user.nickName || user.username;
+      if (!label && user.mobile) {
+        label = `${user.phoneCode || ""}${user.mobile}`;
+      }
+      if (!label) {
+        label = String(user.id);
+      }
+      return { label, value: String(user.id) };
+    });
+  },
+});
+onMounted(() => {
+  void userDict.fetch().catch(() => {
+    notification.error({ message: "用户列表加载失败" });
+  });
+});
 const typeDict = new DictStore({
   data: [
     { label: "全部", value: "" },
@@ -31,32 +47,94 @@ const typeDict = new DictStore({
   ],
 });
 const columns = {
-  targetValue: { key: "targetValue", title: "白名单目标", order: 1, cell: { width: 180, render: ({ row }: { row: SecurityBan }) => renderTarget(row) } },
-  type: { key: "type", title: "类型", order: 2, cell: { width: 150, dict: typeDict, render: ({ row }: { row: SecurityBan }) => renderType(row) } },
-  reason: { key: "reason", title: "备注", order: 3, cell: { width: 280, render: ({ row }: { row: SecurityBan }) => renderReason(row) } },
-  createTime: { key: "createTime", title: "添加时间", order: 4, cell: { width: 180, render: ({ row }: { row: SecurityBan }) => renderDate(row.createTime) } },
-  operator: { key: "operator", title: "添加人", order: 5, cell: { width: 150, render: () => "—" } },
-  action: { key: "action", title: "操作", order: 6, cell: { width: 100, render: ({ row }: { row: SecurityBan }) => renderAction(row) } },
+  targetType: {
+    key: "targetType",
+    title: "白名单类型",
+    cell: { show: false },
+    form: {
+      order: 0,
+      span: 24,
+      value: "ip",
+      component: compute(({ form }) => ({
+        name: "a-radio-group",
+        vModel: "value",
+        options: [
+          { label: "IP 白名单", value: "ip" },
+          { label: "用户白名单", value: "user" },
+        ],
+        onChange: () => {
+          form!.targetValue = undefined;
+        },
+      })),
+    },
+  },
+  targetValue: {
+    key: "targetValue",
+    title: "白名单目标",
+    cell: { order: 1, width: 180, render: ({ row }: { row: SecurityBan }) => renderTarget(row) },
+    form: {
+      order: 1,
+      title: compute(({ form }) => {
+        if (form?.targetType === "user") {
+          return "用户";
+        }
+        return "IP 地址";
+      }),
+      rules: compute(({ form }) => {
+        if (form?.targetType === "user") {
+          return [{ required: true, message: "请选择用户" }];
+        }
+        return [
+          { required: true, whitespace: true, message: "请输入 IP 地址" },
+          { validator: validateIpAddress, trigger: "blur" },
+        ];
+      }),
+      component: compute(({ form }) => {
+        if (form?.targetType === "user") {
+          return { name: "a-select", vModel: "value", options: userDict.Props.value, showSearch: true, optionFilterProp: "label", allowClear: true, placeholder: "请选择用户" };
+        }
+        return { name: "a-input", vModel: "value", placeholder: "请输入 IP 地址" };
+      }),
+    },
+  },
+  type: { key: "type", title: "类型", cell: { order: 2, width: 150, dict: typeDict, render: ({ row }: { row: SecurityBan }) => renderType(row) } },
+  reason: { key: "reason", title: "备注", cell: { order: 3, width: 280, render: ({ row }: { row: SecurityBan }) => renderReason(row) }, form: { order: 2, helper: "可选" } },
+  createTime: { key: "createTime", title: "添加时间", cell: { order: 4, width: 180, render: ({ row }: { row: SecurityBan }) => renderDate(row.createTime) } },
+  operator: { key: "operator", title: "添加人", cell: { order: 5, width: 150, render: () => "—" } },
 };
-const tableOptions = computed<FnTableOptions<SecurityBan>>(() => ({
+const tableOptions = computed<FnCrudOptions<SecurityBan>>(() => ({
   layout: [
     { style: {}, cols: [{ type: "header", style: {} }] },
     {
       style: {},
       cols: [
+        { type: "actionbar", style: {} },
         { type: "tabs", style: { flex: 1 } },
         { type: "search", style: {} },
       ],
     },
   ],
-  search: { columns: { keyword: { order: 1, component: { name: "a-input", vModel: "value" }, placeholder: "搜索 IP、用户名或备注", width: 250, allowClear: true } } },
+  search: { columns: { keyword: { order: 1, component: { name: "a-input", vModel: "value", placeholder: "搜索 IP、用户名或备注", allowClear: true }, width: 250 } } },
   columns,
-  request: { pageRequest },
+  form: {
+    dialog: { title: "添加白名单", buttons: { confirm: { text: "保存" } } },
+    onSubmit: async ({ form }) => {
+      await securityMonitorApi.addBan({ targetType: form!.targetType, targetValue: String(form!.targetValue).trim(), action: "allow", scope: "access", reason: form!.reason || "" });
+      notification.success({ message: "白名单已添加" });
+      emit("changed");
+    },
+  },
+  rowHandle: { order: 6, width: 100, buttons: { edit: { show: false } } },
+  request: {
+    pageRequest,
+    delRequest: async id => {
+      await securityMonitorApi.removeBan(Number(id));
+      emit("changed");
+    },
+  },
   tabs: { refCol: "type" },
-  rowKey: "id",
-  table: { minWidth: 980 },
-  pagination: { current: 1, pageSize: 20, pageSizeOptions: ["10", "20", "30", "50"], showTotal: total => `共 ${total} 条` },
-  emptyText: "暂无白名单记录",
+  table: { minWidth: 980, rowKey: "id", emptyText: "暂无白名单记录" },
+  pagination: { current: 1, pageSize: 20, pageSizeProps: ["10", "20", "30", "50"], showTotal: total => `共 ${total} 条` },
 }));
 
 async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<SecurityBan>> {
@@ -68,38 +146,13 @@ async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<S
     tabsName: "type",
   });
 }
-async function openAddDialog(targetType: "ip" | "user") {
-  await openFormDialog({
-    title: targetType === "ip" ? "添加 IP 白名单" : "添加用户白名单",
-    initialForm: { targetValue: "", reason: "" },
-    columns: {
-      targetValue: { title: targetType === "ip" ? "IP 地址" : "用户 ID", type: "input", form: { rules: [{ required: true, message: targetType === "ip" ? "请输入 IP 地址" : "请输入用户 ID" }] } },
-      reason: { title: "备注", type: "input", form: { helper: "可选" } },
-    },
-    async onSubmit(form: any) {
-      await securityMonitorApi.addBan({ targetType, targetValue: String(form.targetValue).trim(), action: "allow", scope: "access", reason: form.reason || "" });
-      notification.success({ message: "白名单已添加" });
-      await tableRef.value?.refresh();
-      emit("changed");
-    },
-  });
-}
-async function remove(record: SecurityBan) {
-  state.removingId = record.id;
-  try {
-    await securityMonitorApi.removeBan(record.id);
-    notification.success({ message: "白名单已移除" });
-    await tableRef.value?.refresh();
-    emit("changed");
-  } finally {
-    state.removingId = 0;
-  }
-}
 function renderTarget(record: SecurityBan) {
   if (record.targetType === "ip") return <span class="security-allow-manager__code">{record.targetValue}</span>;
+  const user = userDict.Props.value.find(item => item.value === String(record.targetValue));
+  const username = user?.label || record.targetValue;
   return (
     <span class="security-allow-manager__target">
-      <strong>{record.targetValue}</strong>
+      <strong>{username}</strong>
       <small>用户 ID {record.targetValue}</small>
     </span>
   );
@@ -125,13 +178,6 @@ function renderDate(value: string) {
     </span>
   );
 }
-function renderAction(record: SecurityBan) {
-  return (
-    <a-button type="link" danger size="small" loading={state.removingId === record.id} onClick={() => remove(record)}>
-      移除
-    </a-button>
-  );
-}
 </script>
 
 <style lang="less">
@@ -140,7 +186,7 @@ function renderAction(record: SecurityBan) {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  .fn-table {
+  .fn-crud {
     min-height: 0;
     flex: 1;
   }

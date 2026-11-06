@@ -76,7 +76,8 @@ export const securityMonitorApi = {
     return await request({ url: "/sys/security/risk-records/ban/list", method: "post" });
   },
   async addBan(data: Omit<SecurityBan, "id" | "enabled" | "createTime">) {
-    return await request({ url: "/sys/security/risk-records/ban/add", method: "post", data });
+    // 表单弹窗统一提示提交错误，避免请求层重复通知。
+    return await request({ url: "/sys/security/risk-records/ban/add", method: "post", data, showErrorNotify: false });
   },
   async removeBan(id: number) {
     return await request({ url: "/sys/security/risk-records/ban/remove", method: "post", data: { id } });
