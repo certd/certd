@@ -172,7 +172,7 @@ function getRowKey(row, index) {
   flex: 1;
   flex-direction: column;
   color: #172033;
-  padding: 10px 20px;
+  margin: 0 -20px;
 
   .fn-table-scroll {
     min-height: 0;
@@ -213,6 +213,9 @@ function getRowKey(row, index) {
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      svg.fn-table-sort-indicator {
+        height: 18px;
+      }
     }
 
     .fn-table-sort-indicator {
