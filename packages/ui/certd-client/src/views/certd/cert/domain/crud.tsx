@@ -203,6 +203,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             width: 200,
             ellipsis: true,
             tooltip: true,
+            sorter: true,
           },
         },
         expirationDate: {
@@ -210,6 +211,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "date",
           form: {
             show: false,
+          },
+          column: {
+            sorter: true,
           },
         },
         challengeType: {
@@ -277,6 +281,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               color: "auto",
             },
+            sorter: true,
           },
         },
         dnsProviderAccess: {
@@ -319,6 +324,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               color: "auto",
             },
+            sorter: true,
           },
         },
         httpUploaderAccess: {
@@ -366,6 +372,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           form: { show: false },
           column: {
             width: 600,
+            sorter: true,
             conditionalRender: false,
             cellRender({ row }) {
               if (row.challengeType === "dns") {
@@ -403,6 +410,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               color: "auto",
             },
             show: false,
+            sorter: true,
           },
         },
         disabled: {
@@ -443,6 +451,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: false,
           },
           column: {
+            sorter: true,
             show: true,
           },
         },
