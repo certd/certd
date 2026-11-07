@@ -9,3 +9,4 @@ export * from "./mode.js";
 export * from "./notification-constants.js";
 export * from "./audit.js";
 export * from "./core/index.js";
+export * from "./sys-crud-controller.js";
