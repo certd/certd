@@ -1,7 +1,7 @@
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { AccessService, BaseService, CodeException, Constants, PageReq } from "@certd/lib-server";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Between, In, IsNull, LessThan, Not, Or, Repository } from "typeorm";
+import { Between, Equal, In, IsNull, LessThan, Not, Or, Repository } from "typeorm";
 import { CertInfoEntity, CertStatus } from "../entity/cert-info.js";
 import { logger, utils } from "@certd/basic";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
@@ -221,7 +221,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     const placeholderRecord = await this.repository.findOne({
       where: {
         pipelineId,
-        taskId: taskId ?? IsNull(),
+        taskId: taskId,
         certInfo: IsNull(),
         ...this.buildUserProjectQuery(certUserId, certProjectId),
       },
@@ -248,12 +248,13 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         pipelineId,
         status: CertStatus.active,
         id: Not(bean.id),
-        taskId: Or(Eq(taskId), IsNull()),
+        taskId: Or(Equal(taskId), IsNull(), Equal("")),
       },
       {
         status: CertStatus.inactive,
       }
     );
+
     if (certUserId != null) {
       const domains = cert?.crt ? new CertReader(cert).getAltNames() : [];
       const wildcardCount = domains.filter(domain => String(domain).trim().toLowerCase().startsWith("*.")).length;
@@ -585,7 +586,3 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     };
   }
 }
-function Eq(taskId: string): import("typeorm").FindOperator<any> {
-  throw new Error("Function not implemented.");
-}
-
