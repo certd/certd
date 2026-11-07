@@ -392,19 +392,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         "pipeline.title": {
           title: t("certd.monitor.relatedPipeline"),
           search: { show: false },
-          type: "link",
+          type: "text",
           form: {
             show: false,
           },
           column: {
             width: 350,
             sorter: true,
-            component: {
-              on: {
-                onClick({ row }) {
-                  router.push({ path: "/cert/pipeline/detail", query: { id: row.pipelineId, editMode: "false" } });
-                },
-              },
+            cellRender({ row }) {
+              return <a onClick={() => router.push({ path: "/cert/pipeline/detail", query: { id: row.pipelineId, editMode: "false" } })}>{`【${row.pipeline?.id}】${row.pipeline?.title}`}</a>;
             },
           },
         },

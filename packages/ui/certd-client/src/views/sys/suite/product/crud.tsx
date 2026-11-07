@@ -103,8 +103,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           dict: dict({
             data: [
-              { label: t("certd.suite"), value: "suite" },
-              { label: t("certd.addon"), value: "addon" },
+              { label: t("certd.suite.title"), value: "suite" },
+              { label: t("certd.suite.addon"), value: "addon" },
             ],
           }),
           form: {
