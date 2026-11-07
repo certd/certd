@@ -345,7 +345,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
     await this.registerTrigger(bean);
     return bean;
   }
-
   /**
    * 校验流水线中所有定时触发器（timer）的cron表达式是否有效
    * cron-parser无法解析的表达式（例如2月31号）会导致流水线列表加载和定时任务注册报错，保存前必须拦截
@@ -389,8 +388,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
       checkPlus();
       return;
     }
-
+    // if(old.isTemplate){
+    //   //模版不限制
+    //   return;
+    // }
     if (isComm()) {
+      
       //校验pipelineCount
       const suiteSetting = await this.userSuiteService.getSuiteSetting();
       if (suiteSetting.enabled) {
@@ -515,18 +518,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async trigger(id: any, stepId?: string) {
-    const entity: PipelineEntity = await this.info(id);
-    // this.cron.register({
-    //   name: `pipeline.${id}.trigger.once`,
-    //   cron: null,
-    //   job: async () => {
-
-    //   },
-    // });
-
-    logger.info("用户手动启动job");
-    return await this.doRun(entity, null, stepId, false);
+  /** 触发执行，前置检查通过后返回执行信息，不等待流水线完成。 */
+  async trigger(id: number, stepId?: string) {
+    return await this.run({ id, stepId, wait: false });
   }
 
   async checkHasDeployCount(pipelineId: number, userId: number) {
@@ -625,7 +619,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         executorQueue.addTask(userId, {
           task: async () => {
             try {
-              await this.run(pipelineId, triggerId);
+              await this.run({ id: pipelineId, triggerId });
             } catch (e) {
               logger.error("定时job执行失败：", e);
             }
@@ -644,21 +638,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
       }
     }
     return true;
-  }
-
-  /**
-   *
-   * @param id
-   * @param triggerId =null手动启动
-   * @param stepId 如果传入ALL，清空所有状态
-   */
-  async run(id: number, triggerId: string, stepId?: string) {
-    const entity: PipelineEntity = await this.info(id);
-    if (!entity) {
-      logger.error(`流水线${id}不存在`);
-      return;
-    }
-    await this.doRun(entity, triggerId, stepId);
   }
 
   async beforeCheck(entity: PipelineEntity) {
@@ -690,15 +669,17 @@ export class PipelineService extends BaseService<PipelineEntity> {
     };
   }
 
-  async doRun(entity: PipelineEntity, triggerId: string, stepId?: string, wait = true) {
-    let suite: any = null;
-    try {
-      const res = await this.beforeCheck(entity);
-      suite = res.suite;
-    } catch (e) {
-      logger.error(`流水线${entity.id}触发失败（${triggerId}）：${e.message}`);
-      return;
+  /**
+   * 执行流水线。triggerId 为空时按手动执行，stepId 为 ALL 时清空所有状态。
+   * wait=false 仍等待前置检查与初始化，返回执行信息后由后台继续运行。
+   */
+  async run(req: { id: number; triggerId?: string; stepId?: string; wait?: boolean }) {
+    const { triggerId = null, stepId, wait = true } = req;
+    const entity: PipelineEntity = await this.info(req.id);
+    if (!entity) {
+      throw new ValidateException(`流水线${req.id}不存在`);
     }
+    const { suite } = await this.beforeCheck(entity);
 
     const id = entity.id;
     const pipeline = JSON.parse(entity.content);
@@ -1351,10 +1332,14 @@ export class PipelineService extends BaseService<PipelineEntity> {
     for (const id of ids) {
       executorQueue.addTask(userId, {
         task: async () => {
-          if (force) {
-            await this.run(id, null, "ALL");
-          } else {
-            await this.run(id, null);
+          try {
+            let stepId: string;
+            if (force) {
+              stepId = "ALL";
+            }
+            await this.run({ id, stepId });
+          } catch (e) {
+            logger.error(`批量执行流水线${id}失败：`, e);
           }
         },
       });
@@ -1550,6 +1535,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!trigger) {
       throw new Error("该流水线的webhook未启用");
     }
-    await this.run(pipelineEntity.id, trigger.id);
+    await this.run({ id: pipelineEntity.id, triggerId: trigger.id });
   }
 }

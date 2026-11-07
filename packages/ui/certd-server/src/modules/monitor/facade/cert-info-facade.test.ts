@@ -28,7 +28,7 @@ describe("CertInfoFacade.triggerApplyPipeline", () => {
     assert.equal(triggered, false);
   });
 
-  it("retries a pipeline that failed more than three hours ago", async function () {
+  it("retries a pipeline that failed more than three hours ago", async function (this: Mocha.Context) {
     this.timeout(5000);
     const facade = new CertInfoFacade();
     let triggered = false;
@@ -39,7 +39,8 @@ describe("CertInfoFacade.triggerApplyPipeline", () => {
           updateTime: new Date(Date.now() - 3 * 60 * 60 * 1000 - 1),
         };
       },
-      async trigger() {
+      async trigger(id: number) {
+        assert.equal(id, 1);
         triggered = true;
       },
     } as any;

@@ -196,6 +196,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
    */
   async updateCertByPipelineId(req: UpdateCertReq) {
     const { pipelineId, cert, fromType, taskId, certPassword } = req;
+
+
     const pipeline = await this.pipelineRepository.findOne({
       where: { id: pipelineId },
     });
@@ -246,7 +248,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         pipelineId,
         status: CertStatus.active,
         id: Not(bean.id),
-        taskId: taskId ?? IsNull(),
+        taskId: Or(Eq(taskId), IsNull()),
       },
       {
         status: CertStatus.inactive,
@@ -583,3 +585,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     };
   }
 }
+function Eq(taskId: string): import("typeorm").FindOperator<any> {
+  throw new Error("Function not implemented.");
+}
+
