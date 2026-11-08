@@ -4,6 +4,29 @@ import crypto from "crypto";
 import url from "url";
 
 /**
+ * 比较点分版本号：left 大于 right 返回 1，小于返回 -1，相等返回 0
+ */
+export function compareVersion(left: string, right: string) {
+  const leftParts = String(left || "").split(".");
+  const rightParts = String(right || "").split(".");
+  const maxLength = Math.max(leftParts.length, rightParts.length);
+  for (let i = 0; i < maxLength; i++) {
+    const leftValue = Number.parseInt(leftParts[i] || "0", 10);
+    const rightValue = Number.parseInt(rightParts[i] || "0", 10);
+    if (Number.isNaN(leftValue) || Number.isNaN(rightValue)) {
+      return -1;
+    }
+    if (leftValue > rightValue) {
+      return 1;
+    }
+    if (leftValue < rightValue) {
+      return -1;
+    }
+  }
+  return 0;
+}
+
+/**
  * AcePanel授权
  */
 @IsAccess({
@@ -195,7 +218,29 @@ export class AcePanelAccess extends BaseAccess {
     return await this.doRequest(req);
   }
 
-  async deployCert(certId: number, websiteId: number) {
+  /**
+   * 部署证书到网站
+   * @param certId 证书ID
+   * @param websiteIds 网站ID列表
+   * @param enableHttps 是否同时开启网站的HTTPS访问
+   */
+  async deployCert(certId: number, websiteIds: number[], enableHttps = true) {
+    const req = {
+      url: `/api/cert/cert/${certId}/deploy`,
+      method: "POST",
+      data: {
+        id: certId,
+        website_ids: websiteIds,
+        enable_https: enableHttps,
+      },
+    };
+    return await this.doRequest(req);
+  }
+
+  /**
+   * 部署证书到单个网站（旧版面板接口）
+   */
+  async deployCertToWebsite(certId: number, websiteId: number) {
     const req = {
       url: `/api/cert/cert/${certId}/deploy`,
       method: "POST",
@@ -205,6 +250,41 @@ export class AcePanelAccess extends BaseAccess {
       },
     };
     return await this.doRequest(req);
+  }
+
+  async getSystemInfo() {
+    const req = {
+      url: "/api/home/system_info",
+      method: "GET",
+    };
+    return await this.doRequest(req);
+  }
+
+  /**
+   * 获取面板版本号，获取失败时返回空字符串，按旧版本处理
+   */
+  async getPanelVersion(): Promise<string> {
+    try {
+      const res = await this.getSystemInfo();
+      const panelVersion = res.data?.panel_version;
+      if (!panelVersion) {
+        return "";
+      }
+      return String(panelVersion);
+    } catch (e: any) {
+      this.logger.warn(`获取AcePanel版本失败，将使用旧版部署接口：${e.message}`);
+      return "";
+    }
+  }
+
+  /**
+   * 面板版本大于等于3.3.2才支持通过website_ids批量部署
+   */
+  isBatchDeploySupported(panelVersion: string) {
+    if (!panelVersion) {
+      return false;
+    }
+    return compareVersion(panelVersion, "3.3.2") >= 0;
   }
 
   async updatePanelCert(cert: string, key: string) {
