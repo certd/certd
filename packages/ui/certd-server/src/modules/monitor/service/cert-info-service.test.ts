@@ -257,7 +257,11 @@ describe("CertInfoService", () => {
       // 旧证书标记未激活的条件限定为同任务 id（不误伤其他任务的证书）
       assert.equal(updateWhere.pipelineId, 1);
       assert.equal(updateWhere.status, CertStatus.active);
-      assert.equal(updateWhere.taskId, "apply-step-1");
+      assert.equal(updateWhere.taskId._type, "or");
+      assert.deepEqual(
+        updateWhere.taskId._value.map((value: any) => value._value),
+        ["apply-step-1", undefined, ""]
+      );
       assert.equal(updateSet.status, CertStatus.inactive);
     });
 
@@ -306,7 +310,11 @@ describe("CertInfoService", () => {
       assert.equal(updateWhere.pipelineId, 209);
       assert.equal(updateWhere.status, CertStatus.active);
       assert.equal(updateWhere.id._value, 184);
-      assert.equal(updateWhere.taskId, "PgaUhdeO1DWB_BLbIlzqV");
+      assert.equal(updateWhere.taskId._type, "or");
+      assert.deepEqual(
+        updateWhere.taskId._value.map((value: any) => value._value),
+        ["PgaUhdeO1DWB_BLbIlzqV", undefined, ""]
+      );
       assert.equal(updateSet.status, CertStatus.inactive);
     });
 
