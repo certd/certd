@@ -1,4 +1,5 @@
 import { useSettingStore } from "/@/store/settings";
+import { useUserStore } from "/@/store/user";
 
 function isInviteLevelEnabled() {
   const settingStore = useSettingStore();
@@ -52,6 +53,7 @@ export const sysResources = [
         path: "/sys/security/monitor",
         component: "/sys/security/index.vue",
         meta: {
+          show: () => useUserStore().isAdmin,
           icon: "ion:shield-checkmark-outline",
           permission: "sys:settings:view",
           auth: true,

@@ -71,7 +71,7 @@
       <section v-else class="security-locked">
         <div class="locked-mark" :class="{ risk: hasRecentRisk }">{{ hasRecentRisk ? "!" : "✓" }}</div>
         <strong>{{ hasRecentRisk ? "检测到安全风险" : "系统安全" }}</strong>
-        <p>风险统计和风险记录日志为专业版功能</p>
+        <p>已启用全站安全检测。升级专业版可查看具体风险记录和处置数据</p>
       </section>
     </div></fs-page
   >
@@ -130,9 +130,11 @@ async function refresh() {
       state.detectionSettings = await securityMonitorApi.getDetectionSettings();
       state.settingsLoaded = true;
     }
-    await riskTableRef.value?.refresh();
-    await banTableRef.value?.refresh();
-    await allowTableRef.value?.refresh();
+    if (settingStore.isPlus) {
+      await riskTableRef.value?.refresh();
+      await banTableRef.value?.refresh();
+      await allowTableRef.value?.refresh();
+    }
   } catch (error: any) {
     notification.error({ message: t("certd.sys.securityMonitor.loadMonitorError"), description: error.message });
   } finally {
@@ -140,9 +142,6 @@ async function refresh() {
   }
 }
 onMounted(async () => {
-  if (!settingStore.isPlus) {
-    settingStore.checkPlus();
-  }
   await refresh();
 });
 </script>
