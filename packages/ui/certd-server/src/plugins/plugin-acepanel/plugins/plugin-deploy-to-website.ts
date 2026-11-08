@@ -58,6 +58,18 @@ export class AcePanelDeployToWebsite extends AbstractPlusTaskPlugin {
   )
   websiteList!: number[];
 
+  @TaskInput({
+    title: "启用HTTPS",
+    value: true,
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+    helper: "部署证书时是否同时开启所选网站的HTTPS访问",
+    required: true,
+  })
+  enableHttps = true;
+
   async onInstance() {}
 
   async onGetWebsiteList(data: PageSearch = {}) {
@@ -90,11 +102,30 @@ export class AcePanelDeployToWebsite extends AbstractPlusTaskPlugin {
     this.logger.info(`证书域名：${result.data.domains.join(", ")}`);
 
     // 部署证书到选择的网站
-    if (this.websiteList && this.websiteList.length > 0) {
-      this.logger.info(`开始部署证书到 ${this.websiteList.length} 个网站`);
-      for (const websiteId of this.websiteList) {
+    const websiteIds = this.websiteList || [];
+    if (websiteIds.length === 0) {
+      this.logger.warn("未选择需要部署的网站，跳过证书部署");
+      return;
+    }
+
+    let enableHttps = this.enableHttps;
+    if (enableHttps === undefined) {
+      // 兼容旧版流水线数据，未配置该参数时保持新接口默认行为：启用HTTPS
+      enableHttps = true;
+    }
+
+    // 3.3.2及以上版本才支持website_ids批量部署，旧版本仍然逐个网站部署
+    const panelVersion = await access.getPanelVersion();
+    const batchDeploySupported = access.isBatchDeploySupported(panelVersion);
+    if (batchDeploySupported) {
+      this.logger.info(`AcePanel版本${panelVersion}支持批量部署，开始部署证书到 ${websiteIds.length} 个网站，网站ID：${websiteIds.join(", ")}`);
+      await access.deployCert(certId, websiteIds, enableHttps);
+      this.logger.info(`证书部署成功，网站ID：${websiteIds.join(", ")}`);
+    } else {
+      this.logger.info(`AcePanel版本${panelVersion || "未知"}不支持批量部署，将逐个网站部署`);
+      for (const websiteId of websiteIds) {
         this.logger.info(`部署证书到网站ID：${websiteId}`);
-        await access.deployCert(certId, websiteId);
+        await access.deployCertToWebsite(certId, websiteId);
         this.logger.info(`证书部署到网站ID：${websiteId} 成功`);
       }
     }
