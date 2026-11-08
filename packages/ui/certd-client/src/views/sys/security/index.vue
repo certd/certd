@@ -15,15 +15,15 @@
       </header>
       <section class="security-overview">
         <div>
-          <span>72 小时风险记录</span><strong>{{ state.summary.riskCount }}</strong
+          <span>72 小时风险记录</span><strong>{{ state.summary.riskCount ?? "-" }}</strong
           ><small>本站整体状态依据</small>
         </div>
         <div>
-          <span>当前封禁 IP</span><strong>{{ state.summary.ipBanCount }}</strong
+          <span>当前封禁 IP</span><strong>{{ state.summary.ipBanCount ?? "-" }}</strong
           ><small>可手动解除</small>
         </div>
         <div>
-          <span>72 小时可疑流水线</span><strong>{{ state.summary.suspiciousPipelineCount }}</strong
+          <span>72 小时可疑流水线</span><strong>{{ state.summary.suspiciousPipelineCount ?? "-" }}</strong
           ><small>风险统计窗口</small>
         </div>
         <div class="overview-state" :class="{ danger: hasRecentRisk }">
@@ -69,12 +69,10 @@
         </a-tabs>
       </section>
       <section v-else class="security-locked">
-        <div class="locked-mark" :class="{ risk: hasRecentRisk }">{{ hasRecentRisk ? "!" : "✓" }}</div>
-        <strong>{{ hasRecentRisk ? "检测到安全风险" : "系统安全" }}</strong>
-        <p>已启用全站安全检测。升级专业版可查看具体风险记录和处置数据</p>
-      </section>
-    </div></fs-page
-  >
+        <div class="locked-mark" :class="{ risk: true }">!</div>
+        <p class="flex">升级专业版可查看具体风险记录和处置数据 <vip-button class="ml-10" mode="button" /></p>
+      </section></div
+  ></fs-page>
 </template>
 <script lang="tsx" setup>
 import { computed, onMounted, reactive, ref } from "vue";
@@ -87,6 +85,7 @@ import { SecurityDetectionSettings, SecurityMonitorSummary, securityMonitorApi }
 import SecurityBanManager from "./ban-manager.vue";
 import SecurityAllowManager from "./allow-manager.vue";
 import SecurityRiskTable from "./risk-records-table.vue";
+import { mitter } from "/@/utils/util.mitt";
 const { t } = useI18n();
 const settingStore = useSettingStore();
 const riskTableRef = ref<{ refresh: () => Promise<void> }>();
@@ -144,6 +143,9 @@ async function refresh() {
 onMounted(async () => {
   await refresh();
 });
+function openVipModal() {
+  mitter.emit("openVipModal");
+}
 </script>
 <style lang="less">
 .page-security-monitor {

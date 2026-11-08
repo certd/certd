@@ -1,5 +1,5 @@
 <template>
-  <a-popover class="dashboard-security-summary" placement="bottomLeft" trigger="click" overlay-class-name="dashboard-security-popover">
+  <a-popover class="dashboard-security-summary" placement="bottomLeft" trigger="hover" overlay-class-name="dashboard-security-popover">
     <template #content>
       <div class="security-status-popover">
         <div class="security-status-popover__title">{{ t("certd.dashboard.securityStatus") }}</div>
@@ -25,7 +25,7 @@
         </router-link>
       </div>
     </template>
-    <a-tag class="security-status-trigger" :class="`is-${securityStatus.color}`">
+    <a-tag class="security-status-trigger inline-flex pointer" :color="securityStatus.color">
       <fs-icon :icon="securityStatus.icon" />
       {{ t("certd.dashboard.securityStatus") }} · {{ securityStatus.title }}
       <fs-icon icon="ion:chevron-down-outline" class="security-status-trigger__arrow" />
@@ -52,14 +52,14 @@ const securityStatus = computed(() => {
   if (!securitySummary.value) {
     if (securitySummaryFailed.value) {
       return {
-        color: "danger",
+        color: "red",
         icon: "ion:alert-circle-outline",
         title: t("certd.dashboard.securityUnavailable"),
         description: t("certd.dashboard.securityUnavailableDescription"),
       };
     }
     return {
-      color: "loading",
+      color: "info",
       icon: "ion:shield-outline",
       title: t("certd.dashboard.securityLoading"),
       description: t("certd.dashboard.securityLoadingDescription"),
@@ -67,7 +67,7 @@ const securityStatus = computed(() => {
   }
   if (securitySummary.value.hasRecentRisk) {
     return {
-      color: "danger",
+      color: "red",
       icon: "ion:warning-outline",
       title: t("certd.dashboard.securityRisk"),
       description: t("certd.dashboard.securityRiskDescription"),
@@ -75,14 +75,14 @@ const securityStatus = computed(() => {
   }
   if (securitySummary.value.ipBanCount && securitySummary.value.ipBanCount > 0) {
     return {
-      color: "warning",
+      color: "yellow",
       icon: "ion:shield-checkmark-outline",
       title: t("certd.dashboard.securityBlocked"),
       description: t("certd.dashboard.securityBlockedDescription"),
     };
   }
   return {
-    color: "success",
+    color: "green",
     icon: "ion:shield-checkmark-outline",
     title: t("certd.dashboard.securityNormal"),
     description: t("certd.dashboard.securityNormalDescription"),
