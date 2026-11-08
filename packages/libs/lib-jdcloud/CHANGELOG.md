@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.46.1](https://github.com/certd/certd/compare/v1.46.0...v1.46.1) (2026-11-08)
+
+### Performance Improvements
+
+* 添加安全监控中心功能及IP封禁管理模块 ([ce2b0eb](https://github.com/certd/certd/commit/ce2b0eb82d77666daf4e4f1b02d3ede6966102b5))
+
 # [1.46.0](https://github.com/certd/certd/compare/v1.45.6...v1.46.0) (2026-10-28)
 
 **Note:** Version bump only for package @certd/jdcloud

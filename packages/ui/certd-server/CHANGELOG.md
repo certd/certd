@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.46.1](https://github.com/certd/certd/compare/v1.46.0...v1.46.1) (2026-11-08)
+
+### Bug Fixes
+
+* 修复复制流水线404的bug ([972676e](https://github.com/certd/certd/commit/972676e94f624469229d27806b7548f9381671ae))
+* 修复流水线复制和编辑排序号失败的bug ([38cb5fd](https://github.com/certd/certd/commit/38cb5fd9ac57d713be1d804f2d47f4bb337ec241))
+* 修复证书仓库同一个流水线会显示多个激活状态的证书的bug ([4079253](https://github.com/certd/certd/commit/4079253c99f9e4da422c913487aad7b8a5293be4))
+* **acepanel:** 按面板版本兼容网站证书部署接口 ([#821](https://github.com/certd/certd/issues/821)) @Rodots ([c535571](https://github.com/certd/certd/commit/c53557176e1fabe354c60d8e0d63d11595278f39))
+* **tencent:** TencentDeleteExpiringCert,unbind 不计入失败统计 ([ec9eb51](https://github.com/certd/certd/commit/ec9eb5107c2e60af6b721d9894be73f5146e3b7c))
+
+### Performance Improvements
+
+* 彩虹登录增加bilibili douyin  telegram ([2a38b32](https://github.com/certd/certd/commit/2a38b32c246d80251e3e3a00164c12c51a85914b))
+* 华为云DNS服务商支持分页查询解析记录,支持从华为云dns导入监控记录 ([c81d406](https://github.com/certd/certd/commit/c81d406117e039dc2556534bc5b456f037efe348))
+* 添加安全监控中心功能及IP封禁管理模块 ([ce2b0eb](https://github.com/certd/certd/commit/ce2b0eb82d77666daf4e4f1b02d3ede6966102b5))
+* 新增远程拉取证书插件，支持http/sftp/scp/ftp/oss/s3等 ([1b85654](https://github.com/certd/certd/commit/1b856544372f8698e0f29b54c94462156f30d2bc))
+
 # [1.46.0](https://github.com/certd/certd/compare/v1.45.6...v1.46.0) (2026-10-28)
 
 ### Features
