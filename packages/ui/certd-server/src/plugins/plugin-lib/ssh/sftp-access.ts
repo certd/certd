@@ -21,6 +21,20 @@ export class SftpAccess extends BaseAccess {
   })
   sshAccess!: string;
   @AccessInput({
+    title: "上传方式",
+    value: "sftp",
+    component: {
+      name: "a-select",
+      vModel: "value",
+      options: [
+        { label: "SFTP", value: "sftp" },
+        { label: "SCP", value: "scp" },
+      ],
+    },
+    helper: "文件上传方式，默认使用SFTP",
+  })
+  uploadType = "sftp";
+  @AccessInput({
     title: "文件权限",
     component: {
       name: "a-input",
