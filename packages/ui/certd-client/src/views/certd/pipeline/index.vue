@@ -98,6 +98,7 @@ provide("getCurrentPluginDefine", () => {
 const addMorePipelineBtns = computed(() => {
   return [
     { key: "CertApplyGetFormAliyun", title: t("certd.pipeline.pipelinePage.aliyunSubscriptionPipeline"), icon: "svg:icon-aliyun" },
+    { key: "CertApplyPull", title: t("certd.pipeline.pipelinePage.pullPipeline"), icon: "ion:download-outline" },
     // { key: "CertApplyLego", title: t("certd.pipeline.pipelinePage.legoCertPipeline"), icon: "cbi:lego" },
     { key: "AddPipeline", title: t("certd.pipeline.pipelinePage.customPipeline"), icon: "ion:add-circle-outline" },
     { key: "BatchAddPipeline", title: t("certd.pipeline.pipelinePage.batchAddPipeline"), icon: "ion:duplicate" },

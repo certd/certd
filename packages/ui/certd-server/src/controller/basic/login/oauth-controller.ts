@@ -165,7 +165,7 @@ export class ConnectController extends BaseController {
     return this.ok({ logoutUrl });
   }
 
-  @Post("/token", { description: Constants.per.guest })
+  @Post("/token", { description: Constants.per.guest, summary: "第三方登录成功" })
   public async token(@Body(ALL) body: { validationCode: string; type: string }) {
     checkPlus();
     const validationValue = await this.codeService.getValidationValue(body.validationCode);
@@ -190,6 +190,7 @@ export class ConnectController extends BaseController {
 
     this.writeTokenCookie(loginRes);
     //返回登录成功token
+    this.auditLog({ userId: loginRes.userId, username: loginRes.username, content: `第三方登录成功,类型: ${body.type}` });
     return this.ok(loginRes);
   }
 

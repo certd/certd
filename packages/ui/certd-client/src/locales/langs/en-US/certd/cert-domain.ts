@@ -36,6 +36,7 @@ export default {
     running: "Running",
     done: "Done",
     skipped: "Skipped",
+    importSkipTooltip: "Domains already present for the current user or project are skipped; existing settings are not overwritten. Skipped items are not counted as successful.",
     failed: "Failed",
     notExecuted: "Not executed",
     execute: "Run",

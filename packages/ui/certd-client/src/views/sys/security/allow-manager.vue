@@ -2,7 +2,7 @@
   <div class="security-allow-manager">
     <FnCrud ref="tableRef" v-bind="tableOptions">
       <template #header>
-        <p class="mb-2">白名单只影响安全监控规则：IP 白名单跳过 IP 扫描封禁；用户白名单跳过关联账号的风险检测与自动处置。白名单不会绕过账号权限、用户访问封禁或流水线运行限制。</p>
+        <p class="mb-2">IP 和用户白名单可跳过 IP 访问封禁及扫描自动封禁，风险检测和记录仍会保留。白名单不会绕过账号权限、用户访问封禁或流水线运行限制，也不影响非常用 IP 提醒。</p>
       </template>
     </FnCrud>
   </div>
@@ -114,7 +114,7 @@ const tableOptions = computed<FnCrudOptions<SecurityBan>>(() => ({
       ],
     },
   ],
-  search: { columns: { keyword: { order: 1, component: { name: "a-input", vModel: "value", placeholder: "搜索 IP、用户名或备注", allowClear: true }, width: 250 } } },
+  search: { columns: { keyword: { order: 1, component: { name: "a-input", vModel: "value", placeholder: "搜索 IP、用户 ID 或备注", allowClear: true }, width: 250 } } },
   columns,
   form: {
     dialog: { title: "添加白名单", buttons: { confirm: { text: "保存" } } },
@@ -161,11 +161,11 @@ function renderType(record: SecurityBan) {
   return <span class={`security-allow-manager__pill ${record.targetType}`}>{record.targetType === "ip" ? "IP 白名单" : "用户白名单"}</span>;
 }
 function renderReason(record: SecurityBan) {
-  const reason = record.reason || (record.targetType === "ip" ? "仅跳过 IP 扫描封禁" : "跳过风险检测与自动处置");
+  const reason = record.reason || "跳过 IP 访问封禁及扫描自动封禁";
   return (
     <span class="security-allow-manager__reason">
       {reason}
-      <small>{record.targetType === "ip" ? "IP 扫描规则" : "账号风险规则"}</small>
+      <small>风险检测和记录仍会保留</small>
     </span>
   );
 }
@@ -178,6 +178,12 @@ function renderDate(value: string) {
     </span>
   );
 }
+
+async function refresh() {
+  await tableRef.value?.refresh();
+}
+
+defineExpose({ refresh });
 </script>
 
 <style lang="less">

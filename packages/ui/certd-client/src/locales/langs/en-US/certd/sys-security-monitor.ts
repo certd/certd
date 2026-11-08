@@ -1,6 +1,11 @@
 export default {
   description: "Review detected sources and manage IP bans held in the current process memory.",
   refresh: "Refresh",
+  urlScanEnabled: "URL scan risk detection",
+  suspiciousPipelineEnabled: "Suspicious pipeline detection",
+  saveSettingsSuccess: "Security detection settings saved",
+  saveSettingsError: "Failed to save security detection settings",
+  loadMonitorError: "Failed to load security monitor data",
   activeBans: "Active bans",
   activeNow: "sources are currently blocked",
   expiringSoon: "Expiring soon",

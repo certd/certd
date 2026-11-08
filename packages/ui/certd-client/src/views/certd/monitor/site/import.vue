@@ -29,7 +29,9 @@
                 <div>
                   <a-tag color="blue">{{ t("certd.certdomain.domain.total") }}：{{ item.task?.total }}</a-tag>
                   <a-tag color="success" class="ml-2">{{ t("certd.common.success") }}：{{ item.task?.successCount }}</a-tag>
-                  <a-tag type="info" class="ml-2">{{ t("certd.certdomain.domain.skipped") }}：{{ item.task?.skipCount }}</a-tag>
+                  <a-tooltip :title="t('certd.certdomain.domain.importSkipTooltip')">
+                    <a-tag type="info" class="ml-2">{{ t("certd.certdomain.domain.skipped") }}：{{ item.task?.skipCount }}</a-tag>
+                  </a-tooltip>
                   <a-tooltip v-if="item.task?.errors.length > 0">
                     <template #title>
                       <div v-for="error in item.task?.errors" :key="error">{{ error }}</div>

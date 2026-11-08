@@ -317,8 +317,10 @@ export class SysSafeSetting extends BaseSettings {
     autoHiddenTimes: 5,
   };
 
-  ipBlacklist: string[] = [];
-  userWhitelist: number[] = [];
+  // URL 扫描风险识别，包括路径扫描、URL 注入特征及扫描自动封禁
+  urlScanEnabled = true;
+  // 可疑流水线检测，包括关键词和 input 注入特征，仅记录风险并提醒
+  suspiciousPipelineEnabled = true;
 }
 
 export class SysPluginSetting extends BaseSettings {
