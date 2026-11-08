@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.46.1](https://github.com/certd/certd/compare/v1.46.0...v1.46.1) (2026-11-08)
+
+### Bug Fixes
+
+* 修复证书仓库同一个流水线会显示多个激活状态的证书的bug ([4079253](https://github.com/certd/certd/commit/4079253c99f9e4da422c913487aad7b8a5293be4))
+
+### Performance Improvements
+
+* 彩虹登录增加bilibili douyin  telegram ([2a38b32](https://github.com/certd/certd/commit/2a38b32c246d80251e3e3a00164c12c51a85914b))
+* 添加安全监控中心功能及IP封禁管理模块 ([ce2b0eb](https://github.com/certd/certd/commit/ce2b0eb82d77666daf4e4f1b02d3ede6966102b5))
+* 新增安全状态概览组件并集成到首页 ([78bc89a](https://github.com/certd/certd/commit/78bc89a0ea422c4861e9c328569dc57213c0c261))
+* 优化ai开发插件对话框夜间模式的效果 ([9bfe7f6](https://github.com/certd/certd/commit/9bfe7f67b7a0d66f6af4d2aea188da56770c221d))
+* 域名管理支持按到期时间排序 ([a9bbe77](https://github.com/certd/certd/commit/a9bbe77227c6e40c0e424967656a9cabbb272bac))
+
 # [1.46.0](https://github.com/certd/certd/compare/v1.45.6...v1.46.0) (2026-10-28)
 
 ### Features
