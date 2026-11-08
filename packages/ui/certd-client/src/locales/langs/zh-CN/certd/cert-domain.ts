@@ -37,6 +37,7 @@ export default {
     done: "已完成",
     skipped: "跳过",
     importSkipTooltip: "已存在于当前用户或项目中的域名会跳过，不会覆盖已有配置。跳过项不计入成功数。",
+    siteImportSkipTooltip: "已存在的监控站点、TXT/NS/SOA/SRV/CAA/PTR 记录、泛解析记录及 _acme-challenge 记录会跳过，不计入成功数。",
     failed: "失败",
     notExecuted: "未执行",
     execute: "执行",
