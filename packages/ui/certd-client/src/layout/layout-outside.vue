@@ -70,9 +70,6 @@ function goHome() {
 .dark {
   .login-container {
     background: #141414 !important;
-    .desc {
-      color: rgba(227, 227, 227, 0.45) !important;
-    }
   }
 }
 #userLayout.user-layout-wrapper {
@@ -139,7 +136,8 @@ function goHome() {
         }
         .desc {
           font-size: 14px;
-          color: rgba(0, 0, 0, 0.45);
+          // 次要文字色取自 vben 设计令牌（design-tokens/default.css、dark.css），夜间模式由 .dark 下的同名令牌自动切换
+          color: hsl(var(--muted-foreground));
           margin-top: 12px;
           margin-bottom: 40px;
         }
@@ -170,7 +168,7 @@ function goHome() {
           }
         }
         .copyright {
-          color: rgba(0, 0, 0, 0.45);
+          color: hsl(var(--muted-foreground));
           font-size: 14px;
           display: flex;
           flex-wrap: wrap;
@@ -181,11 +179,11 @@ function goHome() {
             margin-right: 5px;
           }
           a {
-            color: rgba(0, 0, 0, 0.45);
+            color: hsl(var(--muted-foreground));
             transition: all 0.3s;
 
             &:hover {
-              color: rgba(0, 0, 0, 0.85);
+              color: hsl(var(--foreground));
             }
           }
         }
