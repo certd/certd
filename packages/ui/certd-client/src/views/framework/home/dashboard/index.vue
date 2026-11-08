@@ -10,9 +10,9 @@
         </div>
         <div class="text">
           <div class="left">
-            <div>
+            <div class="inline-flex">
               <span>{{ t("certd.dashboard.greeting", { name: userInfo.nickName || userInfo.username, site: siteInfo.title }) }}</span>
-              <security-summary v-if="userStore.isAdmin" />
+              <security-summary v-if="userStore.isAdmin && settingStore.isPlus" />
             </div>
             <div class="flex-o flex-wrap profile-badges">
               <a-tooltip :title="deltaTimeTip">
