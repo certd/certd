@@ -23,6 +23,11 @@ export interface SecurityMonitorSummary {
   hasRecentRisk: boolean;
 }
 
+export interface SecurityDetectionSettings {
+  urlScanEnabled: boolean;
+  suspiciousPipelineEnabled: boolean;
+}
+
 export interface RiskRecordsPageResult {
   records: RiskRecord[];
   total: number;
@@ -71,6 +76,12 @@ export const securityMonitorApi = {
   },
   async summary(): Promise<SecurityMonitorSummary> {
     return await request({ url: apiPrefix + "/summary", method: "post" });
+  },
+  async getDetectionSettings(): Promise<SecurityDetectionSettings> {
+    return await request({ url: apiPrefix + "/settings/get", method: "post", showErrorNotify: false });
+  },
+  async saveDetectionSettings(data: Partial<SecurityDetectionSettings>): Promise<SecurityDetectionSettings> {
+    return await request({ url: apiPrefix + "/settings/save", method: "post", data, showErrorNotify: false });
   },
   async listBans(): Promise<SecurityBan[]> {
     return await request({ url: "/sys/security/risk-records/ban/list", method: "post" });

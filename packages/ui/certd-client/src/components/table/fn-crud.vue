@@ -247,6 +247,12 @@ defineExpose({ refresh, openForm, openFormDialog, getSearchFormData: () => searc
     justify-content: space-between;
     gap: 20px;
   }
+  .fn-crud-header {
+    margin-bottom: 4px;
+    .fn-tabs {
+      margin-bottom: -3px;
+    }
+  }
   .fn-crud-col {
     min-width: 0;
   }

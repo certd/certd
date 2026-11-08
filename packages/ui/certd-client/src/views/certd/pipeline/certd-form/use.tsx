@@ -573,21 +573,29 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
       // const certDetail = readCertDetail(form.cert.crt);
       // 添加certd pipeline
       const pluginInput = form.input;
+      let stageTitle = "证书申请阶段";
+      let taskTitle = "证书申请任务";
+      let stepTitle = "申请证书";
+      if (req.pluginName === "CertApplyPull") {
+        stageTitle = t("certd.pipeline.pipelinePage.pullStage");
+        taskTitle = t("certd.pipeline.pipelinePage.pullTask");
+        stepTitle = t("certd.pipeline.pipelinePage.pullStep");
+      }
       let pipeline: any = {
         title: pluginInput.domains[0] + "证书自动化",
         runnableType: "pipeline",
         stages: [
           {
-            title: "证书申请阶段",
+            title: stageTitle,
             maxTaskCount: 1,
             runnableType: "stage",
             tasks: [
               {
-                title: "证书申请任务",
+                title: taskTitle,
                 runnableType: "task",
                 steps: [
                   {
-                    title: "申请证书",
+                    title: stepTitle,
                     runnableType: "step",
                     input: {
                       renewDays: 20,

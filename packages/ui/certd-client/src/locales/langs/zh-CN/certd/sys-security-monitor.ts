@@ -1,6 +1,11 @@
 export default {
   description: "查看自动识别的可疑来源，并管理当前内存中的 IP 封禁。",
   refresh: "刷新",
+  urlScanEnabled: "URL 扫描风险识别",
+  suspiciousPipelineEnabled: "可疑流水线检测",
+  saveSettingsSuccess: "安全检测设置已保存",
+  saveSettingsError: "保存安全检测设置失败",
+  loadMonitorError: "加载安全监控数据失败",
   activeBans: "当前封禁",
   activeNow: "个来源正在拦截",
   expiringSoon: "即将解除",

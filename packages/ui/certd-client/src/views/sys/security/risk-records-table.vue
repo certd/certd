@@ -10,8 +10,10 @@
 
 <script lang="tsx" setup>
 import { ref } from "vue";
+import { RouterLink } from "vue-router";
 import { notification } from "ant-design-vue";
-import { compute, model, DictStore, FnCrud, type FnCrudOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
+import { model, DictStore, FnButton, FnCrud, type FnButtonItem, type FnCrudOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
+import permissionUtil from "/@/plugin/permission/util.permission";
 import { RiskRecord, securityMonitorApi } from "./api";
 
 const emit = defineEmits<{ changed: [] }>();
@@ -22,7 +24,6 @@ const riskTypeDict = new DictStore({
     { label: "扫描拦截", value: "scan" },
     { label: "注入特征", value: "injection" },
     { label: "可疑流水线", value: "suspicious-pipeline" },
-    { label: "异地登录", value: "unusual-login" },
     { label: "已封禁", value: "scan-ban" },
   ],
 });
@@ -88,6 +89,13 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
           if (!pipelineName && row.pipelineId) {
             pipelineName = `#${row.pipelineId}`;
           }
+          if (row.pipelineId) {
+            return (
+              <RouterLink class="pipeline" to={{ path: "/cert/pipeline/detail", query: { id: row.pipelineId, editMode: "false" } }}>
+                {pipelineName}
+              </RouterLink>
+            );
+          }
           return <span class="pipeline">{pipelineName || "—"}</span>;
         },
       },
@@ -114,21 +122,30 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
     detail: { key: "detail", title: "风险详情", cell: { order: 9, width: 280, ellipsis: true } },
   },
   rowHandle: {
-    width: 110,
+    width: 130,
     fixed: "right",
-    buttons: {
-      edit: { show: false },
-      delete: { show: false },
-      unblock: {
-        text: "解除 IP",
-        type: "link",
-        show: compute(({ row }) => row?.type === "scan-ban" && row?.status === "banned"),
-        onClick: ({ row }) => {
-          if (row?.ip) {
-            return confirmUnblock(row.ip);
-          }
-        },
-      },
+    render: ({ row }) => {
+      if (!permissionUtil.hasPermissions("sys:settings:edit")) {
+        return "—";
+      }
+      const items: FnButtonItem[] = [];
+      if (row.ip && row.ip !== "unknown") {
+        if (row.type === "scan-ban" && row.status === "banned") {
+          items.push({ key: "unblock", label: "解除 IP 封禁", onClick: () => confirmUnblock(row.ip) });
+        } else {
+          items.push({ key: "banIp", label: "封禁 IP", danger: true, onClick: () => confirmBan("ip", row.ip) });
+        }
+        items.push({ key: "allowIp", label: "IP 加白名单", onClick: () => confirmAllow("ip", row.ip) });
+      }
+      if (Number.isSafeInteger(row.userId) && row.userId > 0) {
+        const userId = String(row.userId);
+        items.push({ key: "banUser", label: "封禁用户", danger: true, onClick: () => confirmBan("user", userId) });
+        items.push({ key: "allowUser", label: "用户加白名单", onClick: () => confirmAllow("user", userId) });
+      }
+      if (items.length === 0) {
+        return "—";
+      }
+      return <FnButton text="更多操作" type="link" buttonType="dropdown" items={items} />;
     },
   },
   request: { pageRequest },
@@ -147,7 +164,7 @@ async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<R
   });
 }
 function typeLabel(type: string) {
-  return { scan: "URL 扫描", injection: "注入特征", "suspicious-pipeline": "可疑流水线", "unusual-login": "异地登录", "scan-ban": "IP 封禁" }[type] || type;
+  return { scan: "URL 扫描", injection: "注入特征", "suspicious-pipeline": "可疑流水线", "scan-ban": "IP 封禁" }[type] || type;
 }
 function dotClass(type: string) {
   if (type === "scan") return "green";
@@ -159,6 +176,51 @@ function levelLabel(level: string) {
 }
 function formatDate(value: string | number) {
   return new Date(value).toLocaleString("zh-CN", { hour12: false });
+}
+function confirmBan(targetType: "ip" | "user", targetValue: string) {
+  let targetLabel = `IP ${targetValue}`;
+  let description = "封禁后将禁止该 IP 访问本站。";
+  if (targetType === "user") {
+    targetLabel = `用户 ID ${targetValue}`;
+    description = "封禁后将禁止该用户访问本站及运行流水线。";
+  }
+  return model.confirm({
+    title: "确认封禁",
+    body: () => `确定封禁 ${targetLabel} 吗？${description}本次为永久封禁，可在封禁管理中解除。`,
+    buttons: {
+      confirm: {
+        text: "确认封禁",
+        danger: true,
+        onClick: async () => {
+          await securityMonitorApi.addBan({ targetType, targetValue, action: "ban", scope: "access", reason: "从风险记录手动封禁" });
+          notification.success({ message: `${targetLabel} 已封禁` });
+          emit("changed");
+        },
+      },
+    },
+  });
+}
+function confirmAllow(targetType: "ip" | "user", targetValue: string) {
+  let targetLabel = `IP ${targetValue}`;
+  let successMessage = "IP 已加入白名单";
+  if (targetType === "user") {
+    targetLabel = `用户 ID ${targetValue}`;
+    successMessage = "用户已加入白名单";
+  }
+  return model.confirm({
+    title: "加入白名单",
+    body: () => `确定将 ${targetLabel} 加入白名单吗？`,
+    buttons: {
+      confirm: {
+        text: "加入白名单",
+        onClick: async () => {
+          await securityMonitorApi.addBan({ targetType, targetValue, action: "allow", scope: "access", reason: "从风险记录加入白名单" });
+          notification.success({ message: successMessage });
+          emit("changed");
+        },
+      },
+    },
+  });
 }
 function confirmUnblock(ip: string) {
   return model.confirm({

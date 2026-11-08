@@ -9,6 +9,10 @@ export default {
   pipelinePage: {
     addMore: "添加更多流水线",
     aliyunSubscriptionPipeline: "阿里云订阅流水线",
+    pullPipeline: "拉取证书部署",
+    pullStage: "证书拉取阶段",
+    pullTask: "拉取证书任务",
+    pullStep: "拉取证书",
     legoCertPipeline: "Lego证书流水线",
     customPipeline: "自定义流水线",
     batchAddPipeline: "模版批量创建流水线",

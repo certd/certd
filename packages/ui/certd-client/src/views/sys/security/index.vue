@@ -8,7 +8,7 @@
           <p class="ml-4">{{ t("certd.sys.securityMonitor.description") }}</p>
         </div>
         <div class="security-header__actions">
-          <a-button :loading="state.loading" @click="refresh"
+          <a-button :loading="state.loading" :disabled="Boolean(state.savingSetting)" @click="refresh"
             ><template #icon><ReloadOutlined /></template>{{ t("certd.sys.securityMonitor.refresh") }}</a-button
           >
         </div>
@@ -27,8 +27,32 @@
           ><small>风险统计窗口</small>
         </div>
         <div class="overview-state" :class="{ danger: hasRecentRisk }">
-          <b>{{ hasRecentRisk ? "检测到安全风险" : "系统安全" }}</b
-          ><small>依据最近 72 小时记录 · {{ updatedLabel }}</small>
+          <div class="overview-status">
+            <b>{{ hasRecentRisk ? "检测到安全风险" : "系统安全" }}</b>
+            <small>依据最近 72 小时记录 · {{ updatedLabel }}</small>
+          </div>
+          <div v-if="settingStore.isPlus" class="detection-settings">
+            <div class="detection-setting">
+              <span>{{ t("certd.sys.securityMonitor.urlScanEnabled") }}</span>
+              <a-switch
+                :checked="state.detectionSettings.urlScanEnabled"
+                :disabled="settingsDisabled"
+                :loading="state.savingSetting === 'urlScanEnabled'"
+                :aria-label="t('certd.sys.securityMonitor.urlScanEnabled')"
+                @change="checked => saveDetectionSetting('urlScanEnabled', checked)"
+              />
+            </div>
+            <div class="detection-setting">
+              <span>{{ t("certd.sys.securityMonitor.suspiciousPipelineEnabled") }}</span>
+              <a-switch
+                :checked="state.detectionSettings.suspiciousPipelineEnabled"
+                :disabled="settingsDisabled"
+                :loading="state.savingSetting === 'suspiciousPipelineEnabled'"
+                :aria-label="t('certd.sys.securityMonitor.suspiciousPipelineEnabled')"
+                @change="checked => saveDetectionSetting('suspiciousPipelineEnabled', checked)"
+              />
+            </div>
+          </div>
         </div>
       </section>
       <section v-if="settingStore.isPlus" class="security-workspace">
@@ -37,10 +61,10 @@
             <SecurityRiskTable ref="riskTableRef" class="table-wrapper" @changed="refresh" />
           </a-tab-pane>
           <a-tab-pane key="bans" tab="封禁管理">
-            <SecurityBanManager class="table-wrapper" @changed="refresh" />
+            <SecurityBanManager ref="banTableRef" class="table-wrapper" @changed="refresh" />
           </a-tab-pane>
           <a-tab-pane key="allows" tab="白名单管理">
-            <SecurityAllowManager class="table-wrapper" @changed="refresh" />
+            <SecurityAllowManager ref="allowTableRef" class="table-wrapper" @changed="refresh" />
           </a-tab-pane>
         </a-tabs>
       </section>
@@ -55,21 +79,45 @@
 <script lang="tsx" setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { ReloadOutlined } from "@ant-design/icons-vue";
+import { notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
 import { useSettingStore } from "/@/store/settings";
-import { SecurityMonitorSummary, securityMonitorApi } from "./api";
+import permissionUtil from "/@/plugin/permission/util.permission";
+import { SecurityDetectionSettings, SecurityMonitorSummary, securityMonitorApi } from "./api";
 import SecurityBanManager from "./ban-manager.vue";
 import SecurityAllowManager from "./allow-manager.vue";
 import SecurityRiskTable from "./risk-records-table.vue";
 const { t } = useI18n();
 const settingStore = useSettingStore();
 const riskTableRef = ref<{ refresh: () => Promise<void> }>();
+const banTableRef = ref<{ refresh: () => Promise<void> }>();
+const allowTableRef = ref<{ refresh: () => Promise<void> }>();
 const activeSecurityTab = ref("risks");
 const state = reactive({
   summary: { riskCount: 0, suspiciousPipelineCount: 0, ipBanCount: 0, hasRecentRisk: false } as SecurityMonitorSummary,
   loading: false,
   updatedAt: 0,
+  detectionSettings: { urlScanEnabled: true, suspiciousPipelineEnabled: true } as SecurityDetectionSettings,
+  settingsLoaded: false,
+  savingSetting: null as keyof SecurityDetectionSettings | null,
 });
+const settingsDisabled = computed(() => !state.settingsLoaded || state.loading || Boolean(state.savingSetting) || !permissionUtil.hasPermissions("sys:settings:edit"));
+
+async function saveDetectionSetting(field: keyof SecurityDetectionSettings, checked: boolean | string | number) {
+  if (settingsDisabled.value || typeof checked !== "boolean") {
+    return;
+  }
+  state.savingSetting = field;
+  try {
+    state.detectionSettings = await securityMonitorApi.saveDetectionSettings({ [field]: checked });
+    notification.success({ message: t("certd.sys.securityMonitor.saveSettingsSuccess") });
+  } catch (error: any) {
+    notification.error({ message: t("certd.sys.securityMonitor.saveSettingsError"), description: error.message });
+  } finally {
+    state.savingSetting = null;
+  }
+}
+
 const hasRecentRisk = computed(() => state.summary.hasRecentRisk);
 const updatedLabel = computed(() => (state.updatedAt ? new Date(state.updatedAt).toLocaleTimeString("zh-CN") : "--:--:--"));
 async function refresh() {
@@ -77,7 +125,16 @@ async function refresh() {
   try {
     state.summary = await securityMonitorApi.summary();
     state.updatedAt = Date.now();
+    if (settingStore.isPlus) {
+      state.settingsLoaded = false;
+      state.detectionSettings = await securityMonitorApi.getDetectionSettings();
+      state.settingsLoaded = true;
+    }
     await riskTableRef.value?.refresh();
+    await banTableRef.value?.refresh();
+    await allowTableRef.value?.refresh();
+  } catch (error: any) {
+    notification.error({ message: t("certd.sys.securityMonitor.loadMonitorError"), description: error.message });
   } finally {
     state.loading = false;
   }
@@ -86,8 +143,7 @@ onMounted(async () => {
   if (!settingStore.isPlus) {
     settingStore.checkPlus();
   }
-  state.summary = await securityMonitorApi.summary();
-  state.updatedAt = Date.now();
+  await refresh();
 });
 </script>
 <style lang="less">
@@ -167,7 +223,7 @@ onMounted(async () => {
 
   .security-overview {
     display: grid;
-    grid-template-columns: repeat(3, 1fr) 1.25fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(280px, 1.6fr);
     overflow: hidden;
     margin: 14px 0;
     border: 1px solid #e3e9f0;
@@ -195,12 +251,31 @@ onMounted(async () => {
 
   .overview-state {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
     color: #16885d;
 
     &.danger {
       color: #d94343;
+    }
+  }
+
+  .detection-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .detection-setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    span {
+      color: #172033;
     }
   }
 
@@ -291,6 +366,10 @@ onMounted(async () => {
 
     .security-overview > div {
       border-color: #303030;
+    }
+
+    .detection-setting span {
+      color: rgba(255, 255, 255, 0.85);
     }
   }
 

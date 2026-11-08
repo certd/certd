@@ -582,6 +582,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     for (const domain of domainList) {
       if (!dnsProvider.getRecordListPage) {
         // 不支持解析记录列表时，直接把主域名作为一个站点
+        task.incrementCurrent();
         try {
           await this.add({
             userId,
@@ -591,7 +592,6 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
             name: domain,
             httpsPort: 443,
           } as any);
-          task.incrementCurrent();
         } catch (e) {
           if (e.message && e.message.indexOf("已达上限") >= 0) {
             task.addError(`${domain}: ${e.message}`);

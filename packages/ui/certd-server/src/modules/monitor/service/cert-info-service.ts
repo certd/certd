@@ -230,7 +230,6 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
 
     // 解析ACME账号授权id，随证书记录落库：吊销旧证书时直接读表，无需再解析流水线
     const acmeAccountAccessId = this.parseAcmeAccountAccessId(pipeline);
-
     const bean = await this.updateCert({
       certReader: new CertReader(cert),
       fromType: certFromType,

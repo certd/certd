@@ -165,7 +165,7 @@ export class BackTask {
   }
 
   getSuccessCount() {
-    return this.current - this.errors.length;
+    return this.current - this.errors.length - this.skip;
   }
 
   getProgress() {

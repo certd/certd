@@ -171,6 +171,13 @@ function goHome() {
         }
         .copyright {
           color: rgba(0, 0, 0, 0.45);
+          .dark & {
+            color: rgba(255, 255, 255, 0.65);
+
+            .ant-divider-vertical {
+              border-color: rgba(255, 255, 255, 0.24);
+            }
+          }
           font-size: 14px;
           display: flex;
           flex-wrap: wrap;
@@ -181,11 +188,15 @@ function goHome() {
             margin-right: 5px;
           }
           a {
-            color: rgba(0, 0, 0, 0.45);
-            transition: all 0.3s;
+            color: inherit;
+            transition: color 0.3s;
 
             &:hover {
               color: rgba(0, 0, 0, 0.85);
+
+              .dark & {
+                color: rgba(255, 255, 255, 0.85);
+              }
             }
           }
         }

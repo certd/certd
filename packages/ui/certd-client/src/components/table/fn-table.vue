@@ -1,5 +1,5 @@
 <template>
-  <div class="fn-table">
+  <div class="fn-table" :aria-busy="loading">
     <div class="fn-table-scroll">
       <table :style="tableStyle">
         <thead>
@@ -20,14 +20,15 @@
               <FnTableCell :column="column" :context="getRowContext(row, index)" :value="getCellValue(row, column)" @component-ref="setCellComponentRef(row, column.key, $event)" />
             </td>
           </tr>
-          <tr v-if="!loading && !data.length">
+          <tr v-if="!data.length">
             <td :colspan="columns.length" class="fn-table-empty">{{ emptyText || "暂无数据" }}</td>
-          </tr>
-          <tr v-if="loading">
-            <td :colspan="columns.length" class="fn-table-empty">加载中...</td>
           </tr>
         </tbody>
       </table>
+    </div>
+    <div v-if="loading" class="fn-table-loading" role="status" aria-live="polite">
+      <a-spin />
+      <span>加载中...</span>
     </div>
   </div>
 </template>
@@ -167,12 +168,26 @@ function getRowKey(row, index) {
 
 <style lang="less">
 .fn-table {
+  position: relative;
   display: flex;
   min-height: 0;
   flex: 1;
   flex-direction: column;
   color: #172033;
   margin: 0 -20px;
+
+  .fn-table-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    color: #46546b;
+    background: rgba(255, 255, 255, 0.75);
+  }
 
   .fn-table-scroll {
     min-height: 0;
@@ -285,6 +300,11 @@ function getRowKey(row, index) {
   }
   .dark & {
     color: rgba(255, 255, 255, 0.85);
+
+    .fn-table-loading {
+      color: rgba(255, 255, 255, 0.85);
+      background: rgba(31, 31, 31, 0.75);
+    }
 
     .fn-table-scroll,
     th,

@@ -37,6 +37,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台。核心模�
 - 仅机械化的大批量替换、格式化或生成任务考虑脚本。临时脚本放临时目录，并在同一个受控步骤内创建、执行、删除，不跨多步落在仓库里。
 - 不主动运行 `pnpm install`；缺依赖、TTY 或网络导致安装/测试失败时，停止尝试并说明环境问题。
 - 业务代码调用本地子进程时，用 `spawn` / `execFile` 等 argv API，将程序与参数分开传入，并显式设置 `shell: false`；禁止 `exec`、`shell: true` 或拼接/插值命令字符串执行动态值。服务端仍须校验用户可控参数，选项型参数优先使用允许列表。远程 SSH 命令按高权限操作处理并校验授权。
+- 当修改需要考虑是否要兼容旧数据时，务必跟用户确认，得到用户准确回复后，再继续处理。
 
 ### 可读性与复用
 
@@ -83,6 +84,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台。核心模�
 - 基础 CRUD 优先复用 `BaseService.find/findOne/list/page/update/deleteWhere`，不从 `repository.createQueryBuilder()` 重写完整查询/更新；仅将基类无法表达的组合筛选、联表、业务排序放入 `list/page` 的 `buildQuery`。
 - **可选 `projectId` 查询必须用 `BaseService.buildUserProjectQuery(userId, projectId)`**，禁止直接构造 `{ userId, projectId }`，避免 `null`/`undefined` 产生错误查询条件。
 - 新 service 方法不覆盖不兼容的基类签名，如用 `deleteById`，不要用 `delete(id)` 覆盖 `BaseService.delete(ids, where?)`。
+- 用户安全封禁的 `access` 范围同时禁止访问和流水线运行（含后台、定时触发）；`pipeline` 范围仅禁止运行。运行检查直接兼容已有访问封禁，不补建重复规则。
 
 ### 证书仓库：保留空证书记录
 

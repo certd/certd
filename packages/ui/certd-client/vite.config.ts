@@ -93,13 +93,13 @@ export default (req: any) => {
         // with options
         "/api": {
           //配套后端 https://github.com/fast-crud/fs-server-js
-          target: "http://127.0.0.1:7001",
+          target: "http://192.168.2.114:7001",
           //忽略证书
           // agent: new https.Agent({ rejectUnauthorized: false }),
         },
         "/certd/api": {
           //配套后端 https://github.com/fast-crud/fs-server-js
-          target: "http://127.0.0.1:7001/api",
+          target: "http://192.168.2.114:7001/api",
           rewrite: (path: any) => path.replace(/^\/certd\/api/, ""),
           //忽略证书
           // agent: new https.Agent({ rejectUnauthorized: false }),
