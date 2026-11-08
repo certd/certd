@@ -37,6 +37,7 @@ export default {
     done: "Done",
     skipped: "Skipped",
     importSkipTooltip: "Domains already present for the current user or project are skipped; existing settings are not overwritten. Skipped items are not counted as successful.",
+    siteImportSkipTooltip: "Existing monitoring sites, TXT/NS/SOA/SRV/CAA/PTR records, wildcard records, and _acme-challenge records are skipped and are not counted as successful.",
     failed: "Failed",
     notExecuted: "Not executed",
     execute: "Run",
