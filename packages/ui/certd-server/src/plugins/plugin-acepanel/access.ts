@@ -4,29 +4,6 @@ import crypto from "crypto";
 import url from "url";
 
 /**
- * 比较点分版本号：left 大于 right 返回 1，小于返回 -1，相等返回 0
- */
-export function compareVersion(left: string, right: string) {
-  const leftParts = String(left || "").split(".");
-  const rightParts = String(right || "").split(".");
-  const maxLength = Math.max(leftParts.length, rightParts.length);
-  for (let i = 0; i < maxLength; i++) {
-    const leftValue = Number.parseInt(leftParts[i] || "0", 10);
-    const rightValue = Number.parseInt(rightParts[i] || "0", 10);
-    if (Number.isNaN(leftValue) || Number.isNaN(rightValue)) {
-      return -1;
-    }
-    if (leftValue > rightValue) {
-      return 1;
-    }
-    if (leftValue < rightValue) {
-      return -1;
-    }
-  }
-  return 0;
-}
-
-/**
  * AcePanel授权
  */
 @IsAccess({
@@ -116,6 +93,29 @@ export class AcePanelAccess extends BaseAccess {
   hmacSha256(key: string, message: string) {
     return crypto.createHmac("sha256", key).update(message).digest("hex");
   }
+
+  /**
+ * 比较点分版本号：left 大于 right 返回 1，小于返回 -1，相等返回 0
+ */
+  compareVersion(left: string, right: string) {
+  const leftParts = String(left || "").split(".");
+  const rightParts = String(right || "").split(".");
+  const maxLength = Math.max(leftParts.length, rightParts.length);
+  for (let i = 0; i < maxLength; i++) {
+    const leftValue = Number.parseInt(leftParts[i] || "0", 10);
+    const rightValue = Number.parseInt(rightParts[i] || "0", 10);
+    if (Number.isNaN(leftValue) || Number.isNaN(rightValue)) {
+      return -1;
+    }
+    if (leftValue > rightValue) {
+      return 1;
+    }
+    if (leftValue < rightValue) {
+      return -1;
+    }
+  }
+  return 0;
+}
 
   /**
    * 为API请求生成签名
@@ -284,7 +284,7 @@ export class AcePanelAccess extends BaseAccess {
     if (!panelVersion) {
       return false;
     }
-    return compareVersion(panelVersion, "3.3.2") >= 0;
+    return this.compareVersion(panelVersion, "3.3.2") >= 0;
   }
 
   async updatePanelCert(cert: string, key: string) {

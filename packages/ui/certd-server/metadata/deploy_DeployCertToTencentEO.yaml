@@ -86,12 +86,16 @@ input:
       mode: tags
       type: plugin
       action: onGetDomainList
-      search: false
-      pager: false
+      search: true
+      pager: true
       single: false
+      pageSize: 20
       watches:
         - certDomains
         - accessId
+        - certDomains
+        - accessId
+        - zoneId
     required: true
     mergeScript: |2-
 

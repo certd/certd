@@ -65,6 +65,15 @@ input:
         - label: Github
           value: github
           icon: logos:github-icon
+        - label: Bilibili
+          value: bilibili
+          icon: simple-icons:bilibili:#007AFF
+        - label: 抖音
+          value: douyin
+          icon: svg:icon-douyin
+        - label: Telegram
+          value: telegram
+          icon: simple-icons:telegram:#007AFF
     required: true
   appId:
     title: AppId

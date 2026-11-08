@@ -1,0 +1,181 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 0
+name: CertApplyPull
+icon: ph:certificate
+title: 证书拉取托管
+group: cert
+desc: 从 HTTP/HTTPS、OSS、S3/MinIO、SFTP、FTP 拉取证书，证书更新后自动部署
+i18n:
+  en-US:
+    title: Pull and Manage Certificate
+    desc: >-
+      Pull certificates from HTTP/HTTPS, OSS, S3/MinIO, SFTP or FTP and deploy
+      them when updated.
+    input:
+      sourceType:
+        title: Certificate Source
+        component:
+          optionsMapping:
+            http: HTTP/HTTPS
+            alioss: Alibaba Cloud OSS
+            tencentcos: Tencent COS
+            qiniuoss: Qiniu KODO
+      accessId:
+        title: Source Credentials
+        helper: >-
+          HTTP/HTTPS credentials are optional; without them, use complete file
+          URLs.
+      crtPath:
+        title: Certificate Path
+        helper: >-
+          PEM full chain file. HTTP/HTTPS accepts a path relative to the
+          credentials URL or a complete URL from the same origin; without
+          credentials, use a complete URL. Other sources accept a file path or
+          object key.
+      keyPath:
+        title: Private Key Path
+        helper: >-
+          PEM private key file. HTTP/HTTPS accepts a path relative to the
+          credentials URL or a complete URL from the same origin; without
+          credentials, use a complete URL. Other sources accept a file path or
+          object key.
+      domains:
+        title: Certificate Domains
+        helper: Enter the domains covered by this certificate.
+    output:
+      cert:
+        title: Domain Certificate
+input:
+  domains:
+    title: 证书域名
+    component:
+      name: domain-selector
+      vModel: value
+      mode: tags
+      placeholder: >-
+        请输入证书域名/IP，比如：foo.com , *.foo.com , *.sub.foo.com , *.bar.com ,
+        123.123.123.123
+      tokenSeparators:
+        - ','
+        - ' '
+        - ，
+        - 、
+        - '|'
+      search: true
+      pager: true
+    rules:
+      - type: domains
+    required: true
+    col:
+      span: 24
+    order: -999
+    helper: |-
+      1、支持多个域名打到一个证书上，例如： foo.com，*.foo.com，*.bar.com
+      2、子域名被通配符包含的不要填写，例如：www.foo.com已经被*.foo.com包含，不要填写www.foo.com
+      3、泛域名只能通配*号那一级（*.foo.com的证书不能用于foo.com且不能用于xxx.yyy.foo.com）
+      4、输入一个，空格之后，再输入下一个 
+      5、如果设置了子域托管解析（比如免费的二级域名托管在CF或者阿里云），请先[设置托管子域名](#/certd/pipeline/subDomain)
+  sourceType:
+    title: 证书来源
+    value: http
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - label: HTTP/HTTPS
+          value: http
+        - label: 阿里云OSS
+          value: alioss
+        - label: 腾讯云COS
+          value: tencentcos
+        - label: 七牛云KODO
+          value: qiniuoss
+        - label: S3/MinIO
+          value: s3
+        - label: SFTP
+          value: sftp
+        - label: FTP
+          value: ftp
+    required: true
+    order: 0
+  accessId:
+    title: 来源授权
+    component:
+      name: access-selector
+    required: false
+    helper: 选择对应来源的授权。HTTP/HTTPS 授权可配置 URL、method、headers 和 body，不选授权时直接使用完整文件 URL
+    mergeScript: |2-
+
+            return {
+              required: ctx.compute(({form}) => form.sourceType !== 'http'),
+              component: {
+                type: ctx.compute(({form}) => form.sourceType)
+              }
+            }
+          
+    order: 0
+  crtPath:
+    title: 证书路径
+    component:
+      name: a-input
+      vModel: value
+    required: true
+    helper: >-
+      PEM 格式的完整证书链文件。HTTP/HTTPS 可填相对授权 URL 的路径或同源完整 URL，不选授权时须填完整
+      URL；其他来源填文件路径或对象 key，需包含文件名
+    order: 0
+  keyPath:
+    title: 私钥路径
+    component:
+      name: a-input
+      vModel: value
+    required: true
+    helper: >-
+      PEM 格式私钥文件。HTTP/HTTPS 可填相对授权 URL 的路径或同源完整 URL，不选授权时须填完整 URL；其他来源填文件路径或对象
+      key，需包含文件名
+    order: 0
+  pfxPassword:
+    title: 证书加密密码
+    component:
+      name: input-password
+      vModel: value
+    required: false
+    order: 100
+    helper: |-
+      转换成PFX、jks格式证书是否需要加密
+      不传则pfx格式默认空密码，jks格式默认123456
+  pfxArgs:
+    title: PFX证书转换参数
+    value: '-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES'
+    component:
+      name: a-auto-complete
+      vModel: value
+      options:
+        - value: ''
+          label: 兼容 Windows Server 最新
+        - value: '-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES'
+          label: 兼容 Windows Server 2016
+        - value: '-nomac -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES'
+          label: 兼容 Windows Server 2008
+    required: false
+    order: 100
+    maybeNeed: true
+    helper: 兼容Windows Server各个版本
+  renewDays:
+    title: 到期前拉取天数
+    value: 20
+    component:
+      name: a-input-number
+      vModel: value
+    required: true
+    order: 100
+    helper: 到期前多少天拉取证书
+output:
+  cert:
+    title: 域名证书
+    type: cert
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-cert/plugin/cert-plugin/getter/pull.js

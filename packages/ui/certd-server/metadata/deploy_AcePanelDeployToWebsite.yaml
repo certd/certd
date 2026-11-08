@@ -72,6 +72,15 @@ input:
               
     helper: 选择需要部署证书的网站
     order: 0
+  enableHttps:
+    title: 启用HTTPS
+    value: true
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 部署证书时是否同时开启所选网站的HTTPS访问
+    required: true
+    order: 0
 output: {}
 pluginType: deploy
 type: builtIn
