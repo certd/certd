@@ -12,6 +12,7 @@
           <div class="left">
             <div>
               <span>{{ t("certd.dashboard.greeting", { name: userInfo.nickName || userInfo.username, site: siteInfo.title }) }}</span>
+              <security-summary v-if="userStore.isAdmin" />
             </div>
             <div class="flex-o flex-wrap profile-badges">
               <a-tooltip :title="deltaTimeTip">
@@ -200,6 +201,7 @@ import { UserInfoRes } from "/@/store/user/api.user";
 import { LocalStorage } from "/@/utils/util.storage";
 import { GetStatisticCount } from "/@/views/framework/home/dashboard/api";
 import StatisticCard from "/@/views/framework/home/dashboard/statistic-card.vue";
+import SecuritySummary from "./security-summary.vue";
 import { useI18n } from "/src/locales";
 const { t } = useI18n();
 defineOptions({
@@ -287,7 +289,6 @@ const router = useRouter();
 function goPipeline() {
   router.push({ path: "/cert/pipeline" });
 }
-
 const count: any = ref({});
 function formatSavedAmount(amountValue: number) {
   const amount = Number(amountValue) || 0;

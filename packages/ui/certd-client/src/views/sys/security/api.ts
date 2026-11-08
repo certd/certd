@@ -17,9 +17,9 @@ export interface RiskRecord {
 }
 
 export interface SecurityMonitorSummary {
-  riskCount: number;
-  suspiciousPipelineCount: number;
-  ipBanCount: number;
+  riskCount?: number;
+  suspiciousPipelineCount?: number;
+  ipBanCount?: number;
   hasRecentRisk: boolean;
 }
 
@@ -75,7 +75,7 @@ export const securityMonitorApi = {
     });
   },
   async summary(): Promise<SecurityMonitorSummary> {
-    return await request({ url: apiPrefix + "/summary", method: "post" });
+    return await request({ url: apiPrefix + "/summary", method: "post", showErrorNotify: false });
   },
   async getDetectionSettings(): Promise<SecurityDetectionSettings> {
     return await request({ url: apiPrefix + "/settings/get", method: "post", showErrorNotify: false });
