@@ -1,5 +1,5 @@
 import * as _ from "lodash-es";
-import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DnsResolveRecord, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 
 import { HuaweiAccess } from "../access/index.js";
 import { ApiRequestOptions, HuaweiYunClient } from "@certd/lib-huawei";
@@ -204,6 +204,43 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
     return {
       total: ret.metadata.total_count || list.length,
       list,
+    };
+  }
+
+  async getRecordListPage(domain: string, req: PageSearch): Promise<PageRes<DnsResolveRecord>> {
+    const pager = new Pager(req);
+    const zoneName = domain.replace(/\.$/, "");
+    // 精确查询公网区域，避免同名私网区域或父子域名的解析记录混入导入结果。
+    const zoneRet = await this.client.request({
+      url: `${this.dnsEndpoint}/v2/zones?zone_type=public&search_mode=equal&name=${encodeURIComponent(zoneName + ".")}`,
+      method: "GET",
+    });
+    const zone = zoneRet.zones?.[0];
+    if (!zone) {
+      throw new Error(`未找到华为云公网域名：${zoneName}`);
+    }
+
+    const ret = await this.client.request({
+      url: `${this.dnsEndpoint}/v2/zones/${zone.id}/recordsets?offset=${pager.getOffset()}&limit=${pager.pageSize}`,
+      method: "GET",
+    });
+    const list = (ret.recordsets || []).map((item: any) => {
+      const fullRecord = item.name.replace(/\.$/, "");
+      let hostRecord = "@";
+      if (fullRecord !== zoneName) {
+        hostRecord = fullRecord.slice(0, fullRecord.length - zoneName.length - 1);
+      }
+      return {
+        id: item.id,
+        hostRecord,
+        fullRecord,
+        type: item.type,
+        value: (item.records || []).join(","),
+      };
+    });
+    return {
+      list,
+      total: ret.metadata?.total_count ?? list.length,
     };
   }
 }
