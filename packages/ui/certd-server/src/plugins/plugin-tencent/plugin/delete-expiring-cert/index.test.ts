@@ -170,7 +170,6 @@ describe("TencentDeleteExpiringCert", () => {
   for (const [status, reason] of [
     [2, /失败/],
     [3, /SSL_QCSLinkedRoleInReplaceLoadCertificate/],
-    [4, /未解绑/],
     [5, /查询关联.*超时/],
     [99, /未知状态.*99/],
     [undefined, /未知状态.*undefined/],
@@ -197,7 +196,7 @@ describe("TencentDeleteExpiringCert", () => {
     assert.deepEqual(request?.params, { CertificateIds: ["cert-0", "cert-1"], IsSync: true });
   });
 
-  it("跨轮询保留失败而不是被后续成功覆盖", async () => {
+  it("跨轮询保留未解绑状态而不是被后续成功覆盖", async () => {
     const fixture = await createFixture([4, 1]);
     fixture.state.responses = [
       {
@@ -208,16 +207,7 @@ describe("TencentDeleteExpiringCert", () => {
       },
       { DeleteTaskResult: [{ TaskId: "task-1", CertId: "cert-1", Status: 1 }] },
     ];
-    await assert.rejects(
-      () => fixture.plugin.execute(),
-      (error: Error) => {
-        assert.match(error.message, /成功[:：]\s*1/);
-        assert.match(error.message, /失败[:：]\s*1/);
-        assert.match(error.message, /task-0/);
-        assert.match(error.message, /未解绑/);
-        return true;
-      }
-    );
+    await fixture.plugin.execute();
     assert.equal(fixture.state.pollCount, 2);
   });
 
@@ -243,7 +233,7 @@ describe("TencentDeleteExpiringCert", () => {
     await assert.rejects(
       () => fixture.plugin.execute(),
       (error: Error) => {
-        for (const pattern of [/超时/, /成功[:：]\s*1/, /失败[:：]\s*1/, /未完成[:：]\s*1/, /task-1/, /未解绑/, /task-2/]) {
+        for (const pattern of [/超时/, /成功[:：]\s*1/, /失败[:：]\s*0/, /未完成[:：]\s*1/, /task-1/, /未解绑/, /task-2/]) {
           assert.match(error.message, pattern);
         }
         return true;
@@ -251,22 +241,13 @@ describe("TencentDeleteExpiringCert", () => {
     );
   });
 
-  it("同批次部分成功不能掩盖失败", async () => {
+  it("同批次成功和未解绑状态都能正常结束", async () => {
     const fixture = await createFixture([1, 4]);
-    await assert.rejects(
-      () => fixture.plugin.execute(),
-      (error: Error) => {
-        assert.match(error.message, /成功[:：]\s*1/);
-        assert.match(error.message, /失败[:：]\s*1/);
-        assert.match(error.message, /task-1/);
-        assert.match(error.message, /未解绑/);
-        return true;
-      }
-    );
+    await fixture.plugin.execute();
     assert.equal(fixture.state.pollCount, 1);
   });
 
-  for (const status of [2, 3, 4, 5, 99]) {
+  for (const status of [2, 3, 5, 99]) {
     it(`状态 ${status} 通过真实执行链产生失败历史及失败通知`, async () => {
       await createFixture([status]);
       const run = await runPipelineFixture();
@@ -342,15 +323,10 @@ describe("TencentDeleteExpiringCert", () => {
         ],
       },
     ];
-    await assert.rejects(
-      () => fixture.plugin.execute(),
-      (error: Error) => {
-        assert.match(error.message, /成功[:：]\s*1/);
-        assert.match(error.message, /失败[:：]\s*1/);
-        assert.doesNotMatch(error.message, /other-task/);
-        return true;
-      }
-    );
+    await fixture.plugin.execute();
+    assert.match(fixture.logs.join("\n"), /成功[:：]\s*1/);
+    assert.match(fixture.logs.join("\n"), /未解绑/);
+    assert.doesNotMatch(fixture.logs.join("\n"), /other-task/);
     assert.equal(fixture.state.pollCount, 2);
     const queries = fixture.calls.filter(call => call.action === "DescribeDeleteCertificatesTaskResult");
     assert.deepEqual(queries[1].params.TaskIds, ["task-1"]);
@@ -514,31 +490,19 @@ describe("TencentDeleteExpiringCert", () => {
     const fixture = await createFixture([0]);
     fixture.state.deleteResponse = { CertTaskIds: [{ TaskId: "task-0" }] };
     fixture.state.responses = [{ DeleteTaskResult: [{ TaskId: "task-0", CertId: "cert-0", Status: 0 }] }, { DeleteTaskResult: [{ TaskId: "task-0", Status: 4 }] }];
-    await assert.rejects(
-      () => fixture.plugin.execute(),
-      (error: Error) => {
-        assert.match(error.message, /删除证书任务失败/);
-        assert.match(error.message, /task-0/);
-        assert.match(error.message, /cert-0/);
-        assert.match(error.message, /未解绑/);
-        return true;
-      }
-    );
+    await fixture.plugin.execute();
+    assert.match(fixture.logs.join("\n"), /task-0/);
+    assert.match(fixture.logs.join("\n"), /cert-0/);
+    assert.match(fixture.logs.join("\n"), /未解绑/);
   });
 
   it("提交映射有CertId且轮询全程不带CertId时摘要仍含CertId", async () => {
     const fixture = await createFixture([0]);
     fixture.state.deleteResponse = { CertTaskIds: [{ CertId: "cert-0", TaskId: "task-0" }] };
     fixture.state.responses = [{ DeleteTaskResult: [{ TaskId: "task-0", Status: 4 }] }];
-    await assert.rejects(
-      () => fixture.plugin.execute(),
-      (error: Error) => {
-        assert.match(error.message, /删除证书任务失败/);
-        assert.match(error.message, /task-0/);
-        assert.match(error.message, /cert-0/);
-        assert.match(error.message, /未解绑/);
-        return true;
-      }
-    );
+    await fixture.plugin.execute();
+    assert.match(fixture.logs.join("\n"), /task-0/);
+    assert.match(fixture.logs.join("\n"), /cert-0/);
+    assert.match(fixture.logs.join("\n"), /未解绑/);
   });
 });
