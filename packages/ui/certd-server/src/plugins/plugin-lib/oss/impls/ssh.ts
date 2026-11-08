@@ -15,19 +15,22 @@ export default class SshOssClientImpl extends BaseOssClient<SshAccess> {
   listDir(dir: string): Promise<OssFileItem[]> {
     throw new Error("Method not implemented.");
   }
-  async upload(filePath: string, fileContent: Buffer) {
+  async upload(filePath: string, fileContent: Buffer | string) {
     if (!filePath) {
       filePath = "";
     }
     filePath = filePath.trim();
-    const tmpFilePath = path.join(os.tmpdir(), "cert", "http", filePath);
-
-    // Write file to temp path
-    const dir = path.dirname(tmpFilePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    let tmpFilePath: string;
+    if (typeof fileContent === "string") {
+      tmpFilePath = fileContent;
+    } else {
+      tmpFilePath = path.join(os.tmpdir(), "cert", "http", filePath);
+      const dir = path.dirname(tmpFilePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      fs.writeFileSync(tmpFilePath, fileContent);
     }
-    fs.writeFileSync(tmpFilePath, fileContent);
 
     const key = this.rootDir + filePath;
     try {
@@ -43,8 +46,9 @@ export default class SshOssClientImpl extends BaseOssClient<SshAccess> {
         ],
       });
     } finally {
-      // Remove temp file
-      fs.unlinkSync(tmpFilePath);
+      if (typeof fileContent !== "string") {
+        fs.unlinkSync(tmpFilePath);
+      }
     }
   }
 

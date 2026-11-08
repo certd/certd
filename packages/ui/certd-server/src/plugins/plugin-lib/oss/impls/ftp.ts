@@ -52,8 +52,9 @@ export default class FtpOssClientImpl extends BaseOssClient<FtpAccess> {
         const path = this.join(this.rootDir, filePath);
         await client.upload(tmpFilePath, path);
       } finally {
-        // Remove temp file
-        fs.unlinkSync(tmpFilePath);
+        if (typeof fileContent !== "string") {
+          fs.unlinkSync(tmpFilePath);
+        }
       }
     });
   }

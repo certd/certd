@@ -3,9 +3,10 @@ import path from "node:path";
 import { S3Access } from "../../s3/access.js";
 import fs from "fs";
 import dayjs from "dayjs";
+import { pipeline } from "node:stream/promises";
 
 export default class S3OssClientImpl extends BaseOssClient<S3Access> {
-  client: any;
+  client!: any;
   join(...strs: string[]) {
     const str = super.join(...strs);
     if (str.startsWith("/")) {
@@ -33,14 +34,14 @@ export default class S3OssClientImpl extends BaseOssClient<S3Access> {
   async download(filePath: string, savePath: string): Promise<void> {
     // @ts-ignore
     const { GetObjectCommand } = await this.access.importRuntime("@aws-sdk/client-s3");
-    const key = path.join(this.rootDir, filePath);
+    const key = this.join(this.rootDir, filePath);
     const params = {
       Bucket: this.access.bucket, // The name of the bucket. For example, 'sample_bucket_101'.
       Key: key, // The name of the object. For example, 'sample_upload.txt'.
     };
     const res = await this.client.send(new GetObjectCommand({ ...params }));
-    const fileContent = fs.createWriteStream(savePath);
-    res.Body.pipe(fileContent);
+    const fileContent = fs.createWriteStream(savePath, { mode: 0o600 });
+    await pipeline(res.Body, fileContent);
 
     this.logger.info(`文件下载成功: ${savePath}`);
   }

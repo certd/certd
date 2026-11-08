@@ -1,5 +1,5 @@
 import { IAccessService } from "@certd/pipeline";
-import { ILogger, utils } from "@certd/basic";
+import { HttpClient, ILogger, utils } from "@certd/basic";
 import dayjs from "dayjs";
 
 export type OssClientRemoveByOpts = {
@@ -17,7 +17,8 @@ export type OssFileItem = {
 };
 
 export type IOssClient = {
-  upload: (fileName: string, fileContent: Buffer) => Promise<void>;
+  // Buffer 为文件内容，string 为本地文件路径；上传后保留调用方的源文件。
+  upload: (fileName: string, fileContent: Buffer | string) => Promise<void>;
   remove: (fileName: string, opts?: { joinRootDir?: boolean }) => Promise<void>;
 
   download: (fileName: string, savePath: string) => Promise<void>;
@@ -31,6 +32,7 @@ export type OssClientContext = {
   accessService: IAccessService;
   logger: ILogger;
   utils: typeof utils;
+  http?: HttpClient;
 };
 
 export abstract class BaseOssClient<A> implements IOssClient {
@@ -73,7 +75,7 @@ export abstract class BaseOssClient<A> implements IOssClient {
   }
 
   abstract remove(fileName: string, opts?: { joinRootDir?: boolean }): Promise<void>;
-  abstract upload(fileName: string, fileContent: Buffer): Promise<void>;
+  abstract upload(fileName: string, fileContent: Buffer | string): Promise<void>;
   abstract download(fileName: string, savePath: string): Promise<void>;
   abstract listDir(dir: string): Promise<OssFileItem[]>;
 
