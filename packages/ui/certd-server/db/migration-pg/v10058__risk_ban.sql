@@ -7,7 +7,7 @@ CREATE TABLE "cd_risk_ban"
   "scope"        varchar(16) NOT NULL,
   "reason"       text,
   "expires_at"   timestamp,
-  "enabled"      boolean NOT NULL DEFAULT 1,
+  "enabled"      boolean NOT NULL DEFAULT (true),
   "create_time"  timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "update_time"  timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP)
 );
