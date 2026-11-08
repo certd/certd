@@ -14,6 +14,18 @@ input:
       vModel: modelValue
     helper: 请选择一个SSH授权
     required: true
+  uploadType:
+    title: 上传方式
+    value: sftp
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - label: SFTP
+          value: sftp
+        - label: SCP
+          value: scp
+    helper: 文件上传方式，默认使用SFTP
   fileMode:
     title: 文件权限
     component:

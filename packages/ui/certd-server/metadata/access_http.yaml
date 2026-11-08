@@ -1,0 +1,85 @@
+name: http
+title: HTTP/HTTPS 授权
+desc: 配置 HTTP 文件来源的 URL、请求方式、请求头和请求体
+icon: mdi:web
+i18n:
+  en-US:
+    title: HTTP/HTTPS Access
+    desc: Configure the URL, method, headers and body for an HTTP file source.
+    input:
+      url:
+        helper: >-
+          Base HTTP/HTTPS URL. End directory URLs with /; file paths are
+          resolved relative to this URL.
+      method:
+        title: Request Method
+      headers:
+        title: Headers
+        helper: One key=value per line, e.g. Authorization=Bearer token.
+      body:
+        title: Request Body
+        helper: >-
+          Raw request body. For JSON, set Content-Type=application/json in
+          headers.
+      testRequest:
+        title: Test
+        helper: >-
+          Send a request to the configured URL using the method, headers and
+          body above.
+input:
+  url:
+    title: URL
+    component:
+      name: a-input
+      vModel: value
+      placeholder: https://example.com/ssl/
+    helper: HTTP/HTTPS 基础地址。目录地址请以 / 结尾，证书和私钥路径相对此地址解析
+    required: true
+    encrypt: true
+  method:
+    title: 请求方式
+    value: GET
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - label: GET
+          value: GET
+        - label: POST
+          value: POST
+        - label: PUT
+          value: PUT
+        - label: PATCH
+          value: PATCH
+        - label: DELETE
+          value: DELETE
+        - label: HEAD
+          value: HEAD
+        - label: OPTIONS
+          value: OPTIONS
+    required: true
+  headers:
+    title: Headers
+    component:
+      name: a-textarea
+      vModel: value
+      rows: 3
+    helper: 一行一个，格式为 key=value，例如 Authorization=Bearer token
+    encrypt: true
+  body:
+    title: 请求体
+    component:
+      name: a-textarea
+      vModel: value
+      rows: 4
+    helper: 原始请求体文本。发送 JSON 时，请在 Headers 中配置 Content-Type=application/json
+    encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 使用以上 method、headers 和 body 请求配置的 URL
+pluginType: access
+type: builtIn
+scriptFilePath: /plugins/plugin-lib/http/access.js
