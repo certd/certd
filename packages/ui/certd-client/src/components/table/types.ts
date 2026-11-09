@@ -231,6 +231,10 @@ export interface FnTableProps {
   rowHandle?: FnTableColumn;
   columns?: Array<FnTableColumn & { key: string }>;
   data: Record<string, any>[];
+  rowSelection?: {
+    selectedRowKeys: Array<string | number> | Ref<Array<string | number>>;
+    onChange: (selectedRowKeys: string[]) => void;
+  };
   sort?: { prop: string; asc: boolean };
   show?: boolean;
   loading?: boolean;

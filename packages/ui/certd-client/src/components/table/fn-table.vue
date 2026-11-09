@@ -4,6 +4,9 @@
       <table :style="tableStyle">
         <thead>
           <tr>
+            <th v-if="rowSelection" class="fn-table-selection-column">
+              <a-checkbox aria-label="选择当前页" :checked="pageSelection.checked" :indeterminate="pageSelection.indeterminate" @change="event => togglePageSelection(event.target.checked)" />
+            </th>
             <th v-for="column in columns" :key="column.key" :class="columnClasses(column)" :style="columnStyle(column, column.key)" :title="column.title" @click="sortColumn(column.key)">
               <span class="fn-table-heading-content">
                 {{ column.title }}
@@ -16,12 +19,15 @@
         </thead>
         <tbody>
           <tr v-for="(row, index) in data" :key="getRowKey(row, index)">
+            <td v-if="rowSelection" class="fn-table-selection-column">
+              <a-checkbox :aria-label="`选择第 ${index + 1} 条记录`" :checked="isRowSelected(row, index)" @change="event => updateRowSelection(row, index, event.target.checked)" />
+            </td>
             <td v-for="column in columns" :key="column.key" :class="columnClasses(column)" :style="columnStyle(column, column.key)" :title="column.ellipsis ? String(getCellValue(row, column) ?? '') : undefined">
               <FnTableCell :column="column" :context="getRowContext(row, index)" :value="getCellValue(row, column)" @component-ref="setCellComponentRef(row, column.key, $event)" />
             </td>
           </tr>
           <tr v-if="!data.length">
-            <td :colspan="columns.length" class="fn-table-empty">{{ emptyText || "暂无数据" }}</td>
+            <td :colspan="columns.length + (rowSelection ? 1 : 0)" class="fn-table-empty">{{ emptyText || "暂无数据" }}</td>
           </tr>
         </tbody>
       </table>
@@ -35,7 +41,7 @@
 
 <script setup lang="ts">
 import { ArrowDown, ArrowUp } from "@lucide/vue";
-import { computed, reactive, ref } from "vue";
+import { computed, isRef, reactive, ref } from "vue";
 import FnTableCell from "./fn-table-cell.vue";
 import type { FnTableProps } from "./types";
 const props = withDefaults(defineProps<FnTableProps>(), { data: () => [], loading: false, emptyText: "暂无数据", sort: () => ({ prop: "", asc: true }) });
@@ -61,6 +67,24 @@ const emit = defineEmits<{ sort: [value: { prop: string; asc: boolean }] }>();
 const resizing = ref(false);
 const columnWidths = reactive<Record<string, number>>({});
 const cellComponentRefs = new Map();
+const selectedRowKeys = computed(() => {
+  const selected = props.rowSelection?.selectedRowKeys;
+  if (Array.isArray(selected)) {
+    return selected.map(String);
+  }
+  if (selected && isRef(selected)) {
+    return selected.value.map(String);
+  }
+  return [];
+});
+const pageSelection = computed(() => {
+  const pageKeys = props.data.map((row, index) => String(getRowKey(row, index)));
+  const selectedCount = pageKeys.filter(key => selectedRowKeys.value.includes(key)).length;
+  return {
+    checked: pageKeys.length > 0 && selectedCount === pageKeys.length,
+    indeterminate: selectedCount > 0 && selectedCount < pageKeys.length,
+  };
+});
 const tableStyle = computed(() => {
   if (typeof props.minWidth === "number") {
     return { minWidth: `${props.minWidth}px` };
@@ -164,6 +188,35 @@ function getRowKey(row, index) {
   }
   return row.id ?? index;
 }
+
+function isRowSelected(row, index) {
+  return selectedRowKeys.value.includes(String(getRowKey(row, index)));
+}
+
+function updateRowSelection(row, index, checked: boolean) {
+  const key = String(getRowKey(row, index));
+  const nextKeys = new Set(selectedRowKeys.value);
+  if (checked) {
+    nextKeys.add(key);
+  } else {
+    nextKeys.delete(key);
+  }
+  props.rowSelection?.onChange(Array.from(nextKeys));
+}
+
+function togglePageSelection(checked: boolean) {
+  const nextKeys = new Set(selectedRowKeys.value);
+  for (let index = 0; index < props.data.length; index++) {
+    const row = props.data[index];
+    const key = String(getRowKey(row, index));
+    if (checked) {
+      nextKeys.add(key);
+    } else {
+      nextKeys.delete(key);
+    }
+  }
+  props.rowSelection?.onChange(Array.from(nextKeys));
+}
 </script>
 
 <style lang="less">
@@ -210,6 +263,14 @@ function getRowKey(row, index) {
       text-align: left;
       font-size: 13px;
       white-space: nowrap;
+    }
+
+    .fn-table-selection-column {
+      width: 44px;
+      min-width: 44px;
+      padding-right: 8px;
+      padding-left: 16px;
+      text-align: center;
     }
 
     th {

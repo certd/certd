@@ -2,7 +2,21 @@
   <div class="security-risk-table">
     <FnCrud ref="tableRef" v-bind="tableOptions">
       <template #header>
-        <p>扫描拦截、注入特征与可疑流水线统一审计</p>
+        <div class="risk-table-header">
+          <p>扫描拦截、注入特征与可疑流水线统一审计</p>
+          <div v-if="selectedRowKeys.length" class="risk-batch-actions">
+            <span>{{ t("certd.sys.securityMonitor.selectedRiskCount", { count: selectedRowKeys.length }) }}</span>
+            <a-select v-model:value="bulkReviewStatus" class="risk-batch-actions__select" :placeholder="t('certd.sys.securityMonitor.batchReviewStatusPlaceholder')">
+              <a-select-option v-for="option in reviewStatusOptions" :key="option.value" :value="option.value">
+                {{ t(`certd.sys.securityMonitor.${option.key}`) }}
+              </a-select-option>
+            </a-select>
+            <a-button type="primary" :disabled="!bulkReviewStatus" :loading="batchLoading" @click="batchUpdateRiskReviewStatus">
+              {{ t("certd.sys.securityMonitor.batchSetReviewStatus") }}
+            </a-button>
+            <a-button :disabled="batchLoading" @click="clearRiskSelection">{{ t("certd.sys.securityMonitor.clearRiskSelection") }}</a-button>
+          </div>
+        </div>
       </template>
     </FnCrud>
   </div>
@@ -20,12 +34,16 @@ import { RiskRecord, RiskReviewStatus, securityMonitorApi } from "./api";
 const emit = defineEmits<{ changed: [] }>();
 const { t } = useI18n();
 const tableRef = ref<{ refresh: () => Promise<void> }>();
+const selectedRowKeys = ref<Array<string | number>>([]);
+const bulkReviewStatus = ref<RiskReviewStatus>();
+const batchLoading = ref(false);
 const reviewStatusOptions: { value: RiskReviewStatus; key: string }[] = [
   { value: "unverified", key: "reviewUnverified" },
   { value: "open", key: "reviewOpen" },
   { value: "contained", key: "reviewContained" },
   { value: "resolved", key: "reviewResolved" },
   { value: "falsePositive", key: "reviewFalsePositive" },
+  { value: "notRequired", key: "reviewNotRequired" },
 ];
 const riskTypeDict = new DictStore({
   data: [
@@ -178,7 +196,19 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
   request: { pageRequest },
   tabs: { refCol: "type" },
   id: "security-monitor-table",
-  table: { minWidth: 1550, rowKey: "id", emptyText: "暂无风险记录" },
+  table: {
+    minWidth: 1650,
+    rowKey: "id",
+    emptyText: "暂无风险记录",
+    rowSelection: permissionUtil.hasPermissions("sys:settings:edit")
+      ? {
+          selectedRowKeys,
+          onChange: keys => {
+            selectedRowKeys.value = keys;
+          },
+        }
+      : undefined,
+  },
   pagination: { current: 1, pageSize: 20, pageSizeProps: ["10", "20", "30", "40", "50", "100"], showTotal: total => `共 ${total} 条` },
 };
 
@@ -207,6 +237,28 @@ function reviewStatusLabel(status: RiskReviewStatus) {
 }
 function formatDate(value: string | number) {
   return new Date(value).toLocaleString("zh-CN", { hour12: false });
+}
+async function batchUpdateRiskReviewStatus() {
+  const reviewStatus = bulkReviewStatus.value;
+  const ids = selectedRowKeys.value.map(String);
+  if (!reviewStatus || ids.length === 0 || batchLoading.value) {
+    return;
+  }
+  batchLoading.value = true;
+  try {
+    await securityMonitorApi.updateRiskReviewStatuses(ids, reviewStatus);
+    notification.success({ message: t("certd.sys.securityMonitor.batchUpdateReviewStatusSuccess", { count: ids.length }) });
+    clearRiskSelection();
+    emit("changed");
+  } catch (error: any) {
+    notification.error({ message: t("certd.sys.securityMonitor.batchUpdateReviewStatusError"), description: error.message });
+  } finally {
+    batchLoading.value = false;
+  }
+}
+function clearRiskSelection() {
+  selectedRowKeys.value = [];
+  bulkReviewStatus.value = undefined;
 }
 async function updateRiskReviewStatus(row: RiskRecord, reviewStatus: RiskReviewStatus) {
   try {
@@ -312,6 +364,33 @@ defineExpose({ refresh });
     font-weight: 600;
   }
 
+  .risk-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    > p {
+      margin: 0;
+      color: #8490a3;
+      font-size: 13px;
+    }
+  }
+
+  .risk-batch-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: #596579;
+    font-size: 12px;
+  }
+
+  .risk-batch-actions__select {
+    width: 180px;
+  }
+
   .dot {
     width: 7px;
     height: 7px;
@@ -370,6 +449,11 @@ defineExpose({ refresh });
       color: #596579;
       background: #eef1f5;
     }
+
+    &.review-notRequired {
+      color: #596579;
+      background: #eef1f5;
+    }
   }
 
   .pipeline {
@@ -398,6 +482,28 @@ defineExpose({ refresh });
       &.high {
         color: #ff7875;
         background: #2a1215;
+      }
+
+      &.review-unverified {
+        color: #ffc53d;
+        background: #2b2111;
+      }
+
+      &.review-open {
+        color: #ff7875;
+        background: #2a1215;
+      }
+
+      &.review-contained,
+      &.review-resolved {
+        color: #73d13d;
+        background: #162312;
+      }
+
+      &.review-falsePositive,
+      &.review-notRequired {
+        color: rgba(255, 255, 255, 0.65);
+        background: #303030;
       }
     }
   }
