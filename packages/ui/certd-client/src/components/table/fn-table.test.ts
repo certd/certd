@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { parse, compileScript } from "@vue/compiler-sfc";
 import ts from "typescript";
 import { expect, it } from "vitest";
+import { ref } from "vue";
 
 const filename = fileURLToPath(new URL("./fn-table.vue", import.meta.url));
 const { descriptor } = parse(readFileSync(filename, "utf8"), { filename });
@@ -44,9 +45,13 @@ it("单行选择回调稳定 ID，并保留跨页已选记录", () => {
 
 it("选择当前页时不清除跨页选择，取消当前页只移除当前页 ID", () => {
   const selected: any[] = [];
-  const rowSelection: any = {
-    selectedRowKeys: [9],
-    onChange: (keys: string[]) => selected.push(keys),
+  const selectedRowKeys = ref<Array<string | number>>([9]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (keys: string[]) => {
+      selected.push(keys);
+      selectedRowKeys.value = keys;
+    },
   };
   const props = {
     data: [{ id: 12 }, { id: 13 }],
@@ -55,8 +60,9 @@ it("选择当前页时不清除跨页选择，取消当前页只移除当前页 
   };
   const setup = module.exports.default.setup(props, { expose: () => {}, emit: () => {} });
 
+  expect(setup.togglePageSelection).toBeTypeOf("function");
   setup.togglePageSelection(true);
-  rowSelection.selectedRowKeys = selected[0];
+  expect(selected[0]).toEqual(["9", "12", "13"]);
   setup.togglePageSelection(false);
 
   expect(selected[0]).toEqual(["9", "12", "13"]);

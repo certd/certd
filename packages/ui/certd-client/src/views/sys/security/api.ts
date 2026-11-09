@@ -17,7 +17,7 @@ export interface RiskRecord {
   detail?: string;
 }
 
-export type RiskReviewStatus = "unverified" | "open" | "contained" | "resolved" | "falsePositive";
+export type RiskReviewStatus = "unverified" | "open" | "contained" | "resolved" | "falsePositive" | "notRequired";
 
 export interface SecurityMonitorSummary {
   riskCount?: number;
@@ -78,6 +78,13 @@ export const securityMonitorApi = {
       url: "/sys/security/risk-records/review-status",
       method: "post",
       data: { id, reviewStatus },
+    });
+  },
+  async updateRiskReviewStatuses(ids: string[], reviewStatus: RiskReviewStatus) {
+    return await request({
+      url: "/sys/security/risk-records/review-status/batch",
+      method: "post",
+      data: { ids, reviewStatus },
     });
   },
   async banPage(query: any): Promise<SecurityBanPageResult> {
