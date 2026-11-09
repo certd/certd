@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.47.0](https://github.com/certd/certd/compare/v1.46.1...v1.47.0) (2026-11-09)
+
+### Bug Fixes
+
+* add manual risk review and severity states ([66c99cb](https://github.com/certd/certd/commit/66c99cb69d319b35106d66b1f49c17d43aed091c))
+
+### Features
+
+* 启用 Koa 反向代理信任配置 ([31ab239](https://github.com/certd/certd/commit/31ab2395ec75e78bd50bf637a7de491a92402018))
+
+### Performance Improvements
+
+* 重构风险处置状态并新增批量标记已处理功能 ([e4ec4db](https://github.com/certd/certd/commit/e4ec4db6bf1a8d814bdb53db020488a28cf82943))
+
 ## [1.46.1](https://github.com/certd/certd/compare/v1.46.0...v1.46.1) (2026-11-08)
 
 ### Bug Fixes
