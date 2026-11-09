@@ -3,7 +3,7 @@
     <template #content>
       <div class="security-status-popover">
         <div class="security-status-popover__title">{{ t("certd.dashboard.securityStatus") }}</div>
-        <div class="security-status-popover__summary" :class="`is-${securityStatus.color}`">
+        <div class="security-status-popover__summary" :class="`is-${securityStatus.tone}`">
           <fs-icon :icon="securityStatus.icon" />
           <div>
             <strong>{{ securityStatus.title }}</strong>
@@ -25,7 +25,7 @@
         </router-link>
       </div>
     </template>
-    <a-tag class="security-status-trigger inline-flex pointer" :color="securityStatus.color">
+    <a-tag class="security-status-trigger inline-flex pointer" :color="securityStatus.color" :class="`is-${securityStatus.tone}`">
       <fs-icon :icon="securityStatus.icon" />
       {{ t("certd.dashboard.securityStatus") }} · {{ securityStatus.title }}
       <fs-icon icon="ion:chevron-down-outline" class="security-status-trigger__arrow" />
@@ -53,6 +53,7 @@ const securityStatus = computed(() => {
     if (securitySummaryFailed.value) {
       return {
         color: "red",
+        tone: "danger",
         icon: "ion:alert-circle-outline",
         title: t("certd.dashboard.securityUnavailable"),
         description: t("certd.dashboard.securityUnavailableDescription"),
@@ -60,22 +61,43 @@ const securityStatus = computed(() => {
     }
     return {
       color: "info",
+      tone: "loading",
       icon: "ion:shield-outline",
       title: t("certd.dashboard.securityLoading"),
       description: t("certd.dashboard.securityLoadingDescription"),
     };
   }
-  if (securitySummary.value.hasRecentRisk) {
+  if (securitySummary.value.overallStatus === "critical") {
     return {
       color: "red",
+      tone: "danger",
       icon: "ion:warning-outline",
       title: t("certd.dashboard.securityRisk"),
       description: t("certd.dashboard.securityRiskDescription"),
     };
   }
+  if (securitySummary.value.overallStatus === "warning" || securitySummary.value.hasRecentRisk) {
+    if (securitySummary.value.ipBanCount && securitySummary.value.ipBanCount > 0 && !securitySummary.value.reviewNeededCount) {
+      return {
+        color: "yellow",
+        tone: "warning",
+        icon: "ion:shield-checkmark-outline",
+        title: t("certd.dashboard.securityBlocked"),
+        description: t("certd.dashboard.securityBlockedDescription"),
+      };
+    }
+    return {
+      color: "yellow",
+      tone: "warning",
+      icon: "ion:warning-outline",
+      title: t("certd.dashboard.securityWarning"),
+      description: t("certd.dashboard.securityWarningDescription"),
+    };
+  }
   if (securitySummary.value.ipBanCount && securitySummary.value.ipBanCount > 0) {
     return {
       color: "yellow",
+      tone: "warning",
       icon: "ion:shield-checkmark-outline",
       title: t("certd.dashboard.securityBlocked"),
       description: t("certd.dashboard.securityBlockedDescription"),
@@ -83,6 +105,7 @@ const securityStatus = computed(() => {
   }
   return {
     color: "green",
+    tone: "success",
     icon: "ion:shield-checkmark-outline",
     title: t("certd.dashboard.securityNormal"),
     description: t("certd.dashboard.securityNormalDescription"),
@@ -93,9 +116,15 @@ const securityIssueItems = computed(() => {
   if (!summary) {
     return [];
   }
+  let riskColor = "success";
+  if (summary.overallStatus === "critical") {
+    riskColor = "danger";
+  } else if (summary.overallStatus === "warning") {
+    riskColor = "warning";
+  }
   return [
-    { name: t("certd.dashboard.securityRiskCount"), value: summary.riskCount, color: summary.riskCount > 0 ? "danger" : "success" },
-    { name: t("certd.dashboard.securitySuspiciousPipelineCount"), value: summary.suspiciousPipelineCount, color: summary.suspiciousPipelineCount > 0 ? "warning" : "success" },
+    { name: t("certd.dashboard.securityRiskCount"), value: summary.riskCount, color: riskColor },
+    { name: t("certd.dashboard.securitySuspiciousPipelineCount"), value: summary.suspiciousPipelineCount, color: riskColor },
     { name: t("certd.dashboard.securityBlockedIpCount"), value: summary.ipBanCount, color: summary.ipBanCount > 0 ? "info" : "success" },
   ];
 });
