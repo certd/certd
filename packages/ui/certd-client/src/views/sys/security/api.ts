@@ -12,14 +12,20 @@ export interface RiskRecord {
   pipelineId?: number;
   pipelineName?: string;
   status: string;
+  reviewStatus: RiskReviewStatus;
   createTime: string | number;
   detail?: string;
 }
 
+export type RiskReviewStatus = "unverified" | "open" | "contained" | "resolved" | "falsePositive";
+
 export interface SecurityMonitorSummary {
   riskCount?: number;
   suspiciousPipelineCount?: number;
+  criticalRiskCount?: number;
+  reviewNeededCount?: number;
   ipBanCount?: number;
+  overallStatus?: "normal" | "warning" | "critical";
   hasRecentRisk: boolean;
 }
 
@@ -65,6 +71,13 @@ export const securityMonitorApi = {
       url: "/sys/security/risk-records/page",
       method: "post",
       data: query,
+    });
+  },
+  async updateRiskReviewStatus(id: string, reviewStatus: RiskReviewStatus) {
+    return await request({
+      url: "/sys/security/risk-records/review-status",
+      method: "post",
+      data: { id, reviewStatus },
     });
   },
   async banPage(query: any): Promise<SecurityBanPageResult> {

@@ -3,7 +3,7 @@
     ><div class="security-monitor">
       <header class="security-header">
         <div class="security-heading">
-          <div class="security-mark" :class="{ risk: hasRecentRisk }">{{ hasRecentRisk ? "!" : "✓" }}</div>
+          <div class="security-mark" :class="securityStatus">{{ securityStatus === "normal" ? "✓" : "!" }}</div>
           <h1>{{ t("certd.navigation.sysResources.securityMonitor") }}</h1>
           <p class="ml-4">{{ t("certd.sys.securityMonitor.description") }}</p>
         </div>
@@ -26,10 +26,10 @@
           <span>72 小时可疑流水线</span><strong>{{ state.summary.suspiciousPipelineCount ?? "-" }}</strong
           ><small>风险统计窗口</small>
         </div>
-        <div class="overview-state" :class="{ danger: hasRecentRisk }">
+        <div class="overview-state" :class="securityStatus">
           <div class="overview-status">
-            <b>{{ hasRecentRisk ? "检测到安全风险" : "系统安全" }}</b>
-            <small>依据最近 72 小时记录 · {{ updatedLabel }}</small>
+            <b>{{ securityStatusLabel }}</b>
+            <small>{{ t("certd.sys.securityMonitor.statusDescription") }} · {{ updatedLabel }}</small>
           </div>
           <div v-if="settingStore.isPlus" class="detection-settings">
             <div class="detection-setting">
@@ -93,7 +93,7 @@ const banTableRef = ref<{ refresh: () => Promise<void> }>();
 const allowTableRef = ref<{ refresh: () => Promise<void> }>();
 const activeSecurityTab = ref("risks");
 const state = reactive({
-  summary: { riskCount: 0, suspiciousPipelineCount: 0, ipBanCount: 0, hasRecentRisk: false } as SecurityMonitorSummary,
+  summary: { riskCount: 0, suspiciousPipelineCount: 0, ipBanCount: 0, overallStatus: "normal", hasRecentRisk: false } as SecurityMonitorSummary,
   loading: false,
   updatedAt: 0,
   detectionSettings: { urlScanEnabled: true, suspiciousPipelineEnabled: true } as SecurityDetectionSettings,
@@ -117,7 +117,16 @@ async function saveDetectionSetting(field: keyof SecurityDetectionSettings, chec
   }
 }
 
-const hasRecentRisk = computed(() => state.summary.hasRecentRisk);
+const securityStatus = computed(() => state.summary.overallStatus || (state.summary.hasRecentRisk ? "warning" : "normal"));
+const securityStatusLabel = computed(() => {
+  if (securityStatus.value === "critical") {
+    return t("certd.sys.securityMonitor.statusCritical");
+  }
+  if (securityStatus.value === "warning") {
+    return t("certd.sys.securityMonitor.statusWarning");
+  }
+  return t("certd.sys.securityMonitor.statusNormal");
+});
 const updatedLabel = computed(() => (state.updatedAt ? new Date(state.updatedAt).toLocaleTimeString("zh-CN") : "--:--:--"));
 async function refresh() {
   state.loading = true;
@@ -217,8 +226,12 @@ function openVipModal() {
     border-radius: 12px;
     font-size: 22px;
 
-    &.risk {
+    &.critical {
       background: #e54b4b;
+    }
+
+    &.warning {
+      background: #e5a100;
     }
   }
 
@@ -258,8 +271,12 @@ function openVipModal() {
     gap: 16px;
     color: #16885d;
 
-    &.danger {
+    &.critical {
       color: #d94343;
+    }
+
+    &.warning {
+      color: #b77900;
     }
   }
 
