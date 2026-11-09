@@ -60,6 +60,10 @@ export const Constants = {
       code: 402,
       message: "您没有权限",
     },
+    forbidden: {
+      code: 403,
+      message: "禁止访问",
+    },
     param: {
       code: 400,
       message: "参数错误",
