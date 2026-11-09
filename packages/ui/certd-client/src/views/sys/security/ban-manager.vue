@@ -93,7 +93,7 @@ const columns = {
         if (form?.targetType === "user") return [{ required: true, message: "请选择用户" }];
         if (form?.targetType === "pipeline") return [{ required: true, type: "number", min: 1, message: "请输入有效的流水线 ID" }];
         return [
-          { required: true, whitespace: true, message: "请输入 IP 地址" },
+          { required: true, whitespace: true, message: "请输入 IP、网段或通配符" },
           { validator: validateIpAddress, trigger: "blur" },
         ];
       }),
@@ -104,8 +104,9 @@ const columns = {
         if (form?.targetType === "pipeline") {
           return { name: "a-input-number", vModel: "value", min: 1, precision: 0, placeholder: "请输入流水线 ID" };
         }
-        return { name: "a-input", vModel: "value", placeholder: "请输入 IP 地址" };
+        return { name: "a-input", vModel: "value", placeholder: "请输入 IP、网段或通配符" };
       }),
+      helper: compute(({ form }) => (form?.targetType === "ip" ? "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32" : undefined)),
     },
   },
   scope: {

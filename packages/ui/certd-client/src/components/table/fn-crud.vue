@@ -94,11 +94,7 @@ const rowSelection = computed(() => {
       }
       selectedRows.value = Array.from(selectedRowsByKey.values());
     },
-    clearSelectedRowKeys: () => {
-      selectedRowKeys.value = [];
-      selectedRows.value = [];
-      selectedRowsByKey.clear();
-    },
+    clearSelectedRowKeys,
   };
 });
 const loading = ref(false);
@@ -140,6 +136,11 @@ const tableProps: Ref<FnTableProps> = computed(() => ({
 }));
 function getSelectedRowKeys() {
   return [...selectedRowKeys.value];
+}
+function clearSelectedRowKeys() {
+  selectedRowKeys.value = [];
+  selectedRows.value = [];
+  selectedRowsByKey.clear();
 }
 function getSelectedRows() {
   return [...selectedRows.value];
@@ -297,7 +298,7 @@ async function openForm(mode = "add", initialForm: Record<string, any> = {}) {
 onMounted(() => {
   void refresh();
 });
-defineExpose({ refresh, openForm, openFormDialog, getSearchFormData: () => searchForm, getSelectedRowKeys, getSelectedRows });
+defineExpose({ refresh, openForm, openFormDialog, getSearchFormData: () => searchForm, getSelectedRowKeys, getSelectedRows, clearSelectedRowKeys });
 </script>
 
 <style lang="less">

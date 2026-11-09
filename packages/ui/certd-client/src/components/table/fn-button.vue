@@ -10,7 +10,7 @@
       </a-button>
       <template #overlay>
         <a-menu @click="handleMenuClick">
-          <a-menu-item v-for="item in items" :key="item.key" :disabled="item.disabled" :danger="item.danger">{{ item.label }}</a-menu-item>
+          <a-menu-item v-for="item in visibleItems" :key="item.key" :disabled="item.disabled" :danger="item.danger">{{ item.label }}</a-menu-item>
         </a-menu>
       </template>
     </a-dropdown>
@@ -32,7 +32,7 @@
     </a-button>
     <template #overlay>
       <a-menu @click="handleMenuClick">
-        <a-menu-item v-for="item in items" :key="item.key" :disabled="item.disabled" :danger="item.danger">{{ item.label }}</a-menu-item>
+        <a-menu-item v-for="item in visibleItems" :key="item.key" :disabled="item.disabled" :danger="item.danger">{{ item.label }}</a-menu-item>
       </a-menu>
     </template>
   </a-dropdown>
@@ -46,6 +46,7 @@
 import { computed } from "vue";
 import { ChevronDown } from "@lucide/vue";
 import FnIcon from "./fn-icon.vue";
+import { resolveComputedValue } from "./compute";
 import type { FnButtonProps } from "./types";
 
 const props = withDefaults(defineProps<FnButtonProps>(), { type: "primary", shape: "default", buttonType: "button", loading: false, disabled: false, danger: false, items: () => [] });
@@ -56,20 +57,21 @@ const iconComponent = computed(() => props.icon);
 const text = computed(() => props.text);
 const icon = computed(() => props.icon);
 const buttonType = computed(() => props.buttonType);
-const items = computed(() => props.items);
+const context = computed(() => props.context || { type: "row" as const });
+const items = computed(() => resolveComputedValue(props.items || [], context.value));
+const visibleItems = computed(() => items.value.filter(item => item.show !== false));
 function handleClick() {
   const onClick = props.click || props.onClick;
   if (onClick) {
-    const context = props.context || { type: "row" as const };
-    onClick(context);
+    onClick(context.value);
   } else {
     emit("click");
   }
 }
 function handleMenuClick({ key }: { key: string }) {
-  const item = props.items?.find(option => option.key === key);
+  const item = items.value.find(option => option.key === key);
   const onClick = item?.click || item?.onClick;
-  onClick?.();
+  onClick?.(context.value);
   emit("select", key);
 }
 </script>

@@ -16,11 +16,15 @@
       <section class="security-overview">
         <div>
           <span>72 小时风险记录</span><strong>{{ state.summary.riskCount ?? "-" }}</strong
-          ><small>本站整体状态依据</small>
+          ><small>风险统计窗口</small>
         </div>
         <div>
           <span>当前封禁 IP</span><strong>{{ state.summary.ipBanCount ?? "-" }}</strong
           ><small>可手动解除</small>
+        </div>
+        <div>
+          <span>待处理风险</span><strong>{{ state.summary.pendingRiskCount ?? "-" }}</strong
+          ><small>本站整体状态依据</small>
         </div>
         <div>
           <span>72 小时可疑流水线</span><strong>{{ state.summary.suspiciousPipelineCount ?? "-" }}</strong
@@ -93,7 +97,7 @@ const banTableRef = ref<{ refresh: () => Promise<void> }>();
 const allowTableRef = ref<{ refresh: () => Promise<void> }>();
 const activeSecurityTab = ref("risks");
 const state = reactive({
-  summary: { riskCount: 0, suspiciousPipelineCount: 0, ipBanCount: 0, overallStatus: "normal", hasRecentRisk: false } as SecurityMonitorSummary,
+  summary: { riskCount: 0, pendingRiskCount: 0, suspiciousPipelineCount: 0, ipBanCount: 0, overallStatus: "normal", hasRecentRisk: false } as SecurityMonitorSummary,
   loading: false,
   updatedAt: 0,
   detectionSettings: { urlScanEnabled: true, suspiciousPipelineEnabled: true } as SecurityDetectionSettings,
@@ -237,7 +241,7 @@ function openVipModal() {
 
   .security-overview {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(280px, 1.6fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(280px, 1.6fr);
     overflow: hidden;
     margin: 14px 0;
     border: 1px solid #e3e9f0;

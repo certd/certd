@@ -85,7 +85,7 @@ const columns = {
           return [{ required: true, message: "请选择用户" }];
         }
         return [
-          { required: true, whitespace: true, message: "请输入 IP 地址" },
+          { required: true, whitespace: true, message: "请输入 IP、网段或通配符" },
           { validator: validateIpAddress, trigger: "blur" },
         ];
       }),
@@ -93,8 +93,9 @@ const columns = {
         if (form?.targetType === "user") {
           return { name: "a-select", vModel: "value", options: userDict.Props.value, showSearch: true, optionFilterProp: "label", allowClear: true, placeholder: "请选择用户" };
         }
-        return { name: "a-input", vModel: "value", placeholder: "请输入 IP 地址" };
+        return { name: "a-input", vModel: "value", placeholder: "请输入 IP、网段或通配符" };
       }),
+      helper: "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32",
     },
   },
   type: { key: "type", title: "类型", cell: { order: 2, width: 150, dict: typeDict, render: ({ row }: { row: SecurityBan }) => renderType(row) } },

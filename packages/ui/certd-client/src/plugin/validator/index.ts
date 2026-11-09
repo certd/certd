@@ -5,15 +5,22 @@ export async function validateIpAddress(_rule: unknown, value: unknown) {
     return;
   }
   const address = String(value).trim();
+  const parts = address.split("/");
+  const [ip, prefix] = parts;
   let valid = false;
-  if (address.includes(":")) {
+  if (parts.length > 2) {
+    valid = false;
+  } else if (ip.includes("*")) {
+    const octets = ip.split(".");
+    valid = octets.length >= 1 && octets.length <= 4 && prefix === undefined && octets.every(octet => octet === "*" || (/^(0|[1-9]\d{0,2})$/.test(octet) && Number(octet) <= 255));
+  } else if (ip.includes(":")) {
     // 限制为地址字符，避免 URL 解析接受路径、端口等额外内容。
-    if (/^[0-9a-fA-F:.]+$/.test(address)) {
-      valid = isIpv6(address);
+    if (/^[0-9a-fA-F:.]+$/.test(ip)) {
+      valid = isIpv6(ip) && (prefix === undefined || (/^\d+$/.test(prefix) && Number(prefix) <= 128));
     }
   } else {
-    const octets = address.split(".");
-    valid = octets.length === 4 && octets.every(octet => /^(0|[1-9]\d{0,2})$/.test(octet) && Number(octet) <= 255);
+    const octets = ip.split(".");
+    valid = octets.length === 4 && octets.every(octet => /^(0|[1-9]\d{0,2})$/.test(octet) && Number(octet) <= 255) && (prefix === undefined || (/^\d+$/.test(prefix) && Number(prefix) <= 32));
   }
   if (!valid) {
     throw new Error("请输入有效的 IP 地址");
