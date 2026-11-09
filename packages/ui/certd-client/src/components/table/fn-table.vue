@@ -5,7 +5,7 @@
         <thead>
           <tr>
             <th v-if="rowSelection" class="fn-table-selection-column">
-              <a-checkbox aria-label="选择当前页" :checked="pageSelection.checked" :indeterminate="pageSelection.indeterminate" @change="event => togglePageSelection(event.target.checked)" />
+              <a-checkbox :aria-label="rowSelection.title || '选择当前页'" :checked="pageSelection.checked" :indeterminate="pageSelection.indeterminate" @change="event => togglePageSelection(event.target.checked)" />
             </th>
             <th v-for="column in columns" :key="column.key" :class="columnClasses(column)" :style="columnStyle(column, column.key)" :title="column.title" @click="sortColumn(column.key)">
               <span class="fn-table-heading-content">
@@ -201,7 +201,10 @@ function updateRowSelection(row, index, checked: boolean) {
   } else {
     nextKeys.delete(key);
   }
-  props.rowSelection?.onChange(Array.from(nextKeys));
+  props.rowSelection?.onChange(
+    Array.from(nextKeys),
+    props.data.filter((item, itemIndex) => nextKeys.has(String(getRowKey(item, itemIndex))))
+  );
 }
 
 function togglePageSelection(checked: boolean) {
@@ -215,7 +218,18 @@ function togglePageSelection(checked: boolean) {
       nextKeys.delete(key);
     }
   }
-  props.rowSelection?.onChange(Array.from(nextKeys));
+  if (!props.rowSelection?.crossPage && checked) {
+    const pageKeys = new Set(props.data.map((row, index) => String(getRowKey(row, index))));
+    for (const key of Array.from(nextKeys)) {
+      if (!pageKeys.has(key)) {
+        nextKeys.delete(key);
+      }
+    }
+  }
+  props.rowSelection?.onChange(
+    Array.from(nextKeys),
+    props.data.filter((item, itemIndex) => nextKeys.has(String(getRowKey(item, itemIndex))))
+  );
 }
 </script>
 

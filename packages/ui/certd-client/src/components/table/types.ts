@@ -147,11 +147,12 @@ export interface FnFormColumn {
 export interface FnButtonItem {
   key: string;
   label: string;
+  show?: FnDynamic<boolean>;
   disabled?: boolean;
   danger?: boolean;
   icon?: Component;
-  click?: () => void;
-  onClick?: () => void;
+  click?: (context: FnFormContext) => void;
+  onClick?: (context: FnFormContext) => void;
 }
 
 export interface FnButtonProps {
@@ -229,11 +230,17 @@ export interface FnPaginationProps {
 export interface FnTableProps {
   crudColumns?: Record<string, FnCrudColumn>;
   rowHandle?: FnTableColumn;
+  rowSelect?: {
+    title?: string;
+    crossPage?: boolean;
+    initialSelectedKeys?: Array<string | number>;
+  };
+  clearSelectedRowKeys?: () => void;
   columns?: Array<FnTableColumn & { key: string }>;
   data: Record<string, any>[];
   rowSelection?: {
     selectedRowKeys: Array<string | number> | Ref<Array<string | number>>;
-    onChange: (selectedRowKeys: string[]) => void;
+    onChange: (selectedRowKeys: string[], selectedRows: Record<string, any>[]) => void;
   };
   sort?: { prop: string; asc: boolean };
   show?: boolean;
@@ -254,6 +261,7 @@ export interface FnHeadingProps {
 }
 export interface FnCrudOptions<Row = any> {
   rowHandle?: FnTableColumn<Row>;
+  rowSelect?: FnTableProps["rowSelect"];
   columns: Record<string, FnCrudColumn<Row>>;
   layout?: FnTableLayoutRow[];
   search?: FnSearchProps;

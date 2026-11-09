@@ -48,6 +48,7 @@ it("选择当前页时不清除跨页选择，取消当前页只移除当前页 
   const selectedRowKeys = ref<Array<string | number>>([9]);
   const rowSelection = {
     selectedRowKeys,
+    crossPage: true,
     onChange: (keys: string[]) => {
       selected.push(keys);
       selectedRowKeys.value = keys;
@@ -67,4 +68,22 @@ it("选择当前页时不清除跨页选择，取消当前页只移除当前页 
 
   expect(selected[0]).toEqual(["9", "12", "13"]);
   expect(selected[1]).toEqual(["9"]);
+});
+
+it("未启用跨页选择时，选择当前页会移除其他页 ID", () => {
+  const selected: any[] = [];
+  const props = {
+    data: [{ id: 12 }],
+    rowKey: "id",
+    rowSelection: {
+      selectedRowKeys: [9],
+      crossPage: false,
+      onChange: (keys: string[]) => selected.push(keys),
+    },
+  };
+  const setup = module.exports.default.setup(props, { expose: () => {}, emit: () => {} });
+
+  setup.togglePageSelection(true);
+
+  expect(selected[0]).toEqual(["12"]);
 });

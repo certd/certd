@@ -4,18 +4,6 @@
       <template #header>
         <div class="risk-table-header">
           <p>扫描拦截、注入特征与可疑流水线统一审计</p>
-          <div v-if="selectedRowKeys.length" class="risk-batch-actions">
-            <span>{{ t("certd.sys.securityMonitor.selectedRiskCount", { count: selectedRowKeys.length }) }}</span>
-            <a-select v-model:value="bulkReviewStatus" class="risk-batch-actions__select" :placeholder="t('certd.sys.securityMonitor.batchReviewStatusPlaceholder')">
-              <a-select-option v-for="option in reviewStatusOptions" :key="option.value" :value="option.value">
-                {{ t(`certd.sys.securityMonitor.${option.key}`) }}
-              </a-select-option>
-            </a-select>
-            <a-button type="primary" :disabled="!bulkReviewStatus" :loading="batchLoading" @click="batchUpdateRiskReviewStatus">
-              {{ t("certd.sys.securityMonitor.batchSetReviewStatus") }}
-            </a-button>
-            <a-button :disabled="batchLoading" @click="clearRiskSelection">{{ t("certd.sys.securityMonitor.clearRiskSelection") }}</a-button>
-          </div>
         </div>
       </template>
     </FnCrud>
@@ -26,16 +14,14 @@
 import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import { notification } from "ant-design-vue";
-import { model, DictStore, FnButton, FnCrud, type FnButtonItem, type FnCrudOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
+import { model, compute, DictStore, FnCrud, type FnCrudOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
 import permissionUtil from "/@/plugin/permission/util.permission";
 import { useI18n } from "/src/locales";
 import { RiskRecord, RiskReviewStatus, securityMonitorApi } from "./api";
 
 const emit = defineEmits<{ changed: [] }>();
 const { t } = useI18n();
-const tableRef = ref<{ refresh: () => Promise<void> }>();
-const selectedRowKeys = ref<Array<string | number>>([]);
-const bulkReviewStatus = ref<RiskReviewStatus>();
+const tableRef = ref<{ refresh: () => Promise<void>; getSelectedRowKeys: () => Array<string | number>; clearSelectedRowKeys: () => void }>();
 const batchLoading = ref(false);
 const reviewStatusOptions: { value: RiskReviewStatus; key: string }[] = [
   { value: "unverified", key: "reviewUnverified" },
@@ -62,6 +48,18 @@ const riskLevelDict = new DictStore({
   ],
 });
 const tableOptions: FnCrudOptions<RiskRecord> = {
+  rowSelect: permissionUtil.hasPermissions("sys:settings:edit") ? { title: "选择风险记录", crossPage: true } : undefined,
+  actionbar: {
+    buttons: {
+      batchReview: {
+        text: t("certd.sys.securityMonitor.batchSetReviewStatus"),
+        type: "primary",
+        show: permissionUtil.hasPermissions("sys:settings:edit"),
+        disabled: batchLoading.value,
+        click: openBatchReviewDialog,
+      },
+    },
+  },
   layout: [
     {
       style: {},
@@ -73,6 +71,7 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
     {
       style: {},
       cols: [
+        { type: "actionbar", style: {} },
         { type: "tabs", style: { flex: 1 } },
         { type: "search", style: {} },
       ],
@@ -163,34 +162,55 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
   rowHandle: {
     width: 130,
     fixed: "right",
-    render: ({ row }) => {
-      if (!permissionUtil.hasPermissions("sys:settings:edit")) {
-        return "—";
-      }
-      const items: FnButtonItem[] = [];
-      for (const option of reviewStatusOptions) {
-        if (row.reviewStatus === option.value) {
-          continue;
-        }
-        items.push({ key: `review-${option.value}`, label: `标记为${t(`certd.sys.securityMonitor.${option.key}`)}`, onClick: () => updateRiskReviewStatus(row, option.value) });
-      }
-      if (row.ip && row.ip !== "unknown") {
-        if (row.type === "scan-ban" && row.status === "banned") {
-          items.push({ key: "unblock", label: "解除 IP 封禁", onClick: () => confirmUnblock(row.ip) });
-        } else {
-          items.push({ key: "banIp", label: "封禁 IP", danger: true, onClick: () => confirmBan("ip", row.ip) });
-        }
-        items.push({ key: "allowIp", label: "IP 加白名单", onClick: () => confirmAllow("ip", row.ip) });
-      }
-      if (Number.isSafeInteger(row.userId) && row.userId > 0) {
-        const userId = String(row.userId);
-        items.push({ key: "banUser", label: "封禁用户", danger: true, onClick: () => confirmBan("user", userId) });
-        items.push({ key: "allowUser", label: "用户加白名单", onClick: () => confirmAllow("user", userId) });
-      }
-      if (items.length === 0) {
-        return "—";
-      }
-      return <FnButton text="更多操作" type="link" buttonType="dropdown" items={items} />;
+    buttons: {
+      edit: { show: false },
+      delete: { show: false },
+      actions: {
+        text: "更多操作",
+        type: "link",
+        buttonType: "dropdown",
+        show: compute(() => permissionUtil.hasPermissions("sys:settings:edit")),
+        items: [
+          ...reviewStatusOptions.map(option => ({
+            key: `review-${option.value}`,
+            label: `标记为${t(`certd.sys.securityMonitor.${option.key}`)}`,
+            show: compute(({ row }) => row.reviewStatus !== option.value),
+            onClick: ({ row }) => updateRiskReviewStatus(row as RiskRecord, option.value),
+          })),
+          {
+            key: "banIp",
+            label: "封禁 IP",
+            danger: true,
+            show: compute(({ row }) => Boolean(row.ip) && row.ip !== "unknown" && !(row.type === "scan-ban" && row.status === "banned")),
+            onClick: ({ row }) => confirmBan("ip", row.ip),
+          },
+          {
+            key: "unblockIp",
+            label: "解除 IP 封禁",
+            show: compute(({ row }) => Boolean(row.ip) && row.ip !== "unknown" && row.type === "scan-ban" && row.status === "banned"),
+            onClick: ({ row }) => confirmUnblock(row.ip),
+          },
+          {
+            key: "allowIp",
+            label: "IP 加白名单",
+            show: compute(({ row }) => Boolean(row.ip) && row.ip !== "unknown"),
+            onClick: ({ row }) => confirmAllow("ip", row.ip),
+          },
+          {
+            key: "banUser",
+            label: "封禁用户",
+            danger: true,
+            show: compute(({ row }) => Number.isSafeInteger(row.userId) && row.userId > 0),
+            onClick: ({ row }) => confirmBan("user", String(row.userId)),
+          },
+          {
+            key: "allowUser",
+            label: "用户加白名单",
+            show: compute(({ row }) => Number.isSafeInteger(row.userId) && row.userId > 0),
+            onClick: ({ row }) => confirmAllow("user", String(row.userId)),
+          },
+        ],
+      },
     },
   },
   request: { pageRequest },
@@ -200,14 +220,6 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
     minWidth: 1650,
     rowKey: "id",
     emptyText: "暂无风险记录",
-    rowSelection: permissionUtil.hasPermissions("sys:settings:edit")
-      ? {
-          selectedRowKeys,
-          onChange: keys => {
-            selectedRowKeys.value = keys;
-          },
-        }
-      : undefined,
   },
   pagination: { current: 1, pageSize: 20, pageSizeProps: ["10", "20", "30", "40", "50", "100"], showTotal: total => `共 ${total} 条` },
 };
@@ -238,9 +250,35 @@ function reviewStatusLabel(status: RiskReviewStatus) {
 function formatDate(value: string | number) {
   return new Date(value).toLocaleString("zh-CN", { hour12: false });
 }
-async function batchUpdateRiskReviewStatus() {
-  const reviewStatus = bulkReviewStatus.value;
-  const ids = selectedRowKeys.value.map(String);
+async function openBatchReviewDialog() {
+  const ids = (tableRef.value?.getSelectedRowKeys() || []).map(String);
+  if (ids.length === 0 || batchLoading.value) {
+    notification.info({ message: t("certd.sys.securityMonitor.batchReviewStatusPlaceholder") });
+    return;
+  }
+  await tableRef.value?.openFormDialog({
+    title: t("certd.sys.securityMonitor.batchSetReviewStatus"),
+    width: 480,
+    initialForm: { reviewStatus: undefined },
+    columns: {
+      reviewStatus: {
+        title: t("certd.sys.securityMonitor.reviewStatus"),
+        span: 24,
+        rules: [{ required: true, message: t("certd.sys.securityMonitor.batchReviewStatusPlaceholder") }],
+        component: {
+          name: "a-select",
+          vModel: "value",
+          placeholder: t("certd.sys.securityMonitor.batchReviewStatusPlaceholder"),
+          options: reviewStatusOptions.map(option => ({ value: option.value, label: t(`certd.sys.securityMonitor.${option.key}`) })),
+        },
+      },
+    },
+    onSubmit: async ({ form }) => {
+      await batchUpdateRiskReviewStatus(ids, form?.reviewStatus);
+    },
+  });
+}
+async function batchUpdateRiskReviewStatus(ids: string[], reviewStatus?: RiskReviewStatus) {
   if (!reviewStatus || ids.length === 0 || batchLoading.value) {
     return;
   }
@@ -257,8 +295,7 @@ async function batchUpdateRiskReviewStatus() {
   }
 }
 function clearRiskSelection() {
-  selectedRowKeys.value = [];
-  bulkReviewStatus.value = undefined;
+  tableRef.value?.clearSelectedRowKeys();
 }
 async function updateRiskReviewStatus(row: RiskRecord, reviewStatus: RiskReviewStatus) {
   try {
