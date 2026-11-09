@@ -24,3 +24,41 @@ it("rowHandle 默认排在末尾，显式 order 仍然有效", () => {
   const override = module.exports.default.setup({ ...props, rowHandle: { order: 0 } }, { expose: () => {}, emit: () => {} });
   expect(override.columns.value[0].key).toBe("rowHandle");
 });
+
+it("单行选择回调稳定 ID，并保留跨页已选记录", () => {
+  const selected: any[] = [];
+  const props = {
+    data: [{ id: 12 }, { id: 13 }],
+    rowKey: "id",
+    rowSelection: {
+      selectedRowKeys: [9],
+      onChange: keys => selected.push(keys),
+    },
+  };
+  const setup = module.exports.default.setup(props, { expose: () => {}, emit: () => {} });
+
+  setup.updateRowSelection(props.data[1], 1, true);
+
+  expect(selected).toEqual([["9", "13"]]);
+});
+
+it("选择当前页时不清除跨页选择，取消当前页只移除当前页 ID", () => {
+  const selected: any[] = [];
+  const rowSelection: any = {
+    selectedRowKeys: [9],
+    onChange: (keys: string[]) => selected.push(keys),
+  };
+  const props = {
+    data: [{ id: 12 }, { id: 13 }],
+    rowKey: "id",
+    rowSelection,
+  };
+  const setup = module.exports.default.setup(props, { expose: () => {}, emit: () => {} });
+
+  setup.togglePageSelection(true);
+  rowSelection.selectedRowKeys = selected[0];
+  setup.togglePageSelection(false);
+
+  expect(selected[0]).toEqual(["9", "12", "13"]);
+  expect(selected[1]).toEqual(["9"]);
+});
