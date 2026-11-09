@@ -260,6 +260,7 @@ export interface FnHeadingProps {
   description?: string;
 }
 export interface FnCrudOptions<Row = any> {
+  id?: string;
   rowHandle?: FnTableColumn<Row>;
   rowSelect?: FnTableProps["rowSelect"];
   columns: Record<string, FnCrudColumn<Row>>;
@@ -282,7 +283,7 @@ export interface FnCrudOptions<Row = any> {
   pagination?: FnPaginationProps;
 }
 
-export type FnTableLayoutItem = "heading" | "tabs" | "search" | "actionbar" | "toolbar" | "";
+export type FnTableLayoutItem = "header" | "tabs" | "search" | "actionbar" | "toolbar" | "";
 export interface FnTableLayoutCol {
   type: FnTableLayoutItem;
   style?: CSSProperties;

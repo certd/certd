@@ -14,21 +14,24 @@
 import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import { notification } from "ant-design-vue";
-import { model, compute, DictStore, FnCrud, type FnCrudOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
+import { model, compute, DictStore, FnCrud, type FnCrudOptions, type FnFormProps, type FnTablePageQuery, type FnTablePageResult, FnFormContext } from "/@/components/table";
 import permissionUtil from "/@/plugin/permission/util.permission";
 import { useI18n } from "/src/locales";
 import { RiskRecord, RiskReviewStatus, securityMonitorApi } from "./api";
 
 const emit = defineEmits<{ changed: [] }>();
 const { t } = useI18n();
-const tableRef = ref<{ refresh: () => Promise<void>; getSelectedRowKeys: () => Array<string | number>; clearSelectedRowKeys: () => void }>();
+const tableRef = ref<{
+  refresh: () => Promise<void>;
+  openFormDialog: (options: FnFormProps) => Promise<Record<string, any> | undefined>;
+  getSearchFormData: () => Record<string, any>;
+  getSelectedRowKeys: () => Array<string | number>;
+  clearSelectedRowKeys: () => void;
+}>();
 const batchLoading = ref(false);
 const reviewStatusOptions: { value: RiskReviewStatus; key: string }[] = [
-  { value: "unverified", key: "reviewUnverified" },
-  { value: "open", key: "reviewOpen" },
-  { value: "contained", key: "reviewContained" },
-  { value: "resolved", key: "reviewResolved" },
-  { value: "falsePositive", key: "reviewFalsePositive" },
+  { value: "pending", key: "reviewPending" },
+  { value: "processed", key: "reviewProcessed" },
   { value: "notRequired", key: "reviewNotRequired" },
 ];
 const riskTypeDict = new DictStore({
@@ -51,12 +54,18 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
   rowSelect: permissionUtil.hasPermissions("sys:settings:edit") ? { title: "选择风险记录", crossPage: true } : undefined,
   actionbar: {
     buttons: {
+      add: { show: false },
       batchReview: {
         text: t("certd.sys.securityMonitor.batchSetReviewStatus"),
         type: "primary",
         show: permissionUtil.hasPermissions("sys:settings:edit"),
-        disabled: batchLoading.value,
         click: openBatchReviewDialog,
+      },
+      resolveAll: {
+        text: "全部标为已处理",
+        type: "primary",
+        show: permissionUtil.hasPermissions("sys:settings:edit"),
+        click: confirmResolveAll,
       },
     },
   },
@@ -152,7 +161,7 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
         order: 9,
         width: 120,
         render: ({ row }) => {
-          const status = row.reviewStatus || "resolved";
+          const status = row.reviewStatus || "pending";
           return <span class={`pill review-${status}`}>{reviewStatusLabel(status)}</span>;
         },
       },
@@ -175,14 +184,14 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
             key: `review-${option.value}`,
             label: `标记为${t(`certd.sys.securityMonitor.${option.key}`)}`,
             show: compute(({ row }) => row.reviewStatus !== option.value),
-            onClick: ({ row }) => updateRiskReviewStatus(row as RiskRecord, option.value),
+            onClick: (ctx: FnFormContext) => updateRiskReviewStatus(ctx.row as RiskRecord, option.value),
           })),
           {
             key: "banIp",
             label: "封禁 IP",
             danger: true,
             show: compute(({ row }) => Boolean(row.ip) && row.ip !== "unknown" && !(row.type === "scan-ban" && row.status === "banned")),
-            onClick: ({ row }) => confirmBan("ip", row.ip),
+            onClick: ctx => confirmBan("ip", ctx.row.ip),
           },
           {
             key: "unblockIp",
@@ -290,6 +299,40 @@ async function batchUpdateRiskReviewStatus(ids: string[], reviewStatus?: RiskRev
     emit("changed");
   } catch (error: any) {
     notification.error({ message: t("certd.sys.securityMonitor.batchUpdateReviewStatusError"), description: error.message });
+  } finally {
+    batchLoading.value = false;
+  }
+}
+function confirmResolveAll() {
+  const type = String(tableRef.value?.getSearchFormData().type || "");
+  let scopeLabel = "全部风险记录（不限当前页，忽略其他筛选条件）";
+  if (type) {
+    scopeLabel = `当前“${typeLabel(type)}”类型下的全部风险记录（不限当前页，忽略其他筛选条件）`;
+  }
+  return model.confirm({
+    title: "全部标记为已处理",
+    body: () => `将${scopeLabel}的处置状态更新为“已处理”，是否继续？`,
+    buttons: {
+      confirm: {
+        text: "确认处理",
+        onClick: resolveAllRiskRecords,
+      },
+    },
+  });
+}
+async function resolveAllRiskRecords() {
+  if (batchLoading.value) {
+    return;
+  }
+  batchLoading.value = true;
+  try {
+    const type = String(tableRef.value?.getSearchFormData().type || "");
+    const result = await securityMonitorApi.markAllRiskRecordsProcessed(type || undefined);
+    notification.success({ message: `已将 ${result.updated} 条风险记录标记为已处理` });
+    clearRiskSelection();
+    emit("changed");
+  } catch (error: any) {
+    notification.error({ message: "批量标记失败", description: error.message });
   } finally {
     batchLoading.value = false;
   }
@@ -415,19 +458,6 @@ defineExpose({ refresh });
     }
   }
 
-  .risk-batch-actions {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    color: #596579;
-    font-size: 12px;
-  }
-
-  .risk-batch-actions__select {
-    width: 180px;
-  }
-
   .dot {
     width: 7px;
     height: 7px;
@@ -466,30 +496,15 @@ defineExpose({ refresh });
       background: #fff0f0;
     }
 
-    &.review-unverified {
+    &.review-pending {
       color: #a56718;
       background: #fff7e8;
     }
 
-    &.review-open {
-      color: #c83737;
-      background: #fff0f0;
-    }
-
-    &.review-contained,
-    &.review-resolved {
+    &.review-processed,
+    &.review-notRequired {
       color: #16885d;
       background: #eaf8f1;
-    }
-
-    &.review-falsePositive {
-      color: #596579;
-      background: #eef1f5;
-    }
-
-    &.review-notRequired {
-      color: #596579;
-      background: #eef1f5;
     }
   }
 
@@ -521,26 +536,15 @@ defineExpose({ refresh });
         background: #2a1215;
       }
 
-      &.review-unverified {
+      &.review-pending {
         color: #ffc53d;
         background: #2b2111;
       }
 
-      &.review-open {
-        color: #ff7875;
-        background: #2a1215;
-      }
-
-      &.review-contained,
-      &.review-resolved {
+      &.review-processed,
+      &.review-notRequired {
         color: #73d13d;
         background: #162312;
-      }
-
-      &.review-falsePositive,
-      &.review-notRequired {
-        color: rgba(255, 255, 255, 0.65);
-        background: #303030;
       }
     }
   }

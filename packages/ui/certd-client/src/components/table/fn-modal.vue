@@ -3,7 +3,9 @@
     <div ref="modalElementRef" :class="['fn-modal', { 'fn-modal-maximized': maximized }]" :style="{ width: maximized ? '100%' : typeof width === 'number' ? `${width}px` : width }" v-bind="$attrs">
       <div ref="headerRef" class="fn-modal-titlebar">
         <slot name="headerLeft" />
-        <slot name="title">{{ title }}</slot>
+        <div class="fn-modal-title font-bold">
+          <slot name="title">{{ title }}</slot>
+        </div>
         <div class="fn-modal-titlebar-actions">
           <button type="button" title="最大化" @click.stop="toggleMaximized">
             <Minimize2 v-if="maximized" :size="16" />
@@ -187,7 +189,7 @@ defineExpose({
   overflow: hidden;
   border-radius: 8px;
   background: #fff;
-  padding: 20px;
+  padding: 14px 20px;
   margin: auto;
   margin-top: 120px;
   display: flex;

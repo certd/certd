@@ -17,13 +17,13 @@ export interface RiskRecord {
   detail?: string;
 }
 
-export type RiskReviewStatus = "unverified" | "open" | "contained" | "resolved" | "falsePositive" | "notRequired";
+export type RiskReviewStatus = "pending" | "processed" | "notRequired";
 
 export interface SecurityMonitorSummary {
   riskCount?: number;
   suspiciousPipelineCount?: number;
   criticalRiskCount?: number;
-  reviewNeededCount?: number;
+  pendingRiskCount?: number;
   ipBanCount?: number;
   overallStatus?: "normal" | "warning" | "critical";
   hasRecentRisk: boolean;
@@ -61,7 +61,7 @@ export interface SecurityBan {
 export const securityMonitorApi = {
   async unblock(ip: string) {
     return await request({
-      url: "/sys/security/risk-records/unblock",
+      url: "/sys/security/risk-records/ban/unblock",
       method: "post",
       data: { ip },
     });
@@ -75,7 +75,7 @@ export const securityMonitorApi = {
   },
   async updateRiskReviewStatus(id: string, reviewStatus: RiskReviewStatus) {
     return await request({
-      url: "/sys/security/risk-records/review-status",
+      url: "/sys/security/risk-records/review-status/update",
       method: "post",
       data: { id, reviewStatus },
     });
@@ -85,6 +85,13 @@ export const securityMonitorApi = {
       url: "/sys/security/risk-records/review-status/batch",
       method: "post",
       data: { ids, reviewStatus },
+    });
+  },
+  async markAllRiskRecordsProcessed(type?: string): Promise<{ updated: number }> {
+    return await request({
+      url: "/sys/security/risk-records/review-status/mark-all-processed",
+      method: "post",
+      data: { type },
     });
   },
   async banPage(query: any): Promise<SecurityBanPageResult> {
