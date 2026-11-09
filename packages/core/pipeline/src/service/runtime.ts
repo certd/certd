@@ -269,9 +269,9 @@ export class RuntimeDepsService {
     try {
       return await import(pathToFileURL(resolved).href);
     } catch (error: any) {
-      if (fromRuntimeDeps && this.isModuleNotFoundError(error)) {
+      if (fromRuntimeDeps) {
         logger.error?.("动态依赖加载失败:", error);
-        logger.error?.("动态依赖加载失败，请前往插件管理页面->清除缓存依赖->重启certd后重试");
+        logger.error?.("动态依赖加载失败，请前往插件管理页面删除异常的第三方依赖（清除缓存依赖），然后重启容器后重试");
       }
       throw error;
     }
