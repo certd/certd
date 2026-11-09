@@ -33,6 +33,8 @@ const development = {
   koa: {
     hostname: "::",
     port: 7001,
+    // 信任反向代理传递的 X-Forwarded-For，确保 ctx.ip 获取客户端 IP
+    proxy: true,
   },
   https: {
     enabled: true,
