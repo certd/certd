@@ -4,7 +4,7 @@
       <div v-for="(row, rowIndex) in layoutProps" :key="rowIndex" class="fn-crud-row" :style="row.style">
         <div v-for="(col, colIndex) in row.cols" :key="colIndex" class="fn-crud-col" :style="col.style">
           <div v-if="col.type === 'header' || col.type === 'heading'" class="fn-crud-heading">
-            <slot name="header">
+            <slot name="header" :selected-row-keys="getSelectedRowKeys()" :selected-rows="getSelectedRows()">
               <template v-if="heading?.show !== false"
                 ><h2>{{ heading?.title }}</h2>
                 <p>{{ heading?.description }}</p></template
@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, Ref, ref } from "vue";
+import { computed, onMounted, reactive, Ref, ref, watch } from "vue";
 import FnTable from "./fn-table.vue";
 import FnSearch from "./search/index.vue";
 import FnTabs from "./tabs/index.vue";
@@ -49,6 +49,58 @@ function openFormDialog(options: FnFormProps) {
   return FnFormDialogRef.value!.open(options);
 }
 const data = ref<Record<string, any>[]>([]);
+const selectedRowKeys = ref<Array<string | number>>(props.rowSelect?.initialSelectedKeys ? [...props.rowSelect.initialSelectedKeys] : []);
+const selectedRows = ref<Record<string, any>[]>([]);
+const selectedRowsByKey = new Map<string, Record<string, any>>();
+watch(data, () => {
+  for (const row of data.value) {
+    const key = getRecordId(row);
+    if (selectedRowKeys.value.map(String).includes(key)) {
+      selectedRowsByKey.set(key, row);
+    }
+  }
+  if (props.rowSelect?.crossPage || selectedRowKeys.value.length === 0) {
+    return;
+  }
+  const currentKeys = new Set(data.value.map(getRecordId));
+  const hasSelectedRowOnPage = selectedRowKeys.value.some(key => currentKeys.has(String(key)));
+  if (hasSelectedRowOnPage) {
+    selectedRowKeys.value = selectedRowKeys.value.filter(key => currentKeys.has(String(key)));
+    selectedRows.value = selectedRows.value.filter(row => currentKeys.has(getRecordId(row)));
+    return;
+  }
+  selectedRowKeys.value = [];
+  selectedRows.value = [];
+  selectedRowsByKey.clear();
+});
+const rowSelection = computed(() => {
+  if (!props.rowSelect) {
+    return undefined;
+  }
+  return {
+    title: props.rowSelect.title,
+    crossPage: props.rowSelect.crossPage ?? false,
+    selectedRowKeys,
+    onChange: (keys: string[], rows: Record<string, any>[]) => {
+      selectedRowKeys.value = keys;
+      for (const row of rows) {
+        selectedRowsByKey.set(getRecordId(row), row);
+      }
+      const selectedKeys = new Set(keys.map(String));
+      for (const key of Array.from(selectedRowsByKey.keys())) {
+        if (!selectedKeys.has(key)) {
+          selectedRowsByKey.delete(key);
+        }
+      }
+      selectedRows.value = Array.from(selectedRowsByKey.values());
+    },
+    clearSelectedRowKeys: () => {
+      selectedRowKeys.value = [];
+      selectedRows.value = [];
+      selectedRowsByKey.clear();
+    },
+  };
+});
 const loading = ref(false);
 const searchForm = reactive<Record<string, any>>({});
 const page = reactive({ current: props.pagination?.current || 1, pageSize: props.pagination?.pageSize || 10, total: 0 });
@@ -77,7 +129,21 @@ const rowHandleProps = computed(() => ({
     ...Object.fromEntries(Object.entries(props.rowHandle?.buttons || {}).filter(([key]) => key !== "edit" && key !== "delete")),
   },
 }));
-const tableProps: Ref<FnTableProps> = computed(() => ({ ...props.table, crudColumns: props.columns, rowHandle: rowHandleProps.value, data: data.value, loading: loading.value || props.table?.loading, sort: sort.value }));
+const tableProps: Ref<FnTableProps> = computed(() => ({
+  ...props.table,
+  crudColumns: props.columns,
+  rowHandle: rowHandleProps.value,
+  rowSelection: rowSelection.value,
+  data: data.value,
+  loading: loading.value || props.table?.loading,
+  sort: sort.value,
+}));
+function getSelectedRowKeys() {
+  return [...selectedRowKeys.value];
+}
+function getSelectedRows() {
+  return [...selectedRows.value];
+}
 function getRecordId(row: Record<string, any>) {
   const rowKey = props.table?.rowKey;
   if (typeof rowKey === "function") {
@@ -231,7 +297,7 @@ async function openForm(mode = "add", initialForm: Record<string, any> = {}) {
 onMounted(() => {
   void refresh();
 });
-defineExpose({ refresh, openForm, openFormDialog, getSearchFormData: () => searchForm });
+defineExpose({ refresh, openForm, openFormDialog, getSearchFormData: () => searchForm, getSelectedRowKeys, getSelectedRows });
 </script>
 
 <style lang="less">
