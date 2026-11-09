@@ -28,7 +28,8 @@ export class GlobalExceptionMiddleware implements IWebMiddleware {
         if (err.code == null || typeof err.code !== "number") {
           err.code = 1;
         }
-        if (err.code < 600) {
+        // 这里如果全部设置为err.code的话，会导致vite proxy 一直报错
+        if (err.code == 401) {
           ctx.status = err.code;
         }
         ctx.body = Result.error(err.code, err.message, err.data);

@@ -9,6 +9,11 @@ export class AuthException extends BaseException {
     super("AuthException", Constants.res.auth.code, message ? message : Constants.res.auth.message);
   }
 }
+export class ForbiddenException extends BaseException {
+  constructor(message?: string) {
+    super("ForbiddenException", Constants.res.forbidden.code, message ? message : Constants.res.forbidden.message);
+  }
+}
 
 export class Need2FAException extends TextException {
   constructor(message: string, data: any) {
