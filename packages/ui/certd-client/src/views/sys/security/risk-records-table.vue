@@ -50,6 +50,13 @@ const riskLevelDict = new DictStore({
     { label: "高风险", value: "high" },
   ],
 });
+const reviewStatusDict = new DictStore({
+  data: [
+    { label: "待处理", value: "pending" },
+    { label: "已处理", value: "processed" },
+    { label: "无需处理", value: "notRequired" },
+  ],
+});
 const tableOptions: FnCrudOptions<RiskRecord> = {
   rowSelect: permissionUtil.hasPermissions("sys:settings:edit") ? { title: "选择风险记录", crossPage: true } : undefined,
   actionbar: {
@@ -89,7 +96,8 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
   search: {
     columns: {
       level: { order: 1, component: { name: "a-select", vModel: "value", placeholder: "风险等级", allowClear: true }, width: 125, dict: riskLevelDict },
-      keyword: { order: 2, component: { name: "a-input", vModel: "value", placeholder: "搜索 IP、路径或流水线", allowClear: true }, width: 220 },
+      reviewStatus: { order: 2, component: { name: "a-select", vModel: "value", placeholder: "处置状态", allowClear: true }, width: 125, dict: reviewStatusDict },
+      keyword: { order: 3, component: { name: "a-input", vModel: "value", placeholder: "搜索 IP、路径或流水线", allowClear: true }, width: 220 },
     },
   },
   columns: {
