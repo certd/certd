@@ -29,6 +29,18 @@ export interface SecurityMonitorSummary {
   hasRecentRisk: boolean;
 }
 
+export type SecurityStatus = "normal" | "warning" | "critical";
+
+export function getSecurityStatus(summary: SecurityMonitorSummary): SecurityStatus {
+  if (summary.overallStatus === "critical") {
+    return "critical";
+  }
+  if (summary.overallStatus === "warning" || summary.hasRecentRisk) {
+    return "warning";
+  }
+  return "normal";
+}
+
 export interface SecurityDetectionSettings {
   urlScanEnabled: boolean;
   suspiciousPipelineEnabled: boolean;
@@ -59,11 +71,11 @@ export interface SecurityBan {
 }
 
 export const securityMonitorApi = {
-  async unblock(ip: string) {
+  async unblock(ip: string, riskRecordId: string) {
     return await request({
       url: "/sys/security/risk-records/ban/unblock",
       method: "post",
-      data: { ip },
+      data: { ip, riskRecordId },
     });
   },
   async riskRecordsPage(query: any): Promise<RiskRecordsPageResult> {

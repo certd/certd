@@ -27,7 +27,7 @@
     </template>
     <a-tag class="security-status-trigger inline-flex pointer" :color="securityStatus.color" :class="`is-${securityStatus.tone}`">
       <fs-icon :icon="securityStatus.icon" />
-      {{ t("certd.dashboard.securityStatus") }} · {{ securityStatus.title }}
+      {{ t("certd.dashboard.securityStatus") }}：{{ securityStatusTagText }}
       <fs-icon icon="ion:chevron-down-outline" class="security-status-trigger__arrow" />
     </a-tag>
   </a-popover>
@@ -38,7 +38,7 @@ import { computed, onMounted, ref } from "vue";
 import { notification } from "ant-design-vue";
 import { useSettingStore } from "/@/store/settings";
 import { useUserStore } from "/@/store/user";
-import { SecurityMonitorSummary, securityMonitorApi } from "/@/views/sys/security/api";
+import { getSecurityStatus, SecurityMonitorSummary, securityMonitorApi } from "/@/views/sys/security/api";
 import { useI18n } from "/src/locales";
 
 defineOptions({ name: "DashboardSecuritySummary" });
@@ -67,7 +67,8 @@ const securityStatus = computed(() => {
       description: t("certd.dashboard.securityLoadingDescription"),
     };
   }
-  if (securitySummary.value.overallStatus === "critical") {
+  const status = getSecurityStatus(securitySummary.value);
+  if (status === "critical") {
     return {
       color: "red",
       tone: "danger",
@@ -76,31 +77,13 @@ const securityStatus = computed(() => {
       description: t("certd.dashboard.securityRiskDescription"),
     };
   }
-  if (securitySummary.value.overallStatus === "warning" || securitySummary.value.hasRecentRisk) {
-    if (securitySummary.value.ipBanCount && securitySummary.value.ipBanCount > 0 && !securitySummary.value.reviewNeededCount) {
-      return {
-        color: "yellow",
-        tone: "warning",
-        icon: "ion:shield-checkmark-outline",
-        title: t("certd.dashboard.securityBlocked"),
-        description: t("certd.dashboard.securityBlockedDescription"),
-      };
-    }
+  if (status === "warning") {
     return {
       color: "yellow",
       tone: "warning",
       icon: "ion:warning-outline",
       title: t("certd.dashboard.securityWarning"),
       description: t("certd.dashboard.securityWarningDescription"),
-    };
-  }
-  if (securitySummary.value.ipBanCount && securitySummary.value.ipBanCount > 0) {
-    return {
-      color: "yellow",
-      tone: "warning",
-      icon: "ion:shield-checkmark-outline",
-      title: t("certd.dashboard.securityBlocked"),
-      description: t("certd.dashboard.securityBlockedDescription"),
     };
   }
   return {
@@ -117,9 +100,10 @@ const securityIssueItems = computed(() => {
     return [];
   }
   let riskColor = "success";
-  if (summary.overallStatus === "critical") {
+  const status = getSecurityStatus(summary);
+  if (status === "critical") {
     riskColor = "danger";
-  } else if (summary.overallStatus === "warning") {
+  } else if (status === "warning") {
     riskColor = "warning";
   }
   return [
@@ -127,6 +111,16 @@ const securityIssueItems = computed(() => {
     { name: t("certd.dashboard.securitySuspiciousPipelineCount"), value: summary.suspiciousPipelineCount, color: riskColor },
     { name: t("certd.dashboard.securityBlockedIpCount"), value: summary.ipBanCount, color: summary.ipBanCount > 0 ? "info" : "success" },
   ];
+});
+const securityStatusTagText = computed(() => {
+  if (!securitySummary.value) {
+    return securityStatus.value.title;
+  }
+  const status = getSecurityStatus(securitySummary.value);
+  if (status === "normal") {
+    return t("certd.dashboard.securityNormalWithCount", { count: securitySummary.value.riskCount ?? 0 });
+  }
+  return t("certd.dashboard.securityAttentionWithCount", { count: securitySummary.value.pendingRiskCount ?? 0 });
 });
 
 async function loadSecuritySummary() {
@@ -156,21 +150,21 @@ onMounted(loadSecuritySummary);
     line-height: 22px;
 
     &.is-success {
-      color: #389e0d;
-      border-color: #b7eb8f;
-      background: #f6ffed;
+      color: #16885d;
+      border-color: #a7dec8;
+      background: #eefaf5;
     }
 
     &.is-warning {
-      color: #d48806;
-      border-color: #ffe58f;
-      background: #fffbe6;
+      color: #b77900;
+      border-color: #f0d48a;
+      background: #fff8e1;
     }
 
     &.is-danger {
-      color: #cf1322;
-      border-color: #ffa39e;
-      background: #fff1f0;
+      color: #d94343;
+      border-color: #f0b0b0;
+      background: #fff3f3;
     }
 
     &.is-loading {
@@ -218,18 +212,18 @@ onMounted(loadSecuritySummary);
     }
 
     &.is-success {
-      color: #389e0d;
-      background: #f6ffed;
+      color: #16885d;
+      background: #eefaf5;
     }
 
     &.is-warning {
-      color: #d48806;
-      background: #fffbe6;
+      color: #b77900;
+      background: #fff8e1;
     }
 
     &.is-danger {
-      color: #cf1322;
-      background: #fff1f0;
+      color: #d94343;
+      background: #fff3f3;
     }
 
     &.is-loading {

@@ -85,7 +85,7 @@ import { notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
 import { useSettingStore } from "/@/store/settings";
 import permissionUtil from "/@/plugin/permission/util.permission";
-import { SecurityDetectionSettings, SecurityMonitorSummary, securityMonitorApi } from "./api";
+import { getSecurityStatus, SecurityDetectionSettings, SecurityMonitorSummary, securityMonitorApi } from "./api";
 import SecurityBanManager from "./ban-manager.vue";
 import SecurityAllowManager from "./allow-manager.vue";
 import SecurityRiskTable from "./risk-records-table.vue";
@@ -121,7 +121,7 @@ async function saveDetectionSetting(field: keyof SecurityDetectionSettings, chec
   }
 }
 
-const securityStatus = computed(() => state.summary.overallStatus || (state.summary.hasRecentRisk ? "warning" : "normal"));
+const securityStatus = computed(() => getSecurityStatus(state.summary));
 const securityStatusLabel = computed(() => {
   if (securityStatus.value === "critical") {
     return t("certd.sys.securityMonitor.statusCritical");
