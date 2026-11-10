@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.47.1](https://github.com/certd/certd/compare/v1.47.0...v1.47.1) (2026-11-10)
+
+**Note:** Version bump only for package @certd/ui-server
+
 # [1.47.0](https://github.com/certd/certd/compare/v1.46.1...v1.47.0) (2026-11-09)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.47.1](https://github.com/certd/certd/compare/v1.47.0...v1.47.1) (2026-11-10)
+
+### Performance Improvements
+
+* 安全状态优化，新增带计数的提示与统一状态逻辑 ([f95ed3b](https://github.com/certd/certd/commit/f95ed3b4c3c0748dcfbed664bd7fbed7c7f97b4c))
+
 # [1.47.0](https://github.com/certd/certd/compare/v1.46.1...v1.47.0) (2026-11-09)
 
 ### Bug Fixes
