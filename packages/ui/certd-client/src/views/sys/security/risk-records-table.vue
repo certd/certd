@@ -197,7 +197,7 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
             key: "unblockIp",
             label: "解除 IP 封禁",
             show: compute(({ row }) => Boolean(row.ip) && row.ip !== "unknown" && row.type === "scan-ban" && row.status === "banned"),
-            onClick: ({ row }) => confirmUnblock(row.ip),
+            onClick: ({ row }) => confirmUnblock(row.ip, row.id),
           },
           {
             key: "allowIp",
@@ -394,7 +394,7 @@ function confirmAllow(targetType: "ip" | "user", targetValue: string) {
     },
   });
 }
-function confirmUnblock(ip: string) {
+function confirmUnblock(ip: string, riskRecordId: string) {
   return model.confirm({
     title: "解除 IP 封禁",
     body: () => `确定解除 ${ip} 的封禁吗？`,
@@ -402,7 +402,7 @@ function confirmUnblock(ip: string) {
       confirm: {
         text: "解除封禁",
         onClick: async () => {
-          await securityMonitorApi.unblock(ip);
+          await securityMonitorApi.unblock(ip, riskRecordId);
           notification.success({ message: "IP 已解除封禁" });
           emit("changed");
           await refresh();
