@@ -36,7 +36,7 @@ export class BaotaDeleteExpiringCert extends AbstractPlusTaskPlugin {
   accessId!: string;
 
   async onInstance() {}
-  async execute(): Promise<void> {
+  async execute(): Promise<any> {
     const { accessId } = this;
     const access = await this.getAccess(accessId);
     const http = this.ctx.http;
@@ -46,6 +46,7 @@ export class BaotaDeleteExpiringCert extends AbstractPlusTaskPlugin {
     const res = await client.doRequest("/ssl", "get_cert_list", null);
 
     const now = new Date().getTime();
+    let hasExpiring = false
     for (const item of res) {
       if (dayjs(item.not_after).valueOf() < now) {
         //https://baota.docmirror.cn:20001/ssl?action=remove_cloud_cert
@@ -53,6 +54,7 @@ export class BaotaDeleteExpiringCert extends AbstractPlusTaskPlugin {
          * local: 1
          * ssl_hash: fbe087d5253b78ba37264486415181ab
          */
+        hasExpiring = true
         this.logger.info(`证书: ${item.name} 过期时间: ${item.not_after}，已过期，删除`);
         try {
           await client.doRequest("/ssl", "remove_cloud_cert", {
@@ -70,6 +72,9 @@ export class BaotaDeleteExpiringCert extends AbstractPlusTaskPlugin {
     }
 
     this.logger.info(res?.msg);
+    if (!hasExpiring){
+      return "skip"
+    }
   }
 }
 new BaotaDeleteExpiringCert();
