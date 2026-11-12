@@ -6,7 +6,7 @@ import { UserService } from "../../../modules/sys/authority/service/user-service
 import { PermissionService } from "../../../modules/sys/authority/service/permission-service.js";
 import { NotificationService } from "../../../modules/pipeline/service/notification-service.js";
 import { newAccess } from "@certd/pipeline";
-import { http, logger, utils } from "@certd/basic";
+import { cache, http, logger, utils } from "@certd/basic";
 import { ApiTags } from "@midwayjs/swagger";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { EmailService } from "../../../modules/basic/service/email-service.js";
@@ -196,6 +196,11 @@ export class MineController extends BaseController {
   @Post("/accountInit", { description: Constants.per.authOnly, summary: "初始化Let's Encrypt ACME账号和邮件通知" })
   public async accountInit(@Body("email") email?: string) {
     const userId = this.getUserId();
+    const cacheKey = `acmeAccount:initing:${userId}`;
+    const isIniting = await cache.get(cacheKey);
+    if (isIniting) {
+      return this.ok({ needEmail: false });
+    }
     let userEmail = email;
     let user: any = null;
     if (!userEmail) {
@@ -205,47 +210,53 @@ export class MineController extends BaseController {
     if (!userEmail) {
       return this.ok({ needEmail: true });
     }
+    cache.set(cacheKey, true);
+    try {
+      if (email) {
+        if (!user) {
+          user = await this.userService.info(userId);
+        }
+        if (!user.email) {
+          await this.userService.updateEmail(userId, { email: userEmail });
+        }
+      }
 
-    if (email) {
-      if (!user) {
-        user = await this.userService.info(userId);
+      await this.emailService.add(userId, userEmail);
+
+      await this.notificationService.getOrCreateDefault(userEmail, userId);
+
+      const defaultAccess = await this.accessService.getDefaultByType({ type: "acmeAccount", subtype: "letsencrypt", userId, projectId: undefined })
+      if (!defaultAccess) {
+        const getAccessById = this.accessService.getById.bind(this.accessService);
+        const accessGetter = new AccessGetter(userId, undefined, getAccessById);
+        const serviceGetter = this.taskServiceBuilder.create({ userId });
+        const accessContext = {
+          http,
+          logger,
+          utils,
+          accessService: accessGetter,
+          serviceGetter,
+          define: undefined,
+        } as any;
+        const access = await newAccess("acmeAccount", { caType: "letsencrypt", email: userEmail }, accessGetter, accessContext);
+        const accountJson = await access.onGenerateAccount();
+
+        await this.accessService.add({
+          type: "acmeAccount",
+          name: "Let's Encrypt",
+          userId,
+          projectId: undefined,
+          setting: JSON.stringify({
+            caType: "letsencrypt",
+            email: userEmail,
+            account: accountJson,
+          }),
+        });
       }
-      if (!user.email) {
-        await this.userService.updateEmail(userId, { email: userEmail });
-      }
+      this.auditLog({ content: "初始化了Let's Encrypt ACME账号和邮件通知" });
+    } finally {
+      cache.delete(cacheKey);
     }
-
-    await this.emailService.add(userId, userEmail);
-
-    await this.notificationService.getOrCreateDefault(userEmail, userId);
-
-    const getAccessById = this.accessService.getById.bind(this.accessService);
-    const accessGetter = new AccessGetter(userId, undefined, getAccessById);
-    const serviceGetter = this.taskServiceBuilder.create({ userId });
-    const accessContext = {
-      http,
-      logger,
-      utils,
-      accessService: accessGetter,
-      serviceGetter,
-      define: undefined,
-    } as any;
-    const access = await newAccess("acmeAccount", { caType: "letsencrypt", email: userEmail }, accessGetter, accessContext);
-    const accountJson = await access.onGenerateAccount();
-
-    await this.accessService.add({
-      type: "acmeAccount",
-      name: "Let's Encrypt",
-      userId,
-      projectId: undefined,
-      setting: JSON.stringify({
-        caType: "letsencrypt",
-        email: userEmail,
-        account: accountJson,
-      }),
-    });
-
-    this.auditLog({ content: "初始化了Let's Encrypt ACME账号和邮件通知" });
     return this.ok({ success: true });
   }
 }
