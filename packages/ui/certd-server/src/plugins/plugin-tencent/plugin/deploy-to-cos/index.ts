@@ -136,7 +136,7 @@ export class DeployCertToTencentCosPlugin extends AbstractTaskPlugin {
         CertificateId: tencentCertId,
         ResourceType: "cos",
         Status: 1,
-        InstanceIdList: [`${this.region}#${this.bucket}#${domain}`],
+        InstanceIdList: [`${this.region}|${this.bucket}|${domain}`],
       };
 
       const res = await client.deployCertificateInstance(params);
