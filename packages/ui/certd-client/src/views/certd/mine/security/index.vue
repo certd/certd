@@ -6,7 +6,7 @@
 
     <div class="user-settings-form settings-form">
       <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off">
-        <a-form-item :label="t('certd.mine.twoFactorAuth')" :name="['authenticator', 'enabled']">
+        <a-form-item :label="t('certd.mine.twoFactorConfig')" :name="['authenticator', 'enabled']">
           <div class="flex mt-5">
             <a-switch v-model:checked="formState.authenticator.enabled" :disabled="!settingsStore.isPlus" @change="onAuthenticatorEnabledChanged" />
 
@@ -25,6 +25,11 @@
           </div>
 
           <div class="helper">{{ t("certd.mine.twoFactorAuthHelper") }}</div>
+        </a-form-item>
+
+        <a-form-item :label="t('certd.mine.twoFactorLogin')" :name="'loginEnabled'">
+          <a-switch v-model:checked="formState.loginEnabled" :disabled="!settingsStore.isPlus" @change="onLoginEnabledChanged" />
+          <div class="helper">{{ t("certd.mine.twoFactorLoginHelper") }}</div>
         </a-form-item>
 
         <a-form-item v-if="authenticatorOpenRef" :label="t('certd.mine.bindDevice')" class="authenticator-config">
@@ -172,6 +177,18 @@ function onAuthenticatorEnabledChanged(value: any) {
         },
       });
     }
+  }
+}
+
+async function onLoginEnabledChanged(value: boolean) {
+  try {
+    await api.TwoFactorSettingsSave({ loginEnabled: value });
+    notification.success({
+      message: t("certd.common.saveSuccess"),
+    });
+  } catch (error) {
+    formState.loginEnabled = !value;
+    throw error;
   }
 }
 </script>

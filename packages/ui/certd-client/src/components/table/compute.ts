@@ -1,19 +1,27 @@
 import { computed, type ComputedRef } from "vue";
-import type { FnFormContext, FnComputeValue } from "./types";
+import type { FnComputeContext, FnComputeValue } from "./types";
 
-export function compute<T>(computeFn: (context: FnFormContext) => T): FnComputeValue<T> {
+export function compute<T>(computeFn: (context: FnComputeContext) => T): FnComputeValue<T> {
   return { __fnCompute: true, computeFn };
 }
 
-function isComputeValue(value: any): value is FnComputeValue {
-  return Boolean(value && value.__fnCompute === true && typeof value.computeFn === "function");
+export function isFnComputeValue(value: unknown): value is FnComputeValue {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const candidate = value as Partial<FnComputeValue>;
+  return candidate.__fnCompute === true && typeof candidate.computeFn === "function";
+}
+
+function isComputeValue(value: unknown): value is FnComputeValue {
+  return isFnComputeValue(value);
 }
 
 function isAtomicObject(value: Record<string, any>) {
   return typeof value.setup === "function" || typeof value.render === "function" || Boolean(value.__vccOpts);
 }
 
-function resolveValue(value: any, context: FnFormContext, seen: WeakMap<object, any>): any {
+function resolveValue(value: any, context: FnComputeContext, seen: WeakMap<object, any>): any {
   if (isComputeValue(value)) {
     return resolveValue(value.computeFn(context), context, seen);
   }
@@ -42,10 +50,10 @@ function resolveValue(value: any, context: FnFormContext, seen: WeakMap<object, 
   return value;
 }
 
-export function resolveComputedValue<T>(source: T, context: FnFormContext): T {
+export function resolveComputedValue<T>(source: T, context: FnComputeContext): T {
   return resolveValue(source, context, new WeakMap()) as T;
 }
 
-export function resolveComputed<T>(source: () => T, getContext: () => FnFormContext): ComputedRef<T> {
+export function resolveComputed<T>(source: () => T, getContext: () => FnComputeContext): ComputedRef<T> {
   return computed(() => resolveComputedValue(source(), getContext()));
 }

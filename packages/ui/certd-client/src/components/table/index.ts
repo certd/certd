@@ -1,5 +1,6 @@
 export { default as FnCrud } from "./fn-crud.vue";
 export { default as FnTable } from "./fn-table.vue";
+export { default as FnTableSelect } from "./fn-table-select.vue";
 import FnModalComponent from "./fn-modal.vue";
 import { model } from "./dialog";
 export const FnModal = Object.assign(FnModalComponent, { confirm: model.confirm });

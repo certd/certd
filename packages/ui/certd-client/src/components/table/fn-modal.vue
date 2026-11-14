@@ -1,34 +1,36 @@
 <template>
-  <div v-if="open" class="fn-modal-mask" @mousedown.self="open = false">
-    <div ref="modalElementRef" :class="['fn-modal', { 'fn-modal-maximized': maximized }]" :style="{ width: maximized ? '100%' : typeof width === 'number' ? `${width}px` : width }" v-bind="$attrs">
+  <div v-if="props.open" class="fn-modal-mask" @mousedown.self="close">
+    <div ref="modalElementRef" :class="['fn-modal', { 'fn-modal-maximized': fullscreenState }]" :style="{ width: fullscreenState ? '100%' : typeof width === 'number' ? `${width}px` : width }" v-bind="$attrs">
       <div ref="headerRef" class="fn-modal-titlebar">
-        <slot name="headerLeft" />
+        <slot name="headerLeft"><FnRender v-if="slots?.headerLeft" :render="slots.headerLeft" /></slot>
         <div class="fn-modal-title font-bold">
           <slot name="title">{{ title }}</slot>
         </div>
         <div class="fn-modal-titlebar-actions">
           <button type="button" title="最大化" @click.stop="toggleMaximized">
-            <Minimize2 v-if="maximized" :size="16" />
+            <Minimize2 v-if="fullscreenState" :size="16" />
             <Maximize2 v-else :size="16" />
           </button>
-          <button type="button" title="关闭" @click.stop="open = false">
+          <button type="button" title="关闭" @click.stop="close">
             <X :size="16" />
           </button>
         </div>
-        <slot name="headerRight" />
+        <slot name="headerRight"><FnRender v-if="slots?.headerRight" :render="slots.headerRight" /></slot>
       </div>
-      <div class="fn-modal-body"><slot name="bodyTop" /><slot /><slot name="bodyBottom" /></div>
+      <div class="fn-modal-body">
+        <slot name="bodyTop"><FnRender v-if="slots?.bodyTop" :render="slots.bodyTop" /></slot><slot v-if="props.open" /><slot name="bodyBottom"><FnRender v-if="slots?.bodyBottom" :render="slots.bodyBottom" /></slot>
+      </div>
       <div v-if="footer !== null && footer !== false" class="fn-modal-footer">
-        <slot name="footerLeft" />
-        <slot name="actionLeft" />
+        <slot name="footerLeft"><FnRender v-if="slots?.footerLeft" :render="slots.footerLeft" /></slot>
+        <slot name="actionLeft"><FnRender v-if="slots?.actionLeft" :render="slots.actionLeft" /></slot>
         <slot name="footer">
-          <component :is="() => footer!({ close: () => (open = false), confirm: () => $emit('confirm'), loading: confirmLoading })" v-if="footer" />
+          <FnRender v-if="slots?.footer" :render="slots.footer" :ctx="{ close, confirm: () => $emit('confirm'), loading: confirmLoading }" />
           <template v-else>
             <template v-for="(button, key) in buttonProps" :key="key"><FnButton v-if="button.show !== false" v-bind="button" /></template>
           </template>
         </slot>
-        <slot name="actionRight" />
-        <slot name="footerRight" />
+        <slot name="actionRight"><FnRender v-if="slots?.actionRight" :render="slots.actionRight" /></slot>
+        <slot name="footerRight"><FnRender v-if="slots?.footerRight" :render="slots.footerRight" /></slot>
       </div>
     </div>
   </div>
@@ -38,6 +40,7 @@
 import { Maximize2, Minimize2, X } from "@lucide/vue";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import FnButton from "./fn-button.vue";
+import FnRender from "./fn-render";
 import type { FnModalProps } from "./types";
 
 defineOptions({ inheritAttrs: false });
@@ -51,27 +54,26 @@ const props = withDefaults(defineProps<FnModalProps>(), {
   // footer 类型含 Boolean，必须显式保留 undefined，避免未配置时被转为 false。
   footer: undefined,
 });
+const slots = computed(() => (props as FnModalProps & { slots?: Record<string, (props?: Record<string, any>) => any> }).slots);
 const emit = defineEmits<{
   "update:open": [value: boolean];
   confirm: [];
   reset: [];
   afterClose: [];
 }>();
+const openState = computed(() => props.open);
+const fullscreenState = ref(false);
 
-const open = ref(props.open);
 const buttonProps = computed(() => ({
   reset: { text: "重置", type: "default", onClick: () => emit("reset"), ...props.buttons?.reset },
   cancel: {
     text: "取消",
     type: "default",
-    onClick: () => {
-      open.value = false;
-    },
+    onClick: close,
     ...props.buttons?.cancel,
   },
   confirm: { text: "确定", type: "primary", loading: props.confirmLoading, onClick: () => emit("confirm"), ...props.buttons?.confirm },
 }));
-const maximized = ref(false);
 const headerRef = ref<HTMLElement>();
 const modalElementRef = ref<HTMLElement>();
 let modalElement: HTMLElement | undefined;
@@ -80,30 +82,40 @@ let offsetY = 0;
 
 watch(
   () => props.open,
-  value => {
-    open.value = value;
+  (value, previousValue) => {
     if (value) {
       void nextTick(bindDrag);
+    } else if (previousValue) {
+      emit("afterClose");
     }
   }
 );
-watch(open, value => {
-  emit("update:open", value);
-  if (!value) {
-    emit("afterClose");
-  }
-});
 onMounted(() => {
-  if (open.value) {
+  if (props.open) {
     void nextTick(bindDrag);
   }
 });
 
-function toggleMaximized() {
-  maximized.value = !maximized.value;
-  if (maximized.value) {
+function close() {
+  emit("update:open", false);
+}
+
+function openModal() {
+  emit("update:open", true);
+}
+
+function setFullscreen(value: boolean) {
+  if (fullscreenState.value === value) {
+    return;
+  }
+  fullscreenState.value = value;
+  if (value) {
     resetPosition();
   }
+}
+
+function toggleMaximized() {
+  setFullscreen(!fullscreenState.value);
 }
 
 function bindDrag() {
@@ -115,7 +127,7 @@ function bindDrag() {
 }
 
 function onMouseDown(event: MouseEvent) {
-  if (maximized.value || (event.target as HTMLElement).closest("button")) {
+  if (fullscreenState.value || (event.target as HTMLElement).closest("button")) {
     return;
   }
   let lastX = event.clientX;
@@ -166,9 +178,7 @@ onBeforeUnmount(() => {
   headerRef.value?.removeEventListener("mousedown", onMouseDown);
 });
 
-defineExpose({
-  open,
-});
+defineExpose({ state: { open: openState, fullscreen: fullscreenState }, openModal, close, setFullscreen, toggleFullscreen: toggleMaximized });
 </script>
 
 <style lang="less">

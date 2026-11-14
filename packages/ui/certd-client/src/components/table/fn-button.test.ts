@@ -33,4 +33,20 @@ describe("FnButton 点击上下文", () => {
     setup.handleClick();
     expect(click).toHaveBeenCalledWith({ type: "row" });
   });
+
+  it("使用按钮的静态属性并把当前行 context 传给回调", () => {
+    const context = { type: "row", row: { status: "pending" } };
+    const setup = module.exports.default.setup(
+      {
+        context,
+        show: true,
+        text: "审核",
+        disabled: false,
+      },
+      { expose: () => {}, emit: () => {} }
+    );
+
+    expect(setup.resolvedProps.value).toMatchObject({ show: true, text: "审核", disabled: false });
+    expect(setup.buttonProps.value.disabled).toBe(false);
+  });
 });
