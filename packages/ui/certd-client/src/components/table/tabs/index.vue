@@ -1,5 +1,6 @@
 <template>
   <div class="fn-tabs" role="tablist">
+    <FnRender v-if="slots?.before" :render="slots.before" :ctx="{ tabs, modelValue }" />
     <div
       v-for="item in tabs"
       :key="item.value"
@@ -10,12 +11,17 @@
       :aria-selected="modelValue === item.value"
       @click="$emit('update:modelValue', item.value)"
     >
-      {{ item.label }}<span v-if="showCount" class="fn-tabs-count">{{ item.count || 0 }}</span>
+      <FnRender v-if="slots?.item" :render="slots.item" :ctx="{ item, active: modelValue === item.value }" />
+      <template v-else
+        >{{ item.label }}<span v-if="showCount" class="fn-tabs-count">{{ item.count || 0 }}</span></template
+      >
     </div>
+    <FnRender v-if="slots?.after" :render="slots.after" :ctx="{ tabs, modelValue }" />
   </div>
 </template>
 
 <script setup lang="jsx">
+import FnRender from "../fn-render";
 const props = defineProps({
   tabs: {
     type: Array,
@@ -29,7 +35,9 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  slots: { type: Object, default: () => ({}) },
 });
+const slots = props.slots;
 
 defineEmits(["update:modelValue"]);
 </script>

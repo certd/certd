@@ -2,6 +2,7 @@
 import { request } from "/@/api/service";
 const apiPrefix = "/user/settings";
 export type UserTwoFactorSetting = {
+  loginEnabled: boolean;
   authenticator: {
     enabled: boolean;
     verified: boolean;
@@ -21,6 +22,14 @@ export async function TwoFactorSettingsGet() {
     return {};
   }
   return res as UserTwoFactorSetting;
+}
+
+export async function TwoFactorSettingsSave(req: Partial<UserTwoFactorSetting>) {
+  return await request({
+    url: apiPrefix + "/twoFactor/save",
+    method: "post",
+    data: req,
+  });
 }
 
 export async function TwoFactorAuthenticatorGet() {

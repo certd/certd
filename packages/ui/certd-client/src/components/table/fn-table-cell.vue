@@ -14,17 +14,17 @@ import FnTableCellRender from "./cell-render";
 import FnComponentRender from "./fn-component-render";
 import FnButton from "./fn-button.vue";
 import { resolveComputedValue } from "./compute";
-import type { FnTableColumn, FnFormContext } from "./types";
-const props = defineProps<{ column: FnTableColumn; context: FnFormContext & { row: Record<string, any>; index: number }; value: any }>();
-const emit = defineEmits<{ componentRef: [instance: any] }>();
-const cell = computed(() => resolveComputedValue(props.column, props.context));
+import type { FnDynamic, FnTableColumn, FnTableRow, FnTableRowContext } from "./types";
+const props = defineProps<{ column: FnDynamic<FnTableColumn<FnTableRow>>; context: FnTableRowContext; value: unknown }>();
+const emit = defineEmits<{ componentRef: [instance: object | null] }>();
+const cell = computed(() => resolveComputedValue(props.column, props.context) as FnTableColumn<FnTableRow>);
 const componentProps = computed(() => {
   const component = { ...cell.value.component } as Record<string, any>;
   if (component.modelValue === undefined && component.value === undefined) {
     component.value = props.value;
   }
   if (cell.value.dict && component.options === undefined) {
-    component.options = cell.value.dict.getProps().value;
+    component.options = cell.value.dict.getOptions().value;
   }
   return component;
 });

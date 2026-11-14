@@ -1,37 +1,57 @@
 <template>
   <div class="fn-table" :aria-busy="loading">
+    <FnRender v-if="slots?.top" :render="slots.top" :ctx="{ data, loading }" />
     <div class="fn-table-scroll">
       <table :style="tableStyle">
         <thead>
           <tr>
             <th v-if="rowSelection" class="fn-table-selection-column">
-              <a-checkbox :aria-label="rowSelection.title || '选择当前页'" :checked="pageSelection.checked" :indeterminate="pageSelection.indeterminate" @change="event => togglePageSelection(event.target.checked)" />
+              <a-checkbox
+                v-if="rowSelection.type !== 'single'"
+                :aria-label="rowSelection.title || '选择当前页'"
+                :checked="pageSelection.checked"
+                :indeterminate="pageSelection.indeterminate"
+                @change="event => togglePageSelection(event.target.checked)"
+              />
             </th>
             <th v-for="column in columns" :key="column.key" :class="columnClasses(column)" :style="columnStyle(column, column.key)" :title="column.title" @click="sortColumn(column.key)">
-              <span class="fn-table-heading-content">
-                {{ column.title }}
-                <ArrowUp v-if="sort.prop === column.key && sort.asc" class="fn-table-sort-indicator" />
-                <ArrowDown v-else-if="sort.prop === column.key" class="fn-table-sort-indicator" />
-              </span>
+              <FnRender v-if="column.slots?.header" :render="column.slots.header" :ctx="{ column }" />
+              <template v-else>
+                <span class="fn-table-heading-content">
+                  {{ column.title }}
+                  <ArrowUp v-if="sort.prop === column.key && sort.asc" class="fn-table-sort-indicator" />
+                  <ArrowDown v-else-if="sort.prop === column.key" class="fn-table-sort-indicator" />
+                </span>
+              </template>
               <span class="fn-table-resize-handle" title="调节列宽度" @pointerdown.stop="startResize($event, column)" @click.stop />
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(row, index) in data" :key="getRowKey(row, index)">
-            <td v-if="rowSelection" class="fn-table-selection-column">
-              <a-checkbox :aria-label="`选择第 ${index + 1} 条记录`" :checked="isRowSelected(row, index)" @change="event => updateRowSelection(row, index, event.target.checked)" />
-            </td>
-            <td v-for="column in columns" :key="column.key" :class="columnClasses(column)" :style="columnStyle(column, column.key)" :title="column.ellipsis ? String(getCellValue(row, column) ?? '') : undefined">
-              <FnTableCell :column="column" :context="getRowContext(row, index)" :value="getCellValue(row, column)" @component-ref="setCellComponentRef(row, column.key, $event)" />
-            </td>
+          <tr v-for="(row, index) in data" :key="getRowKey(row, index)" :class="{ 'fn-table-row-selectable': rowSelection?.type === 'single' }" @click="selectRowOnClick(row, index, $event)">
+            <td v-if="slots?.row" :colspan="columns.length + (rowSelection ? 1 : 0)"><FnRender :render="slots.row" :ctx="{ row, index }" /></td>
+            <template v-else>
+              <td v-if="rowSelection" class="fn-table-selection-column">
+                <a-radio v-if="rowSelection.type === 'single'" :aria-label="`选择第 ${index + 1} 条记录`" :checked="isRowSelected(row, index)" @change="() => selectRowOnChange(row, index, true)" />
+                <a-checkbox v-else :aria-label="`选择第 ${index + 1} 条记录`" :checked="isRowSelected(row, index)" @change="event => selectRowOnChange(row, index, event.target.checked)" />
+              </td>
+              <td v-for="column in columns" :key="column.key" :class="columnClasses(column)" :style="columnStyle(column, column.key)" :title="column.ellipsis ? String(getCellValue(row, column) ?? '') : undefined">
+                <FnRender v-if="column.slots?.default" :render="column.slots.default" :ctx="getRowContext(row, index)" />
+                <template v-else>
+                  <FnTableCell :column="getCellColumn(column)" :context="getRowContext(row, index)" :value="getCellValue(row, column)" @component-ref="setCellComponentRef(row, column.key, $event)" />
+                </template>
+              </td>
+            </template>
           </tr>
           <tr v-if="!data.length">
-            <td :colspan="columns.length + (rowSelection ? 1 : 0)" class="fn-table-empty">{{ emptyText || "暂无数据" }}</td>
+            <td :colspan="columns.length + (rowSelection ? 1 : 0)" class="fn-table-empty">
+              <FnRender v-if="slots?.empty" :render="slots.empty" :ctx="{ columns, loading }" /><template v-else>{{ emptyText || "暂无数据" }}</template>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
+    <FnRender v-if="slots?.bottom" :render="slots.bottom" :ctx="{ data, loading }" />
     <div v-if="loading" class="fn-table-loading" role="status" aria-live="polite">
       <a-spin />
       <span>加载中...</span>
@@ -41,42 +61,44 @@
 
 <script setup lang="ts">
 import { ArrowDown, ArrowUp } from "@lucide/vue";
-import { computed, isRef, reactive, ref } from "vue";
+import { computed, inject, reactive, ref, type CSSProperties } from "vue";
 import FnTableCell from "./fn-table-cell.vue";
-import type { FnTableProps } from "./types";
+import FnRender from "./fn-render";
+import { isFnComputeValue } from "./compute";
+import type { FnDynamic, FnTableColumn, FnTableProps, FnTableRow, FnTableRowContext } from "./types";
+import { getFnTableRowKey } from "./row-key";
+import { fnCrudTableSelectionKey } from "./context";
+
+type FnTableColumnConfig = FnTableColumn<FnTableRow> & { key: string };
 const props = withDefaults(defineProps<FnTableProps>(), { data: () => [], loading: false, emptyText: "暂无数据", sort: () => ({ prop: "", asc: true }) });
+const selection = inject(fnCrudTableSelectionKey, undefined);
+const slots = computed(() => props.slots);
 const columns = computed(() => {
-  if (props.crudColumns) {
-    const result: NonNullable<FnTableProps["columns"]> = [];
-    for (const [key, column] of Object.entries(props.crudColumns)) {
-      // 行组件依赖实际 row，必须留到 FnTable 渲染每一行时解析。
-      const cell = column.cell || {};
-      if (column.show === false || cell.show === false) {
-        continue;
-      }
-      result.push({ ...cell, key, title: cell.title ?? column.title });
+  const result: FnTableColumnConfig[] = [];
+  for (const [key, column] of Object.entries(props.columns || {})) {
+    // 行组件依赖实际 row，必须留到 FnTable 渲染每一行时解析。
+    const cell = column.cell && !isFnComputeValue(column.cell) ? column.cell : {};
+    if (column.show === false || cell.show === false) {
+      continue;
     }
-    if (props.rowHandle && props.rowHandle.show !== false) {
-      result.push({ title: "操作", ...props.rowHandle, order: props.rowHandle.order ?? Infinity, key: "rowHandle" });
-    }
-    return result.sort((left, right) => (left.order || 0) - (right.order || 0));
+    result.push({ ...cell, key, title: cell.title ?? column.title });
   }
-  return props.columns || [];
+  return result.sort((left, right) => (left.order || 0) - (right.order || 0));
 });
-const emit = defineEmits<{ sort: [value: { prop: string; asc: boolean }] }>();
+function getCellColumn(column: FnTableColumnConfig): FnDynamic<FnTableColumn<FnTableRow>> {
+  return props.columns?.[column.key]?.cell || column;
+}
+const rowContextColumns = computed(() => {
+  return props.columns || {};
+});
+const emit = defineEmits<{
+  sort: [value: { prop: string; asc: boolean }];
+}>();
 const resizing = ref(false);
 const columnWidths = reactive<Record<string, number>>({});
-const cellComponentRefs = new Map();
-const selectedRowKeys = computed(() => {
-  const selected = props.rowSelection?.selectedRowKeys;
-  if (Array.isArray(selected)) {
-    return selected.map(String);
-  }
-  if (selected && isRef(selected)) {
-    return selected.value.map(String);
-  }
-  return [];
-});
+const cellComponentRefs = new Map<string, unknown>();
+const selectedRowKeys = computed(() => (selection?.selectedRowKeys.value || []).map(String));
+const rowSelection = computed(() => (selection ? { title: selection.title, type: selection.type ?? "multiple" } : undefined));
 const pageSelection = computed(() => {
   const pageKeys = props.data.map((row, index) => String(getRowKey(row, index)));
   const selectedCount = pageKeys.filter(key => selectedRowKeys.value.includes(key)).length;
@@ -91,8 +113,8 @@ const tableStyle = computed(() => {
   }
   return { minWidth: props.minWidth };
 });
-function columnStyle(column, key) {
-  const style = {};
+function columnStyle(column: FnTableColumnConfig, key: string): CSSProperties {
+  const style: CSSProperties = {};
   const width = columnWidths[key] || column.width;
   if (width) {
     style.width = typeof width === "number" ? `${width}px` : width;
@@ -107,7 +129,7 @@ function columnStyle(column, key) {
   return style;
 }
 
-function sortColumn(prop) {
+function sortColumn(prop: string): void {
   if (resizing.value) {
     return;
   }
@@ -118,11 +140,11 @@ function sortColumn(prop) {
   emit("sort", { prop, asc });
 }
 
-function startResize(event, column) {
+function startResize(event: PointerEvent, column: FnTableColumnConfig) {
   resizing.value = true;
   const startX = event.clientX;
   const initialWidth = getColumnWidth(columnWidths[column.key] || column.width);
-  const onPointerMove = moveEvent => {
+  const onPointerMove = (moveEvent: PointerEvent) => {
     const width = Math.max(50, initialWidth + moveEvent.clientX - startX);
     columnWidths[column.key] = width;
   };
@@ -137,7 +159,7 @@ function startResize(event, column) {
   window.addEventListener("pointerup", onPointerUp);
 }
 
-function getColumnWidth(width) {
+function getColumnWidth(width: number | string | undefined): number {
   if (typeof width === "number") {
     return width;
   }
@@ -150,22 +172,27 @@ function getColumnWidth(width) {
   return 120;
 }
 
-function columnClasses(column) {
+function columnClasses(column: FnTableColumnConfig): Array<string | undefined> {
   return [column.class, column.fixed ? `fn-table-fixed-${column.fixed}` : undefined];
 }
 
-function getCellValue(row, column) {
-  return column.key.split(".").reduce((value, key) => value?.[key], row);
+function getCellValue(row: FnTableRow, column: FnTableColumnConfig): unknown {
+  return column.key.split(".").reduce<unknown>((value, key) => {
+    if (typeof value !== "object" || value === null) {
+      return undefined;
+    }
+    return (value as Record<string, unknown>)[key];
+  }, row);
 }
 
-function getRowContext(row: Record<string, any>, index: number) {
-  return { type: "row" as const, row, form: row, index, columns: props.columns, getComponentRef: (key?: string) => getCellComponentRef(row, key) };
+function getRowContext(row: FnTableRow, index: number): FnTableRowContext {
+  return { type: "row", row, form: row, index, columns: rowContextColumns.value, getComponentRef: (key?: string) => getCellComponentRef(row, key) };
 }
-function componentRefKey(row, key) {
+function componentRefKey(row: FnTableRow, key?: string): string {
   return `${String(getRowKey(row, props.data.indexOf(row)))}:${key || "default"}`;
 }
 
-function setCellComponentRef(row, key, instance) {
+function setCellComponentRef(row: FnTableRow, key: string, instance: unknown): void {
   const refKey = componentRefKey(row, key);
   if (instance) {
     cellComponentRefs.set(refKey, instance);
@@ -174,62 +201,35 @@ function setCellComponentRef(row, key, instance) {
   }
 }
 
-function getCellComponentRef(row, key) {
+function getCellComponentRef(row: FnTableRow, key?: string): unknown {
   return cellComponentRefs.get(componentRefKey(row, key));
 }
 
-function getRowKey(row, index) {
-  const rowKey = props.rowKey;
-  if (typeof rowKey === "function") {
-    return rowKey(row);
-  }
-  if (rowKey) {
-    return row[rowKey] ?? index;
-  }
-  return row.id ?? index;
+function getRowKey(row: FnTableRow, index: number): string | number {
+  return getFnTableRowKey(row, index, props.rowKey);
 }
 
-function isRowSelected(row, index) {
+function isRowSelected(row: FnTableRow, index: number): boolean {
   return selectedRowKeys.value.includes(String(getRowKey(row, index)));
 }
 
-function updateRowSelection(row, index, checked: boolean) {
-  const key = String(getRowKey(row, index));
-  const nextKeys = new Set(selectedRowKeys.value);
-  if (checked) {
-    nextKeys.add(key);
-  } else {
-    nextKeys.delete(key);
-  }
-  props.rowSelection?.onChange(
-    Array.from(nextKeys),
-    props.data.filter((item, itemIndex) => nextKeys.has(String(getRowKey(item, itemIndex))))
-  );
+function selectRowOnChange(row: FnTableRow, index: number, selected: boolean): void {
+  selection?.changeSelection({ type: "row", row, index, selected });
 }
 
-function togglePageSelection(checked: boolean) {
-  const nextKeys = new Set(selectedRowKeys.value);
-  for (let index = 0; index < props.data.length; index++) {
-    const row = props.data[index];
-    const key = String(getRowKey(row, index));
-    if (checked) {
-      nextKeys.add(key);
-    } else {
-      nextKeys.delete(key);
-    }
+function selectRowOnClick(row: FnTableRow, index: number, event: MouseEvent): void {
+  if (rowSelection.value?.type !== "single") {
+    return;
   }
-  if (!props.rowSelection?.crossPage && checked) {
-    const pageKeys = new Set(props.data.map((row, index) => String(getRowKey(row, index))));
-    for (const key of Array.from(nextKeys)) {
-      if (!pageKeys.has(key)) {
-        nextKeys.delete(key);
-      }
-    }
+  const target = event.target as HTMLElement;
+  if (target.closest("button, a, input, label, [role='button'], .ant-radio-wrapper, .fn-button")) {
+    return;
   }
-  props.rowSelection?.onChange(
-    Array.from(nextKeys),
-    props.data.filter((item, itemIndex) => nextKeys.has(String(getRowKey(item, itemIndex))))
-  );
+  selectRowOnChange(row, index, true);
+}
+
+function togglePageSelection(selected: boolean): void {
+  selection?.changeSelection({ type: "page", selected });
 }
 </script>
 
@@ -348,6 +348,9 @@ function togglePageSelection(checked: boolean) {
   }
   tbody tr:hover {
     background: #fafafa;
+  }
+  tbody tr.fn-table-row-selectable {
+    cursor: pointer;
   }
   .fn-table-fixed-left,
   .fn-table-fixed-right {

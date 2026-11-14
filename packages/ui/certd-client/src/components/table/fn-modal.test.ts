@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { parse, compileScript } from "@vue/compiler-sfc";
 import ts from "typescript";
 import { describe, it, expect, vi } from "vitest";
+import { reactive } from "vue";
 
 const filename = fileURLToPath(new URL("./fn-modal.vue", import.meta.url));
 const { descriptor } = parse(readFileSync(filename, "utf8"), { filename });
@@ -12,7 +13,7 @@ const compiled = ts.transpileModule(script.content, { compilerOptions: { module:
 const require = createRequire(import.meta.url);
 const module = { exports: {} as any };
 const loadDependency = (name: string) => {
-  if (name === "@lucide/vue" || name === "./fn-button.vue") {
+  if (name === "@lucide/vue" || name === "./fn-button.vue" || name === "./fn-render") {
     return {};
   }
   return require(name);
@@ -61,6 +62,34 @@ describe("FnModal footer 默认值", () => {
   it("显式 false/null 仍然隐藏 footer", async () => {
     expect(await resolveFooter({ footer: false })).toBe(false);
     expect(await resolveFooter({ footer: null })).toBeNull();
+  });
+});
+
+describe("FnModal 状态归属", () => {
+  it("open 只由外部 prop 控制，内部操作只发出更新事件", () => {
+    const props = reactive({ open: true });
+    const emit = vi.fn();
+    let exposed: any;
+    const setup = module.exports.default.setup(props, { expose: (value: unknown) => (exposed = value), emit });
+
+    setup.close();
+
+    expect(emit).toHaveBeenCalledWith("update:open", false);
+    expect(exposed.state.open.value).toBe(true);
+    props.open = false;
+    expect(exposed.state.open.value).toBe(false);
+  });
+
+  it("fullscreen 是内部状态，不接收外部 prop 或发出 v-model 事件", () => {
+    const emit = vi.fn();
+    let exposed: any;
+    const setup = module.exports.default.setup({ fullscreen: true }, { expose: (value: unknown) => (exposed = value), emit });
+
+    expect(exposed.state.fullscreen.value).toBe(false);
+    setup.toggleMaximized();
+
+    expect(exposed.state.fullscreen.value).toBe(true);
+    expect(emit).not.toHaveBeenCalledWith("update:fullscreen", true);
   });
 });
 

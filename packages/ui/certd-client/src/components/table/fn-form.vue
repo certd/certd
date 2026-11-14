@@ -15,21 +15,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from "vue";
+import { computed, reactive, ref } from "vue";
 import FnComponentRender from "./fn-component-render";
-import { resolveComputedValue } from "./compute";
 import type { FnFormColumn, FnFormProps, FnFormContext } from "./types";
 
 const props = withDefaults(
   defineProps<
     FnFormProps & {
-      modelValue?: Record<string, any>;
       gutter?: number;
       onSave?: (form: Record<string, any>) => any;
     }
   >(),
   {
-    modelValue: () => ({}),
     initialForm: () => ({}),
     labelCol: () => ({ style: { width: "120px" } }),
     wrapperCol: () => ({ span: 16 }),
@@ -40,7 +37,6 @@ const props = withDefaults(
   }
 );
 const emit = defineEmits<{
-  "update:modelValue": [value: Record<string, any>];
   save: [value: Record<string, any>];
 }>();
 
@@ -49,44 +45,21 @@ const mode = computed(() => props.mode || "add");
 const initialValues = {
   ...Object.fromEntries(Object.entries(props.columns).map(([key, column]) => [key, column.value])),
   ...props.initialForm,
-  ...props.modelValue,
 };
 const formState = reactive({ ...initialValues });
 const formColumns = computed(() =>
   Object.entries(props.columns)
-    .map(([key, column]) => ({ ...resolveColumn(column, key), key }))
+    .map(([key, column]) => ({ ...column, key }))
     .sort((left, right) => (left.order ?? 0) - (right.order ?? 0))
 );
 
-function resolveColumn(column: FnFormColumn, key: string) {
-  const formColumn = { ...column, search: undefined, cell: undefined };
-  return resolveComputedValue(formColumn, {
-    type: "form",
-    form: formState,
-    formRef: formRef.value,
-    mode: mode.value,
-    columns: props.columns,
-    row: undefined,
-    search: undefined,
-    index: undefined,
-    getComponentRef: undefined,
-    field: key,
-  });
-}
-
-watch(
-  () => props.modelValue,
-  value => Object.assign(formState, value || {})
-);
-watch(formState, value => emit("update:modelValue", { ...value }), { deep: true });
-
-function getComponentProps(column: FnFormColumn) {
+function getComponentProps(column: FnFormColumn): Record<string, any> {
   const component = { ...(column.component || {}) };
   return component;
 }
 
-function getForm() {
-  return { ...formState };
+function getForm(): Record<string, any> {
+  return formState;
 }
 function getContext(): FnFormContext {
   return {
@@ -105,7 +78,7 @@ function getContext(): FnFormContext {
   };
 }
 
-function reset() {
+function reset(): Record<string, any> {
   Object.keys(formState).forEach(key => delete formState[key]);
   Object.assign(formState, initialValues);
   formRef.value?.clearValidate();
@@ -113,12 +86,14 @@ function reset() {
   return getForm();
 }
 
-async function validate() {
-  return await formRef.value.validate();
+async function validate(): Promise<boolean> {
+  await formRef.value.validate();
+  return true;
 }
 
-async function save() {
-  const form = await validate();
+async function save(): Promise<any> {
+  await validate();
+  const form = getForm();
   emit("save", form);
   if (props.onSubmit) {
     await props.onSubmit(getContext());
@@ -129,7 +104,7 @@ async function save() {
   return form;
 }
 
-defineExpose({ save, reset, getForm, validate, formRef });
+defineExpose({ save, reset, getForm, validate, formRef, getContext });
 </script>
 
 <style lang="less">

@@ -188,7 +188,7 @@ export class LoginService {
     const twoFactorSetting = await this.twoFactorService.getSetting(userId);
 
     const authenticatorSetting = twoFactorSetting.authenticator;
-    if (authenticatorSetting.enabled) {
+    if (authenticatorSetting.enabled && twoFactorSetting.loginEnabled !== false) {
       //要检查
       const randomKey = utils.id.simpleNanoId(12);
       cache.set(`login_2fa_code:${randomKey}`, userId, {

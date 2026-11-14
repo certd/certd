@@ -15,12 +15,13 @@ import { compute, DictStore, FnCrud, type FnCrudOptions, type FnTablePageQuery, 
 import { request } from "/@/api/service";
 import { SecurityBan, securityMonitorApi } from "./api";
 import { validateIpAddress } from "/@/plugin/validator";
+import UserSelect from "./user-select.vue";
 
 const emit = defineEmits<{ changed: [] }>();
-const tableRef = ref<InstanceType<typeof FnCrud>>();
+const tableRef = ref<{ table: { refresh: () => Promise<void> } }>();
 const userDict = new DictStore({
   data: [],
-  getData: async () => {
+  getDataFunc: async () => {
     const users = await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST" });
     return users.map(user => {
       let label = user.nickName || user.username;
@@ -34,11 +35,7 @@ const userDict = new DictStore({
     });
   },
 });
-onMounted(() => {
-  void userDict.fetch().catch(() => {
-    notification.error({ message: "用户列表加载失败" });
-  });
-});
+onMounted(() => {});
 const typeDict = new DictStore({
   data: [
     { label: "全部", value: "" },
@@ -51,11 +48,11 @@ const columns = {
     key: "targetType",
     title: "白名单类型",
     cell: { show: false },
-    form: {
+    form: compute(({ form }) => ({
       order: 0,
       span: 24,
       value: "ip",
-      component: compute(({ form }) => ({
+      component: {
         name: "a-radio-group",
         vModel: "value",
         options: [
@@ -65,38 +62,28 @@ const columns = {
         onChange: () => {
           form!.targetValue = undefined;
         },
-      })),
-    },
+      },
+    })),
   },
   targetValue: {
     key: "targetValue",
     title: "白名单目标",
     cell: { order: 1, width: 180, render: ({ row }: { row: SecurityBan }) => renderTarget(row) },
-    form: {
-      order: 1,
-      title: compute(({ form }) => {
-        if (form?.targetType === "user") {
-          return "用户";
-        }
-        return "IP 地址";
-      }),
-      rules: compute(({ form }) => {
-        if (form?.targetType === "user") {
-          return [{ required: true, message: "请选择用户" }];
-        }
-        return [
+    form: compute(({ form }) => {
+      if (form?.targetType === "user") {
+        return { order: 1, title: "用户", rules: [{ required: true, message: "请选择用户" }], component: { name: UserSelect, vModel: "modelValue" } };
+      }
+      return {
+        order: 1,
+        title: "IP 地址",
+        rules: [
           { required: true, whitespace: true, message: "请输入 IP、网段或通配符" },
           { validator: validateIpAddress, trigger: "blur" },
-        ];
-      }),
-      component: compute(({ form }) => {
-        if (form?.targetType === "user") {
-          return { name: "a-select", vModel: "value", options: userDict.Props.value, showSearch: true, optionFilterProp: "label", allowClear: true, placeholder: "请选择用户" };
-        }
-        return { name: "a-input", vModel: "value", placeholder: "请输入 IP、网段或通配符" };
-      }),
-      helper: "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32",
-    },
+        ],
+        component: { name: "a-input", vModel: "value", placeholder: "请输入 IP、网段或通配符" },
+        helper: "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32",
+      };
+    }),
   },
   type: { key: "type", title: "类型", cell: { order: 2, width: 150, dict: typeDict, render: ({ row }: { row: SecurityBan }) => renderType(row) } },
   reason: { key: "reason", title: "备注", cell: { order: 3, width: 280, render: ({ row }: { row: SecurityBan }) => renderReason(row) }, form: { order: 2, helper: "可选" } },
@@ -135,7 +122,7 @@ const tableOptions = computed<FnCrudOptions<SecurityBan>>(() => ({
   },
   tabs: { refCol: "type" },
   table: { minWidth: 980, rowKey: "id", emptyText: "暂无白名单记录" },
-  pagination: { current: 1, pageSize: 20, pageSizeProps: ["10", "20", "30", "50"], showTotal: total => `共 ${total} 条` },
+  pagination: { current: 1, pageSize: 20, pageSizeOptions: ["10", "20", "30", "50"], showTotal: total => `共 ${total} 条` },
 }));
 
 async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<SecurityBan>> {
@@ -149,7 +136,7 @@ async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<S
 }
 function renderTarget(record: SecurityBan) {
   if (record.targetType === "ip") return <span class="security-allow-manager__code">{record.targetValue}</span>;
-  const user = userDict.Props.value.find(item => item.value === String(record.targetValue));
+  const user = userDict.__options.value.find(item => item.value === String(record.targetValue));
   const username = user?.label || record.targetValue;
   return (
     <span class="security-allow-manager__target">
@@ -181,7 +168,7 @@ function renderDate(value: string) {
 }
 
 async function refresh() {
-  await tableRef.value?.refresh();
+  await tableRef.value?.table.refresh();
 }
 
 defineExpose({ refresh });

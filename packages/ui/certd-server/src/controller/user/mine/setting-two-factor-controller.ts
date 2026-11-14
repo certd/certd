@@ -38,7 +38,7 @@ export class UserTwoFactorSettingController extends BaseController {
       throw new Error("本功能需要开通Certd专业版");
     }
     const userId = this.getUserId();
-    const setting = new UserTwoFactorSetting();
+    const setting = await this.service.getSetting<UserTwoFactorSetting>(userId, null, UserTwoFactorSetting);
     merge(setting, bean);
 
     // 禁用时清除
