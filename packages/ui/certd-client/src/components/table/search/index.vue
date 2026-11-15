@@ -18,12 +18,12 @@
 <script setup lang="ts">
 import { computed, inject } from "vue";
 import { RotateCcw, Search } from "@lucide/vue";
-import FnComponentRender from "../fn-component-render";
-import FnButton from "../fn-button.vue";
-import FnRender from "../fn-render";
-import type { FnSearchProps, FnSearchColumn, FnSearchColumnResolved, FnComputeContext } from "../types";
-import { resolveComputedValue } from "../compute";
-import { fnCrudSearchKey } from "../context";
+import FnComponentRender from "../components/fn-component-render";
+import FnButton from "../components/fn-button.vue";
+import FnRender from "../components/fn-render";
+import type { FnSearchProps, FnSearchColumn, FnSearchColumnResolved, FnComputeContext } from "../types/index";
+import { resolveComputedValue } from "../crud/compute";
+import { fnCrudSearchKey } from "../provider/context";
 const props = defineProps<FnSearchProps>();
 const searchState = inject(fnCrudSearchKey);
 if (!searchState) {
