@@ -51,7 +51,7 @@ const columns = {
     key: "targetType",
     title: "封禁目标类型",
     cell: { show: false },
-    form: compute(({ form }) => ({
+    form: {
       order: 0,
       span: 24,
       value: "ip",
@@ -63,56 +63,71 @@ const columns = {
           { label: "用户", value: "user" },
           { label: "流水线", value: "pipeline" },
         ],
-        onChange: () => {
+        onChange: compute(({ form }) => () => {
           form!.targetValue = undefined;
           if (form!.targetType === "pipeline") {
             form!.scope = "pipeline";
           } else {
             form!.scope = "access";
           }
-        },
+        }),
       },
-    })),
+    },
   },
   targetValue: {
     key: "targetValue",
     title: "封禁目标",
     cell: { order: 1, width: 170, render: ({ row }: { row: SecurityBan }) => renderTarget(row) },
-    form: compute(({ form }) => {
-      let title = "IP 地址";
-      let rules: FnFormColumn["rules"] = [
-        { required: true, whitespace: true, message: "请输入 IP、网段或通配符" },
-        { validator: validateIpAddress, trigger: "blur" },
-      ];
-      let component: FnFormColumn["component"] = { name: "a-input", vModel: "value", placeholder: "请输入 IP、网段或通配符" };
-      if (form?.targetType === "user") {
-        title = "用户";
-        rules = [{ required: true, message: "请选择用户" }];
-        component = { name: UserSelect, vModel: "modelValue" };
-      } else if (form?.targetType === "pipeline") {
-        title = "流水线 ID";
-        rules = [{ required: true, type: "number", min: 1, message: "请输入有效的流水线 ID" }];
-        component = { name: "a-input-number", vModel: "value", min: 1, precision: 0, placeholder: "请输入流水线 ID" };
-      }
-      return {
-        order: 1,
-        span: 24,
-        title,
-        rules,
-        component,
-        helper: form?.targetType === "ip" ? "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32" : undefined,
-      };
-    }),
+    form: {
+      order: 1,
+      span: 24,
+      title: compute(({ form }) => {
+        if (form?.targetType === "user") {
+          return "用户";
+        }
+        if (form?.targetType === "pipeline") {
+          return "流水线 ID";
+        }
+        return "IP 地址";
+      }),
+      rules: compute(({ form }) => {
+        if (form?.targetType === "user") {
+          return [{ required: true, message: "请选择用户" }];
+        }
+        if (form?.targetType === "pipeline") {
+          return [{ required: true, type: "number", min: 1, message: "请输入有效的流水线 ID" }];
+        }
+        return [
+          { required: true, whitespace: true, message: "请输入 IP、网段或通配符" },
+          { validator: validateIpAddress, trigger: "blur" },
+        ];
+      }),
+      component: compute(({ form }) => {
+        if (form?.targetType === "user") {
+          return { name: UserSelect, vModel: "modelValue" };
+        }
+        if (form?.targetType === "pipeline") {
+          return { name: "a-input-number", vModel: "value", min: 1, precision: 0, placeholder: "请输入流水线 ID" };
+        }
+        return { name: "a-input", vModel: "value", placeholder: "请输入 IP、网段或通配符" };
+      }),
+      helper: compute(({ form }) => {
+        if (form?.targetType === "ip") {
+          return "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32";
+        }
+        return undefined;
+      }),
+    },
   },
   scope: {
     key: "scope",
     title: "封禁范围",
     cell: { show: false },
-    form: compute(({ form }) => ({
+    form: {
       order: 2,
       span: 24,
       value: "access",
-      show: form?.targetType === "user",
+      show: compute(({ form }) => form?.targetType === "user"),
       helper: "禁止访问同时禁止该用户运行流水线；仅禁止运行流水线时仍可访问本站",
       component: {
         name: "a-radio-group",
@@ -122,7 +137,7 @@ const columns = {
           { label: "禁止运行流水线", value: "pipeline" },
         ],
       },
-    })),
+    },
   },
   type: { key: "type", title: "类型", cell: { order: 2, width: 180, dict: typeDict, render: ({ row }: { row: SecurityBan }) => renderType(row) } },
   reason: { key: "reason", title: "原因 / 来源", cell: { order: 3, width: 260, render: ({ row }: { row: SecurityBan }) => renderDetail(row) }, form: { order: 3, span: 24, helper: "可选，留空记录为手动封禁" } },

@@ -376,18 +376,18 @@ function openVipModal() {
   .dark & {
     .security-monitor {
       color: rgba(255, 255, 255, 0.85);
-      background: #141414;
+      background: hsl(var(--background));
     }
 
     .security-overview,
     .security-workspace,
     .security-locked {
-      border-color: #303030;
-      background: #1f1f1f;
+      border-color: hsl(var(--border));
+      background: hsl(var(--card));
     }
 
     .security-overview > div {
-      border-color: #303030;
+      border-color: hsl(var(--border));
     }
 
     .detection-setting span {
@@ -396,12 +396,24 @@ function openVipModal() {
   }
 
   @media (max-width: 900px) {
+    .fs-page-content {
+      overflow-y: auto;
+    }
+
     .security-overview {
       grid-template-columns: repeat(2, 1fr);
     }
 
     .security-monitor {
+      height: auto;
+      min-height: 100%;
+      overflow: visible;
       padding: 18px 12px;
+    }
+
+    .security-workspace {
+      min-height: 600px;
+      flex: none;
     }
   }
 }
