@@ -514,6 +514,31 @@ const { tour, tourHandleOpen } = useTour();
       }
     }
   }
+  @media (max-width: 767px) {
+    .header-profile {
+      .text {
+        min-width: 0;
+      }
+
+      .left > div:first-child {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .dashboard-security-summary {
+        max-width: 100%;
+        margin-left: 0;
+
+        .security-status-trigger {
+          height: auto;
+          max-width: 100%;
+          white-space: normal;
+        }
+      }
+    }
+  }
   .notice {
     padding: 20px;
   }

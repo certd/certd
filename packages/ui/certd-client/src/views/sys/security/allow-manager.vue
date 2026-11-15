@@ -48,7 +48,7 @@ const columns = {
     key: "targetType",
     title: "白名单类型",
     cell: { show: false },
-    form: compute(({ form }) => ({
+    form: {
       order: 0,
       span: 24,
       value: "ip",
@@ -59,31 +59,41 @@ const columns = {
           { label: "IP 白名单", value: "ip" },
           { label: "用户白名单", value: "user" },
         ],
-        onChange: () => {
+        onChange: compute(({ form }) => () => {
           form!.targetValue = undefined;
-        },
+        }),
       },
-    })),
+    },
   },
   targetValue: {
     key: "targetValue",
     title: "白名单目标",
     cell: { order: 1, width: 180, render: ({ row }: { row: SecurityBan }) => renderTarget(row) },
-    form: compute(({ form }) => {
-      if (form?.targetType === "user") {
-        return { order: 1, title: "用户", rules: [{ required: true, message: "请选择用户" }], component: { name: UserSelect, vModel: "modelValue" } };
-      }
-      return {
-        order: 1,
-        title: "IP 地址",
-        rules: [
+    form: {
+      order: 1,
+      title: compute(({ form }) => (form?.targetType === "user" ? "用户" : "IP 地址")),
+      rules: compute(({ form }) => {
+        if (form?.targetType === "user") {
+          return [{ required: true, message: "请选择用户" }];
+        }
+        return [
           { required: true, whitespace: true, message: "请输入 IP、网段或通配符" },
           { validator: validateIpAddress, trigger: "blur" },
-        ],
-        component: { name: "a-input", vModel: "value", placeholder: "请输入 IP、网段或通配符" },
-        helper: "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32",
-      };
-    }),
+        ];
+      }),
+      component: compute(({ form }) => {
+        if (form?.targetType === "user") {
+          return { name: UserSelect, vModel: "modelValue" };
+        }
+        return { name: "a-input", vModel: "value", placeholder: "请输入 IP、网段或通配符" };
+      }),
+      helper: compute(({ form }) => {
+        if (form?.targetType === "user") {
+          return undefined;
+        }
+        return "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32";
+      }),
+    },
   },
   type: { key: "type", title: "类型", cell: { order: 2, width: 150, dict: typeDict, render: ({ row }: { row: SecurityBan }) => renderType(row) } },
   reason: { key: "reason", title: "备注", cell: { order: 3, width: 280, render: ({ row }: { row: SecurityBan }) => renderReason(row) }, form: { order: 2, helper: "可选" } },
