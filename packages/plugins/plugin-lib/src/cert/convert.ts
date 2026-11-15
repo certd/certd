@@ -217,7 +217,7 @@ export class CertConverter {
       const jksPath = path.join(os.tmpdir(), "/certd/tmp/", randomStr + `_cert.jks`);
 
       const jksGoPath = await this.getJksGoPath();
-      await this.exec(jksGoPath, ["-importkeystore", "-srckeystore", bundlePath, "-srcstoretype", "PEM", "-destkeystore", jksPath, "-deststorepass", jksPassword]);
+      await this.exec(jksGoPath, ["-importkeystore", "-srckeystore", bundlePath, "-srcstoretype", "PEM", "-destkeystore", jksPath, "-deststorepass", jksPassword, "-alias", "certd"]);
       fs.unlinkSync(bundlePath);
 
       const fileBuffer = fs.readFileSync(jksPath);
