@@ -136,7 +136,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台。核心模�
 
 **fn-crud 试验范围：** `src/components/table` 与安全监控中心。
 
-- 优先完善并复用本地 `FnTable`、`FnForm`、`FnModal`、`FnButton` 等组件；不得依赖 Fast Crud 组件、Provider 或 `useFormWrapper`。不自动迁移其他页面，扩大范围需用户确认。
+- 优先完善并复用本地 `FnTable`、`FnForm`、`FnModal`、`FnButton` 等组件；新增或修改 `src/components/table` 组件时，禁止直接使用 Ant Design Vue UI 组件，交互使用本地 Fn 组件或原生实现；不得依赖 Fast Crud 组件、Provider 或 `useFormWrapper`。不自动迁移其他页面，扩大范围需用户确认。
 - `src/components/table` 的图标统一用 `@lucide/vue`；按钮图标传 Lucide Vue 组件，不用 Ant Design 图标或 `fs-icon` 字符串。
 - `FnFormProvider` 独立注册，提供 `openDialog` / `openFormDialog`，使用本地 `FnModal` / `FnForm`，并保留当前 Vue app 的组件注册、Ant Design Vue 配置和 provide/inject 上下文。有字段输入、校验或提交的对话框用其 `openFormDialog`；纯确认可用 `Modal.confirm`。
 

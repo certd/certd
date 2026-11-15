@@ -1,21 +1,21 @@
 <template>
   <AConfigProvider :locale="antdvLocale" :theme="tokenTheme">
-    <FnModalProvider>
+    <FnConfigProvider ui="antdv" :theme-bridge="FnAntdvThemeBridge">
       <FsFormProvider>
         <contextHolder />
         <router-view />
       </FsFormProvider>
-    </FnModalProvider>
+    </FnConfigProvider>
   </AConfigProvider>
 </template>
 
 <script lang="ts" setup>
-import { computed, provide, Ref, ref } from "vue";
+import { computed, defineComponent, provide, Ref, ref } from "vue";
 import { preferences, usePreferences } from "/@/vben/preferences";
-import { useAntdDesignTokens } from "/@/vben/hooks";
 import { Modal, theme } from "ant-design-vue";
 import AConfigProvider from "ant-design-vue/es/config-provider";
-import { FnModalProvider } from "/@/components/table";
+import { FnConfigProvider } from "/@/components/table";
+import { useAntdvTheme } from "/@/components/table/theme";
 import { antdvLocale } from "./locales/antdv";
 import { setI18nLanguage } from "/@/locales";
 import { mitter } from "./utils/util.mitt";
@@ -33,7 +33,14 @@ const locale = preferences.app.locale;
 setI18nLanguage(locale);
 
 const { isDark } = usePreferences();
-const { tokens } = useAntdDesignTokens();
+const FnAntdvThemeBridge = defineComponent({
+  name: "FnAntdvThemeBridge",
+  setup() {
+    const { token } = theme.useToken();
+    useAntdvTheme(token);
+    return () => null;
+  },
+});
 
 const tokenTheme = computed(() => {
   const algorithm = isDark.value ? [theme.darkAlgorithm] : [theme.defaultAlgorithm];
@@ -45,7 +52,6 @@ const tokenTheme = computed(() => {
 
   return {
     algorithm,
-    token: tokens,
   };
 });
 </script>
