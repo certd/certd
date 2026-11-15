@@ -41,7 +41,7 @@
                 <div class="helper">{{ t("certd.sys.settings.sslPortNote") }}</div>
               </a-form-item>
               <a-form-item :label="t('certd.sys.settings.ignoreCertValidation')" :name="['tls', 'rejectUnauthorized']">
-                <a-switch v-model:checked="formState.tls.rejectUnauthorized" />
+                <a-switch v-model:checked="formState.tls.rejectUnauthorized" :checked-value="false" :un-checked-value="true" />
               </a-form-item>
             </div>
           </a-tab-pane>
