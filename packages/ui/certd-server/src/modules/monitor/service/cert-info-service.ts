@@ -543,7 +543,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       logger,
       sslProvider: (sslProvider || "letsencrypt") as any,
       privateKeyType: "rsa_2048",
-      maxCheckRetryCount: 20,
+      maxCheckRetryCount: 6,
       domainParser: {} as any,
       useMappingProxy: opts?.useMappingProxy,
       reverseProxy: opts?.reverseProxy,

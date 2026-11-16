@@ -1,6 +1,6 @@
 <template>
   <AConfigProvider :locale="antdvLocale" :theme="tokenTheme">
-    <FnConfigProvider ui="antdv" :theme-bridge="FnAntdvThemeBridge">
+    <FnConfigProvider>
       <FsFormProvider>
         <contextHolder />
         <router-view />
@@ -10,12 +10,13 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineComponent, provide, Ref, ref } from "vue";
+import { computed, provide, Ref, ref } from "vue";
 import { preferences, usePreferences } from "/@/vben/preferences";
-import { Modal, theme } from "ant-design-vue";
+import { useAntdDesignTokens } from "/@/vben/hooks";
+import { Modal, theme, notification, message } from "ant-design-vue";
 import AConfigProvider from "ant-design-vue/es/config-provider";
-import { FnConfigProvider } from "/@/components/table";
-import { useAntdvTheme } from "/@/components/table/theme";
+import { FnConfigProvider, type FnCrudOptions, installFnCrud } from "/@/components/table";
+import { useFnAntdvUi } from "/@/components/table/theme/antdv";
 import { antdvLocale } from "./locales/antdv";
 import { setI18nLanguage } from "/@/locales";
 import { mitter } from "./utils/util.mitt";
@@ -33,14 +34,12 @@ const locale = preferences.app.locale;
 setI18nLanguage(locale);
 
 const { isDark } = usePreferences();
-const FnAntdvThemeBridge = defineComponent({
-  name: "FnAntdvThemeBridge",
-  setup() {
-    const { token } = theme.useToken();
-    useAntdvTheme(token);
-    return () => null;
-  },
-});
+const { tokens } = useAntdDesignTokens();
+const fnCrudOptions: Partial<FnCrudOptions> = {
+  table: { density: "compact", size: 13 },
+};
+useFnAntdvUi({ theme: tokens, notification, message });
+installFnCrud({ commonOptions: () => fnCrudOptions });
 
 const tokenTheme = computed(() => {
   const algorithm = isDark.value ? [theme.darkAlgorithm] : [theme.defaultAlgorithm];
@@ -52,6 +51,7 @@ const tokenTheme = computed(() => {
 
   return {
     algorithm,
+    token: tokens,
   };
 });
 </script>

@@ -15,7 +15,7 @@ const module = { exports: {} as any };
 const loadDependency = (name: string) => {
   if (name === "../modal/fn-modal.vue" || name === "./fn-form.vue") return {};
   if (name === "../crud/compute") return { resolveComputedValue };
-  if (name === "../provider/context") return { useFnUiServices: () => ({ notification: { error: vi.fn() }, message: { error: vi.fn() } }) };
+  if (name === "../use") return { useFnUiServices: () => ({ notification: { error: vi.fn() }, message: { error: vi.fn() } }) };
   return require(name);
 };
 new Function("require", "module", "exports", compiled.outputText)(loadDependency, module, module.exports);
@@ -28,9 +28,9 @@ it("动态表单配置使用 formDialog context，并保留取消回调", async 
     mode: "edit",
     initialForm: form,
     columns: {
-      kind: compute(({ form: values, modal, type }) => ({
+      kind: compute(({ form: values, dialog, type }) => ({
         component: {
-          name: `${type}-${values?.kind}-${modal?.open.value ? "open" : "closed"}`,
+          name: `${type}-${values?.kind}-${dialog?.open.value ? "open" : "closed"}`,
         },
       })),
     },

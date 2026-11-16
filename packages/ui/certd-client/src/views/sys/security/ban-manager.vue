@@ -163,23 +163,6 @@ const columns = {
   },
 };
 const tableOptions = computed<FnCrudOptions<SecurityBan>>(() => ({
-  layout: [
-    {
-      style: {},
-      cols: [
-        { type: "header", style: {} },
-        { type: "", style: {} },
-      ],
-    },
-    {
-      style: {},
-      cols: [
-        { type: "actionbar", style: {} },
-        { type: "tabs", style: { flex: 1 } },
-        { type: "search", style: {} },
-      ],
-    },
-  ],
   search: { columns: { keyword: { order: 1, component: { name: "a-input", vModel: "value", placeholder: "搜索 IP、用户 ID、流水线 ID 或原因", allowClear: true }, width: 290 } } },
   columns,
   actionbar: { buttons: { add: { text: "手动添加封禁", icon: Plus, show: permissionUtil.hasPermissions("sys:settings:edit") } } },
@@ -233,7 +216,7 @@ function renderTarget(record: SecurityBan) {
   }
   return (
     <span class="security-ban-manager__target">
-      <strong>{name}</strong>
+      <div>{name}</div>
       <small>
         {targetLabel} {record.targetValue}
       </small>
@@ -317,8 +300,6 @@ defineExpose({ refresh: () => tableRef.value?.table.refresh() });
     flex: 1;
   }
   .security-ban-manager__code {
-    font-family: ui-monospace, Consolas, monospace;
-    font-size: 12px;
   }
   .security-ban-manager__target,
   .security-ban-manager__detail,

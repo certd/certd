@@ -1,22 +1,25 @@
 <template>
-  <a-form ref="formRef" class="fn-form" :model="formState" :label-col="labelCol" :wrapper-col="wrapperCol" v-bind="formProps">
-    <a-row :gutter="gutter">
-      <a-col v-for="column in formColumns" :key="column.key" :span="column.span ?? 12">
-        <a-form-item v-if="column.show !== false" :label="column.title" :name="column.key" :rules="column.rules" v-bind="column.itemProps">
+  <form class="fn-form" v-bind="formProps" :style="formStyle" @submit.prevent="save">
+    <div class="fn-form-grid" :style="{ gap: `${gutter}px` }">
+      <div v-for="column in formColumns" :key="column.key" class="fn-form-column" :style="{ gridColumn: `span ${column.span ?? 12}` }">
+        <FnFormItem v-if="column.show !== false" :label="column.title" :error="errors[column.key]" :help="column.helper" :html-for="column.key" v-bind="column.itemProps">
           <slot :name="column.key" :column="column" :form="formState" :value="formState[column.key]">
-            <FnComponentRender v-if="column.component" v-bind="getComponentProps(column)" v-model:model-value="formState[column.key]" scope="form" />
-            <a-input v-else v-model:value="formState[column.key]" />
+            <FnComponentRender v-if="column.component" v-bind="getComponentProps(column)" v-model:model-value="formState[column.key]" scope="form" :field-key="column.key" />
+            <FnInput v-else :id="column.key" v-model="formState[column.key]" @update:model-value="validateField(column.key)" @blur="validateField(column.key)" />
           </slot>
-          <div v-if="column.helper" class="fn-form-helper">{{ column.helper }}</div>
-        </a-form-item>
-      </a-col>
-    </a-row>
-  </a-form>
+        </FnFormItem>
+      </div>
+    </div>
+  </form>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, provide, reactive } from "vue";
 import FnComponentRender from "../components/fn-component-render";
+import FnInput from "../components/fn-input.vue";
+import FnFormItem from "./fn-form-item.vue";
+import { fnFormContextKey } from "./context";
+import { validateFnFormField } from "./validation";
 import type { FnFormColumn, FnFormProps, FnFormContext } from "../types/index";
 
 const props = withDefaults(
@@ -28,8 +31,6 @@ const props = withDefaults(
   >(),
   {
     initialForm: () => ({}),
-    labelCol: () => ({ style: { width: "120px" } }),
-    wrapperCol: () => ({ span: 16 }),
     gutter: 16,
     formProps: () => ({}),
     mode: "add",
@@ -40,7 +41,11 @@ const emit = defineEmits<{
   save: [value: Record<string, any>];
 }>();
 
-const formRef = ref();
+const errors = reactive<Record<string, string>>({});
+const formRef = {
+  validate,
+  clearValidate,
+};
 const mode = computed(() => props.mode || "add");
 const initialValues = {
   ...Object.fromEntries(Object.entries(props.columns).map(([key, column]) => [key, column.value])),
@@ -52,6 +57,18 @@ const formColumns = computed(() =>
     .map(([key, column]) => ({ ...column, key }))
     .sort((left, right) => (left.order ?? 0) - (right.order ?? 0))
 );
+const formStyle = computed(() => ({ ...((props.formProps.style as Record<string, string>) || {}), "--fn-form-label-width": (props.labelCol?.style?.width as string) || "120px" }));
+
+provide(fnFormContextKey, { validateField });
+
+async function validateField(key: string): Promise<void> {
+  const error = await validateFnFormField(key, props.columns[key], formState[key]);
+  if (!error) {
+    delete errors[key];
+    return;
+  }
+  errors[key] = error;
+}
 
 function getComponentProps(column: FnFormColumn): Record<string, any> {
   const component = { ...(column.component || {}) };
@@ -67,7 +84,7 @@ function getContext(): FnFormContext {
     form: formState,
     mode: mode.value,
     columns: props.columns,
-    formRef: formRef.value,
+    formRef,
     reset: () => {
       reset();
     },
@@ -81,14 +98,22 @@ function getContext(): FnFormContext {
 function reset(): Record<string, any> {
   Object.keys(formState).forEach(key => delete formState[key]);
   Object.assign(formState, initialValues);
-  formRef.value?.clearValidate();
+  clearValidate();
   props.onReset?.(getContext());
   return getForm();
 }
 
 async function validate(): Promise<boolean> {
-  await formRef.value.validate();
+  const keys = formColumns.value.filter(column => column.show !== false).map(column => column.key);
+  await Promise.all(keys.map(validateField));
+  if (Object.keys(errors).length) {
+    throw { errorFields: Object.entries(errors).map(([name, errors]) => ({ name, errors })) };
+  }
   return true;
+}
+
+function clearValidate(): void {
+  Object.keys(errors).forEach(key => delete errors[key]);
 }
 
 async function save(): Promise<any> {
@@ -109,14 +134,19 @@ defineExpose({ save, reset, getForm, validate, formRef, getContext });
 
 <style lang="less">
 .fn-form {
-  .ant-form-item {
-    margin-bottom: 16px;
+  .fn-form-grid {
+    display: grid;
+    grid-template-columns: repeat(24, minmax(0, 1fr));
   }
 
-  .fn-form-helper {
-    margin-top: 4px;
-    color: #98a2b1;
-    font-size: 12px;
+  .fn-form-column {
+    min-width: 0;
+  }
+
+  @media (max-width: 720px) {
+    .fn-form-grid {
+      display: block;
+    }
   }
 }
 </style>

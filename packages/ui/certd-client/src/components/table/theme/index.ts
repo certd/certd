@@ -3,9 +3,10 @@ import type { CSSProperties } from "vue";
 import type { FnThemeStyle, FnThemeTokens } from "./types";
 
 export type { FnThemeTokenName, FnThemeStyle, FnThemeTokens } from "./types";
-export { mapAntdvThemeToFnTokens } from "./antdv";
-export { useAntdvTheme } from "./use-antdv-theme";
-export { mapNaiveThemeToFnTokens, type NaiveThemeTokens } from "./naive";
+export { mapAntdvThemeToFnTokens } from "./antdv/antdv";
+export { useAntdvTheme } from "./antdv/use-antdv-theme";
+export { mapNaiveThemeToFnTokens, type NaiveThemeTokens } from "./naive/naive";
+export { useNaiveTheme } from "./naive/use-naive-theme";
 
 export function createFnThemeStyle(tokens: FnThemeTokens): FnThemeStyle {
   const style: FnThemeStyle = {};

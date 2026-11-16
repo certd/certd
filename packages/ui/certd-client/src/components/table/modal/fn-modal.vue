@@ -194,6 +194,7 @@ defineExpose({ state: { open: openState, fullscreen: fullscreenState }, openModa
 }
 
 .fn-modal {
+  font-size: 14px;
   max-width: 100%;
   max-height: 100%;
   overflow: hidden;
@@ -221,6 +222,9 @@ defineExpose({ state: { open: openState, fullscreen: fullscreenState }, openModa
     justify-content: space-between;
     cursor: move;
     user-select: none;
+  }
+  .fn-modal-title {
+    font-size: 16px;
   }
 
   .fn-modal-titlebar-actions {

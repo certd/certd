@@ -1,6 +1,7 @@
-import type { InjectionKey } from "vue";
-import { inject, provide } from "vue";
-import type { FnCrudSearchState, FnTableSelectionContext } from "../types/index";
+import type { ComputedRef, InjectionKey } from "vue";
+import { provide } from "vue";
+import type { FnCrudOptions, FnCrudSearchState, FnTableSelectionContext, FnTableProps } from "../types/index";
+import { createFnNotification } from "../notification/fn-notification";
 
 export interface FnFeedbackApi {
   success(options: any): void;
@@ -18,18 +19,44 @@ export interface FnUiServices {
   message: FnFeedbackApi;
 }
 
-export const fnCrudSearchKey: InjectionKey<FnCrudSearchState> = Symbol("FnCrudSearch");
-export const fnCrudTableSelectionKey: InjectionKey<FnTableSelectionContext> = Symbol("FnCrudTableSelection");
-export const fnUiServicesKey: InjectionKey<FnUiServices> = Symbol("FnUiServices");
+export class UiContext {
+  readonly notificationItems: ReturnType<typeof createFnNotification>["items"];
+  private services: FnUiServices;
 
-export function provideFnUiServices(services: FnUiServices): void {
-  provide(fnUiServicesKey, services);
+  constructor() {
+    const defaults = createFnNotification();
+    this.notificationItems = defaults.items;
+    this.services = defaults.services;
+  }
+
+  getServices(): FnUiServices {
+    return this.services;
+  }
+
+  setServices(services: FnUiServices): void {
+    this.services = services;
+  }
 }
 
-export function useFnUiServices(): FnUiServices {
-  const services = inject(fnUiServicesKey);
-  if (!services) {
-    throw new Error("Fn feedback services require FnConfigProvider");
+export class FnCrudContext {
+  private commonOptions: () => Partial<FnCrudOptions> = () => ({});
+
+  configure(options: { commonOptions: () => Partial<FnCrudOptions> }): void {
+    this.commonOptions = options.commonOptions;
   }
-  return services;
+
+  getCommonOptions(): Partial<FnCrudOptions> {
+    return this.commonOptions();
+  }
+}
+
+export const uiContext = new UiContext();
+export const fnCrudContext = new FnCrudContext();
+export const fnUiServicesKey: InjectionKey<FnUiServices> = Symbol("FnUiServices");
+
+export const fnCrudSearchKey: InjectionKey<FnCrudSearchState> = Symbol("FnCrudSearch");
+export const fnCrudTableSelectionKey: InjectionKey<FnTableSelectionContext> = Symbol("FnCrudTableSelection");
+export const fnTableSizeKey: InjectionKey<ComputedRef<Pick<FnTableProps, "size" | "density">>> = Symbol("FnTableSize");
+export function provideFnUiServices(): void {
+  provide(fnUiServicesKey, uiContext.getServices());
 }

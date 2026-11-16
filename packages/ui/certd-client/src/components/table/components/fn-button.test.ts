@@ -12,7 +12,10 @@ const compiled = ts.transpileModule(script.content, { compilerOptions: { module:
 const require = createRequire(import.meta.url);
 const module = { exports: {} as any };
 const loadDependency = (name: string) => {
-  if (name === "@lucide/vue" || name === "./fn-icon.vue") {
+  if (name === "vue") {
+    return require(name);
+  }
+  if (name === "@lucide/vue" || name === "./fn-icon.vue" || name === "./fn-dropdown-button.vue") {
     return {};
   }
   return require(name);
@@ -20,6 +23,11 @@ const loadDependency = (name: string) => {
 new Function("require", "module", "exports", compiled.outputText)(loadDependency, module, module.exports);
 
 describe("FnButton 点击上下文", () => {
+  it("未配置 show 时默认显示按钮", () => {
+    expect(Object.prototype.hasOwnProperty.call(module.exports.default.props.show, "default")).toBe(true);
+    expect(module.exports.default.props.show.default).toBeUndefined();
+  });
+
   it("将真实行上下文传给操作按钮", () => {
     const context = { type: "row", row: { id: 12 }, index: 0 };
     const onClick = vi.fn();

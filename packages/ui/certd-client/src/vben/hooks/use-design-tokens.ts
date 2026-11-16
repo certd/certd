@@ -8,8 +8,6 @@ import { convertToRgb, updateCSSVariables } from "/@/vben/utils";
  */
 
 export function useAntdDesignTokens() {
-  const rootStyles = getComputedStyle(document.documentElement);
-
   const tokens = reactive({
     borderRadius: "" as any,
     colorBgBase: "",
@@ -29,6 +27,7 @@ export function useAntdDesignTokens() {
   });
 
   const getCssVariableValue = (variable: string, isColor: boolean = true) => {
+    const rootStyles = getComputedStyle(document.documentElement);
     const value = rootStyles.getPropertyValue(variable);
     return isColor ? `hsl(${value})` : value;
   };
@@ -47,8 +46,6 @@ export function useAntdDesignTokens() {
       tokens.colorSuccess = getCssVariableValue("--success");
 
       tokens.colorTextBase = getCssVariableValue("--foreground");
-
-      getCssVariableValue("--primary-foreground");
 
       tokens.colorBorderSecondary = tokens.colorBorder = getCssVariableValue("--border");
 
@@ -74,8 +71,6 @@ export function useAntdDesignTokens() {
 }
 
 export function useNaiveDesignTokens() {
-  const rootStyles = getComputedStyle(document.documentElement);
-
   const commonTokens = reactive({
     baseColor: "",
     bodyColor: "",
@@ -107,6 +102,7 @@ export function useNaiveDesignTokens() {
   });
 
   const getCssVariableValue = (variable: string, isColor: boolean = true) => {
+    const rootStyles = getComputedStyle(document.documentElement);
     const value = rootStyles.getPropertyValue(variable);
     return isColor ? convertToRgb(`hsl(${value})`) : value;
   };
@@ -158,10 +154,8 @@ export function useNaiveDesignTokens() {
 
 export function useElementPlusDesignTokens() {
   const { isDark } = usePreferences();
-  const rootStyles = getComputedStyle(document.documentElement);
-
   const getCssVariableValueRaw = (variable: string) => {
-    return rootStyles.getPropertyValue(variable);
+    return getComputedStyle(document.documentElement).getPropertyValue(variable);
   };
 
   const getCssVariableValue = (variable: string, isColor: boolean = true) => {

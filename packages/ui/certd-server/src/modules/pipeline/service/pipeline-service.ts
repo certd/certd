@@ -1448,7 +1448,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
                     preferredChain: "ISRG Root X2",
                     useProxy: false,
                     skipLocalVerify: false,
-                    maxCheckRetryCount: 20,
+                    maxCheckRetryCount: 6,
                     waitDnsDiffuseTime: 30,
                     pfxArgs: "-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES",
                     successNotify: true,

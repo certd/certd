@@ -101,17 +101,6 @@ const columns = {
   operator: { key: "operator", title: "添加人", cell: { order: 5, width: 150, render: () => "—" } },
 };
 const tableOptions = computed<FnCrudOptions<SecurityBan>>(() => ({
-  layout: [
-    { style: {}, cols: [{ type: "header", style: {} }] },
-    {
-      style: {},
-      cols: [
-        { type: "actionbar", style: {} },
-        { type: "tabs", style: { flex: 1 } },
-        { type: "search", style: {} },
-      ],
-    },
-  ],
   search: { columns: { keyword: { order: 1, component: { name: "a-input", vModel: "value", placeholder: "搜索 IP、用户 ID 或备注", allowClear: true }, width: 250 } } },
   columns,
   form: {

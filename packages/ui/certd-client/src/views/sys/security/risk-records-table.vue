@@ -11,10 +11,10 @@
 </template>
 
 <script lang="tsx" setup>
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 import { RouterLink } from "vue-router";
 import { notification } from "ant-design-vue";
-import { model, compute, DictStore, FnButton, FnCrud, type FnButtonItem, type FnCrudOptions, type FnFormProps, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
+import { model, compute, DictStore, FnButton, FnCrud, type FnButtonItem, type FnCrudOptions, type FnCrudState, type FnFormProps, type FnTablePageQuery, type FnTablePageResult, useFnCrud } from "/@/components/table";
 import permissionUtil from "/@/plugin/permission/util.permission";
 import { useI18n } from "/src/locales";
 import { RiskRecord, RiskReviewStatus, securityMonitorApi } from "./api";
@@ -59,7 +59,7 @@ const reviewStatusDict = new DictStore({
     { label: "无需处理", value: "notRequired" },
   ],
 });
-const tableOptions: FnCrudOptions<RiskRecord> = {
+const tableOptions = reactive<FnCrudState<RiskRecord>>({
   rowSelect: permissionUtil.hasPermissions("sys:settings:edit") ? { title: "选择风险记录", crossPage: true } : undefined,
   actionbar: {
     buttons: {
@@ -78,23 +78,6 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
       },
     },
   },
-  layout: [
-    {
-      style: {},
-      cols: [
-        { type: "header", style: {} },
-        { type: "", style: {} },
-      ],
-    },
-    {
-      style: {},
-      cols: [
-        { type: "actionbar", style: {} },
-        { type: "tabs", style: { flex: 1 } },
-        { type: "search", style: {} },
-      ],
-    },
-  ],
   search: {
     columns: {
       level: { order: 1, component: { name: "a-select", vModel: "value", placeholder: "风险等级", allowClear: true }, width: 125, dict: riskLevelDict },
@@ -222,7 +205,8 @@ const tableOptions: FnCrudOptions<RiskRecord> = {
     emptyText: "暂无风险记录",
   },
   pagination: { current: 1, pageSize: 20, pageSizeOptions: ["10", "20", "30", "40", "50", "100"], showTotal: total => `共 ${total} 条` },
-};
+});
+useFnCrud(tableOptions);
 
 async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<RiskRecord>> {
   return await securityMonitorApi.riskRecordsPage({
@@ -424,15 +408,14 @@ defineExpose({ refresh });
   .time,
   .ip {
     color: #46546b;
-    font-family: ui-monospace, Consolas, monospace;
-    font-size: 12px !important;
+    // font-family: ui-monospace, Consolas, monospace;
   }
 
   .type {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    font-weight: 600;
+    // font-weight: 600;
   }
 
   .risk-table-header {
@@ -466,10 +449,10 @@ defineExpose({ refresh });
 
   .pill {
     display: inline-block;
-    padding: 4px 8px;
+    padding: 3px 6px;
     border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    // font-weight: 600;
 
     &.low,
     &.done {

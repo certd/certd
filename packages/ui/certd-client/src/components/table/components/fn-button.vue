@@ -1,34 +1,32 @@
 <template>
-  <span v-if="resolvedProps.show !== false" class="fn-button-wrap" :class="{ 'fn-button-open': menuOpen }" :style="buttonStyle">
-    <button v-if="buttonType !== 'dropdown'" class="fn-button" :class="buttonClasses" :type="nativeType" :disabled="disabled || loading" :aria-busy="loading || undefined" :title="tooltipTitle" @click="handleClick">
+  <FnDropdownButton v-if="resolvedProps.show !== false && buttonType === 'dropdown'" v-bind="props" @select="emit('select', $event)" />
+  <span v-else-if="resolvedProps.show !== false" class="fn-button-wrap" :style="buttonStyle">
+    <button
+      v-if="buttonType !== 'dropdown'"
+      class="fn-button"
+      :class="buttonClasses"
+      :type="nativeType"
+      :disabled="disabled || loading"
+      :aria-busy="loading || undefined"
+      :aria-label="!text ? tooltipTitle : undefined"
+      :title="tooltipTitle"
+      @click="handleClick"
+    >
       <span v-if="loading" class="fn-button-spinner" aria-hidden="true"></span>
       <FnIcon v-else-if="iconComponent" :icon="iconComponent" />
       <span v-if="text" class="fn-button-label">{{ text }}</span>
     </button>
-    <template v-else>
-      <button class="fn-button" :class="buttonClasses" type="button" :disabled="disabled || loading" :title="tooltipTitle" :aria-expanded="menuOpen" aria-haspopup="menu" @click="toggleMenu">
-        <span v-if="loading" class="fn-button-spinner" aria-hidden="true"></span>
-        <FnIcon v-else-if="iconComponent" :icon="iconComponent" />
-        <span v-if="text" class="fn-button-label">{{ text }}</span>
-        <ChevronDown :size="14" />
-      </button>
-      <div v-if="menuOpen" class="fn-button-menu" role="menu">
-        <button v-for="item in visibleItems" :key="item.key" class="fn-button-menu-item" :class="{ danger: item.danger }" type="button" role="menuitem" :disabled="item.disabled" @click="handleMenuClick(item)">
-          {{ item.label }}
-        </button>
-      </div>
-    </template>
   </span>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { ChevronDown } from "@lucide/vue";
+import { computed } from "vue";
 import type { CSSProperties } from "vue";
 import FnIcon from "./fn-icon.vue";
-import type { FnButtonItem, FnButtonProps } from "../types/index";
+import FnDropdownButton from "./fn-dropdown-button.vue";
+import type { FnButtonProps } from "../types/index";
 
-const props = withDefaults(defineProps<FnButtonProps>(), { type: "primary", shape: "default", buttonType: "button", loading: false, disabled: false, danger: false, items: () => [] });
+const props = withDefaults(defineProps<FnButtonProps>(), { show: undefined, type: "primary", shape: "default", buttonType: "button", loading: false, disabled: false, danger: false, items: () => [] });
 const emit = defineEmits<{ click: []; select: [key: string] }>();
 const context = computed(() => props.context || { type: "row" as const });
 const resolvedProps = computed(() => ({ show: props.show, text: props.text, disabled: props.disabled, danger: props.danger, items: props.items || [] }));
@@ -36,9 +34,6 @@ const tooltipTitle = computed(() => (typeof props.tooltip === "string" ? props.t
 const iconComponent = computed(() => props.icon);
 const text = computed(() => resolvedProps.value.text);
 const buttonType = computed(() => props.buttonType);
-const items = computed(() => resolvedProps.value.items);
-const visibleItems = computed(() => items.value.filter(item => item.show !== false));
-const menuOpen = ref(false);
 const nativeType = computed(() => (props.type === "submit" || props.type === "reset" ? props.type : "button"));
 const buttonClasses = computed(() => ({
   [`fn-button-${props.type}`]: true,
@@ -60,20 +55,6 @@ function handleClick(): void {
     emit("click");
   }
 }
-function toggleMenu(): void {
-  if (!props.disabled && !props.loading) {
-    menuOpen.value = !menuOpen.value;
-  }
-}
-function handleMenuClick(item: FnButtonItem): void {
-  if (item.disabled) {
-    return;
-  }
-  menuOpen.value = false;
-  const onClick = item.click || item.onClick;
-  onClick?.(context.value);
-  emit("select", item.key);
-}
 </script>
 
 <style lang="less">
@@ -91,7 +72,7 @@ function handleMenuClick(item: FnButtonItem): void {
     padding: 0 12px;
     border: 1px solid transparent;
     border-radius: 6px;
-    color: #344054;
+    // color: #344054;
     background: transparent;
     cursor: pointer;
     font: inherit;
@@ -120,7 +101,7 @@ function handleMenuClick(item: FnButtonItem): void {
   }
   .fn-button-primary {
     border-color: var(--fn-button-primary);
-    color: #fff;
+    color: hsl(var(--primary-foreground, 0 0% 98%));
     background: var(--fn-button-primary);
     box-shadow: 0 1px 2px color-mix(in srgb, var(--fn-button-primary) 22%, transparent);
     &:hover:not(:disabled) {
@@ -201,42 +182,6 @@ function handleMenuClick(item: FnButtonItem): void {
     border-radius: 50%;
     animation: fn-button-spin 700ms linear infinite;
   }
-  .fn-button-menu {
-    position: absolute;
-    z-index: 50;
-    top: calc(100% + 5px);
-    right: 0;
-    min-width: 144px;
-    padding: 4px;
-    border: 1px solid #e1e6ed;
-    border-radius: 7px;
-    background: #fff;
-    box-shadow: 0 8px 24px rgba(16, 24, 40, 0.14);
-  }
-  .fn-button-menu-item {
-    display: flex;
-    width: 100%;
-    min-height: 32px;
-    align-items: center;
-    padding: 0 9px;
-    border: 0;
-    border-radius: 4px;
-    color: #344054;
-    background: transparent;
-    cursor: pointer;
-    text-align: left;
-    font: inherit;
-    &:hover:not(:disabled) {
-      background: #f2f4f7;
-    }
-    &:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-    &.danger {
-      color: #c82333;
-    }
-  }
   @media (prefers-reduced-motion: reduce) {
     .fn-button {
       transition: none;
@@ -244,10 +189,7 @@ function handleMenuClick(item: FnButtonItem): void {
   }
   .dark & {
     .fn-button {
-      color: #d8dee8;
-    }
-    .fn-button-primary {
-      color: #fff;
+      // color: #d8dee8;
     }
     .fn-button-default {
       border-color: #424b59;
@@ -271,19 +213,6 @@ function handleMenuClick(item: FnButtonItem): void {
     .fn-button-default.fn-button-danger {
       color: #ff7b87;
       background: transparent;
-    }
-    .fn-button-menu {
-      border-color: #414a58;
-      background: #232a34;
-    }
-    .fn-button-menu-item {
-      color: #d8dee8;
-      &:hover:not(:disabled) {
-        background: #303946;
-      }
-      &.danger {
-        color: #ff7b87;
-      }
     }
   }
 }

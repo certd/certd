@@ -63,14 +63,6 @@ export interface FnModalProps {
   footer?: boolean | null;
   slots?: FnSlots;
 }
-export interface FnModalContext {
-  open: Readonly<Ref<boolean>>;
-  fullscreen: Readonly<Ref<boolean>>;
-  loading: Ref<boolean>;
-  openModal: () => void;
-  close: () => void;
-  setFullscreen: (value: boolean) => void;
-}
 export interface FnModalInstance {
   state: { open: ComputedRef<boolean>; fullscreen: Ref<boolean> };
   openModal: () => void;
@@ -113,8 +105,7 @@ export interface FnComputeContext<Row = any, Form = Record<string, any>> {
   validate?: () => Promise<boolean>;
   reset?: () => void;
   columns?: Record<string, any>;
-  modal?: FnModalContext;
-  dialogCtx?: FnDialogContext;
+  dialog?: FnDialogContext;
   submit?: () => Promise<void>;
   close?: () => void;
   [key: string]: any;
@@ -261,6 +252,32 @@ export interface FnTableColumn<Row = any> {
   slots?: FnSlots;
 }
 
+export interface FnCrudColumnPreference {
+  order: number;
+  show: boolean;
+  fixed?: "left" | "right" | null;
+  width?: number;
+}
+
+export interface FnColumnSettingsColumn {
+  key: string;
+  title: string;
+  show: boolean;
+  fixed?: "left" | "right";
+}
+
+export interface FnCrudPreferences {
+  columns: Record<string, FnCrudColumnPreference>;
+  pageSize: number;
+  density: "compact" | "comfort";
+}
+
+export interface FnCrudPreferenceStorage {
+  get: (key: string) => FnCrudPreferences | undefined | Promise<FnCrudPreferences | undefined>;
+  set: (key: string, preferences: FnCrudPreferences) => void | Promise<void>;
+  remove?: (key: string) => void | Promise<void>;
+}
+
 export interface FnTablePageQuery {
   page: {
     offset: number;
@@ -312,7 +329,10 @@ export interface FnRowSelectOptions<Row = FnTableRow> {
 
 export interface FnTableProps {
   columns?: Record<string, FnCrudColumn<FnTableRow>>;
+  columnWidths?: Record<string, number>;
   data: FnTableRow[];
+  size?: number;
+  density?: "compact" | "comfort";
   sort?: { prop: string; asc: boolean };
   show?: boolean;
   loading?: boolean;
@@ -341,7 +361,9 @@ export interface FnHeadingProps {
   slots?: FnSlots;
 }
 export interface FnCrudOptions<Row = any> {
+  onToggleDensity?: () => void;
   id?: string;
+  preferenceStorage?: FnCrudPreferenceStorage;
   rowHandle?: FnTableColumn<Row>;
   rowSelect?: FnRowSelectOptions<Row>;
   columns: Record<string, FnCrudColumn<Row>>;
@@ -361,7 +383,7 @@ export interface FnCrudOptions<Row = any> {
     delRequest?: (id: string | number) => Promise<any>;
     infoRequest?: (id: string | number) => Promise<Record<string, any>>;
   };
-  table?: Omit<FnTableProps, "columns" | "data" | "sort">;
+  table?: Omit<FnTableProps, "columns" | "columnWidths" | "data" | "sort">;
   pagination?: FnPaginationProps;
   slots?: FnSlots;
 }

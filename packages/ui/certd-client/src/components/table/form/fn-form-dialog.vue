@@ -19,11 +19,11 @@
 </template>
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref } from "vue";
-import { useFnUiServices } from "../provider/context";
+import { useFnUiServices } from "../use";
 import { resolveComputedValue } from "../crud/compute";
 import FnModal from "../modal/fn-modal.vue";
 import FnForm from "./fn-form.vue";
-import type { FnFormProps, FnFormDialogOptions, FnFormInstance, FnFormContext, FnComputeContext, FnModalContext, FnModalInstance, FnFormDialogInstance, FnDialogContext, FnComputeValue } from "../types/index";
+import type { FnFormProps, FnFormDialogOptions, FnFormInstance, FnFormContext, FnComputeContext, FnModalInstance, FnFormDialogInstance, FnDialogContext, FnComputeValue } from "../types/index";
 const activeForm = ref<FnFormDialogOptions>();
 const { notification } = useFnUiServices();
 const computedOptions = ref<FnComputeValue<Partial<Omit<FnFormDialogOptions, "columns">>>>();
@@ -51,8 +51,7 @@ const formContext = computed<FnComputeContext>(() => {
     reset: () => {
       formRef.value?.reset();
     },
-    modal: getModalContext(),
-    dialogCtx: getDialogContext(),
+    dialog: getDialogContext(),
     submit: submitForm,
     close: close,
   };
@@ -87,18 +86,6 @@ function getDialogContext(): FnDialogContext {
     },
     open: modalOpen,
     loading: formLoading,
-  };
-}
-function getModalContext(): FnModalContext {
-  return {
-    open: modalOpen,
-    fullscreen: computed(() => modalRef.value?.state.fullscreen.value ?? false),
-    loading: formLoading,
-    openModal: () => {
-      modalOpen.value = true;
-    },
-    close,
-    setFullscreen: value => modalRef.value?.setFullscreen(value),
   };
 }
 function open(options: FnFormDialogOptions, dynamicOptions?: FnComputeValue<Partial<Omit<FnFormDialogOptions, "columns">>>): Promise<Record<string, any> | undefined> {
