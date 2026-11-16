@@ -25,7 +25,7 @@
 import { nextTick, reactive, shallowReactive } from "vue";
 import FnModal from "./fn-modal.vue";
 import { provideFnModal } from "./dialog";
-import { useFnUiServices } from "../provider/context";
+import { useFnUiServices } from "../use";
 import type { FnDialogContext, FnDialogProps, FnModalService, FnDialogRecord } from "../types/index";
 
 const dialogs = shallowReactive<FnDialogRecord[]>([]);
@@ -89,7 +89,7 @@ async function handleButtonClick(dialog: FnDialogRecord, key: string) {
     const button = dialog.Props.buttons?.reset;
     const callback = button?.click || button?.onClick;
     if (callback) {
-      await callback({ type: "row", dialogCtx: getDialogContext(dialog) });
+      await callback({ type: "row", dialog: getDialogContext(dialog) });
     }
     return;
   }
@@ -97,7 +97,7 @@ async function handleButtonClick(dialog: FnDialogRecord, key: string) {
     const button = dialog.Props.buttons?.cancel;
     const callback = button?.click || button?.onClick;
     if (callback) {
-      await callback({ type: "row", dialogCtx: getDialogContext(dialog) });
+      await callback({ type: "row", dialog: getDialogContext(dialog) });
     }
     dialog.open = false;
   }
@@ -115,7 +115,7 @@ async function confirm(dialog: FnDialogRecord) {
     const confirmButton = dialog.Props.buttons?.confirm;
     const callback = confirmButton?.click || confirmButton?.onClick;
     if (callback) {
-      dialog.result = await callback({ type: "row", dialogCtx: getDialogContext(dialog) });
+      dialog.result = await callback({ type: "row", dialog: getDialogContext(dialog) });
     }
     dialog.open = false;
   } catch (error) {

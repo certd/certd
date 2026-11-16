@@ -25,7 +25,7 @@ import { Form } from "ant-design-vue";
 import { Search, X } from "@lucide/vue";
 import FnCrud from "../crud/fn-crud.vue";
 import FnModal from "../modal/fn-modal.vue";
-import { useFnUiServices } from "../provider/context";
+import { useFnUiServices } from "../use";
 import type { FnCrudOptions, FnTablePageQuery, FnTablePageResult, FnTableRow, FnTableSelectProps } from "../types/index";
 
 const props = withDefaults(defineProps<FnTableSelectProps>(), { title: "选择记录", placeholder: "请选择", disabled: false, allowClear: true });

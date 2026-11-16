@@ -1,5 +1,5 @@
 import { computed, unref, watch, type MaybeRefOrGetter } from "vue";
-import { applyFnThemeTokens } from "./index";
+import { applyFnThemeTokens } from "..";
 import { mapNaiveThemeToFnTokens } from "./naive";
 
 type NaiveThemeTokens = Parameters<typeof mapNaiveThemeToFnTokens>[0];

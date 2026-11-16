@@ -10,7 +10,7 @@
         </div>
         <div class="text">
           <div class="left">
-            <div class="inline-flex">
+            <div class="inline-flex items-center">
               <span>{{ t("certd.dashboard.greeting", { name: userInfo.nickName || userInfo.username, site: siteInfo.title }) }}</span>
               <security-summary v-if="userStore.isAdmin && settingStore.isPlus" />
             </div>

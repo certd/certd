@@ -1,5 +1,5 @@
 <template>
-  <div class="fn-crud">
+  <div class="fn-crud" :data-density="density">
     <header class="fn-crud-header">
       <div v-for="(row, rowIndex) in layoutProps" :key="rowIndex" class="fn-crud-row" :style="row.style">
         <div v-for="(col, colIndex) in row.cols" :key="colIndex" class="fn-crud-col" :class="col.type ? `fn-crud-col--${col.type}` : undefined" :style="col.style">
@@ -12,7 +12,7 @@
               >
             </slot>
           </div>
-          <FnTabs v-else-if="col.type === 'tabs' && tabs" v-bind="tabsProps" :slots="tabsProps.slots" @update:model-value="changeTab" />
+          <FnTabs v-else-if="col.type === 'tabs' && tabsProps" v-bind="tabsProps" :slots="tabsProps.slots" @update:model-value="changeTab" />
           <template v-else-if="col.type === 'search' && searchProps.show !== false">
             <slot name="search">
               <FnSearch v-bind="searchProps" />
@@ -23,57 +23,76 @@
             <template v-for="(button, key) in actionbarProps.buttons" :key="key"><FnButton v-if="button.show !== false" v-bind="button" /></template>
           </div>
           <div v-else-if="col.type === 'toolbar' && toolbarProps.show !== false" class="fn-crud-buttons">
+            <FnToolbar :density="density" :disabled="!preferencesLoaded" @toggle-density="toggleDensity" @open-column-settings="columnSettingsOpen = true" />
             <FnRender v-if="toolbarProps.slots?.default" :render="toolbarProps.slots.default" :ctx="{ selectedRowKeys: getSelectedRowKeys(), selectedRows: getSelectedRows() }" />
             <FnButton v-for="(button, key) in toolbarProps.buttons" :key="key" v-bind="button" />
           </div>
         </div>
       </div>
     </header>
-    <FnTable v-if="tableProps.show !== false" v-bind="tableProps" :slots="tableProps.slots" @sort="changeSort" />
+    <FnTable v-if="tableProps.show !== false" v-bind="tableProps" :size="size" :density="density" :column-widths="columnWidths" :slots="tableProps.slots" @sort="changeSort" @column-resize="saveColumnWidth" />
     <FnFormDialog ref="FnFormDialogRef" />
+    <FnColumnSettings v-model="columnSettingsOpen" :columns="columnSettingsColumns" @change="changeColumnSettings" @reset="resetColumnSettings" />
     <footer v-if="pagination && pagination.show !== false" class="fn-crud-footer"><FnPagination v-bind="paginationProps" @change="changePage" /></footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, provide, reactive, ref, type Ref } from "vue";
+import { computed, getCurrentInstance, onMounted, provide, reactive, ref } from "vue";
 import FnTable from "../table/fn-table.vue";
 import FnPagination from "../table/fn-pagination.vue";
 import FnSearch from "../search/index.vue";
 import FnTabs from "../tabs/index.vue";
 import FnButton from "../components/fn-button.vue";
+import FnToolbar from "../components/fn-toolbar.vue";
+import FnColumnSettings from "../components/fn-column-settings.vue";
 import FnFormDialog from "../form/fn-form-dialog.vue";
 import FnRender from "../components/fn-render";
 import { model } from "../modal/dialog";
-import { fnCrudSearchKey, fnCrudTableSelectionKey, useFnUiServices } from "../provider/context";
+import { fnCrudContext, fnCrudSearchKey, fnCrudTableSelectionKey, uiContext } from "../provider/context";
+import { deepMerge } from "./merge";
 import { compute, isFnComputeValue, resolveComputedValue } from "./compute";
-import type {
-  FnCrudExpose,
-  FnCrudOptions,
-  FnFormColumn,
-  FnDynamic,
-  FnTableLayoutRow,
-  FnTableProps,
-  FnSearchProps,
-  FnFormDialogOptions,
-  FnSearchColumn,
-  DictOption,
-  FnFormContext,
-  FnTableRow,
-  FnTableRowSelectionChange,
-  FnPaginationTarget,
-  FnComputeContext,
-} from "../types/index";
+import { useActionbarProps, useFormProps, useLayoutProps, usePaginationProps, useRowHandleProps, useSearchProps, useTableColumns, useTableProps, useTabsProps, useToolbarProps } from "./use";
+import type { FnCrudExpose, FnCrudOptions, FnFormDialogOptions, FnFormContext, FnTableRow, FnTableRowSelectionChange, FnPaginationTarget, FnComputeContext } from "../types/index";
 import { getFnTableRowKey } from "../table/row-key";
+import { createFnCrudPreferenceSnapshot, createFnCrudPreferenceStorage, getFnCrudPreferenceKey, mergeFnCrudPreferences } from "./preferences";
+import type { FnColumnSettingsColumn, FnCrudPreferences } from "../types/index";
 
-const props = defineProps<FnCrudOptions>();
-const { notification } = useFnUiServices();
+const rawProps = defineProps<FnCrudOptions>();
+const instance = getCurrentInstance();
+const crudOptions = computed(() => {
+  const explicitProps = instance?.vnode.props || {};
+  const localOptions: Record<string, any> = {};
+  for (const key of Object.keys(rawProps)) {
+    if (!instance || Object.prototype.hasOwnProperty.call(explicitProps, key) || key in explicitProps) {
+      localOptions[key] = (rawProps as Record<string, any>)[key];
+    }
+  }
+  const userState = localOptions;
+  const commonOptions = fnCrudContext.getCommonOptions();
+  const stateWithDefaults = deepMerge(userState, commonOptions);
+  return deepMerge(stateWithDefaults, userState);
+});
+const props = new Proxy({} as FnCrudOptions, {
+  get: (_target, key: string) => crudOptions.value[key],
+});
+const { notification } = uiContext.getServices();
 const FnFormDialogRef = ref<InstanceType<typeof FnFormDialog>>();
 const data = ref<FnTableRow[]>([]);
+const columnSettingsOpen = ref(false);
+const columnWidths = reactive<Record<string, number>>({});
+const preferencesLoaded = ref(false);
+const preferencesKey = ref("");
+const preferencesStorage = computed(() => createFnCrudPreferenceStorage(props.preferenceStorage));
+const savedPreferences = ref<FnCrudPreferences>();
+const defaultPageSize = props.pagination?.pageSize || 10;
+const size = computed(() => props.table?.size ?? 14);
+const densityOverride = ref<"compact" | "comfort">();
+const density = computed(() => densityOverride.value || props.table?.density || "comfort");
 const loading = ref(false);
 const searchForm = reactive<Record<string, any>>({});
 provide(fnCrudSearchKey, { form: searchForm, search: applySearch });
-const page = reactive({ current: props.pagination?.current || 1, pageSize: props.pagination?.pageSize || 10, total: 0 });
+const page = reactive({ current: props.pagination?.current || 1, pageSize: defaultPageSize, total: 0 });
 const sort = ref({ prop: "", asc: true });
 const tabsCounts = ref<Record<string, number>>({});
 const selectedRowKeys = ref((props.rowSelect?.initialSelectedKeys || []).map(String));
@@ -88,47 +107,28 @@ const selectedRows = computed(() => {
   return data.value.filter((row, index) => selectedKeys.has(String(getFnTableRowKey(row, index, props.table?.rowKey))));
 });
 let requestId = 0;
-const searchProps: Ref<FnSearchProps> = computed(() => {
-  const source: Record<string, FnDynamic<FnSearchColumn>> = { ...props.search?.columns };
-  for (const [key, column] of Object.entries(props.columns)) {
-    if (column.search) {
-      const override = source[key];
-      source[key] = compute(context => ({
-        ...resolveComputedValue(column.search!, context),
-        ...resolveComputedValue(override || {}, context),
-      }));
-    }
-  }
-  const searchColumns: Record<string, FnDynamic<FnSearchColumn>> = {};
-  for (const [key, column] of Object.entries(source)) {
-    searchColumns[key] = column;
-  }
-  return { ...props.search, columns: searchColumns };
-});
-const rowHandleProps = computed(() => ({
-  width: 160,
-  ...props.rowHandle,
-  buttons: {
-    edit: { text: "编辑", type: "link", onClick: editRow, ...props.rowHandle?.buttons?.edit },
-    delete: { text: "删除", type: "link", danger: true, disabled: !props.request.delRequest, onClick: openDeleteDialog, ...props.rowHandle?.buttons?.delete },
-    ...Object.fromEntries(Object.entries(props.rowHandle?.buttons || {}).filter(([key]) => key !== "edit" && key !== "delete")),
-  },
-}));
-const tableProps: Ref<FnTableProps> = computed(() => ({
-  ...props.table,
-  columns: tableColumns.value,
-  data: data.value,
-  loading: loading.value || props.table?.loading,
-  sort: sort.value,
-}));
-const tableColumns = computed(() => {
-  const columns = { ...props.columns };
-  if (props.rowHandle && props.rowHandle.show !== false) {
-    const rowHandle = rowHandleProps.value;
-    columns.rowHandle = { key: "rowHandle", title: "操作", cell: { ...rowHandle, order: rowHandle.order ?? Infinity } };
-  }
-  return columns;
-});
+const searchProps = useSearchProps(props);
+const rowHandleProps = useRowHandleProps(props, editRow, openDeleteDialog);
+const baseTableColumns = useTableColumns(props, rowHandleProps);
+const tableColumns = computed(() => mergeFnCrudPreferences(baseTableColumns.value, savedPreferences.value));
+const columnSettingsColumns = computed<FnColumnSettingsColumn[]>(() =>
+  Object.entries(tableColumns.value)
+    .filter(([key]) => key !== "rowHandle")
+    .map(([key, column]) => {
+      const cell = column.cell && typeof column.cell === "object" && !isFnComputeValue(column.cell) ? column.cell : {};
+      const saved = savedPreferences.value?.columns[key];
+      return {
+        key,
+        title: column.title,
+        show: saved?.show ?? (column.show !== false && cell.show !== false),
+        fixed: saved?.fixed === null ? undefined : (saved?.fixed ?? cell.fixed),
+        order: saved?.order ?? cell.order,
+      };
+    })
+    .sort((left, right) => (left.order ?? Number.MAX_SAFE_INTEGER) - (right.order ?? Number.MAX_SAFE_INTEGER))
+    .map(({ key, title, show, fixed }) => ({ key, title, show, fixed }))
+);
+const tableProps = useTableProps(props, tableColumns, data, loading, sort);
 function getSelectedRowKeys(): string[] {
   return [...selectedRowKeys.value];
 }
@@ -138,13 +138,13 @@ function clearSelectedRowKeys(): void {
 function getSelectedRows(): FnTableRow[] {
   return [...selectedRows.value];
 }
-function getRecordId(row: FnTableRow): string {
-  return String(getFnTableRowKey(row, data.value.indexOf(row), props.table?.rowKey));
+function getRecordId(row: FnTableRow, index = data.value.indexOf(row)): string {
+  return String(getFnTableRowKey(row, index, props.table?.rowKey));
 }
 function changeSelection(change: FnTableRowSelectionChange): void {
   const nextKeys = new Set(selectedRowKeys.value);
   if (change.type === "row") {
-    const key = String(getFnTableRowKey(change.row, change.index, props.table?.rowKey));
+    const key = getRecordId(change.row, change.index);
     if (props.rowSelect?.type === "single") {
       updateSelection(change.selected ? [key] : []);
       return;
@@ -159,7 +159,7 @@ function changeSelection(change: FnTableRowSelectionChange): void {
       nextKeys.clear();
     }
     for (let index = 0; index < data.value.length; index++) {
-      const key = getRecordId(data.value[index]);
+      const key = getRecordId(data.value[index], index);
       if (change.selected) {
         nextKeys.add(key);
       } else {
@@ -176,7 +176,7 @@ function updateSelection(keys: string[]): void {
 }
 function syncSelectionForRows(rows: FnTableRow[]): void {
   if (!props.rowSelect?.crossPage) {
-    const currentKeys = new Set(rows.map((row, index) => String(getFnTableRowKey(row, index, props.table?.rowKey))));
+    const currentKeys = new Set(rows.map((row, index) => getRecordId(row, index)));
     selectedRowKeys.value = selectedRowKeys.value.filter(key => currentKeys.has(key));
   }
 }
@@ -216,61 +216,103 @@ async function deleteById(id: string | number): Promise<void> {
   notification.success({ message: "删除成功" });
   await refresh();
 }
-const actionbarProps = computed(() => ({
-  ...props.actionbar,
-  buttons: {
-    ...props.actionbar?.buttons,
-    add: {
-      text: "添加",
-      type: "primary",
-      show: Boolean(props.request.addRequest || props.addForm || props.form),
-      onClick: () => openAddForm(),
-      ...props.actionbar?.buttons?.add,
-    },
-  },
-}));
-const toolbarProps = computed(() => props.toolbar || { show: false, buttons: {} });
-const tabsProps = computed(() => {
-  const refCol = props.tabs?.refCol;
-  const cell = refCol && props.columns[refCol]?.cell;
-  const dict = cell && !isFnComputeValue(cell) ? cell.dict : undefined;
-  let data: DictOption[] = [];
-  if (dict) {
-    data = dict.getOptions().value;
-  }
-  function resolveCrudTabs(data: DictOption[], overrides: Record<string, DictOption> | undefined, counts: Record<string, number>) {
-    const tabs = new Map(data.map(item => [String(item.value), item]));
-    for (const [key, item] of Object.entries(overrides || {})) {
-      tabs.set(key, { ...tabs.get(key), ...item });
+const actionbarProps = useActionbarProps(props, openAddForm);
+const toolbarProps = useToolbarProps(props);
+const tabsProps = useTabsProps(props, searchForm, tabsCounts);
+const paginationProps = usePaginationProps(props, page);
+const layoutProps = useLayoutProps(props);
+const formProps = useFormProps(props);
+let preferenceSaveQueue: Promise<void> = Promise.resolve();
+
+function createCurrentPreferenceSnapshot(): FnCrudPreferences {
+  const snapshot = createFnCrudPreferenceSnapshot(tableColumns.value, columnWidths, page.pageSize, density.value);
+  for (const [key, column] of Object.entries(tableColumns.value)) {
+    if (!isFnComputeValue(column.cell)) {
+      continue;
     }
-    return Array.from(tabs.values())
-      .filter(item => item.show !== false)
-      .map(item => ({ ...item, count: counts[item.value] ?? item.count ?? 0 }));
-  }
-  return { tabs: resolveCrudTabs(data, props.tabs?.tabs, tabsCounts.value), modelValue: searchForm[refCol || ""] ?? "", slots: props.tabs?.slots };
-});
-const paginationProps = computed(() => ({
-  ...props.pagination,
-  current: page.current,
-  pageSize: page.pageSize,
-  total: page.total,
-  pageSizeOptions: props.pagination?.pageSizeOptions || ["10", "20", "50", "100"],
-  simple: props.pagination?.simple ?? false,
-  showSizeChanger: props.pagination?.showSizeChanger ?? true,
-  showQuickJumper: props.pagination?.showQuickJumper ?? false,
-  showTotal: props.pagination?.showTotal || ((total: number) => `共 ${total} 条`),
-}));
-const layoutProps: Ref<FnTableLayoutRow[]> = computed(() => props.layout || [{ cols: [{ type: "header" }, { type: "toolbar" }] }, { cols: [{ type: "tabs" }, { type: "actionbar" }, { type: "search" }] }]);
-const formProps = computed(() => {
-  const columns: Record<string, FnDynamic<FnFormColumn>> = {};
-  for (const [key, column] of Object.entries(props.columns)) {
-    if (column.form && column.show !== false) {
-      const source = column.form;
-      columns[key] = compute(context => ({ title: column.title, ...resolveComputedValue(source, context) }));
+    const saved = savedPreferences.value?.columns[key];
+    if (saved) {
+      snapshot.columns[key] = { ...saved, width: columnWidths[key] ?? saved.width };
     }
   }
-  return { columns };
-});
+  return snapshot;
+}
+
+function savePreferences(): void {
+  if (!preferencesLoaded.value || !preferencesKey.value) {
+    return;
+  }
+  const snapshot = createCurrentPreferenceSnapshot();
+  savedPreferences.value = snapshot;
+  const save = preferenceSaveQueue.then(() => preferencesStorage.value.set(preferencesKey.value, snapshot));
+  preferenceSaveQueue = save.catch(error => {
+    notification.error({ message: "列表偏好保存失败", description: String(error) });
+  });
+}
+
+function changeColumnSettings(columns: FnColumnSettingsColumn[]): void {
+  const snapshot = createCurrentPreferenceSnapshot();
+  for (const [order, column] of columns.entries()) {
+    const current = snapshot.columns[column.key];
+    if (!current) {
+      continue;
+    }
+    snapshot.columns[column.key] = { ...current, order, show: column.show, fixed: column.fixed ?? null };
+  }
+  savedPreferences.value = snapshot;
+  savePreferences();
+}
+
+function toggleDensity(): void {
+  densityOverride.value = density.value === "compact" ? "comfort" : "compact";
+  props.onToggleDensity?.();
+  savePreferences();
+}
+
+function saveColumnWidth({ key, width }: { key: string; width: number }): void {
+  columnWidths[key] = width;
+  const snapshot = createCurrentPreferenceSnapshot();
+  if (!snapshot.columns[key]) {
+    return;
+  }
+  snapshot.columns[key].width = width;
+  savedPreferences.value = snapshot;
+  savePreferences();
+}
+
+async function resetColumnSettings(): Promise<void> {
+  const defaults = createFnCrudPreferenceSnapshot(baseTableColumns.value, columnWidths, page.pageSize, density.value);
+  savedPreferences.value = defaults;
+  savePreferences();
+  await preferenceSaveQueue;
+}
+
+async function initializePreferences(): Promise<void> {
+  preferencesKey.value = getFnCrudPreferenceKey(props.id, globalThis.location?.href || "");
+  try {
+    const preferences = await preferencesStorage.value.get(preferencesKey.value);
+    if (preferences) {
+      const savedColumns = preferences.columns && typeof preferences.columns === "object" ? preferences.columns : {};
+      savedPreferences.value = { ...preferences, columns: savedColumns };
+      for (const [key, column] of Object.entries(savedColumns)) {
+        if (column.width !== undefined) {
+          columnWidths[key] = column.width;
+        }
+      }
+      if (Number.isFinite(preferences.pageSize) && preferences.pageSize > 0) {
+        page.pageSize = preferences.pageSize;
+      }
+      if (preferences.density === "compact" || preferences.density === "comfort") {
+        densityOverride.value = preferences.density;
+      }
+    }
+  } catch (error) {
+    notification.warning({ message: "读取列表偏好失败，使用默认设置", description: String(error) });
+  } finally {
+    preferencesLoaded.value = true;
+  }
+  await refresh();
+}
 
 async function refresh(): Promise<void> {
   const id = ++requestId;
@@ -312,11 +354,18 @@ function changeSort(value: { prop: string; asc: boolean }): void {
   applySearch();
 }
 async function turnPage({ current, pageSize }: FnPaginationTarget): Promise<void> {
+  const pageSizeChanged = page.pageSize !== pageSize;
   page.current = current;
   page.pageSize = pageSize;
+  if (pageSizeChanged) {
+    savePreferences();
+  }
   await refresh();
 }
 function changePage(current: number, pageSize: number): void {
+  if (!preferencesLoaded.value) {
+    return;
+  }
   void turnPage({ current, pageSize });
 }
 function openFormDialog(options: FnFormDialogOptions): Promise<Record<string, any> | undefined> {
@@ -364,7 +413,7 @@ async function openForm(mode: "add" | "edit", initialForm: Record<string, any> =
   );
 }
 onMounted(() => {
-  void refresh();
+  void initializePreferences();
 });
 const exposed: FnCrudExpose = {
   search: { getSearchForm: () => ({ ...searchForm }) },
@@ -411,6 +460,9 @@ defineExpose(exposed);
   .fn-crud-col {
     min-width: 0;
   }
+  .fn-crud-col--tabs {
+    flex: 1;
+  }
   .fn-crud-heading {
     margin: 10px 0;
     h2 {
@@ -428,9 +480,6 @@ defineExpose(exposed);
   }
   .fn-crud-footer {
     padding-top: 12px;
-  }
-  .fn-table {
-    padding: 0;
   }
   .dark & {
     .fn-crud-heading p {

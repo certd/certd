@@ -1,11 +1,11 @@
 <template>
-  <div class="fn-table" :aria-busy="loading">
+  <div class="fn-table" :style="tableDensityStyle" :data-density="density" :aria-busy="loading">
     <FnRender v-if="slots?.top" :render="slots.top" :ctx="{ data, loading }" />
     <div class="fn-table-scroll">
       <table :style="tableStyle">
         <thead>
           <tr>
-            <th v-if="rowSelection" class="fn-table-selection-column">
+            <th v-if="rowSelection" class="fn-table-selection-column" :class="{ 'fn-table-selection-column--fixed': hasLeftFixedColumns }">
               <a-checkbox
                 v-if="rowSelection.type !== 'single'"
                 :aria-label="rowSelection.title || '选择当前页'"
@@ -31,7 +31,7 @@
           <tr v-for="(row, index) in data" :key="getRowKey(row, index)" :class="{ 'fn-table-row-selectable': rowSelection?.type === 'single' }" @click="selectRowOnClick(row, index, $event)">
             <td v-if="slots?.row" :colspan="columns.length + (rowSelection ? 1 : 0)"><FnRender :render="slots.row" :ctx="{ row, index }" /></td>
             <template v-else>
-              <td v-if="rowSelection" class="fn-table-selection-column">
+              <td v-if="rowSelection" class="fn-table-selection-column" :class="{ 'fn-table-selection-column--fixed': hasLeftFixedColumns }">
                 <a-radio v-if="rowSelection.type === 'single'" :aria-label="`选择第 ${index + 1} 条记录`" :checked="isRowSelected(row, index)" @change="() => selectRowOnChange(row, index, true)" />
                 <a-checkbox v-else :aria-label="`选择第 ${index + 1} 条记录`" :checked="isRowSelected(row, index)" @change="event => selectRowOnChange(row, index, event.target.checked)" />
               </td>
@@ -61,16 +61,23 @@
 
 <script setup lang="ts">
 import { ArrowDown, ArrowUp } from "@lucide/vue";
-import { computed, inject, reactive, ref, type CSSProperties } from "vue";
+import { computed, inject, provide, reactive, ref, watch, type CSSProperties } from "vue";
 import FnTableCell from "./fn-table-cell.vue";
 import FnRender from "../components/fn-render";
 import { isFnComputeValue } from "../crud/compute";
 import type { FnDynamic, FnTableColumn, FnTableProps, FnTableRow, FnTableRowContext } from "../types/index";
 import { getFnTableRowKey } from "./row-key";
-import { fnCrudTableSelectionKey } from "../provider/context";
+import { fnCrudTableSelectionKey, fnTableSizeKey } from "../provider/context";
 
 type FnTableColumnConfig = FnTableColumn<FnTableRow> & { key: string };
 const props = withDefaults(defineProps<FnTableProps>(), { data: () => [], loading: false, emptyText: "暂无数据", sort: () => ({ prop: "", asc: true }) });
+const size = computed(() => props.size ?? 14);
+const density = computed(() => props.density ?? "comfort");
+provide(
+  fnTableSizeKey,
+  computed(() => ({ size: props.size, density: props.density }))
+);
+const tableDensityStyle = computed<CSSProperties>(() => ({ "--fn-table-font-size": `${size.value}px`, "--fn-table-header-font-size": `${size.value}px` }) as CSSProperties);
 const selection = inject(fnCrudTableSelectionKey, undefined);
 const slots = computed(() => props.slots);
 const columns = computed(() => {
@@ -85,6 +92,12 @@ const columns = computed(() => {
   }
   return result.sort((left, right) => (left.order ?? Number.MAX_SAFE_INTEGER) - (right.order ?? Number.MAX_SAFE_INTEGER));
 });
+const leftFixedShadowKey = computed(() => {
+  const leftFixedColumns = columns.value.filter(column => column.fixed === "left");
+  return leftFixedColumns[leftFixedColumns.length - 1]?.key;
+});
+const rightFixedShadowKey = computed(() => columns.value.find(column => column.fixed === "right")?.key);
+const hasLeftFixedColumns = computed(() => columns.value.some(column => column.fixed === "left"));
 function getCellColumn(column: FnTableColumnConfig): FnDynamic<FnTableColumn<FnTableRow>> {
   return props.columns?.[column.key]?.cell || column;
 }
@@ -93,9 +106,20 @@ const rowContextColumns = computed(() => {
 });
 const emit = defineEmits<{
   sort: [value: { prop: string; asc: boolean }];
+  "column-resize": [value: { key: string; width: number }];
 }>();
 const resizing = ref(false);
 const columnWidths = reactive<Record<string, number>>({});
+watch(
+  () => props.columnWidths,
+  widths => {
+    for (const key of Object.keys(columnWidths)) {
+      delete columnWidths[key];
+    }
+    Object.assign(columnWidths, widths || {});
+  },
+  { immediate: true, deep: true }
+);
 const cellComponentRefs = new Map<string, unknown>();
 const selectedRowKeys = computed(() => (selection?.selectedRowKeys.value || []).map(String));
 const rowSelection = computed(() => (selection ? { title: selection.title, type: selection.type ?? "multiple" } : undefined));
@@ -126,7 +150,35 @@ function columnStyle(column: FnTableColumnConfig, key: string): CSSProperties {
     style.overflow = "hidden";
     style.textOverflow = "ellipsis";
   }
+  if (column.fixed === "left") {
+    const leftColumns = columns.value.filter(item => item.fixed === "left");
+    const columnIndex = leftColumns.findIndex(item => item.key === key);
+    let offset = rowSelection.value ? 44 : 0;
+    for (const leftColumn of leftColumns.slice(0, columnIndex)) {
+      offset += getFixedColumnWidth(leftColumn);
+    }
+    style.left = `${offset}px`;
+  } else if (column.fixed === "right") {
+    const rightColumns = columns.value.filter(item => item.fixed === "right");
+    const columnIndex = rightColumns.findIndex(item => item.key === key);
+    let offset = 0;
+    for (const rightColumn of rightColumns.slice(columnIndex + 1)) {
+      offset += getFixedColumnWidth(rightColumn);
+    }
+    style.right = `${offset}px`;
+  }
   return style;
+}
+
+function getFixedColumnWidth(column: FnTableColumnConfig): number {
+  const width = columnWidths[column.key] ?? column.width;
+  if (typeof width === "number") {
+    return width;
+  }
+  if (typeof width === "string" && /^\d+(?:\.\d+)?(?:px)?$/.test(width)) {
+    return Number.parseFloat(width);
+  }
+  return 120;
 }
 
 function sortColumn(prop: string): void {
@@ -151,6 +203,7 @@ function startResize(event: PointerEvent, column: FnTableColumnConfig) {
   const onPointerUp = () => {
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", onPointerUp);
+    emit("column-resize", { key: column.key, width: columnWidths[column.key] || initialWidth });
     window.setTimeout(() => {
       resizing.value = false;
     });
@@ -173,7 +226,12 @@ function getColumnWidth(width: number | string | undefined): number {
 }
 
 function columnClasses(column: FnTableColumnConfig): Array<string | undefined> {
-  return [column.class, column.fixed ? `fn-table-fixed-${column.fixed}` : undefined];
+  return [
+    column.class,
+    column.fixed ? `fn-table-fixed-${column.fixed}` : undefined,
+    column.key === leftFixedShadowKey.value ? "fn-table-fixed-left-shadow" : undefined,
+    column.key === rightFixedShadowKey.value ? "fn-table-fixed-right-shadow" : undefined,
+  ];
 }
 
 function getCellValue(row: FnTableRow, column: FnTableColumnConfig): unknown {
@@ -235,6 +293,12 @@ function togglePageSelection(selected: boolean): void {
 
 <style lang="less">
 .fn-table {
+  --fn-table-font-size: 14px;
+  --fn-table-header-font-size: 14px;
+  --fn-table-cell-padding-y: 12px;
+  &[data-density="compact"] {
+    --fn-table-cell-padding-y: 6px;
+  }
   position: relative;
   display: flex;
   min-height: 0;
@@ -267,15 +331,16 @@ function togglePageSelection(selected: boolean): void {
   table {
     width: 100%;
     height: fit-content;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     table-layout: fixed;
 
     th,
     td {
-      padding: 14px 16px;
+      padding: var(--fn-table-cell-padding-y) 12px;
       border-bottom: 1px solid var(--fn-color-border-secondary);
       text-align: left;
-      font-size: 13px;
+      font-size: var(--fn-table-font-size);
       white-space: nowrap;
     }
 
@@ -287,21 +352,28 @@ function togglePageSelection(selected: boolean): void {
       text-align: center;
     }
 
+    .fn-table-selection-column--fixed {
+      position: sticky;
+      z-index: 2;
+      left: 0;
+    }
+
     th {
       position: sticky;
       z-index: 1;
       top: 0;
       cursor: pointer;
       user-select: none;
-      color: var(--fn-color-text-tertiary);
-      background: var(--fn-color-fill-alter);
-      font-size: 12px;
-      box-shadow: 0 1px 0 var(--fn-color-border-secondary);
+      color: var(--fn-color-text-secondary);
+      background: linear-gradient(var(--fn-color-fill-alter), var(--fn-color-fill-alter)), var(--fn-color-bg-container);
+      font-size: var(--fn-table-header-font-size);
+      // box-shadow: 0 1px 0 var(--fn-color-border-secondary);
     }
 
     .fn-table-heading-content {
       display: inline-flex;
       align-items: center;
+      min-height: 26px;
       gap: 4px;
       svg.fn-table-sort-indicator {
         height: 18px;
@@ -347,6 +419,13 @@ function togglePageSelection(selected: boolean): void {
       overflow: hidden;
     }
   }
+  .fn-table-cell,
+  .fn-table-cell .fn-button,
+  .fn-table-cell .ant-tag,
+  .fn-table-cell .ant-typography,
+  .fn-table-cell .ant-btn {
+    font-size: var(--fn-table-font-size);
+  }
   tbody tr:hover {
     background: var(--fn-color-fill-secondary);
   }
@@ -360,20 +439,25 @@ function togglePageSelection(selected: boolean): void {
   .fn-table-fixed-right {
     position: sticky;
     z-index: 2;
+    isolation: isolate;
     background: var(--fn-color-bg-container);
   }
   .fn-table-fixed-left {
     left: 0;
-    box-shadow: 12px 0 18px -8px rgb(23 32 51 / 18%);
   }
   .fn-table-fixed-right {
     right: 0;
+  }
+  .fn-table-fixed-left-shadow {
+    box-shadow: 12px 0 18px -8px rgb(23 32 51 / 18%);
+  }
+  .fn-table-fixed-right-shadow {
     box-shadow: -12px 0 18px -8px rgb(23 32 51 / 18%);
   }
   th.fn-table-fixed-left,
   th.fn-table-fixed-right {
     z-index: 3;
-    background: var(--fn-color-fill-alter);
+    background: linear-gradient(var(--fn-color-fill-alter), var(--fn-color-fill-alter)), var(--fn-color-bg-container);
   }
   .fn-table-empty {
     padding: 42px !important;
@@ -398,7 +482,7 @@ function togglePageSelection(selected: boolean): void {
     th.fn-table-fixed-left,
     th.fn-table-fixed-right {
       color: var(--fn-color-text-secondary);
-      background: var(--fn-color-fill-alter);
+      background: linear-gradient(var(--fn-color-fill-alter), var(--fn-color-fill-alter)), var(--fn-color-bg-container);
       box-shadow: 0 1px 0 var(--fn-color-border-secondary);
     }
 
@@ -409,12 +493,19 @@ function togglePageSelection(selected: boolean): void {
     .fn-table-fixed-left,
     .fn-table-fixed-right {
       background: var(--fn-color-bg-container);
+    }
+
+    .fn-table-fixed-left-shadow {
+      box-shadow: 12px 0 18px -8px rgb(0 0 0 / 55%);
+    }
+
+    .fn-table-fixed-right-shadow {
       box-shadow: -12px 0 18px -8px rgb(0 0 0 / 55%);
     }
 
     th.fn-table-fixed-left,
     th.fn-table-fixed-right {
-      background: var(--fn-color-fill-alter);
+      background: linear-gradient(var(--fn-color-fill-alter), var(--fn-color-fill-alter)), var(--fn-color-bg-container);
     }
 
     tbody tr:hover {

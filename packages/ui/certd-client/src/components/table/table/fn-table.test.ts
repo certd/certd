@@ -37,6 +37,50 @@ it("未指定 order 的列保持在明确排序列之后", () => {
   expect(setup.columns.value.map(column => column.key)).toEqual(["name", "actions"]);
 });
 
+it("每组固定列只在滚动边界列添加阴影", () => {
+  const setup = module.exports.default.setup(
+    {
+      columns: {
+        leftFirst: { title: "左一", cell: { fixed: "left", order: 1 } },
+        leftLast: { title: "左二", cell: { fixed: "left", order: 2 } },
+        normal: { title: "普通", cell: { order: 3 } },
+        rightFirst: { title: "右一", cell: { fixed: "right", order: 4 } },
+        rightLast: { title: "右二", cell: { fixed: "right", order: 5 } },
+      },
+      data: [],
+    },
+    { expose: () => {}, emit: () => {} }
+  );
+
+  expect(setup.columnClasses(setup.columns.value[0])).toContain("fn-table-fixed-left");
+  expect(setup.columnClasses(setup.columns.value[0])).not.toContain("fn-table-fixed-left-shadow");
+  expect(setup.columnClasses(setup.columns.value[1])).toContain("fn-table-fixed-left-shadow");
+  expect(setup.columnClasses(setup.columns.value[3])).toContain("fn-table-fixed-right-shadow");
+  expect(setup.columnClasses(setup.columns.value[4])).not.toContain("fn-table-fixed-right-shadow");
+});
+
+it("固定列使用组内累计宽度计算 sticky 偏移", () => {
+  selectionContext = { type: "multiple", selectedRowKeys: { value: [] } as FnTableSelectionContext["selectedRowKeys"], changeSelection: vi.fn() };
+  const setup = module.exports.default.setup(
+    {
+      columns: {
+        leftFirst: { title: "左一", cell: { fixed: "left", width: 100, order: 1 } },
+        leftNext: { title: "左二", cell: { fixed: "left", width: 120, order: 2 } },
+        normal: { title: "普通", cell: { width: 200, order: 3 } },
+        rightFirst: { title: "右一", cell: { fixed: "right", width: 90, order: 4 } },
+        rightLast: { title: "右二", cell: { fixed: "right", width: 110, order: 5 } },
+      },
+      data: [],
+    },
+    { expose: () => {}, emit: () => {} }
+  );
+
+  expect(setup.columnStyle(setup.columns.value[0], "leftFirst")).toMatchObject({ left: "44px" });
+  expect(setup.columnStyle(setup.columns.value[1], "leftNext")).toMatchObject({ left: "144px" });
+  expect(setup.columnStyle(setup.columns.value[3], "rightFirst")).toMatchObject({ right: "110px" });
+  expect(setup.columnStyle(setup.columns.value[4], "rightLast")).toMatchObject({ right: "0px" });
+});
+
 it("行动态计算 context 使用 CRUD 字段配置和当前行", () => {
   const columns = { name: { key: "name", title: "名称" } };
   const row = { id: 12, name: "cert" };
@@ -77,4 +121,22 @@ it("选择当前页由 FnCrud selection context 处理", () => {
   setup.togglePageSelection(false);
 
   expect(changeSelection).toHaveBeenCalledWith({ type: "page", selected: false });
+});
+
+it("调整列宽时在拖动结束后只发出一次宽度变更", () => {
+  const listeners = new Map<string, (event: PointerEvent) => void>();
+  vi.stubGlobal("window", {
+    addEventListener: (name: string, listener: (event: PointerEvent) => void) => listeners.set(name, listener),
+    removeEventListener: (name: string) => listeners.delete(name),
+    setTimeout: (callback: () => void) => callback(),
+  });
+  const emitted: Array<[string, unknown]> = [];
+  const setup = module.exports.default.setup({ columns: {}, data: [] }, { expose: () => {}, emit: (name: string, value: unknown) => emitted.push([name, value]) });
+
+  setup.startResize({ clientX: 100 } as PointerEvent, { key: "name", width: 120 });
+  listeners.get("pointermove")?.({ clientX: 145 } as PointerEvent);
+  listeners.get("pointerup")?.({} as PointerEvent);
+
+  expect(emitted).toEqual([["column-resize", { key: "name", width: 165 }]]);
+  vi.unstubAllGlobals();
 });

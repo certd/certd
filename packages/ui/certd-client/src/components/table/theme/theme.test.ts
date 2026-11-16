@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createFnThemeStyle, mapAntdvThemeToFnTokens } from "./index";
-import { mapNaiveThemeToFnTokens } from "./naive";
+import { mapNaiveThemeToFnTokens } from "./naive/naive";
 
 describe("Fn theme adapters", () => {
   it("uses Fn-prefixed AntDV token names as CSS variables", () => {
