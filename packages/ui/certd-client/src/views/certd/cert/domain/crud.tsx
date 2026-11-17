@@ -185,6 +185,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             required: true,
+            order: 1,
             helper: t("certd.certdomain.domain.subdomainDnsHelper"),
           },
           editForm: {
@@ -194,11 +195,32 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             sorter: true,
+            cellRender({ record }) {
+              if (record.mappingDomain) {
+                return (
+                  <div title={`${record.domain}是${record.mappingDomain}的别名，校验时会自动使用${record.mappingDomain}创建txt记录进行验证`}>
+                    {record.domain} -&gt; {record.mappingDomain}
+                  </div>
+                );
+              }
+              return record.domain;
+            },
           },
+        },
+        mappingDomain: {
+          title: t("certd.certdomain.domain.mappingDomain"),
+          type: "text",
+          form: {
+            order: 99,
+            helper: t("certd.certdomain.domain.mappingDomainHelper"),
+            show: compute(({ form }) => form.challengeType === "dns"),
+          },
+          column: { show: false },
         },
         remark: {
           title: t("certd.monitor.columnRemark"),
           type: "textarea",
+          form: { order: 100 },
           column: {
             width: 200,
             ellipsis: true,
@@ -225,6 +247,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             required: true,
+            order: 1,
             valueChange({ value }) {
               if (value === "cname") {
                 Modal.confirm({
@@ -426,6 +449,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           form: {
             value: false,
             required: true,
+            order: 110,
           },
           column: {
             width: 100,
