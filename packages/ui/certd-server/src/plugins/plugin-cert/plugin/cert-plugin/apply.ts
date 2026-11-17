@@ -705,6 +705,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       signal: this.ctx.signal,
       maxCheckRetryCount: this.maxCheckRetryCount,
       domainParser,
+      subDomainsGetter: subDomainsGetter,
       waitDnsDiffuseTime: this.waitDnsDiffuseTime,
     });
     return this.acme;

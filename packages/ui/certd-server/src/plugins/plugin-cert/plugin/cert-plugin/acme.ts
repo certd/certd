@@ -2,7 +2,7 @@ import * as acme from "@certd/acme-client";
 import type { Challenge, ClientExternalAccountBindingOptions, UrlMapping } from "@certd/acme-client";
 import { ILogger, utils } from "@certd/basic";
 import { IContext } from "@certd/pipeline";
-import { IDnsProvider, IDomainParser } from "@certd/plugin-lib";
+import { IDnsProvider, IDomainParser, ISubDomainsGetter } from "@certd/plugin-lib";
 import punycode from "punycode.js";
 import { IOssClient } from "../../../plugin-lib/index.js";
 import { NonRetryableException } from "@certd/lib-server";
@@ -83,6 +83,7 @@ type AcmeServiceOptions = {
   maxCheckRetryCount?: number;
   userId: number;
   domainParser: IDomainParser;
+  subDomainsGetter?: ISubDomainsGetter;
   waitDnsDiffuseTime?: number;
   /**
    * 自定义ACME Directory URL（sslProvider=custom 时必填，其他颁发机构缺省使用内置端点）
@@ -332,7 +333,7 @@ export class AcmeService {
       this.logger.info("dns校验");
       const keyAuthorization = await keyAuthorizationGetter(challenge);
 
-      const mainDomain = dnsProvider.usePunyCode() ? domain : punycode.toUnicode(domain);
+      let mainDomain = dnsProvider.usePunyCode() ? domain : punycode.toUnicode(domain);
       fullRecord = dnsProvider.usePunyCode() ? fullRecord : punycode.toUnicode(fullRecord);
       const recordValue = keyAuthorization;
       let hostRecord = fullRecord.replace(`${mainDomain}`, "");
@@ -340,6 +341,13 @@ export class AcmeService {
         hostRecord = hostRecord.substring(0, hostRecord.length - 1);
       }
 
+      const mappingDomain = await this.options.subDomainsGetter?.getMappingDomain(mainDomain);
+      if (mappingDomain) {
+        this.logger.info(`使用映射域名 ${mappingDomain} 创建txt进行校验`);
+        mainDomain = dnsProvider.usePunyCode() ? mappingDomain : punycode.toUnicode(mappingDomain);
+        fullRecord = `_acme-challenge.${mainDomain}`;
+        hostRecord = "_acme-challenge";
+      }
       const recordReq = {
         domain: mainDomain,
         fullRecord,
@@ -463,10 +471,22 @@ export class AcmeService {
       await httpUploader.remove(filePath);
       this.logger.info(`删除文件【${filePath}】成功`);
     } else if (challenge.type === "dns-01") {
-      this.logger.info(`删除 TXT 解析记录:${JSON.stringify(recordReq)} ,recordRes = ${JSON.stringify(recordRes)}`);
+      const mainDomain = await this.options.domainParser.parse(fullDomain);
+      const mappingDomain = await this.options.subDomainsGetter?.getMappingDomain(mainDomain);
+      let removeRecordReq = recordReq;
+      if (mappingDomain) {
+        const mappedDomain = dnsProvider.usePunyCode() ? mappingDomain : punycode.toUnicode(mappingDomain);
+        removeRecordReq = {
+          ...recordReq,
+          domain: mappedDomain,
+          fullRecord: `_acme-challenge.${mappedDomain}`,
+          hostRecord: "_acme-challenge",
+        };
+      }
+      this.logger.info(`删除 TXT 解析记录:${JSON.stringify(removeRecordReq)} ,recordRes = ${JSON.stringify(recordRes)}`);
       try {
         await dnsProvider.removeRecord({
-          recordReq,
+          recordReq: removeRecordReq,
           recordRes,
         });
         this.logger.info("删除解析记录成功");

@@ -4,6 +4,8 @@ export default {
     domainManager: "Domain Manager",
     domainDescription: "used to auto apply for certificate", //管理域名的校验方式，用于申请证书时自动选择验证方式
     domain: "Domain",
+    mappingDomain: "Mapping Domain",
+    mappingDomainHelper: "Add DNS TXT validation records under this domain",
     challengeType: "Challenge Type",
     dnsProviderType: "DNS Provider Type",
     dnsProviderAccess: "DNS Provider Access",

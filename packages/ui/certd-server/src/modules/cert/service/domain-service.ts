@@ -97,7 +97,7 @@ export class DomainService extends BaseService<DomainEntity> {
     if (!old) {
       throw new Error("domain记录不存在");
     }
-    const query = this.buildUserProjectQuery(param.userId, param.projectId);
+    const query = this.buildUserProjectQuery(old.userId, old.projectId);
     const same = await this.repository.findOne({
       where: {
         domain: param.domain,
@@ -111,6 +111,17 @@ export class DomainService extends BaseService<DomainEntity> {
     }
     delete param.userId;
     return await super.update(param);
+  }
+
+  async getMappingDomain(req: { domain: string; userId: number; projectId?: number }): Promise<string | undefined> {
+    const userProjectQuery = this.buildUserProjectQuery(req.userId, req.projectId);
+    const domain = await this.findOne({
+      where: {
+        domain: req.domain,
+        ...userProjectQuery,
+      },
+    });
+    return domain?.mappingDomain || undefined;
   }
 
   /**
