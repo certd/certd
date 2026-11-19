@@ -28,6 +28,8 @@ icon: clarity:plugin-line
 group: other
 version: 1.0.0
 pluginType: task
+dependPlugins:
+  access:certd/DemoAccess: '*' # 如果本插件依赖其他授权插件，需要指定授权插件的依赖，才会在安装本插件时同步安装授权插件
 input:
   cert:
     title: 前置任务证书
