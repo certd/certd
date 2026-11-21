@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.47.2](https://github.com/certd/certd/compare/v1.47.1...v1.47.2) (2026-11-21)
+
+### Bug Fixes
+
+* 修复宝塔过期证书删除插件,没有过期证书时返回skip ([6954f4a](https://github.com/certd/certd/commit/6954f4a9643f50f86a6765d0fa30122c945eea6b))
+* 修复腾讯云COS部署参数分隔符错误 ([29d7ad9](https://github.com/certd/certd/commit/29d7ad98d8e9de1b9666ebfb8e084323dccc6995))
+* 优化安全监控在手机版下的表现 ([33d8b6c](https://github.com/certd/certd/commit/33d8b6c38123327a637f5b7e339bf353957ddfba))
+* 邮件服务器忽略证书校验效果是反的bug ([626e68f](https://github.com/certd/certd/commit/626e68f37d2c32f19215ab664e1eec2f0cec7f44))
+
+### Performance Improvements
+
+* 关闭2FA时需验证登录密码 ([8a30965](https://github.com/certd/certd/commit/8a309658d33233b0f257a68a13e5dfe9146d6b7c))
+* 暂时关闭自动封禁IP功能 ([b72227e](https://github.com/certd/certd/commit/b72227e7b4e4907464211fad239f9fab4c1b8067))
+* 增加域名别名支持 ([edae600](https://github.com/certd/certd/commit/edae6006d439cf31b8e0ec68285cd963043c9b11))
+* jks 转换命令恢复-alias=certd参数 ([c3ac6a3](https://github.com/certd/certd/commit/c3ac6a3c1de55899fe75262b79f82e89712efa52))
+
 ## [1.47.1](https://github.com/certd/certd/compare/v1.47.0...v1.47.1) (2026-11-10)
 
 ### Performance Improvements
