@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.47.2](https://github.com/certd/certd/compare/v1.47.1...v1.47.2) (2026-11-21)
+
+### Bug Fixes
+
+* 优化安全监控在手机版下的表现 ([33d8b6c](https://github.com/certd/certd/commit/33d8b6c38123327a637f5b7e339bf353957ddfba))
+* 邮件服务器忽略证书校验效果是反的bug ([626e68f](https://github.com/certd/certd/commit/626e68f37d2c32f19215ab664e1eec2f0cec7f44))
+
+### Performance Improvements
+
+* 关闭2FA时需验证登录密码 ([8a30965](https://github.com/certd/certd/commit/8a309658d33233b0f257a68a13e5dfe9146d6b7c))
+* 增加域名别名支持 ([edae600](https://github.com/certd/certd/commit/edae6006d439cf31b8e0ec68285cd963043c9b11))
+
 ## [1.47.1](https://github.com/certd/certd/compare/v1.47.0...v1.47.1) (2026-11-10)
 
 ### Performance Improvements

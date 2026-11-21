@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.47.2](https://github.com/certd/certd/compare/v1.47.1...v1.47.2) (2026-11-21)
+
+### Performance Improvements
+
+* 增加域名别名支持 ([edae600](https://github.com/certd/certd/commit/edae6006d439cf31b8e0ec68285cd963043c9b11))
+* jks 转换命令恢复-alias=certd参数 ([c3ac6a3](https://github.com/certd/certd/commit/c3ac6a3c1de55899fe75262b79f82e89712efa52))
+
 ## [1.47.1](https://github.com/certd/certd/compare/v1.47.0...v1.47.1) (2026-11-10)
 
 **Note:** Version bump only for package @certd/plugin-lib
