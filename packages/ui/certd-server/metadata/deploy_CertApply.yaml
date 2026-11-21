@@ -674,7 +674,7 @@ input:
     order: 0
   maxCheckRetryCount:
     title: 检查解析重试次数
-    value: 20
+    value: 6
     component:
       name: a-input-number
       vModel: value

@@ -156,7 +156,9 @@ input:
     component:
       name: a-input-number
       vModel: value
-    helper: 将检查证书数量限制，如果超限将删除最旧的那张证书
+    helper: |-
+      将检查证书数量限制，如果超限将删除最旧的那张证书
+      注意：如果您的证书数量只有2张，你必须把所有域名打到一张证书上，另一个位置空着留作轮换。在下次部署时前面那张已过期的证书才会被删掉。
     required: true
     order: 0
 output: {}
