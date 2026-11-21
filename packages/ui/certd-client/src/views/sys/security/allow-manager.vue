@@ -15,12 +15,13 @@ import { compute, DictStore, FnCrud, type FnCrudOptions, type FnTablePageQuery, 
 import { request } from "/@/api/service";
 import { SecurityBan, securityMonitorApi } from "./api";
 import { validateIpAddress } from "/@/plugin/validator";
+import UserSelect from "./user-select.vue";
 
 const emit = defineEmits<{ changed: [] }>();
-const tableRef = ref<InstanceType<typeof FnCrud>>();
+const tableRef = ref<{ table: { refresh: () => Promise<void> } }>();
 const userDict = new DictStore({
   data: [],
-  getData: async () => {
+  getDataFunc: async () => {
     const users = await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST" });
     return users.map(user => {
       let label = user.nickName || user.username;
@@ -34,11 +35,7 @@ const userDict = new DictStore({
     });
   },
 });
-onMounted(() => {
-  void userDict.fetch().catch(() => {
-    notification.error({ message: "用户列表加载失败" });
-  });
-});
+onMounted(() => {});
 const typeDict = new DictStore({
   data: [
     { label: "全部", value: "" },
@@ -55,17 +52,17 @@ const columns = {
       order: 0,
       span: 24,
       value: "ip",
-      component: compute(({ form }) => ({
+      component: {
         name: "a-radio-group",
         vModel: "value",
         options: [
           { label: "IP 白名单", value: "ip" },
           { label: "用户白名单", value: "user" },
         ],
-        onChange: () => {
+        onChange: compute(({ form }) => () => {
           form!.targetValue = undefined;
-        },
-      })),
+        }),
+      },
     },
   },
   targetValue: {
@@ -74,12 +71,7 @@ const columns = {
     cell: { order: 1, width: 180, render: ({ row }: { row: SecurityBan }) => renderTarget(row) },
     form: {
       order: 1,
-      title: compute(({ form }) => {
-        if (form?.targetType === "user") {
-          return "用户";
-        }
-        return "IP 地址";
-      }),
+      title: compute(({ form }) => (form?.targetType === "user" ? "用户" : "IP 地址")),
       rules: compute(({ form }) => {
         if (form?.targetType === "user") {
           return [{ required: true, message: "请选择用户" }];
@@ -91,11 +83,16 @@ const columns = {
       }),
       component: compute(({ form }) => {
         if (form?.targetType === "user") {
-          return { name: "a-select", vModel: "value", options: userDict.Props.value, showSearch: true, optionFilterProp: "label", allowClear: true, placeholder: "请选择用户" };
+          return { name: UserSelect, vModel: "modelValue" };
         }
         return { name: "a-input", vModel: "value", placeholder: "请输入 IP、网段或通配符" };
       }),
-      helper: "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32",
+      helper: compute(({ form }) => {
+        if (form?.targetType === "user") {
+          return undefined;
+        }
+        return "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32";
+      }),
     },
   },
   type: { key: "type", title: "类型", cell: { order: 2, width: 150, dict: typeDict, render: ({ row }: { row: SecurityBan }) => renderType(row) } },
@@ -104,17 +101,6 @@ const columns = {
   operator: { key: "operator", title: "添加人", cell: { order: 5, width: 150, render: () => "—" } },
 };
 const tableOptions = computed<FnCrudOptions<SecurityBan>>(() => ({
-  layout: [
-    { style: {}, cols: [{ type: "header", style: {} }] },
-    {
-      style: {},
-      cols: [
-        { type: "actionbar", style: {} },
-        { type: "tabs", style: { flex: 1 } },
-        { type: "search", style: {} },
-      ],
-    },
-  ],
   search: { columns: { keyword: { order: 1, component: { name: "a-input", vModel: "value", placeholder: "搜索 IP、用户 ID 或备注", allowClear: true }, width: 250 } } },
   columns,
   form: {
@@ -135,7 +121,7 @@ const tableOptions = computed<FnCrudOptions<SecurityBan>>(() => ({
   },
   tabs: { refCol: "type" },
   table: { minWidth: 980, rowKey: "id", emptyText: "暂无白名单记录" },
-  pagination: { current: 1, pageSize: 20, pageSizeProps: ["10", "20", "30", "50"], showTotal: total => `共 ${total} 条` },
+  pagination: { current: 1, pageSize: 20, pageSizeOptions: ["10", "20", "30", "50"], showTotal: total => `共 ${total} 条` },
 }));
 
 async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<SecurityBan>> {
@@ -149,7 +135,7 @@ async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<S
 }
 function renderTarget(record: SecurityBan) {
   if (record.targetType === "ip") return <span class="security-allow-manager__code">{record.targetValue}</span>;
-  const user = userDict.Props.value.find(item => item.value === String(record.targetValue));
+  const user = userDict.__options.value.find(item => item.value === String(record.targetValue));
   const username = user?.label || record.targetValue;
   return (
     <span class="security-allow-manager__target">
@@ -181,7 +167,7 @@ function renderDate(value: string) {
 }
 
 async function refresh() {
-  await tableRef.value?.refresh();
+  await tableRef.value?.table.refresh();
 }
 
 defineExpose({ refresh });

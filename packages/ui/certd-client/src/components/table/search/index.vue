@@ -1,28 +1,41 @@
 <template>
-  <a-form class="fn-search" v-bind="resolvedProps.formProps" :model="modelValue" @submit.prevent="submit">
+  <a-form class="fn-search" v-bind="resolvedProps.formProps" :model="searchState.form" @submit.prevent="submit">
+    <FnRender v-if="props.slots?.before" :render="props.slots.before" :ctx="context" />
     <FnComponentRender
       v-for="column in searchColumns"
       :key="column.key"
       v-bind="getComponent(column)"
-      :model-value="modelValue[column.key]"
+      :model-value="searchState.form[column.key]"
       scope="table-search"
       @update:model-value="updateField(column.key, $event)"
       @press-enter="submit"
     />
-    <FnButton v-for="(button, key) in buttonProps" :key="key" v-bind="button" :context="context" />
+    <FnRender v-if="props.slots?.buttons" :render="props.slots.buttons" :ctx="{ ...context, buttons: buttonProps }" />
+    <template v-else><FnButton v-for="(button, key) in buttonProps" :key="key" v-bind="button" :context="context" /></template>
+    <FnRender v-if="props.slots?.after" :render="props.slots.after" :ctx="context" />
   </a-form>
 </template>
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import { RotateCcw, Search } from "@lucide/vue";
-import FnComponentRender from "../fn-component-render";
-import FnButton from "../fn-button.vue";
-import type { FnSearchProps, FnSearchColumnResolved, FnFormContext } from "../types";
-import { resolveComputedValue } from "../compute";
-const props = defineProps<FnSearchProps & { modelValue: Record<string, any> }>();
-const emit = defineEmits<{ search: [form: Record<string, any>]; "update:modelValue": [form: Record<string, any>] }>();
-const context = computed<FnFormContext>(() => ({ type: "search", form: props.modelValue, columns: props.columns, reset }));
-const resolvedProps = computed(() => resolveComputedValue({ columns: props.columns, buttons: props.buttons, formProps: props.formProps }, context.value));
+import FnComponentRender from "../components/fn-component-render";
+import FnButton from "../components/fn-button.vue";
+import FnRender from "../components/fn-render";
+import type { FnSearchProps, FnSearchColumn, FnSearchColumnResolved, FnComputeContext } from "../types/index";
+import { resolveComputedValue } from "../crud/compute";
+import { fnCrudSearchKey } from "../provider/context";
+const props = defineProps<FnSearchProps>();
+const searchState = inject(fnCrudSearchKey);
+if (!searchState) {
+  throw new Error("FnSearch 必须在 FnCrud 内使用");
+}
+const context = computed<FnComputeContext>(() => ({ type: "search", form: searchState.form, columns: props.columns, reset, search: searchState.search }));
+const resolvedProps = computed(
+  () =>
+    resolveComputedValue({ columns: props.columns, buttons: props.buttons, formProps: props.formProps }, context.value) as Omit<FnSearchProps, "columns"> & {
+      columns: Record<string, FnSearchColumn>;
+    }
+);
 const searchColumns = computed(() =>
   Object.entries(resolvedProps.value.columns)
     .map(([key, column]) => ({ ...column, key }))
@@ -36,11 +49,11 @@ const buttonProps = computed(
       reset: { text: "重置", type: "default", icon: RotateCcw, onClick: reset },
     }
 );
-function getComponent(column: FnSearchColumnResolved) {
+function getComponent(column: FnSearchColumnResolved): Record<string, any> {
   const resolvedComponent = resolveComputedValue(column.component || {}, context.value) as Record<string, any>;
   const component = { ...resolvedComponent };
   if (column.dict && !component.options) {
-    component.options = column.dict.getProps().value;
+    component.options = column.dict.getOptions().value;
   }
   if (column.width) {
     let width = column.width;
@@ -51,19 +64,17 @@ function getComponent(column: FnSearchColumnResolved) {
   }
   return component;
 }
-function submit() {
-  emit("search", { ...props.modelValue });
+function submit(): void {
+  searchState.search();
 }
-function updateField(key: string, value: any) {
-  emit("update:modelValue", { ...props.modelValue, [key]: value });
+function updateField(key: string, value: unknown): void {
+  searchState.form[key] = value;
 }
-function reset() {
-  const form = { ...props.modelValue };
+function reset(): void {
   for (const column of searchColumns.value) {
-    form[column.key] = "";
+    searchState.form[column.key] = "";
   }
-  emit("update:modelValue", form);
-  emit("search", form);
+  searchState.search();
 }
 </script>
 <style lang="less">

@@ -1,0 +1,31 @@
+:root {
+  --fn-color-primary: #1677ff;
+  --fn-color-text: #172033;
+  --fn-color-text-secondary: #536176;
+  --fn-color-text-tertiary: #8a95a6;
+  --fn-color-text-quaternary: #a3acb9;
+  --fn-color-bg-base: #ffffff;
+  --fn-color-bg-container: #ffffff;
+  --fn-color-bg-elevated: #ffffff;
+  --fn-color-fill-alter: #f5f7fa;
+  --fn-color-fill-secondary: #f5f7fa;
+  --fn-color-border: #d9d9d9;
+  --fn-color-border-secondary: #edf0f4;
+  --fn-color-error: #ff4d4f;
+  --fn-border-radius: 6px;
+  --fn-control-height: 32px;
+}
+
+.dark {
+  --fn-color-text: rgba(255, 255, 255, 0.85);
+  --fn-color-text-secondary: rgba(255, 255, 255, 0.65);
+  --fn-color-text-tertiary: rgba(255, 255, 255, 0.45);
+  --fn-color-text-quaternary: rgba(255, 255, 255, 0.3);
+  --fn-color-bg-base: #0b0a09;
+  --fn-color-bg-container: #141210;
+  --fn-color-bg-elevated: #1c1916;
+  --fn-color-fill-alter: #1b1815;
+  --fn-color-fill-secondary: #25211d;
+  --fn-color-border: #38322c;
+  --fn-color-border-secondary: #2c2722;
+}

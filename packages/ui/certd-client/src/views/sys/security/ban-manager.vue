@@ -12,17 +12,18 @@
 import { computed, onMounted, ref } from "vue";
 import { notification } from "ant-design-vue";
 import { Plus } from "@lucide/vue";
-import { compute, DictStore, FnCrud, FnModal, type FnCrudOptions, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
+import { compute, DictStore, FnButton, FnCrud, FnModal, type FnCrudOptions, type FnFormColumn, type FnTablePageQuery, type FnTablePageResult } from "/@/components/table";
 import { request } from "/@/api/service";
 import { validateIpAddress } from "/@/plugin/validator";
 import permissionUtil from "/@/plugin/permission/util.permission";
 import { SecurityBan, securityMonitorApi } from "./api";
+import UserSelect from "./user-select.vue";
 
 const emit = defineEmits<{ changed: [] }>();
-const tableRef = ref<{ refresh: () => Promise<void> }>();
+const tableRef = ref<{ table: { refresh: () => Promise<void> } }>();
 const userDict = new DictStore({
   data: [],
-  getData: async () => {
+  getDataFunc: async () => {
     const users = await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST" });
     return users.map(user => {
       let label = user.nickName || user.username;
@@ -36,11 +37,7 @@ const userDict = new DictStore({
     });
   },
 });
-onMounted(() => {
-  void userDict.fetch().catch(() => {
-    notification.error({ message: "用户列表加载失败" });
-  });
-});
+onMounted(() => {});
 const typeDict = new DictStore({
   data: [
     { label: "全部生效中", value: "" },
@@ -58,7 +55,7 @@ const columns = {
       order: 0,
       span: 24,
       value: "ip",
-      component: compute(({ form }) => ({
+      component: {
         name: "a-radio-group",
         vModel: "value",
         options: [
@@ -66,15 +63,15 @@ const columns = {
           { label: "用户", value: "user" },
           { label: "流水线", value: "pipeline" },
         ],
-        onChange: () => {
+        onChange: compute(({ form }) => () => {
           form!.targetValue = undefined;
           if (form!.targetType === "pipeline") {
             form!.scope = "pipeline";
           } else {
             form!.scope = "access";
           }
-        },
-      })),
+        }),
+      },
     },
   },
   targetValue: {
@@ -85,13 +82,21 @@ const columns = {
       order: 1,
       span: 24,
       title: compute(({ form }) => {
-        if (form?.targetType === "user") return "用户";
-        if (form?.targetType === "pipeline") return "流水线 ID";
+        if (form?.targetType === "user") {
+          return "用户";
+        }
+        if (form?.targetType === "pipeline") {
+          return "流水线 ID";
+        }
         return "IP 地址";
       }),
       rules: compute(({ form }) => {
-        if (form?.targetType === "user") return [{ required: true, message: "请选择用户" }];
-        if (form?.targetType === "pipeline") return [{ required: true, type: "number", min: 1, message: "请输入有效的流水线 ID" }];
+        if (form?.targetType === "user") {
+          return [{ required: true, message: "请选择用户" }];
+        }
+        if (form?.targetType === "pipeline") {
+          return [{ required: true, type: "number", min: 1, message: "请输入有效的流水线 ID" }];
+        }
         return [
           { required: true, whitespace: true, message: "请输入 IP、网段或通配符" },
           { validator: validateIpAddress, trigger: "blur" },
@@ -99,14 +104,19 @@ const columns = {
       }),
       component: compute(({ form }) => {
         if (form?.targetType === "user") {
-          return { name: "a-select", vModel: "value", options: userDict.Props.value, showSearch: true, optionFilterProp: "label", allowClear: true, placeholder: "请选择用户" };
+          return { name: UserSelect, vModel: "modelValue" };
         }
         if (form?.targetType === "pipeline") {
           return { name: "a-input-number", vModel: "value", min: 1, precision: 0, placeholder: "请输入流水线 ID" };
         }
         return { name: "a-input", vModel: "value", placeholder: "请输入 IP、网段或通配符" };
       }),
-      helper: compute(({ form }) => (form?.targetType === "ip" ? "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32" : undefined)),
+      helper: compute(({ form }) => {
+        if (form?.targetType === "ip") {
+          return "示例：192.168.1.10、192.168.1.0/24、192.168.*、2001:db8::/32";
+        }
+        return undefined;
+      }),
     },
   },
   scope: {
@@ -139,25 +149,20 @@ const columns = {
     form: { order: 4, span: 24, helper: "留空为永久封禁，到期后自动失效", component: { name: "a-date-picker", vModel: "value", showTime: true, allowClear: true, placeholder: "选择到期时间" } },
   },
   operator: { key: "operator", title: "操作人", cell: { order: 6, width: 140, render: () => "—" } },
+  actions: {
+    key: "actions",
+    title: "操作",
+    cell: {
+      width: 170,
+      fixed: "right",
+      render: ({ row }) => {
+        const record = row as SecurityBan;
+        return <FnButton text={getUnblockLabel(record)} type="link" onClick={() => confirmUnblock(record)} />;
+      },
+    },
+  },
 };
 const tableOptions = computed<FnCrudOptions<SecurityBan>>(() => ({
-  layout: [
-    {
-      style: {},
-      cols: [
-        { type: "header", style: {} },
-        { type: "", style: {} },
-      ],
-    },
-    {
-      style: {},
-      cols: [
-        { type: "actionbar", style: {} },
-        { type: "tabs", style: { flex: 1 } },
-        { type: "search", style: {} },
-      ],
-    },
-  ],
   search: { columns: { keyword: { order: 1, component: { name: "a-input", vModel: "value", placeholder: "搜索 IP、用户 ID、流水线 ID 或原因", allowClear: true }, width: 290 } } },
   columns,
   actionbar: { buttons: { add: { text: "手动添加封禁", icon: Plus, show: permissionUtil.hasPermissions("sys:settings:edit") } } },
@@ -184,27 +189,10 @@ const tableOptions = computed<FnCrudOptions<SecurityBan>>(() => ({
       emit("changed");
     },
   },
-  rowHandle: {
-    width: 170,
-    fixed: "right",
-    buttons: {
-      edit: { show: false },
-      delete: { show: false },
-      unblock: {
-        text: compute(({ row }) => getUnblockLabel(row as SecurityBan)),
-        type: "link",
-        onClick: ({ row }) => {
-          if (row) {
-            return confirmUnblock(row as SecurityBan);
-          }
-        },
-      },
-    },
-  },
   request: { pageRequest },
   tabs: { refCol: "type" },
   table: { minWidth: 1120, rowKey: "id", emptyText: "暂无封禁记录" },
-  pagination: { current: 1, pageSize: 20, pageSizeProps: ["10", "20", "30", "50"], showTotal: total => `共 ${total} 条` },
+  pagination: { current: 1, pageSize: 20, pageSizeOptions: ["10", "20", "30", "50"], showTotal: total => `共 ${total} 条` },
 }));
 
 async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<SecurityBan>> {
@@ -218,7 +206,7 @@ async function pageRequest(query: FnTablePageQuery): Promise<FnTablePageResult<S
 }
 function renderTarget(record: SecurityBan) {
   if (record.targetType === "ip") return <span class="security-ban-manager__code">{record.targetValue}</span>;
-  const user = userDict.Props.value.find(item => item.value === String(record.targetValue));
+  const user = userDict.__options.value.find(item => item.value === String(record.targetValue));
   let name = record.targetValue;
   let targetLabel = "用户 ID";
   if (record.targetType === "pipeline") {
@@ -228,7 +216,7 @@ function renderTarget(record: SecurityBan) {
   }
   return (
     <span class="security-ban-manager__target">
-      <strong>{name}</strong>
+      <div>{name}</div>
       <small>
         {targetLabel} {record.targetValue}
       </small>
@@ -290,7 +278,7 @@ function confirmUnblock(record: SecurityBan) {
         onClick: async () => {
           await securityMonitorApi.removeBan(record.id);
           notification.success({ message: "封禁已解除" });
-          await tableRef.value?.refresh();
+          await tableRef.value?.table.refresh();
           emit("changed");
         },
       },
@@ -298,7 +286,7 @@ function confirmUnblock(record: SecurityBan) {
   });
 }
 
-defineExpose({ refresh: () => tableRef.value?.refresh() });
+defineExpose({ refresh: () => tableRef.value?.table.refresh() });
 </script>
 
 <style lang="less">
@@ -312,8 +300,6 @@ defineExpose({ refresh: () => tableRef.value?.refresh() });
     flex: 1;
   }
   .security-ban-manager__code {
-    font-family: ui-monospace, Consolas, monospace;
-    font-size: 12px;
   }
   .security-ban-manager__target,
   .security-ban-manager__detail,

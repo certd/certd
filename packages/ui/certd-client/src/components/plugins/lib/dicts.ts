@@ -15,8 +15,7 @@ function createChallengeTypeDict() {
 function createUploaderTypeDict() {
   return dict({
     data: [
-      { label: "SFTP", value: "sftp" },
-      { label: "SCP", value: "scp" },
+      { label: "SFTP/SCP", value: "sftp" },
       { label: "FTP", value: "ftp" },
       { label: $t("certd.certdomain.verifyPlan.uploader.aliyunOss"), value: "alioss" },
       { label: $t("certd.certdomain.verifyPlan.uploader.tencentCos"), value: "tencentcos" },

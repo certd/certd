@@ -15,6 +15,8 @@ export class UserTwoFactorSetting extends BaseSettings {
     enabled: false,
     verified: false,
   };
+
+  loginEnabled = true;
 }
 
 export class UserSiteMonitorSetting extends BaseSettings {

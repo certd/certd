@@ -116,6 +116,66 @@ describe("AcmeService account config", () => {
 });
 
 describe("AcmeService challenge", () => {
+  it("removes DNS TXT record using the mapped domain", async () => {
+    let removeOptions: any;
+    const recordRes = { id: "record-id" };
+    const service = new AcmeService({
+      userId: 1,
+      userContext: {} as any,
+      logger: logger as any,
+      sslProvider: "letsencrypt",
+      domainParser: {
+        async parse() {
+          return "example.com";
+        },
+      } as any,
+      subDomainsGetter: {
+        async getSubDomains() {
+          return [];
+        },
+        async hasSubDomain() {
+          return null;
+        },
+        async getMappingDomain(domain: string) {
+          assert.equal(domain, "example.com");
+          return "mapped.example.net";
+        },
+      },
+    });
+    const dnsProvider = {
+      usePunyCode() {
+        return false;
+      },
+      async removeRecord(options: any) {
+        removeOptions = options;
+      },
+    } as any;
+
+    await service.challengeRemoveFn(
+      { identifier: { value: "www.example.com" } },
+      { type: "dns-01" },
+      "key-auth",
+      {
+        domain: "example.com",
+        fullRecord: "_acme-challenge.example.com",
+        hostRecord: "_acme-challenge",
+        type: "TXT",
+        value: "key-auth",
+      },
+      recordRes,
+      dnsProvider
+    );
+
+    assert.deepEqual(removeOptions.recordReq, {
+      domain: "mapped.example.net",
+      fullRecord: "_acme-challenge.mapped.example.net",
+      hostRecord: "_acme-challenge",
+      type: "TXT",
+      value: "key-auth",
+    });
+    assert.equal(removeOptions.recordRes, recordRes);
+  });
+
   it("parses cname TXT full record to choose the delegated DNS zone", async () => {
     const parseCalls: string[] = [];
     const service = new AcmeService({
