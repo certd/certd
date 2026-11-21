@@ -39,16 +39,20 @@ export class UserTwoFactorSettingController extends BaseController {
     }
     const userId = this.getUserId();
     const setting = await this.service.getSetting<UserTwoFactorSetting>(userId, null, UserTwoFactorSetting);
-    merge(setting, bean);
-
-    // 禁用时清除
-    if (!setting.authenticator.enabled) {
-      setting.authenticator.secret = null;
-      setting.authenticator.verified = false;
+    const { password, ...changes } = bean;
+    const updated = merge(new UserTwoFactorSetting(), setting, changes);
+    if ((setting.loginEnabled && !updated.loginEnabled) || (setting.authenticator.enabled && !updated.authenticator.enabled)) {
+      await this.twoFactorService.verifyPassword(userId, password);
     }
 
-    await this.service.saveSetting(userId, null, setting);
-    this.auditLog({ content: `保存了双因子认证设置 ${setting.authenticator.enabled ? "启用" : "禁用"}` });
+    // 禁用时清除
+    if (!updated.authenticator.enabled) {
+      updated.authenticator.secret = null;
+      updated.authenticator.verified = false;
+    }
+
+    await this.service.saveSetting(userId, null, updated);
+    this.auditLog({ content: `保存了双因子认证设置 ${updated.authenticator.enabled ? "启用" : "禁用"}` });
     return this.ok({});
   }
 
@@ -74,8 +78,9 @@ export class UserTwoFactorSettingController extends BaseController {
   }
 
   @Post("/authenticator/off", { description: Constants.per.authOnly, summary: "关闭验证器" })
-  async authenticatorOff() {
+  async authenticatorOff(@Body("password") password?: string) {
     const userId = this.getUserId();
+    await this.twoFactorService.verifyPassword(userId, password);
     await this.twoFactorService.offAuthenticator(userId);
     this.auditLog({ content: "关闭了验证器" });
     return this.ok();

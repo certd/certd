@@ -60,6 +60,16 @@ export class TwoFactorService {
     await this.userSettingsService.saveSetting(userId, null, setting);
   }
 
+  async verifyPassword(userId: number, password: unknown) {
+    if (typeof password !== "string" || !password) {
+      throw new Error("请输入登录密码");
+    }
+    const user = await this.userService.info(userId);
+    if (!user?.password || !(await this.userService.checkPassword(password, user.password, user.passwordVersion))) {
+      throw new Error("登录密码错误");
+    }
+  }
+
   async offAuthenticator(userId: number) {
     if (!userId || userId <= 0) {
       throw new Error("userId is required");

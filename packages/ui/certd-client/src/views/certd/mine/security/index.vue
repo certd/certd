@@ -27,7 +27,7 @@
           <div class="helper">{{ t("certd.mine.twoFactorAuthHelper") }}</div>
         </a-form-item>
 
-        <a-form-item :label="t('certd.mine.twoFactorLogin')" :name="'loginEnabled'">
+        <a-form-item v-if="formState.authenticator.enabled" :label="t('certd.mine.twoFactorLogin')" :name="'loginEnabled'">
           <a-switch v-model:checked="formState.loginEnabled" :disabled="!settingsStore.isPlus" @change="onLoginEnabledChanged" />
           <div class="helper">{{ t("certd.mine.twoFactorLoginHelper") }}</div>
         </a-form-item>
@@ -92,12 +92,14 @@
 import { computed, reactive, watch } from "vue";
 import * as api from "./api";
 import { UserTwoFactorSetting } from "./api";
-import { Modal, notification } from "ant-design-vue";
+import { notification } from "ant-design-vue";
+import { useFormDialog } from "/@/use/use-dialog";
 import { merge } from "lodash-es";
 import { useSettingStore } from "/@/store/settings";
 import { useI18n } from "/src/locales";
 
 const { t } = useI18n();
+const { openFormDialog } = useFormDialog();
 const settingsStore = useSettingStore();
 defineOptions({
   name: "UserSecurity",
@@ -158,29 +160,53 @@ const doAuthenticatorSave = async (form: any) => {
   formState.authenticator.verified = true;
 };
 
-function onAuthenticatorEnabledChanged(value: any) {
-  if (!value) {
-    //要关闭
-    if (formState.authenticator.verified) {
-      Modal.confirm({
-        title: t("certd.common.confirm"),
-        content: t("certd.mine.confirmDisable2FA"),
-        async onOk() {
-          await api.TwoFactorAuthenticatorOff();
-          notification.success({
-            message: t("certd.common.disabledSuccess"),
-          });
-          loadUserSettings();
+function confirmWithPassword(title: string, submit: (password: string) => Promise<void>) {
+  const prompt = t("certd.mine.inputLoginPassword");
+  return openFormDialog({
+    title,
+    columns: {
+      password: {
+        title: t("certd.mine.loginPassword"),
+        type: "password",
+        form: {
+          col: { span: 24 },
+          component: { placeholder: prompt, autocomplete: "current-password" },
+          rules: [{ required: true, message: prompt }],
         },
-        onCancel() {
-          formState.authenticator.enabled = true;
-        },
-      });
-    }
+      },
+    },
+    wrapper: {
+      width: 600,
+    },
+    async onSubmit(form: { password: string }) {
+      await submit(form.password);
+    },
+  });
+}
+
+function onAuthenticatorEnabledChanged(value: boolean) {
+  if (value || !formState.authenticator.verified) {
+    return;
   }
+  formState.authenticator.enabled = true;
+  return confirmWithPassword(t("certd.mine.confirmDisable2FA"), async password => {
+    await api.TwoFactorAuthenticatorOff(password);
+    formState.authenticator.enabled = false;
+    formState.authenticator.verified = false;
+    authenticatorForm.open = false;
+    notification.success({ message: t("certd.common.disabledSuccess") });
+  });
 }
 
 async function onLoginEnabledChanged(value: boolean) {
+  if (!value) {
+    formState.loginEnabled = true;
+    return confirmWithPassword(t("certd.mine.confirmDisable2FALogin"), async password => {
+      await api.TwoFactorSettingsSave({ loginEnabled: false, password });
+      formState.loginEnabled = false;
+      notification.success({ message: t("certd.common.disabledSuccess") });
+    });
+  }
   try {
     await api.TwoFactorSettingsSave({ loginEnabled: value });
     notification.success({
