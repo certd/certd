@@ -10,7 +10,7 @@
         </div>
         <div class="text">
           <div class="left">
-            <div class="inline-flex">
+            <div class="inline-flex items-center">
               <span>{{ t("certd.dashboard.greeting", { name: userInfo.nickName || userInfo.username, site: siteInfo.title }) }}</span>
               <security-summary v-if="userStore.isAdmin && settingStore.isPlus" />
             </div>
@@ -510,6 +510,31 @@ const { tour, tourHandleOpen } = useTour();
         justify-content: center;
         > div {
           margin: 4px;
+        }
+      }
+    }
+  }
+  @media (max-width: 767px) {
+    .header-profile {
+      .text {
+        min-width: 0;
+      }
+
+      .left > div:first-child {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .dashboard-security-summary {
+        max-width: 100%;
+        margin-left: 0;
+
+        .security-status-trigger {
+          height: auto;
+          max-width: 100%;
+          white-space: normal;
         }
       }
     }

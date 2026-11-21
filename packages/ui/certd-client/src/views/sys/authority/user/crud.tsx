@@ -72,6 +72,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           title: "id",
           type: "text",
           form: { show: false }, // 表单配置
+          search: { show: true },
           column: {
             width: 100,
             sorter: true,

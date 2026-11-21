@@ -14,7 +14,7 @@ package-lock.json
 out
 gen
 /test/*.private.*
-
+.tmp/
 /*.log
 nohup.out
 

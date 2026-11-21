@@ -1,21 +1,19 @@
 <template>
-  <div class="fn-tabs" role="tablist">
-    <div
-      v-for="item in tabs"
-      :key="item.value"
-      class="fn-tabs-item"
-      :class="{ active: modelValue === item.value }"
-      type="button"
-      role="tab"
-      :aria-selected="modelValue === item.value"
-      @click="$emit('update:modelValue', item.value)"
-    >
-      {{ item.label }}<span v-if="showCount" class="fn-tabs-count">{{ item.count || 0 }}</span>
-    </div>
+  <div ref="tabListRef" class="fn-tabs" role="tablist">
+    <FnRender v-if="slots?.before" :render="slots.before" :ctx="{ tabs, modelValue }" />
+    <button v-for="item in tabs" :key="item.value" type="button" class="fn-tabs-item" :class="{ active: modelValue === item.value }" role="tab" :aria-selected="modelValue === item.value" @click="selectTab(item.value)">
+      <FnRender v-if="slots?.item" :render="slots.item" :ctx="{ item, active: modelValue === item.value }" />
+      <template v-else
+        >{{ item.label }}<span v-if="showCount" class="fn-tabs-count">{{ item.count || 0 }}</span></template
+      >
+    </button>
+    <FnRender v-if="slots?.after" :render="slots.after" :ctx="{ tabs, modelValue }" />
   </div>
 </template>
 
-<script setup lang="jsx">
+<script setup lang="ts">
+import { nextTick, onMounted, ref, watch } from "vue";
+import FnRender from "../components/fn-render";
 const props = defineProps({
   tabs: {
     type: Array,
@@ -29,33 +27,68 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  slots: { type: Object, default: () => ({}) },
 });
+const slots = props.slots;
 
-defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue"]);
+const tabListRef = ref<HTMLElement>();
+
+function selectTab(value: string): void {
+  emit("update:modelValue", value);
+}
+
+function scrollActiveTabIntoView(): void {
+  const tabList = tabListRef.value;
+  if (!tabList) {
+    return;
+  }
+  const activeTab = tabList.querySelector<HTMLElement>(".fn-tabs-item.active");
+  activeTab?.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
+onMounted(() => {
+  scrollActiveTabIntoView();
+});
+watch(
+  () => props.modelValue,
+  async () => {
+    await nextTick();
+    scrollActiveTabIntoView();
+  }
+);
 </script>
 
 <style lang="less">
 .fn-tabs {
   display: flex;
-  flex: none;
+  min-width: 0;
+  flex: 1;
   gap: 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
   .fn-tabs-item {
-    &:first-child {
-    }
+    position: relative;
     display: flex;
+    flex: none;
     align-items: center;
     justify-content: center;
-    position: relative;
     min-height: 40px;
     padding: 0 1px;
     border: 0;
-    color: #8a95a6;
+    color: var(--fn-color-text-tertiary);
     background: transparent;
     font-size: 13px;
+    white-space: nowrap;
     cursor: pointer;
 
     &.active {
-      color: #172033;
+      color: var(--fn-color-text);
       font-weight: 600;
 
       &::after {
@@ -64,7 +97,7 @@ defineEmits(["update:modelValue"]);
         bottom: -1px;
         left: 0;
         height: 2px;
-        background: #e54b4b;
+        background: var(--fn-color-primary);
         content: "";
       }
     }
@@ -72,17 +105,17 @@ defineEmits(["update:modelValue"]);
 
   .fn-tabs-count {
     margin-left: 5px;
-    color: #a3acb9;
+    color: var(--fn-color-text-quaternary);
     font-size: 11px;
   }
 
-  body.dark & {
+  .dark & {
     .fn-tabs-item.active {
-      color: rgba(255, 255, 255, 0.95);
+      color: var(--fn-color-text);
     }
 
     .fn-tabs-item.active .fn-tabs-count {
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--fn-color-text-secondary);
     }
   }
 }

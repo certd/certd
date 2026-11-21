@@ -2,6 +2,7 @@
 import { request } from "/@/api/service";
 const apiPrefix = "/user/settings";
 export type UserTwoFactorSetting = {
+  loginEnabled: boolean;
   authenticator: {
     enabled: boolean;
     verified: boolean;
@@ -23,6 +24,14 @@ export async function TwoFactorSettingsGet() {
   return res as UserTwoFactorSetting;
 }
 
+export async function TwoFactorSettingsSave(req: { loginEnabled: boolean; password?: string }) {
+  return await request({
+    url: apiPrefix + "/twoFactor/save",
+    method: "post",
+    data: req,
+  });
+}
+
 export async function TwoFactorAuthenticatorGet() {
   const res = await request({
     url: apiPrefix + "/twoFactor/authenticator/qrcode",
@@ -39,9 +48,10 @@ export async function TwoFactorAuthenticatorSave(req: AuthenticatorSaveReq) {
   });
 }
 
-export async function TwoFactorAuthenticatorOff() {
+export async function TwoFactorAuthenticatorOff(password: string) {
   return await request({
     url: apiPrefix + "/twoFactor/authenticator/off",
     method: "post",
+    data: { password },
   });
 }

@@ -309,7 +309,7 @@ export class AcmeAccountAccess extends BaseAccess {
       eab: externalAccountBinding ? ({ ...externalAccountBinding, id: 0 } as any) : undefined,
       privateKeyType: "rsa_2048",
       signal: (this.ctx as any)?.signal,
-      maxCheckRetryCount: 20,
+      maxCheckRetryCount: 6,
       domainParser: {} as any,
     });
     const client = await acmeService.getAcmeClient(this.email);

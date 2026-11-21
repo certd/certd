@@ -43,6 +43,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台。核心模�
 
 - **可读性优先于短写法；与技能建议冲突时，以本条为准。** 少用三元表达式，优先完整 `if/else`；不要在单个表达式中嵌套分支、对象构造和方法调用。
 - 复杂条件、调用链、内联对象和多层 helper 调用，拆成有意义的局部变量或小方法；不要把调用链直接塞进另一个方法参数。拆分应降低复杂度，避免增加无意义的阅读跳转。
+- TypeScript 代码避免隐式 `any`；参数、回调、集合和返回值能够用业务类型表达时应显式标注，并优先复用已有类型或定义可复用的领域类型，避免用 `any` 仅为消除类型诊断。
 - 沿用现有模块、插件、service 和页面模式。遵守 DRY 与单一职责；业务规则、字段转换、权限判断、Repository 选择、事务传播、金额计算等逻辑第三次出现时，优先提取合适 helper/service 方法。
 - 没有明确复用价值时，不新增 `normalizeXxx` 等辅助方法，不为测试或形式上的复用增加抽象；简单兼容和字段转换直接在现有业务方法中处理。
 
@@ -135,7 +136,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台。核心模�
 
 **fn-crud 试验范围：** `src/components/table` 与安全监控中心。
 
-- 优先完善并复用本地 `FnTable`、`FnForm`、`FnModal`、`FnButton` 等组件；不得依赖 Fast Crud 组件、Provider 或 `useFormWrapper`。不自动迁移其他页面，扩大范围需用户确认。
+- 优先完善并复用本地 `FnTable`、`FnForm`、`FnModal`、`FnButton` 等组件；新增或修改 `src/components/table` 组件时，禁止直接使用 Ant Design Vue UI 组件，交互使用本地 Fn 组件或原生实现；不得依赖 Fast Crud 组件、Provider 或 `useFormWrapper`。不自动迁移其他页面，扩大范围需用户确认。
 - `src/components/table` 的图标统一用 `@lucide/vue`；按钮图标传 Lucide Vue 组件，不用 Ant Design 图标或 `fs-icon` 字符串。
 - `FnFormProvider` 独立注册，提供 `openDialog` / `openFormDialog`，使用本地 `FnModal` / `FnForm`，并保留当前 Vue app 的组件注册、Ant Design Vue 配置和 provide/inject 上下文。有字段输入、校验或提交的对话框用其 `openFormDialog`；纯确认可用 `Modal.confirm`。
 

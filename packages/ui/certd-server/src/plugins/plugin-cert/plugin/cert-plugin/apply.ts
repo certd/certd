@@ -605,7 +605,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
   @TaskInput({
     title: "检查解析重试次数",
-    value: 20,
+    value: 6,
     component: {
       name: "a-input-number",
       vModel: "value",
@@ -613,7 +613,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     maybeNeed: true,
     helper: "检查域名验证解析记录重试次数，如果你的域名服务商解析生效速度慢，可以适当增加此值",
   })
-  maxCheckRetryCount = 20;
+  maxCheckRetryCount = 6;
 
   @TaskInput({
     title: "等待解析生效时长",
@@ -705,6 +705,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       signal: this.ctx.signal,
       maxCheckRetryCount: this.maxCheckRetryCount,
       domainParser,
+      subDomainsGetter: subDomainsGetter,
       waitDnsDiffuseTime: this.waitDnsDiffuseTime,
     });
     return this.acme;

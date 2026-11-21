@@ -27,6 +27,14 @@ export class SubDomainsGetter implements ISubDomainsGetter {
       .sort((a, b) => b.length - a.length);
   }
 
+  async getMappingDomain(domain: string): Promise<string | undefined> {
+    return await this.domainService.getMappingDomain({
+      domain,
+      userId: this.userId,
+      projectId: this.projectId,
+    });
+  }
+
   async hasSubDomain(fullDomain: string) {
     let arr = fullDomain.split(".");
     const subDomains = await this.getSubDomains();

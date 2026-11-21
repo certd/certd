@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import jwt from "jsonwebtoken";
+import esmock from "esmock";
 import { LoginService } from "./login-service.js";
 
 function createLoginService() {
@@ -176,5 +177,42 @@ describe("LoginService.loginByPassword oauthOnly grace period", () => {
     const result = await service.loginByPassword({ username: "alice", password: "password", phoneCode: "86" });
 
     assert.equal(result.userId, 1);
+  });
+});
+
+describe("LoginService.checkTwoFactorEnabled", () => {
+  it("requires 2FA only when authenticator and login settings are enabled", async () => {
+    const { LoginService: PlusLoginService } = await esmock("./login-service.js", {
+      "@certd/plus-core": { isPlus: () => true },
+    });
+    const service = new PlusLoginService();
+    service.twoFactorService = {
+      async getSetting() {
+        return { authenticator: { enabled: true }, loginEnabled: true };
+      },
+    } as any;
+
+    await assert.rejects(() => service.checkTwoFactorEnabled(1), /已开启多重认证/);
+
+    service.twoFactorService = {
+      async getSetting() {
+        return { authenticator: { enabled: true }, loginEnabled: false };
+      },
+    } as any;
+    await assert.doesNotReject(() => service.checkTwoFactorEnabled(1));
+
+    service.twoFactorService = {
+      async getSetting() {
+        return { authenticator: { enabled: false }, loginEnabled: true };
+      },
+    } as any;
+    await assert.doesNotReject(() => service.checkTwoFactorEnabled(1));
+
+    service.twoFactorService = {
+      async getSetting() {
+        return { authenticator: { enabled: true } };
+      },
+    } as any;
+    await assert.rejects(() => service.checkTwoFactorEnabled(1), /已开启多重认证/);
   });
 });

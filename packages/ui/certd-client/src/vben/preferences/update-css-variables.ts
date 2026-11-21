@@ -48,8 +48,7 @@ function updateCSSVariables(preferences: Preferences) {
 
   // 如果内置主题颜色和自定义颜色都不存在，则不更新主题颜色
   if (builtinTypeColorPrimary || Reflect.has(theme, "colorPrimary") || Reflect.has(theme, "colorDestructive") || Reflect.has(theme, "colorSuccess") || Reflect.has(theme, "colorWarning")) {
-    // preferences.theme.colorPrimary = builtinTypeColorPrimary || colorPrimary;
-    updateMainColorVariables(preferences);
+    updateMainColorVariables(preferences, builtinTypeColorPrimary);
   }
 
   // 更新圆角
@@ -62,14 +61,14 @@ function updateCSSVariables(preferences: Preferences) {
  * 更新主要的 CSS 变量
  * @param  preference - 当前偏好设置对象，它的颜色值将被转换成 HSL 格式并设置为 CSS 变量。
  */
-function updateMainColorVariables(preference: Preferences) {
+function updateMainColorVariables(preference: Preferences, builtinTypeColorPrimary?: string) {
   if (!preference.theme) {
     return;
   }
   const { colorDestructive, colorPrimary, colorSuccess, colorWarning } = preference.theme;
 
   const colorVariables = generatorColorVariables([
-    { color: colorPrimary, name: "primary" },
+    { color: builtinTypeColorPrimary || colorPrimary, name: "primary" },
     { alias: "warning", color: colorWarning, name: "yellow" },
     { alias: "success", color: colorSuccess, name: "green" },
     { alias: "destructive", color: colorDestructive, name: "red" },
