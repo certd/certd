@@ -34,14 +34,7 @@ const modalOpen = ref(false);
 let resolveForm: ((form: Record<string, any> | undefined) => void) | undefined;
 let formResult: Record<string, any> | undefined;
 const formContext = computed<FnComputeContext>(() => {
-  const baseContext = formRef.value?.getContext();
   return {
-    ...(baseContext || {
-      type: "form",
-      form: activeForm.value?.initialForm || {},
-      mode: activeForm.value?.mode,
-      columns: activeForm.value?.columns,
-    }),
     type: "form",
     form: formRef.value?.getForm() || activeForm.value?.initialForm || {},
     formRef: formRef.value,
