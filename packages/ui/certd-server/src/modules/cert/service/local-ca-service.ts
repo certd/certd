@@ -11,13 +11,17 @@ import {
   createIntermediateCa,
   createRootCa,
   getBasicConstraints,
+  getCertSerialNumber,
+  getCrlInfo as parseCrlInfo,
+  getPublicKeyPem,
+  isSelfSignedCa,
   issueLeafCertificate,
-  keySizeOf,
   LocalCaKeyType,
   LocalCaSubject,
   LocalCaUsage,
   signCsr,
   sha256Hex,
+  validateImportedIntermediateCa,
   validateImportedRootCa,
 } from "./local-ca-crypto.js";
 
@@ -55,6 +59,7 @@ export type LocalCaIntermediateReq = Omit<LocalCaScope, "id"> & {
 export type LocalCaImportReq = {
   userId: number;
   projectId?: number;
+  parentId?: number;
   name: string;
   certPem: string;
   privateKeyPem: string;
@@ -146,6 +151,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const nameMap = new Map(parents.map(item => [item.id, item.name]));
     for (const item of list) {
       item.parentName = item.parentId != null ? nameMap.get(item.parentId) || "" : "";
+      item.caPath = item.parentName ? `${item.parentName} / ${item.name}` : item.name;
+      item.level = item.parentId != null ? 1 : 0;
     }
     return list;
   }
@@ -253,7 +260,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.source = "generated";
     bean.caType = "intermediate";
     bean.parentId = root.id;
-    bean.keyType = req.keyType || "rsa2048";
+    bean.keyType = material.keyType || "rsa2048";
     bean.keySize = material.keySize;
     bean.hashAlgorithm = "SHA256";
     bean.subject = JSON.stringify(material.subject);
@@ -279,20 +286,42 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   async importCa(req: LocalCaImportReq) {
     await this.assertNameAvailable(req);
-    const material = await validateImportedRootCa({
-      certPem: req.certPem,
-      privateKeyPem: req.privateKeyPem,
-    });
-    const keyType: LocalCaKeyType = material.keySize === 4096 ? "rsa4096" : "rsa2048";
+    let selfSigned: boolean;
+    try {
+      selfSigned = isSelfSignedCa(req.certPem);
+    } catch (e: any) {
+      throw new ValidateException(`证书解析失败：${e.message}`);
+    }
+    let parent: LocalCaEntity | null = null;
+    let material;
+    if (selfSigned) {
+      material = await validateImportedRootCa({
+        certPem: req.certPem,
+        privateKeyPem: req.privateKeyPem,
+      });
+    } else {
+      if (!req.parentId) {
+        throw new ValidateException("导入中间CA时必须选择上级根CA");
+      }
+      parent = await this.getOwnedCa({ id: req.parentId, userId: req.userId, projectId: req.projectId });
+      if (parent.caType !== "root") {
+        throw new ValidateException("选中证书的上级必须是根CA");
+      }
+      material = await validateImportedIntermediateCa({
+        certPem: req.certPem,
+        privateKeyPem: req.privateKeyPem,
+        parentCertPem: parent.certPem,
+      });
+    }
     const bean = new LocalCaEntity();
     bean.userId = req.userId;
     bean.projectId = req.projectId;
     bean.name = req.name.trim();
     bean.source = "imported";
-    bean.caType = "root";
-    bean.parentId = null;
-    bean.keyType = keyType;
-    bean.keySize = keySizeOf(keyType);
+    bean.caType = selfSigned ? "root" : "intermediate";
+    bean.parentId = parent?.id ?? null;
+    bean.keyType = material.keyType || "rsa2048";
+    bean.keySize = material.keySize;
     bean.hashAlgorithm = "SHA256";
     bean.subject = JSON.stringify(material.subject);
     bean.subjectCn = material.subjectCn;
@@ -308,7 +337,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.maxValidityDays = req.maxValidityDays || 0;
     bean.acmeEnabled = false;
     bean.acmeConfig = null;
-    bean.pathLength = getBasicConstraints(material.certPem).pathLength ?? 1;
+    bean.pathLength = material.pathLength ?? (selfSigned ? (getBasicConstraints(material.certPem).pathLength ?? 1) : 0);
     bean.disabled = false;
     bean.remark = req.remark || "";
     const res = await this.add(bean);
@@ -487,8 +516,25 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       where,
       order: { id: "DESC" },
     });
-    return list.map(item => ({
+    const children = await this.find({ where: { parentId: ca.id }, order: { id: "DESC" } });
+    const childRows = children.map(item => ({
       id: item.id,
+      type: "ca",
+      caType: item.caType,
+      domain: item.subjectCn,
+      domains: item.subjectCn,
+      serialNumber: getCertSerialNumber(item.certPem),
+      status: item.disabled ? "inactive" : "active",
+      effectiveTime: item.notBefore,
+      expiresTime: item.notAfter,
+      applyTime: item.createTime ? new Date(item.createTime).getTime() : undefined,
+      fromType: "ca",
+      revokeTime: undefined,
+    }));
+    const leafRows = list.map(item => ({
+      id: item.id,
+      type: "leaf",
+      caType: undefined,
       domain: item.domain,
       domains: item.domains,
       serialNumber: item.serialNumber,
@@ -499,6 +545,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       fromType: item.fromType,
       revokeTime: item.revokeTime,
     }));
+    return [...childRows, ...leafRows];
   }
 
   async revokeIssuedCert(req: LocalCaScope & { certId: number }) {
@@ -521,6 +568,22 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     cert.status = CertStatus.revoked;
     cert.revokeTime = Date.now();
     await this.certInfoService.update(cert);
+  }
+
+  async getPublicKey(req: LocalCaScope) {
+    const ca = await this.getOwnedCa(req);
+    return {
+      filename: `local-ca-${ca.id}-public-key.pem`,
+      pem: getPublicKeyPem(ca.certPem),
+    };
+  }
+
+  async getCrlInfo(req: LocalCaScope) {
+    const crl = await this.getCrl(req.id);
+    return {
+      filename: `local-ca-${req.id}.crl`,
+      ...parseCrlInfo(crl.pem),
+    };
   }
 
   async exportCa(req: LocalCaScope) {

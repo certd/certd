@@ -4,7 +4,6 @@ import { ref } from "vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useModal } from "/@/use/use-modal";
 import { useI18n } from "/src/locales";
-import CertView from "/@/views/certd/pipeline/cert-view.vue";
 import { createAccessApi, getSecretAccessToken } from "/@/views/certd/access/api";
 import LocalCaIssuedCerts from "./issued-certs.vue";
 import { localCaApi } from "./api";
@@ -16,7 +15,7 @@ function parseAllowedDomains(text: string) {
     .filter(Boolean);
 }
 
-export function useLocalCaDialogs(crudExpose: any) {
+export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   const { t } = useI18n();
   const { openFormDialog } = useFormDialog();
   const model = useModal();
@@ -86,7 +85,10 @@ export function useLocalCaDialogs(crudExpose: any) {
           dict: dict({
             data: [
               { label: "RSA 2048", value: "rsa2048" },
+              { label: "RSA 3072", value: "rsa3072" },
               { label: "RSA 4096", value: "rsa4096" },
+              { label: "ECDSA P-256", value: "ecdsa256" },
+              { label: "ECDSA P-384", value: "ecdsa384" },
             ],
           }),
           form: { required: true, col: { span: 12 } },
@@ -202,7 +204,10 @@ export function useLocalCaDialogs(crudExpose: any) {
           dict: dict({
             data: [
               { label: "RSA 2048", value: "rsa2048" },
+              { label: "RSA 3072", value: "rsa3072" },
               { label: "RSA 4096", value: "rsa4096" },
+              { label: "ECDSA P-256", value: "ecdsa256" },
+              { label: "ECDSA P-384", value: "ecdsa384" },
             ],
           }),
           form: { required: true, col: { span: 12 } },
@@ -267,6 +272,8 @@ export function useLocalCaDialogs(crudExpose: any) {
   }
 
   async function openImport() {
+    const allCas = await localCaApi.GetOptions();
+    const rootOptions = (allCas || []).filter((item: any) => item.caType === "root" && !item.disabled).map((item: any) => ({ label: `${item.name} (${item.subjectCn})`, value: item.id }));
     await openFormDialog({
       title: t("certd.localCa.importTitle"),
       wrapper: { width: 720 },
@@ -300,6 +307,17 @@ export function useLocalCaDialogs(crudExpose: any) {
             rules: [{ required: true, message: t("certd.common.required") }],
             col: { span: 24 },
             component: { rows: 6, placeholder: "-----BEGIN PRIVATE KEY-----" },
+          },
+        },
+        parentId: {
+          title: t("certd.localCa.fields.parentCa"),
+          type: "dict-select",
+          dict: dict({ data: rootOptions }),
+          form: {
+            required: false,
+            col: { span: 24 },
+            component: { allowClear: true, placeholder: t("certd.localCa.importParentPlaceholder") },
+            helper: t("certd.localCa.importParentHelper"),
           },
         },
         usage: {
@@ -338,6 +356,7 @@ export function useLocalCaDialogs(crudExpose: any) {
       async onSubmit(form: any) {
         await localCaApi.Import({
           name: form.name,
+          parentId: form.parentId,
           certPem: form.certPem,
           privateKeyPem: form.privateKeyPem,
           usage: form.usage,
@@ -352,91 +371,7 @@ export function useLocalCaDialogs(crudExpose: any) {
   }
 
   async function openView(row: any) {
-    try {
-      const res = await localCaApi.GetCertDetail(row.certPem);
-      model.success({
-        title: t("certd.localCa.viewTitle"),
-        maskClosable: true,
-        okText: t("certd.common.confirm"),
-        width: 800,
-        content: () => {
-          return (
-            <CertView
-              cert={{
-                crt: row.certPem,
-                key: "",
-                ic: "",
-                detail: res.detail,
-              }}
-            />
-          );
-        },
-      });
-    } catch (e: any) {
-      notification.error({ message: e.message || t("certd.localCa.viewFailed") });
-    }
-  }
-
-  function parseJson(value: any, fallback: any) {
-    if (!value) {
-      return fallback;
-    }
-    try {
-      return typeof value === "string" ? JSON.parse(value) : value;
-    } catch (e) {
-      return fallback;
-    }
-  }
-
-  function formatTime(value: any) {
-    if (!value) {
-      return "-";
-    }
-    return new Date(Number(value) || value).toLocaleString();
-  }
-
-  function openViewSettings(row: any) {
-    const subject = parseJson(row.subject, {}) || {};
-    const allowedDomains = parseJson(row.allowedDomains, []);
-    const sourceLabel = row.source === "imported" ? t("certd.localCa.source.imported") : t("certd.localCa.source.generated");
-    const usageLabel = row.usage === "client" ? t("certd.localCa.usage.client") : row.usage === "both" ? t("certd.localCa.usage.both") : t("certd.localCa.usage.server");
-    model.success({
-      title: t("certd.localCa.viewSettingsTitle"),
-      maskClosable: true,
-      okText: t("certd.common.confirm"),
-      width: 820,
-      content: () => {
-        return (
-          <a-descriptions class="local-ca-settings" bordered column={1} size="small">
-            <a-descriptions-item label={t("certd.localCa.fields.name")}>{row.name}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.subjectCn")}>{row.subjectCn}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.caType")}>{row.caType === "intermediate" ? t("certd.localCa.caTypeIntermediate") : t("certd.localCa.caTypeRoot")}</a-descriptions-item>
-            {row.parentName ? <a-descriptions-item label={t("certd.localCa.fields.parentCa")}>{row.parentName}</a-descriptions-item> : null}
-            <a-descriptions-item label={t("certd.localCa.fields.organization")}>{subject.O || "-"}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.organizationUnit")}>{subject.OU || "-"}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.country")}>{subject.C || "-"}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.state")}>{subject.ST || "-"}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.locality")}>{subject.L || "-"}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.source")}>{sourceLabel}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.keyType")}>{String(row.keyType || "").toUpperCase()}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.usage")}>{usageLabel}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.allowedDomains")}>{allowedDomains.length ? allowedDomains.join(", ") : t("certd.localCa.unlimited")}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.maxValidityDays")}>{row.maxValidityDays ? `${row.maxValidityDays} ${t("certd.localCa.days")}` : t("certd.localCa.unlimited")}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.notAfter")}>{formatTime(row.notAfter)}</a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.fingerprint")}>
-              <fs-copyable modelValue={row.fingerprintSha256}>{row.fingerprintSha256}</fs-copyable>
-            </a-descriptions-item>
-            <a-descriptions-item label={t("certd.localCa.fields.acmeEnabled")}>{row.acmeEnabled ? t("certd.localCa.acmeEnabledYes") : t("certd.localCa.acmeEnabledNo")}</a-descriptions-item>
-            {row.acmeEnabled ? (
-              <a-descriptions-item label={t("certd.localCa.acmeDirectory")}>
-                <fs-copyable modelValue={`${window.location.origin}/api/acme/${row.id}/directory`}>{`${window.location.origin}/api/acme/${row.id}/directory`}</fs-copyable>
-              </a-descriptions-item>
-            ) : null}
-            <a-descriptions-item label={t("certd.localCa.fields.remark")}>{row.remark || "-"}</a-descriptions-item>
-          </a-descriptions>
-        );
-      },
-    });
+    caViewRef?.value?.open(row);
   }
 
   function base64UrlToUint8Array(value: string) {
@@ -548,7 +483,6 @@ export function useLocalCaDialogs(crudExpose: any) {
     openIntermediate,
     openImport,
     openView,
-    openViewSettings,
     openExport,
     openIssuedCerts,
   };

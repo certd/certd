@@ -49,7 +49,10 @@ export class CertApplyLocalCa extends CertApplyBaseConvertPlugin {
       vModel: "value",
       options: [
         { value: "rsa2048", label: "RSA 2048" },
+        { value: "rsa3072", label: "RSA 3072" },
         { value: "rsa4096", label: "RSA 4096" },
+        { value: "ecdsa256", label: "ECDSA P-256" },
+        { value: "ecdsa384", label: "ECDSA P-384" },
       ],
     },
     required: true,

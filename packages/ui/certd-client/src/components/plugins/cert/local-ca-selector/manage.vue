@@ -16,6 +16,7 @@
         </template>
       </a-table-column>
       <a-table-column :title="t('certd.localCa.fields.subjectCn')" data-index="subjectCn" :width="180" />
+      <a-table-column :title="t('certd.localCa.fields.parentCa')" data-index="parentName" :width="140" />
       <a-table-column :title="t('certd.localCa.fields.notAfter')" :width="170">
         <template #default="{ record }">{{ formatTime(record.notAfter) }}</template>
       </a-table-column>
@@ -31,7 +32,7 @@
               {{ t("certd.localCa.choose") }}
             </a-button>
           </a-tooltip>
-          <a-button type="link" size="small" @click="openViewSettings(record)">{{ t("certd.localCa.settings") }}</a-button>
+          <a-button type="link" size="small" @click="openView(record)">{{ t("certd.localCa.settings") }}</a-button>
           <a-button v-if="record.caType === 'root'" type="link" size="small" @click="openIntermediate(record)">
             {{ t("certd.localCa.intermediate") }}
           </a-button>
@@ -40,10 +41,12 @@
       </a-table-column>
     </a-table>
   </a-modal>
+  <LocalCaView ref="caViewRef" :on-export="row => caExportHandler?.(row)" />
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
+import LocalCaView from "/@/views/certd/cert/local-ca/ca-view.vue";
 import { notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { useI18n } from "/src/locales";
@@ -62,7 +65,10 @@ const { t } = useI18n();
 const visible = ref(false);
 const list = ref<any[]>([]);
 const loading = ref(false);
-const { openGenerate, openIntermediate, openImport, openViewSettings, openIssuedCerts } = useLocalCaDialogs({ doRefresh: load });
+const caViewRef = ref<any>();
+const caExportHandler = ref<any>();
+const { openGenerate, openIntermediate, openImport, openView, openExport, openIssuedCerts } = useLocalCaDialogs({ doRefresh: load }, caViewRef);
+caExportHandler.value = openExport;
 
 async function load() {
   loading.value = true;

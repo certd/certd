@@ -96,6 +96,22 @@ export const localCaApi = {
     return await ReadCertDetail(certPem);
   },
 
+  async GetPublicKey(id: number) {
+    return await request({
+      url: apiPrefix + "/publicKey",
+      method: "post",
+      data: { id },
+    });
+  },
+
+  async GetCrlInfo(id: number) {
+    return await request({
+      url: apiPrefix + "/crlInfo",
+      method: "get",
+      params: { id },
+    });
+  },
+
   async Export(id: number, verifyToken: string) {
     return await request({
       url: apiPrefix + "/export",

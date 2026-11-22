@@ -6,7 +6,7 @@ import * as x509 from "@peculiar/x509";
 const webcrypto = crypto.webcrypto as unknown as Crypto;
 x509.cryptoProvider.set(webcrypto);
 
-export type LocalCaKeyType = "rsa2048" | "rsa4096";
+export type LocalCaKeyType = "rsa2048" | "rsa3072" | "rsa4096" | "ecdsa256" | "ecdsa384";
 export type LocalCaUsage = "server" | "client" | "both";
 
 export type LocalCaSubject = {
@@ -22,6 +22,7 @@ export type CreatedRootCa = {
   certPem: string;
   privateKeyPem: string;
   keySize: number;
+  keyType?: LocalCaKeyType;
   subject: LocalCaSubject;
   subjectCn: string;
   fingerprintSha256: string;
@@ -112,7 +113,46 @@ export function getX509Summary(certPem: string) {
 }
 
 export function keySizeOf(keyType: LocalCaKeyType) {
-  return keyType === "rsa4096" ? 4096 : 2048;
+  if (keyType === "rsa3072") return 3072;
+  if (keyType === "rsa4096") return 4096;
+  if (keyType === "ecdsa256") return 256;
+  if (keyType === "ecdsa384") return 384;
+  return 2048;
+}
+
+function isEcKeyType(keyType: LocalCaKeyType) {
+  return keyType === "ecdsa256" || keyType === "ecdsa384";
+}
+
+function signingAlgorithmOf(keyType: LocalCaKeyType) {
+  if (keyType === "ecdsa256") {
+    return { name: "ECDSA", hash: "SHA-256" };
+  }
+  if (keyType === "ecdsa384") {
+    return { name: "ECDSA", hash: "SHA-384" };
+  }
+  return { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" };
+}
+
+function keyTypeOfPrivateKey(privateKey: crypto.KeyObject): { keyType: LocalCaKeyType; keySize: number } {
+  const details: any = privateKey.asymmetricKeyDetails || {};
+  if (privateKey.asymmetricKeyType === "rsa") {
+    const keySize = details.modulusLength;
+    if (keySize === 2048 || keySize === 3072 || keySize === 4096) {
+      return { keyType: `rsa${keySize}` as LocalCaKeyType, keySize };
+    }
+    throw new Error("仅支持 RSA 2048/3072/4096");
+  }
+  if (privateKey.asymmetricKeyType === "ec") {
+    if (details.namedCurve === "prime256v1") {
+      return { keyType: "ecdsa256", keySize: 256 };
+    }
+    if (details.namedCurve === "secp384r1") {
+      return { keyType: "ecdsa384", keySize: 384 };
+    }
+    throw new Error("仅支持 ECDSA P-256/P-384");
+  }
+  throw new Error("仅支持 RSA 或 ECDSA 私钥");
 }
 
 export function sha256Hex(text: string) {
@@ -225,20 +265,47 @@ function fingerprintOf(certPem: string) {
   return cert.fingerprint256.replaceAll(":", "").toLowerCase();
 }
 
-async function generateRsaKeys(keyType: LocalCaKeyType) {
+async function generateKeyPair(keyType: LocalCaKeyType) {
   const keySize = keySizeOf(keyType);
-  const keys = (await webcrypto.subtle.generateKey(
-    {
-      name: "RSASSA-PKCS1-v1_5",
-      modulusLength: keySize,
-      publicExponent: new Uint8Array([1, 0, 1]),
-      hash: "SHA-256",
-    },
-    true,
-    ["sign", "verify"]
-  )) as CryptoKeyPair;
+  const keys = isEcKeyType(keyType)
+    ? ((await webcrypto.subtle.generateKey(
+        {
+          name: "ECDSA",
+          namedCurve: keyType === "ecdsa384" ? "P-384" : "P-256",
+        },
+        true,
+        ["sign", "verify"]
+      )) as CryptoKeyPair)
+    : ((await webcrypto.subtle.generateKey(
+        {
+          name: "RSASSA-PKCS1-v1_5",
+          modulusLength: keySize,
+          publicExponent: new Uint8Array([1, 0, 1]),
+          hash: "SHA-256",
+        },
+        true,
+        ["sign", "verify"]
+      )) as CryptoKeyPair);
   const pkcs8 = await webcrypto.subtle.exportKey("pkcs8", keys.privateKey);
-  return { keys, privateKeyPem: toPem(pkcs8), keySize };
+  return {
+    keys,
+    privateKeyPem: toPem(pkcs8),
+    keySize,
+    keyType,
+    signingAlgorithm: signingAlgorithmOf(keyType),
+  };
+}
+
+async function importSigningKey(privateKeyPem: string) {
+  const privateKey = crypto.createPrivateKey(privateKeyPem);
+  const { keyType } = keyTypeOfPrivateKey(privateKey);
+  const keyDer = x509.PemConverter.decodeFirst(privateKeyPem);
+  if (isEcKeyType(keyType)) {
+    const signingKey = await webcrypto.subtle.importKey("pkcs8", keyDer, { name: "ECDSA", namedCurve: keyType === "ecdsa384" ? "P-384" : "P-256" }, false, ["sign"]);
+    return { signingKey, signingAlgorithm: signingAlgorithmOf(keyType), keyType };
+  }
+  const signingKey = await webcrypto.subtle.importKey("pkcs8", keyDer, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  return { signingKey, signingAlgorithm: signingAlgorithmOf(keyType), keyType };
 }
 
 function sanExtension(domains: string[]) {
@@ -272,7 +339,8 @@ export async function createRootCa(req: { subject: LocalCaSubject; keyType: Loca
     throw new Error("CA名称(CN)不能为空");
   }
   const validityYears = Math.max(1, Math.min(20, req.validityYears || 10));
-  const { keys, privateKeyPem, keySize } = await generateRsaKeys(req.keyType || "rsa2048");
+  const keyType = req.keyType || "rsa2048";
+  const { keys, privateKeyPem, keySize, signingAlgorithm } = await generateKeyPair(keyType);
   const notBefore = new Date(Date.now() - 5 * 60 * 1000);
   const notAfter = new Date(notBefore.getTime() + validityYears * 365 * 24 * 3600 * 1000);
   const name = buildName(req.subject);
@@ -283,7 +351,7 @@ export async function createRootCa(req: { subject: LocalCaSubject; keyType: Loca
       notBefore,
       notAfter,
       keys,
-      signingAlgorithm: { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      signingAlgorithm,
       extensions: [
         new x509.BasicConstraintsExtension(true, 1, true),
         new x509.KeyUsagesExtension(x509.KeyUsageFlags.keyCertSign | x509.KeyUsageFlags.cRLSign | x509.KeyUsageFlags.digitalSignature, true),
@@ -297,6 +365,7 @@ export async function createRootCa(req: { subject: LocalCaSubject; keyType: Loca
     certPem: normalizePem(certPem),
     privateKeyPem: normalizePem(privateKeyPem),
     keySize,
+    keyType,
     subject: req.subject,
     subjectCn: req.subject.CN,
     fingerprintSha256: fingerprintOf(certPem),
@@ -304,6 +373,35 @@ export async function createRootCa(req: { subject: LocalCaSubject; keyType: Loca
     notAfter: notAfter.getTime(),
     pathLength: 1,
   };
+}
+
+export function isSelfSignedCa(certPem: string) {
+  const cert = new X509Certificate(certPem);
+  return cert.ca && cert.verify(cert.publicKey);
+}
+
+export function getPublicKeyPem(certPem: string) {
+  const cert = new X509Certificate(certPem);
+  return cert.publicKey.export({ type: "spki", format: "pem" }).toString();
+}
+
+export function getCrlInfo(crlPem: string) {
+  const crl = new x509.X509Crl(crlPem);
+  return {
+    issuer: crl.issuer,
+    thisUpdate: crl.thisUpdate.getTime(),
+    nextUpdate: crl.nextUpdate?.getTime(),
+    entries: crl.entries.map(entry => ({
+      serialNumber: entry.serialNumber,
+      revocationDate: entry.revocationDate?.getTime(),
+      reason: entry.reason,
+    })),
+  };
+}
+
+export function getCertSerialNumber(certPem: string) {
+  const cert = new X509Certificate(certPem);
+  return cert.serialNumber.toUpperCase();
 }
 
 export function getBasicConstraints(certPem: string) {
@@ -328,7 +426,7 @@ export async function createIntermediateCa(req: { rootCertPem: string; rootPriva
     throw new Error("上级根CA的pathlen=0，不能签发中间CA；请新建一个pathlen>=1的根CA");
   }
   const keyType = req.keyType || "rsa2048";
-  const { keys, privateKeyPem, keySize } = await generateRsaKeys(keyType);
+  const { keys, privateKeyPem, keySize } = await generateKeyPair(keyType);
   const now = Date.now();
   const notBefore = new Date(now - 5 * 60 * 1000);
   const requestedYears = Math.max(1, Math.min(10, req.validityYears || 5));
@@ -337,7 +435,7 @@ export async function createIntermediateCa(req: { rootCertPem: string; rootPriva
   if (notAfter.getTime() <= notBefore.getTime()) {
     throw new Error("上级CA剩余有效期不足，无法签发中间CA");
   }
-  const signingKey = await importSigningKey(req.rootPrivateKeyPem);
+  const { signingKey, signingAlgorithm } = await importSigningKey(req.rootPrivateKeyPem);
   const cert = await x509.X509CertificateGenerator.create(
     {
       serialNumber: randomSerialHex(),
@@ -347,7 +445,7 @@ export async function createIntermediateCa(req: { rootCertPem: string; rootPriva
       notAfter,
       publicKey: keys.publicKey,
       signingKey,
-      signingAlgorithm: { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      signingAlgorithm,
       extensions: [
         new x509.BasicConstraintsExtension(true, 0, true),
         new x509.KeyUsagesExtension(x509.KeyUsageFlags.keyCertSign | x509.KeyUsageFlags.cRLSign | x509.KeyUsageFlags.digitalSignature, true),
@@ -362,6 +460,7 @@ export async function createIntermediateCa(req: { rootCertPem: string; rootPriva
     certPem: normalizePem(certPem),
     privateKeyPem: normalizePem(privateKeyPem),
     keySize,
+    keyType,
     subject: req.subject,
     subjectCn: req.subject.CN,
     fingerprintSha256: fingerprintOf(certPem),
@@ -407,13 +506,7 @@ export async function validateImportedRootCa(req: { certPem: string; privateKeyP
   } catch (e: any) {
     throw new Error(`CA证书验签失败：${e.message}`);
   }
-  if (privateKey.asymmetricKeyType !== "rsa") {
-    throw new Error("首期仅支持RSA CA私钥");
-  }
-  const keySize = (privateKey.asymmetricKeyDetails as any)?.modulusLength;
-  if (keySize !== 2048 && keySize !== 4096) {
-    throw new Error("仅支持RSA 2048/4096 CA私钥");
-  }
+  const { keyType, keySize } = keyTypeOfPrivateKey(privateKey);
   if (!cert.checkPrivateKey(privateKey)) {
     throw new Error("CA私钥与CA证书不匹配");
   }
@@ -432,6 +525,7 @@ export async function validateImportedRootCa(req: { certPem: string; privateKeyP
     certPem,
     privateKeyPem: normalizePem(pkcs8Pem),
     keySize,
+    keyType,
     subject,
     subjectCn: subject.CN,
     fingerprintSha256: cert.fingerprint256.replaceAll(":", "").toLowerCase(),
@@ -440,15 +534,86 @@ export async function validateImportedRootCa(req: { certPem: string; privateKeyP
   };
 }
 
+export async function validateImportedIntermediateCa(req: { certPem: string; privateKeyPem: string; parentCertPem: string }): Promise<ImportedRootCa> {
+  const certPem = normalizePem(req.certPem);
+  const privateKeyPem = normalizePem(req.privateKeyPem);
+  const parentCertPem = normalizePem(req.parentCertPem);
+  let cert: X509Certificate;
+  let parentCert: X509Certificate;
+  let privateKey: crypto.KeyObject;
+  try {
+    cert = new X509Certificate(certPem);
+    parentCert = new X509Certificate(parentCertPem);
+  } catch (e: any) {
+    throw new Error(`CA证书解析失败：${e.message}`);
+  }
+  try {
+    privateKey = crypto.createPrivateKey(privateKeyPem);
+  } catch (e: any) {
+    throw new Error(`CA私钥解析失败：${e.message}`);
+  }
+  if (!cert.ca) {
+    throw new Error("导入的证书不是CA证书");
+  }
+  if (cert.verify(cert.publicKey)) {
+    throw new Error("该证书是自签名根CA，请使用导入根CA");
+  }
+  const parentConstraints = getBasicConstraints(parentCertPem);
+  if (!parentConstraints.ca) {
+    throw new Error("上级证书不是CA证书");
+  }
+  if (parentConstraints.pathLength === 0) {
+    throw new Error("上级CA pathlen=0，不能签发中间CA");
+  }
+  const now = Date.now();
+  if (new Date(parentCert.validTo).getTime() <= now) {
+    throw new Error("上级根CA已过期");
+  }
+  if (new Date(cert.validTo).getTime() <= now) {
+    throw new Error("导入的CA证书已过期");
+  }
+  if (new Date(cert.validFrom).getTime() > now + 5 * 60 * 1000) {
+    throw new Error("导入的CA证书尚未生效");
+  }
+  if (!cert.verify(parentCert.publicKey)) {
+    throw new Error("中间CA证书与所选上级根CA不匹配");
+  }
+  if (new Date(cert.validTo).getTime() > new Date(parentCert.validTo).getTime()) {
+    throw new Error("中间CA有效期不能超过上级根CA");
+  }
+  if (!cert.checkPrivateKey(privateKey)) {
+    throw new Error("CA私钥与CA证书不匹配");
+  }
+  const { keyType, keySize } = keyTypeOfPrivateKey(privateKey);
+  const x509Cert = new x509.X509Certificate(certPem);
+  const subject = nameToSubject(x509Cert.subjectName);
+  if (!subject.CN) {
+    throw new Error("CA证书缺少CommonName");
+  }
+  const pkcs8Pem = privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+  return {
+    certPem,
+    privateKeyPem: normalizePem(pkcs8Pem),
+    keySize,
+    keyType,
+    subject,
+    subjectCn: subject.CN,
+    fingerprintSha256: cert.fingerprint256.replaceAll(":", "").toLowerCase(),
+    notBefore: new Date(cert.validFrom).getTime(),
+    notAfter: new Date(cert.validTo).getTime(),
+    pathLength: getBasicConstraints(certPem).pathLength ?? 0,
+  };
+}
+
 export async function createCsr(req: { domains: string[]; keyType: LocalCaKeyType; usage?: LocalCaUsage }): Promise<CreateCsrResult> {
   const domains = normalizeDomains(req.domains);
-  const { keys, privateKeyPem, keySize } = await generateRsaKeys(req.keyType || "rsa2048");
+  const { keys, privateKeyPem, keySize, signingAlgorithm } = await generateKeyPair(req.keyType || "rsa2048");
   const cn = domains[0].slice(0, 64);
   const csr = await x509.Pkcs10CertificateRequestGenerator.create(
     {
       name: new x509.Name([{ CN: [cn] }] as any),
       extensions: [sanExtension(domains)],
-      signingAlgorithm: { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      signingAlgorithm,
       keys,
     },
     webcrypto
@@ -499,8 +664,7 @@ export async function signCsr(req: {
     throw new Error("CA证书剩余有效期不足，无法签发");
   }
 
-  const caKeyDer = x509.PemConverter.decodeFirst(req.caPrivateKeyPem);
-  const signingKey = await webcrypto.subtle.importKey("pkcs8", caKeyDer, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const { signingKey, signingAlgorithm } = await importSigningKey(req.caPrivateKeyPem);
   const usage = req.usage || "server";
   const extendedKeyUsage = [x509.ExtendedKeyUsage.serverAuth];
   if (usage === "client" || usage === "both") {
@@ -511,9 +675,12 @@ export async function signCsr(req: {
   }
 
   const serialNumber = randomSerialHex();
+  const leafKeyAlgorithm = (csr.publicKey as any)?.algorithm?.name || "";
+  const leafIsEc = /EC/i.test(leafKeyAlgorithm);
+  const leafKeyUsage = x509.KeyUsageFlags.digitalSignature | (leafIsEc ? 0 : x509.KeyUsageFlags.keyEncipherment);
   const extensions: any[] = [
     new x509.BasicConstraintsExtension(false, undefined, true),
-    new x509.KeyUsagesExtension(x509.KeyUsageFlags.digitalSignature | x509.KeyUsageFlags.keyEncipherment, true),
+    new x509.KeyUsagesExtension(leafKeyUsage, true),
     new x509.ExtendedKeyUsageExtension(extendedKeyUsage, false),
     sanExtension(domains),
     await x509.SubjectKeyIdentifierExtension.create(csr.publicKey, false, webcrypto),
@@ -531,7 +698,7 @@ export async function signCsr(req: {
       notAfter,
       publicKey: csr.publicKey,
       signingKey,
-      signingAlgorithm: { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      signingAlgorithm,
       extensions,
     },
     webcrypto
@@ -583,7 +750,7 @@ export async function issueLeafCertificate(req: {
 export async function createCrl(req: { caCertPem: string; caPrivateKeyPem: string; entries: CrlEntryInput[]; nextUpdateDays?: number }): Promise<CrlResult> {
   const caCertPem = normalizePem(req.caCertPem);
   const caCert = new x509.X509Certificate(caCertPem);
-  const signKey = await importSigningKey(req.caPrivateKeyPem);
+  const { signingKey, signingAlgorithm } = await importSigningKey(req.caPrivateKeyPem);
   const thisUpdate = new Date(Date.now() - 5 * 60 * 1000);
   const nextUpdateDays = Math.max(1, Math.min(30, req.nextUpdateDays || 7));
   const nextUpdate = new Date(thisUpdate.getTime() + nextUpdateDays * 24 * 3600 * 1000);
@@ -592,8 +759,8 @@ export async function createCrl(req: { caCertPem: string; caPrivateKeyPem: strin
       issuer: caCert.subjectName,
       thisUpdate,
       nextUpdate,
-      signingKey: signKey,
-      signingAlgorithm: { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      signingKey,
+      signingAlgorithm,
       entries: (req.entries || []).map(entry => ({
         serialNumber: entry.serialNumber,
         revocationDate: new Date(entry.revokeTime || Date.now()),
@@ -626,9 +793,4 @@ function derInteger(value: number) {
     bytes = Buffer.concat([Buffer.from([0]), bytes]);
   }
   return Buffer.concat([Buffer.from([0x02, bytes.length]), bytes]);
-}
-
-async function importSigningKey(privateKeyPem: string) {
-  const keyDer = x509.PemConverter.decodeFirst(privateKeyPem);
-  return await webcrypto.subtle.importKey("pkcs8", keyDer, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
 }

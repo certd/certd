@@ -1,16 +1,21 @@
 <template>
   <div>
     <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.issuedCertsHint')" />
-    <a-table :data-source="list" :columns="columns" :loading="loading" :pagination="{ pageSize: 10 }" size="small" row-key="id">
+    <a-table :data-source="list" :columns="columns" :loading="loading" :pagination="{ pageSize: 10 }" size="small" :row-key="record => `${record.type}-${record.id}`">
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'domain'">
-          <a-tag color="blue">{{ record.domain }}</a-tag>
+        <template v-if="column.key === 'type'">
+          <a-tag :color="record.type === 'ca' ? 'purple' : 'blue'">
+            {{ record.type === "ca" ? t("certd.localCa.certTypeCa") : t("certd.localCa.certTypeLeaf") }}
+          </a-tag>
+        </template>
+        <template v-else-if="column.key === 'domain'">
+          <a-tag :color="record.type === 'ca' ? 'purple' : 'blue'">{{ record.domain }}</a-tag>
         </template>
         <template v-else-if="column.key === 'serialNumber'">
           <fs-copyable :model-value="record.serialNumber || '-'"></fs-copyable>
         </template>
         <template v-else-if="column.key === 'status'">
-          <a-tag :color="statusColor(record.status)">{{ statusLabel(record.status) }}</a-tag>
+          <a-tag :color="statusColor(record.status)">{{ statusLabel(record.status, record) }}</a-tag>
         </template>
         <template v-else-if="column.key === 'expiresTime'">
           {{ formatTime(record.expiresTime) }}
@@ -20,7 +25,7 @@
         </template>
         <template v-else-if="column.key === 'actions'">
           <a-button type="link" size="small" @click="viewCert(record)">{{ t("certd.localCa.certView") }}</a-button>
-          <a-button type="link" size="small" danger :disabled="record.status === 'revoked'" @click="revokeCert(record)">
+          <a-button v-if="record.type !== 'ca'" type="link" size="small" danger :disabled="record.status === 'revoked'" @click="revokeCert(record)">
             {{ t("certd.localCa.revoke") }}
           </a-button>
         </template>
@@ -53,6 +58,7 @@ const list = ref<any[]>([]);
 const loading = ref(false);
 
 const columns = [
+  { title: t("certd.localCa.certType"), key: "type", width: 100 },
   { title: t("certd.localCa.certDomain"), dataIndex: "domain", key: "domain", width: 180 },
   { title: t("certd.localCa.certSerial"), dataIndex: "serialNumber", key: "serialNumber", width: 240 },
   { title: t("certd.localCa.certStatus"), dataIndex: "status", key: "status", width: 100 },
@@ -70,9 +76,9 @@ async function load() {
   }
 }
 
-function statusLabel(status: string) {
+function statusLabel(status: string, record: any) {
   if (status === "inactive") {
-    return t("certd.localCa.certStatusInactive");
+    return record.type === "ca" ? t("certd.localCa.certStatusDisabled") : t("certd.localCa.certStatusInactive");
   }
   if (status === "revoked") {
     return t("certd.localCa.certStatusRevoked");
@@ -98,7 +104,14 @@ function formatTime(value: any) {
 }
 
 async function viewCert(record: any) {
-  const cert = await certInfoApi.GetCert(record.id);
+  let cert: any;
+  if (record.type === "ca") {
+    const ca = await localCaApi.GetObj(record.id);
+    const res = await localCaApi.GetCertDetail(ca.certPem);
+    cert = { crt: ca.certPem, key: "", ic: "", detail: res.detail };
+  } else {
+    cert = await certInfoApi.GetCert(record.id);
+  }
   if (!cert) {
     notification.error({ message: t("certd.localCa.certNotFound") });
     return;

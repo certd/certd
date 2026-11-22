@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import crypto, { X509Certificate } from "node:crypto";
-import { createCrl, createCsr, createIntermediateCa, createRootCa, getX509Summary, issueLeafCertificate, signCsr, validateImportedRootCa } from "./local-ca-crypto.js";
+import { createCrl, createCsr, createIntermediateCa, createRootCa, getX509Summary, issueLeafCertificate, signCsr, validateImportedIntermediateCa, validateImportedRootCa } from "./local-ca-crypto.js";
 // @ts-ignore
 import * as x509 from "@peculiar/x509";
 
@@ -100,6 +100,73 @@ describe("local-ca-crypto", () => {
     const leaf = new X509Certificate(issued.certPem);
     assert.equal(leaf.verify(intermediateCert.publicKey), true);
     assert.equal(issued.crt.split("BEGIN CERTIFICATE").length - 1, 2);
+  });
+
+  it("支持 ECDSA 根CA、中间CA、叶子和 CRL", async () => {
+    const root = await createRootCa({
+      subject: { CN: "ECDSA Root CA" },
+      keyType: "ecdsa256",
+      validityYears: 10,
+    });
+    const intermediate = await createIntermediateCa({
+      rootCertPem: root.certPem,
+      rootPrivateKeyPem: root.privateKeyPem,
+      subject: { CN: "ECDSA Intermediate CA" },
+      keyType: "ecdsa384",
+      validityYears: 5,
+    });
+    const rootCert = new X509Certificate(root.certPem);
+    const intermediateCert = new X509Certificate(intermediate.certPem);
+    assert.equal(intermediateCert.verify(rootCert.publicKey), true);
+
+    const issued = await issueLeafCertificate({
+      caCertPem: intermediate.certPem,
+      caPrivateKeyPem: intermediate.privateKeyPem,
+      domains: ["ecdsa.example.com"],
+      keyType: "ecdsa256",
+      validityDays: 30,
+    });
+    const leaf = new X509Certificate(issued.certPem);
+    assert.equal(leaf.verify(intermediateCert.publicKey), true);
+    assert.match(leaf.publicKey.asymmetricKeyType || "", /ec/i);
+    const summary = getX509Summary(issued.crt);
+    assert.ok(summary.keyUsage.includes("digitalSignature"));
+    assert.ok(!summary.keyUsage.includes("keyEncipherment"));
+
+    const crl = await createCrl({
+      caCertPem: intermediate.certPem,
+      caPrivateKeyPem: intermediate.privateKeyPem,
+      entries: [{ serialNumber: issued.serialNumber, revokeTime: Date.now() - 1000 }],
+    });
+    const parsed = new x509.X509Crl(crl.pem);
+    assert.ok(parsed.findRevoked(issued.serialNumber));
+    const x509Intermediate = new x509.X509Certificate(intermediate.certPem);
+    assert.equal(await parsed.verify({ publicKey: x509Intermediate.publicKey }, crypto.webcrypto as any), true);
+  });
+
+  it("支持导入 ECDSA 根CA和中间CA", async () => {
+    const root = await createRootCa({
+      subject: { CN: "Imported ECDSA Root" },
+      keyType: "ecdsa256",
+      validityYears: 10,
+    });
+    const importedRoot = await validateImportedRootCa({ certPem: root.certPem, privateKeyPem: root.privateKeyPem });
+    assert.equal(importedRoot.keyType, "ecdsa256");
+
+    const intermediate = await createIntermediateCa({
+      rootCertPem: root.certPem,
+      rootPrivateKeyPem: root.privateKeyPem,
+      subject: { CN: "Imported ECDSA Intermediate" },
+      keyType: "ecdsa384",
+      validityYears: 5,
+    });
+    const importedIntermediate = await validateImportedIntermediateCa({
+      certPem: intermediate.certPem,
+      privateKeyPem: intermediate.privateKeyPem,
+      parentCertPem: root.certPem,
+    });
+    assert.equal(importedIntermediate.keyType, "ecdsa384");
+    assert.equal(importedIntermediate.pathLength, 0);
   });
 
   it("生成CRL并包含已吊销序列号", async () => {

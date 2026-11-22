@@ -28,6 +28,9 @@ export class LocalCaController extends CrudController<LocalCaService> {
     body.query.projectId = projectId;
     const name = body.query.name;
     const subjectCn = body.query.subjectCn;
+    if (!body.query.caType) {
+      delete body.query.caType;
+    }
     delete body.query.name;
     delete body.query.subjectCn;
     const res = await this.service.page({
@@ -85,6 +88,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
     const res = await this.service.importCa({
       userId,
       projectId,
+      parentId: body.parentId,
       name: body.name,
       certPem: body.certPem,
       privateKeyPem: body.privateKeyPem,
@@ -214,6 +218,18 @@ export class LocalCaController extends CrudController<LocalCaService> {
     }
     this.ctx.type = "application/pkix-crl";
     return crl.der;
+  }
+
+  @Post("/publicKey", { description: Constants.per.authOnly, summary: "获取本地CA公钥" })
+  async publicKey(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.checkOwner(this.service, body.id, "read");
+    return this.ok(await this.service.getPublicKey({ id: body.id, userId, projectId }));
+  }
+
+  @Get("/crlInfo", { description: Constants.per.authOnly, summary: "查看本地CA的CRL解析结果" })
+  async crlInfo(@Query("id") id: number) {
+    const { userId, projectId } = await this.checkOwner(this.service, id, "read");
+    return this.ok(await this.service.getCrlInfo({ id, userId, projectId }));
   }
 
   @Post("/certs", { description: Constants.per.authOnly, summary: "查询本地CA签发的证书" })

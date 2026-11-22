@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { X509Certificate } from "node:crypto";
 import { Encryptor, EncryptService } from "@certd/lib-server";
 import { LocalCaService } from "./local-ca-service.js";
-import { createCsr } from "./local-ca-crypto.js";
+import { createCsr, createIntermediateCa } from "./local-ca-crypto.js";
 // @ts-ignore
 import * as x509 from "@peculiar/x509";
 
@@ -143,6 +143,38 @@ describe("LocalCaService", () => {
     assert.equal(intermediateInfo.parentName, undefined);
   });
 
+  it("可导入中间CA并绑定上级根CA", async () => {
+    const { service, store, encryptService } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Import Root",
+      subject: { CN: "Import Root" },
+      keyType: "ecdsa256",
+      validityYears: 2,
+    });
+    const rootEntity = store.get(root.id);
+    const rootKey = encryptService.decrypt(rootEntity.privateKeyEncrypted);
+    const material = await createIntermediateCa({
+      rootCertPem: rootEntity.certPem,
+      rootPrivateKeyPem: rootKey,
+      subject: { CN: "Imported Intermediate" },
+      keyType: "ecdsa384",
+      validityYears: 1,
+    });
+    const imported = await service.importCa({
+      userId: 1,
+      parentId: root.id,
+      name: "Imported Intermediate",
+      certPem: material.certPem,
+      privateKeyPem: material.privateKeyPem,
+    });
+    const info: any = await service.infoSafe({ id: imported.id, userId: 1 });
+    assert.equal(info.caType, "intermediate");
+    assert.equal(info.parentId, root.id);
+    assert.equal(info.keyType, "ecdsa384");
+    assert.equal(info.pathLength, 0);
+  });
+
   it("signCsr 按CA策略签发并拒绝越界域名", async () => {
     const { service } = createService();
     service.sysSettingsService = {
@@ -192,6 +224,9 @@ describe("LocalCaService", () => {
     const parsed = new x509.X509Crl(crl.pem);
     assert.ok(parsed.findRevoked(signed.serialNumber));
     assert.match(crl.pem, /BEGIN X509 CRL/);
+    const info = await service.getCrlInfo({ id, userId: 1 });
+    assert.equal(info.entries.length, 1);
+    assert.ok(info.issuer);
   });
 
   it("getCrl 会清理已过期的吊销条目", async () => {
@@ -231,6 +266,8 @@ describe("LocalCaService", () => {
     assert.match(res.filename, /local-ca-/);
     assert.match(res.content, /BEGIN CERTIFICATE/);
     assert.match(res.content, /BEGIN PRIVATE KEY/);
+    const publicKey = await service.getPublicKey({ id, userId: 1 });
+    assert.match(publicKey.pem, /BEGIN PUBLIC KEY/);
   });
 
   it("listIssuedCerts 与 revokeIssuedCert 只处理该CA的证书", async () => {
@@ -269,6 +306,21 @@ describe("LocalCaService", () => {
     assert.equal(list.length, 1);
     assert.equal(list[0].serialNumber, "ABC");
     await service.revokeIssuedCert({ id, userId: 1, certId: 9 });
+  });
+
+  it("根CA签发列表包含下级中间CA", async () => {
+    const { service } = createService();
+    const { rootId } = await createIssuingCa(service, { name: "Branch CA" });
+    service.certInfoService = {
+      async find() {
+        return [];
+      },
+    } as any;
+    const list = await service.listIssuedCerts({ id: rootId, userId: 1 });
+    assert.equal(list.length, 1);
+    assert.equal(list[0].type, "ca");
+    assert.equal(list[0].caType, "intermediate");
+    assert.ok(list[0].serialNumber);
   });
 
   it("被流水线引用的CA不能删除", async () => {

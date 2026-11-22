@@ -5,22 +5,29 @@
       <div class="sub">{{ t("certd.localCa.description") }}</div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"></fs-crud>
+    <LocalCaView ref="caViewRef" :on-export="row => caExportHandler?.(row)" />
   </fs-page>
 </template>
 
 <script lang="ts" setup>
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
+import LocalCaView from "./ca-view.vue";
 import { useMounted } from "/@/use/use-mounted";
 import { useI18n } from "/src/locales";
+import { ref } from "vue";
 
 defineOptions({
   name: "LocalCaManager",
 });
 
 const { t } = useI18n();
+const caViewRef = ref<any>();
+const caExportHandler = ref<any>();
 const context: any = {
   permission: { isProjectPermission: true },
+  caViewRef,
+  caExportHandler,
 };
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 

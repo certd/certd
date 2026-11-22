@@ -6,15 +6,15 @@ import { useLocalCaDialogs } from "./use";
 import { useI18n } from "/src/locales";
 import { useCrudPermission } from "/@/plugin/permission";
 import { useProjectStore } from "/@/store/project";
-import { useUserStore } from "/@/store/user";
-import { env } from "/@/utils/util.env";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const projectStore = useProjectStore();
-  const userStore = useUserStore();
   const { hasActionPermission } = useCrudPermission(context);
-  const { openGenerate, openIntermediate, openImport, openView, openViewSettings, openExport, openIssuedCerts } = useLocalCaDialogs(crudExpose);
+  const { openGenerate, openIntermediate, openImport, openView, openExport, openIssuedCerts } = useLocalCaDialogs(crudExpose, context.caViewRef);
+  if (context.caExportHandler) {
+    context.caExportHandler.value = openExport;
+  }
 
   const sourceDict = dict({
     data: [
@@ -31,7 +31,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const keyTypeDict = dict({
     data: [
       { label: "RSA 2048", value: "rsa2048", color: "blue" },
+      { label: "RSA 3072", value: "rsa3072", color: "geekblue" },
       { label: "RSA 4096", value: "rsa4096", color: "purple" },
+      { label: "ECDSA P-256", value: "ecdsa256", color: "green" },
+      { label: "ECDSA P-384", value: "ecdsa384", color: "cyan" },
     ],
   });
   const usageDict = dict({
@@ -71,15 +74,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const addRequest = async ({ form }: AddReq) => {
     return form;
   };
-
-  function download(row: any) {
-    let url = `${env.API}/cert/local-ca/download?id=${row.id}`;
-    if (projectStore.isEnterprise) {
-      url += `&projectId=${projectStore.currentProject?.id}`;
-    }
-    url += `&token=${userStore.getToken}`;
-    window.open(url);
-  }
 
   return {
     crudOptions: {
@@ -143,36 +137,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             icon: "ph:certificate",
             click: async ({ row }) => {
               await openView(row);
-            },
-          },
-          info: {
-            order: 2,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.viewSettingsTitle") },
-            icon: "ph:info",
-            click: ({ row }) => {
-              openViewSettings(row);
-            },
-          },
-          download: {
-            order: 3,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.download") },
-            icon: "ph:download-simple",
-            click: ({ row }) => {
-              download(row);
-            },
-          },
-          crl: {
-            order: 4,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.downloadCrl") },
-            icon: "ph:list-magnifying-glass",
-            click: ({ row }) => {
-              window.open(`${env.API}/cert/local-ca/crl?id=${row.id}&format=pem`);
             },
           },
           export: {
@@ -254,7 +218,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "dict-select",
           dict: caTypeDict,
           form: { show: false },
-          search: { show: false },
+          search: { show: true },
           column: { width: 110, component: { color: "auto" } },
         },
         parentName: {
@@ -263,6 +227,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           form: { show: false },
           search: { show: false },
           column: { width: 140, ellipsis: true },
+        },
+        caPath: {
+          title: t("certd.localCa.fields.caPath"),
+          type: "text",
+          form: { show: false },
+          search: { show: false },
+          column: { width: 220, ellipsis: true },
         },
         keyType: {
           title: t("certd.localCa.fields.keyType"),
@@ -328,9 +299,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               }
               return (
                 <a-tooltip title={value}>
-                  <fs-copyable modelValue={value} button={{ show: true }}>
-                    <span class="pointer">{value.slice(0, 24)}...</span>
-                  </fs-copyable>
+                  <span>{value.slice(0, 24)}...</span>
                 </a-tooltip>
               );
             },
