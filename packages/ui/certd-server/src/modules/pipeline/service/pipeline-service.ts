@@ -486,6 +486,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
    * 应用启动后初始加载记录
    */
   async onStartup(immediateTriggerOnce: boolean, onlyAdminUser: boolean) {
+    // 服务重启后，之前处于运行中的历史不会再结束，先兜底标记失败
+    await this.historyService.markRunningAsInterrupted();
     await this.foreachPipeline(async entity => {
       if (onlyAdminUser && entity.userId !== 1) {
         return;
