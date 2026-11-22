@@ -144,6 +144,32 @@ describe("local-ca-crypto", () => {
     assert.equal(await parsed.verify({ publicKey: x509Intermediate.publicKey }, crypto.webcrypto as any), true);
   });
 
+  it("RSA CA 可以签发 ECDSA 叶子证书", async () => {
+    const root = await createRootCa({
+      subject: { CN: "Mixed Root CA" },
+      keyType: "rsa2048",
+      validityYears: 5,
+    });
+    const intermediate = await createIntermediateCa({
+      rootCertPem: root.certPem,
+      rootPrivateKeyPem: root.privateKeyPem,
+      subject: { CN: "Mixed Intermediate CA" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    const issued = await issueLeafCertificate({
+      caCertPem: intermediate.certPem,
+      caPrivateKeyPem: intermediate.privateKeyPem,
+      domains: ["mixed.example.com"],
+      keyType: "ecdsa256",
+      validityDays: 30,
+    });
+    const intermediateCert = new X509Certificate(intermediate.certPem);
+    const leaf = new X509Certificate(issued.certPem);
+    assert.equal(leaf.verify(intermediateCert.publicKey), true);
+    assert.match(leaf.publicKey.asymmetricKeyType || "", /ec/i);
+  });
+
   it("支持导入 ECDSA 根CA和中间CA", async () => {
     const root = await createRootCa({
       subject: { CN: "Imported ECDSA Root" },
