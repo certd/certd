@@ -2,6 +2,10 @@ ARG WEKNORA_VERSION=v0.9.0
 FROM wechatopenai/weknora-ui:${WEKNORA_VERSION} AS frontend
 
 FROM golang:1.26-bookworm AS builder
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /src
 COPY . .
 RUN go mod download
