@@ -86,6 +86,24 @@ export function createAccessApi(from = "user") {
       return token;
     },
 
+    async GeneratePasskeyAuthentication() {
+      return await request({
+        url: "/user/settings/twoFactor/passkey/generateAuthentication",
+        method: "post",
+      });
+    },
+
+    async VerifyPasskeySecretAccess(credential: any, challenge: string) {
+      const token = await request({
+        url: "/user/settings/twoFactor/passkey/verifyAuthentication",
+        method: "post",
+        data: { credential, challenge },
+      });
+      secretVerifyToken = token;
+      secretVerifyExpiresAt = Date.now() + 10 * 60 * 1000;
+      return token;
+    },
+
     HasSecretAccess() {
       return secretVerifyToken && Date.now() < secretVerifyExpiresAt;
     },
