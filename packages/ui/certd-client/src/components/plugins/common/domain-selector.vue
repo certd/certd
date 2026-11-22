@@ -65,7 +65,7 @@
   </div>
 </template>
 <script setup lang="tsx">
-import { computed, defineComponent, onMounted, ref, Ref, useAttrs } from "vue";
+import { computed, defineComponent, onMounted, ref, Ref, useAttrs, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useClipboard } from "@vueuse/core";
@@ -216,6 +216,21 @@ function normalizeDomains(list: any[]) {
   return result;
 }
 
+function cleanValue() {
+  const list = props.value || [];
+  const normalized = normalizeDomains(list);
+  const changed = normalized.length !== list.length || normalized.some((item, index) => item !== list[index]);
+  if (changed) {
+    emit("update:value", normalized);
+  }
+}
+
+watch(
+  () => props.value,
+  () => cleanValue(),
+  { deep: true }
+);
+
 function onValueChange(list: string[]) {
   lastValueChangeAt = Date.now();
   emit("update:value", normalizeDomains(list));
@@ -235,15 +250,17 @@ function onSearchText(value: string) {
   searchText.value = value;
 }
 
-// 失去焦点时把输入框里未提交的域名转成标签
+// 失去焦点时清理已有非法标签，并把输入框里未提交的域名转成标签
 function onSelectBlur() {
+  cleanValue();
   // 刚通过选择/分隔符新增过标签时，避免把过滤词也当成域名
   if (Date.now() - lastValueChangeAt < 500) {
     searchText.value = "";
     return;
   }
-  const value = searchText.value.trim();
+  const value = normalizeDomains([searchText.value]).join(",");
   if (!value) {
+    searchText.value = "";
     return;
   }
   emit("update:value", normalizeDomains([...(props.value || []), value]));
