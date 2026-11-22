@@ -36,4 +36,26 @@ export class HistoryLogService extends BaseService<HistoryLogEntity> {
   async deleteByPipelineId(id: number) {
     await this.repository.delete({ pipelineId: id });
   }
+
+  async appendSystemLog(historyId: number, nodeIds: string[], message: string) {
+    const entity = await this.repository.findOne({ where: { historyId } });
+    if (!entity) {
+      return;
+    }
+    let logs: Record<string, string[]> = {};
+    try {
+      logs = JSON.parse(entity.logs || "{}");
+    } catch (e) {
+      logs = {};
+    }
+    const keys = nodeIds.length > 0 ? nodeIds : Object.keys(logs);
+    for (const key of keys) {
+      if (!logs[key]) {
+        logs[key] = [];
+      }
+      logs[key].push(`[system] ${message}`);
+    }
+    entity.logs = JSON.stringify(logs);
+    await this.repository.save(entity);
+  }
 }
