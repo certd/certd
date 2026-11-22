@@ -3,9 +3,8 @@ FROM wechatopenai/weknora-ui:${WEKNORA_VERSION} AS frontend
 
 FROM golang:1.26-bookworm AS builder
 WORKDIR /src
-COPY go.mod go.sum ./
-RUN go mod download
 COPY . .
+RUN go mod download
 COPY --from=frontend /usr/share/nginx/html/ ./web/
 RUN test -s web/index.html \
     && printf 'window.__RUNTIME_CONFIG__ = window.__RUNTIME_CONFIG__ || {};\n' > web/config.js \
