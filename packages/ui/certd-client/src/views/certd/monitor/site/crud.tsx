@@ -334,7 +334,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             tooltip: {
               title: t("certd.monitor.viewCert.title"),
             },
-            icon: "ion:eye-outline",
+            icon: "ph:certificate",
             click: async ({ row }) => {
               await viewCert(row);
             },
