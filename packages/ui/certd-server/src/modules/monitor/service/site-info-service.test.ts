@@ -69,6 +69,119 @@ describe("SiteInfoService", () => {
     });
   });
 
+  describe("doImport 识别带协议的地址", () => {
+    it("https 地址忽略协议头和路径，备注为空时回填协议头", async () => {
+      const service = createServiceForAdd();
+      const savedList: any[] = [];
+      service.repository.save = async (data: any) => {
+        savedList.push(data);
+        return data;
+      };
+
+      await service.doImport({
+        text: "https://foo.wellin.ltd:8001/",
+        userId: 1,
+        projectId: 2,
+      });
+
+      assert.equal(savedList.length, 1);
+      assert.equal(savedList[0].domain, "foo.wellin.ltd");
+      assert.equal(savedList[0].httpsPort, 8001);
+      assert.equal(savedList[0].name, "foo.wellin.ltd");
+      assert.equal(savedList[0].remark, "https://");
+    });
+
+    it("http 地址不带端口时默认 443，备注回填协议头", async () => {
+      const service = createServiceForAdd();
+      const savedList: any[] = [];
+      service.repository.save = async (data: any) => {
+        savedList.push(data);
+        return data;
+      };
+
+      await service.doImport({
+        text: "http://bar.com",
+        userId: 1,
+      });
+
+      assert.equal(savedList.length, 1);
+      assert.equal(savedList[0].domain, "bar.com");
+      assert.equal(savedList[0].httpsPort, 443);
+      assert.equal(savedList[0].remark, "http://");
+    });
+
+    it("协议前缀大小写不敏感，带端口和路径时以协议后的地址为准", async () => {
+      const service = createServiceForAdd();
+      const savedList: any[] = [];
+      service.repository.save = async (data: any) => {
+        savedList.push(data);
+        return data;
+      };
+
+      await service.doImport({
+        text: "HTTPS://Baz.com:9443/path?x=1",
+        userId: 1,
+      });
+
+      assert.equal(savedList.length, 1);
+      assert.equal(savedList[0].domain, "Baz.com");
+      assert.equal(savedList[0].httpsPort, 9443);
+      assert.equal(savedList[0].remark, "HTTPS://");
+    });
+
+    it("任意 3-5 位字母的协议头都被忽略", async () => {
+      const service = createServiceForAdd();
+      const savedList: any[] = [];
+      service.repository.save = async (data: any) => {
+        savedList.push(data);
+        return data;
+      };
+
+      await service.doImport({
+        text: "ftp://a.com:21",
+        userId: 1,
+      });
+
+      assert.equal(savedList.length, 1);
+      assert.equal(savedList[0].domain, "a.com");
+      assert.equal(savedList[0].httpsPort, 21);
+      assert.equal(savedList[0].remark, "ftp://");
+    });
+
+    it("显式备注优先于协议头", async () => {
+      const service = createServiceForAdd();
+      const savedList: any[] = [];
+      service.repository.save = async (data: any) => {
+        savedList.push(data);
+        return data;
+      };
+
+      await service.doImport({
+        text: "https://foo.com:8443:站点:自定义备注",
+        userId: 1,
+      });
+
+      assert.equal(savedList.length, 1);
+      assert.equal(savedList[0].domain, "foo.com");
+      assert.equal(savedList[0].httpsPort, 8443);
+      assert.equal(savedList[0].name, "站点");
+      assert.equal(savedList[0].remark, "自定义备注");
+    });
+
+    it("端口不是数字时给出友好错误，而不是把 NaN 传给数据库", async () => {
+      const service = createServiceForAdd();
+
+      await assert.rejects(
+        () =>
+          service.doImport({
+            text: "a.com:abc",
+            userId: 1,
+          }),
+        /a\.com:abc.*端口/
+      );
+    });
+  });
+
   describe("doImport 批量导入（issue #803）", () => {
     it("导入的每个站点落库都带上 ipCheck 默认值 false，且字段解析正确", async () => {
       const service = createServiceForAdd();
