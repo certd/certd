@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      IMAGE: registry.cn-shenzhen.aliyuncs.com/certd/weknora
+      IMAGE: docker.io/certd/weknora
       VERSION: ${{ inputs.version }}
     steps:
       - name: Validate version
@@ -73,12 +73,11 @@ jobs:
           grep -F '<title>WeKnora</title>' "$RUNNER_TEMP/weknora-index.html"
           docker exec "$container" test -s /data/weknora.db
 
-      - name: Login to Aliyun Container Registry
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: registry.cn-shenzhen.aliyuncs.com
-          username: ${{ secrets.aliyun_cs_username }}
-          password: ${{ secrets.aliyun_cs_password }}
+          username: ${{ secrets.dockerhub_username2 }}
+          password: ${{ secrets.dockerhub_password2 }}
 
       - name: Push verified image
         shell: bash
