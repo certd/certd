@@ -110,27 +110,82 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     };
   }
 
-  async generateAuthenticationOptions(ctx: any) {
+  async generateAuthenticationOptions(
+    ctx: any,
+    opts: {
+      userId?: number;
+      purpose?: string;
+      userVerification?: "required" | "preferred" | "discouraged";
+    } = {}
+  ) {
     const { rpId } = await this.getRpInfo(ctx);
     const { generateAuthenticationOptions } = await import("@simplewebauthn/server");
+
+    const allowCredentials: any[] = [];
+    if (opts.userId != null) {
+      const passkeys = await this.find({
+        select: ["passkeyId", "transports"],
+        where: { userId: opts.userId },
+      });
+      for (const passkey of passkeys) {
+        const credential: any = { id: passkey.passkeyId, type: "public-key" };
+        if (passkey.transports) {
+          credential.transports = JSON.parse(passkey.transports);
+        }
+        allowCredentials.push(credential);
+      }
+    }
+
     const options = await generateAuthenticationOptions({
       rpID: rpId,
       timeout: 60000,
-      allowCredentials: [],
-      userVerification: "preferred", //'required' | 'preferred' | 'discouraged';
+      allowCredentials,
+      userVerification: opts.userVerification ?? "preferred", //'required' | 'preferred' | 'discouraged';
     });
 
-    // cache.set(`passkey:authentication:${options.challenge}`, userId, {
-    //   ttl: 5 * 60 * 1000,
-    // });
+    // challenge 必须绑定用户和用途，并一次性使用，防止跨场景重放
+    cache.set(
+      `passkey:authentication:${options.challenge}`,
+      {
+        userId: opts.userId ?? null,
+        purpose: opts.purpose ?? "login",
+      },
+      {
+        ttl: 2 * 60 * 1000,
+      }
+    );
 
     return {
       ...options,
     };
   }
 
-  async verifyAuthenticationResponse(credential: any, challenge: string, ctx: any) {
+  async verifyAuthenticationResponse(
+    credential: any,
+    challenge: string,
+    ctx: any,
+    opts: {
+      expectedUserId?: number;
+      purpose?: string;
+      requireUserVerification?: boolean;
+    } = {}
+  ) {
     const { verifyAuthenticationResponse } = await import("@simplewebauthn/server");
+
+    const challengeKey = `passkey:authentication:${challenge}`;
+    const challengeData = cache.get(challengeKey);
+    if (!challengeData) {
+      throw new AuthException("Passkey验证已过期，请重试");
+    }
+    const purpose = opts.purpose ?? "login";
+    if (challengeData.purpose !== purpose) {
+      throw new AuthException("Passkey验证场景不匹配");
+    }
+    if (opts.expectedUserId != null && challengeData.userId !== opts.expectedUserId) {
+      throw new AuthException("Passkey验证用户不匹配");
+    }
+    // 一次性使用，无论校验是否成功都需要重新生成 challenge
+    cache.delete(challengeKey);
 
     const passkey = await this.repository.findOne({
       where: {
@@ -140,6 +195,9 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
 
     if (!passkey) {
       throw new AuthException("Passkey不存在");
+    }
+    if (opts.expectedUserId != null && passkey.userId !== opts.expectedUserId) {
+      throw new AuthException("Passkey不属于当前用户");
     }
 
     const { rpId, origin } = await this.getRpInfo(ctx);
@@ -155,7 +213,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       expectedChallenge: challenge,
       expectedOrigin: origin,
       expectedRPID,
-      requireUserVerification: false,
+      requireUserVerification: opts.requireUserVerification ?? false,
       credential: {
         id: passkey.passkeyId,
         publicKey: new Uint8Array(Buffer.from(passkey.publicKey, "base64")),
@@ -172,8 +230,6 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       passkey.rpId = rpId;
       await this.repository.save(passkey);
     }
-
-    cache.delete(`passkey:authentication:${challenge}`);
 
     return {
       credentialId: verification.authenticationInfo.credentialID,
