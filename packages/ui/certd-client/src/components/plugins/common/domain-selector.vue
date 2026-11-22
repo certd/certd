@@ -3,6 +3,7 @@
     <div class="flex flex-row">
       <a-select
         ref="selectRef"
+        :key="selectKey"
         class="domain-select-input"
         :popup-class-name="popupClassName"
         :dropdown-style="dropdownStyle"
@@ -14,6 +15,7 @@
         v-bind="attrs"
         @click="onClick"
         @blur="onSelectBlur"
+        @focusout="onSelectBlur"
         @keydown.capture="onKeydownCapture"
         @search="onSearchText"
         @update:value="onValueChange"
@@ -119,11 +121,13 @@ const popupClassName = computed(() => {
 const searchKeyRef = ref("");
 const optionsRef = ref([]);
 const selectRef = ref();
+const selectKey = ref(0);
 const searchText = ref("");
 const editOpen = ref(false);
 const editValue = ref("");
 const editOriginal = ref("");
 let lastValueChangeAt = 0;
+let blurTimer: ReturnType<typeof setTimeout> | null = null;
 const message = ref("");
 const hasError = ref(false);
 const loading = ref(false);
@@ -216,12 +220,17 @@ function normalizeDomains(list: any[]) {
   return result;
 }
 
+function isChanged(list: string[], normalized: string[]) {
+  return normalized.length !== list.length || normalized.some((item, index) => item !== list[index]);
+}
+
 function cleanValue() {
   const list = props.value || [];
   const normalized = normalizeDomains(list);
-  const changed = normalized.length !== list.length || normalized.some((item, index) => item !== list[index]);
-  if (changed) {
+  if (isChanged(list, normalized)) {
     emit("update:value", normalized);
+    // 强制重建，清除 a-select 内部残留的非法 tag
+    selectKey.value++;
   }
 }
 
@@ -233,7 +242,11 @@ watch(
 
 function onValueChange(list: string[]) {
   lastValueChangeAt = Date.now();
-  emit("update:value", normalizeDomains(list));
+  const normalized = normalizeDomains(list);
+  emit("update:value", normalized);
+  if (isChanged(list, normalized)) {
+    selectKey.value++;
+  }
 }
 
 // 输入法组合期间的回车/空格/逗号交给输入法处理，避免生成重复或空标签
@@ -250,26 +263,29 @@ function onSearchText(value: string) {
   searchText.value = value;
 }
 
-// 失去焦点时清理已有非法标签，并把输入框里未提交的域名转成标签
+// 失去焦点时清理已有非法项，并清空输入框；稍作延迟避免影响下拉选择
 function onSelectBlur() {
-  cleanValue();
-  // 刚通过选择/分隔符新增过标签时，避免把过滤词也当成域名
-  if (Date.now() - lastValueChangeAt < 500) {
+  if (blurTimer) {
+    clearTimeout(blurTimer);
+  }
+  blurTimer = setTimeout(() => {
+    blurTimer = null;
+    const text = searchText.value;
     searchText.value = "";
-    return;
-  }
-  const value = normalizeDomains([searchText.value]).join(",");
-  if (!value) {
-    searchText.value = "";
-    return;
-  }
-  emit("update:value", normalizeDomains([...(props.value || []), value]));
-  searchText.value = "";
-  const input = selectRef.value?.$el?.querySelector("input");
-  if (input?.value) {
-    input.value = "";
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-  }
+    const input = selectRef.value?.$el?.querySelector("input");
+    if (input?.value) {
+      input.value = "";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    cleanValue();
+
+    const value = normalizeDomains([text]).join(",");
+    // 刚通过下拉选择或分隔符新增过标签时，不把过滤词当成域名
+    if (!value || Date.now() - lastValueChangeAt < 500) {
+      return;
+    }
+    emit("update:value", normalizeDomains([...(props.value || []), value]));
+  }, 50);
 }
 
 function editTag(domain: string) {
