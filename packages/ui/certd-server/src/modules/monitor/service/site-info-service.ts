@@ -478,34 +478,10 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       if (!item) {
         continue;
       }
-      const arr = item.trim().split(":");
-      if (arr.length === 0) {
-        continue;
-      }
-      const domain = arr[0];
-      let port = 443;
-      let name = domain;
-      if (arr.length > 1) {
-        try {
-          port = parseInt(arr[1] || "443");
-        } catch (e) {
-          throw new Error(`${item}格式错误`);
-        }
-      }
-      if (arr.length > 2) {
-        name = arr[2] || domain;
-      }
-      let remark = "";
-      if (arr.length > 3) {
-        remark = arr[3] || "";
-      }
-
+      const site = this.parseImportLine(item);
       list.push({
-        domain,
-        name,
-        httpsPort: port,
+        ...site,
         userId: req.userId,
-        remark,
         groupId: req.groupId,
         projectId: req.projectId,
       });
@@ -519,6 +495,56 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       // await this.checkAllByUsers(req.userId);
     };
     await batchAdd(list);
+  }
+
+  /**
+   * 解析一行导入文本，支持两种格式：
+   * 1. 带协议的地址：https://foo.wellin.ltd:8001/，3-5 位字母的协议头自动忽略，备注为空时回填协议头
+   * 2. 旧格式：域名:端口:名称:备注（端口、名称、备注可省略）
+   */
+  private parseImportLine(item: string) {
+    let text = item.trim();
+
+    // 忽略协议头，例如 http://、https://；协议头在备注为空时回填到备注
+    let protocol = "";
+    const protocolMatch = /^([a-zA-Z]{3,5}):\/\//.exec(text);
+    if (protocolMatch) {
+      protocol = protocolMatch[0];
+      text = text.slice(protocol.length);
+      // 去掉路径、查询参数和锚点，仅保留 host[:port]
+      const pathIndex = text.search(/[/?#]/);
+      if (pathIndex >= 0) {
+        text = text.slice(0, pathIndex);
+      }
+    }
+
+    const arr = text.split(":");
+    const domain = arr[0];
+    if (!domain) {
+      throw new Error(`${item}格式错误，请输入正确的域名`);
+    }
+    let port = 443;
+    if (arr.length > 1 && arr[1]) {
+      if (!/^\d+$/.test(arr[1])) {
+        throw new Error(`${item}格式错误，端口必须是 1-65535 的数字`);
+      }
+      port = Number(arr[1]);
+      if (port < 1 || port > 65535) {
+        throw new Error(`${item}格式错误，端口必须是 1-65535 的数字`);
+      }
+    }
+    let name = domain;
+    if (arr.length > 2) {
+      name = arr[2] || domain;
+    }
+    let remark = "";
+    if (arr.length > 3) {
+      remark = arr[3] || "";
+    }
+    if (!remark) {
+      remark = protocol;
+    }
+    return { domain, name, httpsPort: port, remark };
   }
 
   async startSiteInfoImportTask(req: { userId: number; projectId: number; key: string }) {
