@@ -9,6 +9,14 @@ RUN apt-get update \
 WORKDIR /src
 COPY . .
 RUN go mod download
+RUN set -eu; \
+    jieba_module="$(go list -m -f '{{.Dir}}' github.com/yanyiwu/gojieba)"; \
+    dictionary_dir="$jieba_module/deps/cppjieba/dict"; \
+    install -d /opt/weknora/jieba; \
+    for dictionary in jieba.dict.utf8 hmm_model.utf8 user.dict.utf8 idf.utf8 stop_words.utf8; do \
+        test -s "$dictionary_dir/$dictionary"; \
+        cp "$dictionary_dir/$dictionary" /opt/weknora/jieba/; \
+    done
 COPY --from=frontend /usr/share/nginx/html/ ./web/
 RUN test -s web/index.html \
     && printf 'window.__RUNTIME_CONFIG__ = window.__RUNTIME_CONFIG__ || {};\n' > web/config.js \
@@ -27,6 +35,7 @@ COPY --from=builder /src/WeKnora-lite ./
 COPY --from=builder /src/config/ ./config/
 COPY --from=builder /src/migrations/sqlite/ ./migrations/sqlite/
 COPY --from=builder /src/web/ ./web/
+COPY --from=builder /opt/weknora/jieba/ ./jieba/
 COPY --from=builder /license-bundle/ ./
 
 ENV HOME=/data \
@@ -39,7 +48,8 @@ ENV HOME=/data \
     LOCAL_STORAGE_BASE_DIR=/data/files \
     STREAM_MANAGER_TYPE=memory \
     WEKNORA_WEB_DIR=/app/web \
-    WEKNORA_SANDBOX_MODE=disabled
+    WEKNORA_SANDBOX_MODE=disabled \
+    JIEBA_DICT_DIR=/app/jieba
 
 USER weknora
 VOLUME ["/data"]
