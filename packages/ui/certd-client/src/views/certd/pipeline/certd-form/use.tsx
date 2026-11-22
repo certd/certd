@@ -581,8 +581,12 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
         taskTitle = t("certd.pipeline.pipelinePage.pullTask");
         stepTitle = t("certd.pipeline.pipelinePage.pullStep");
       }
+      let pipelineTitle = pluginInput.domains[0] + "证书自动化";
+      if (req.pluginName === "CertApplyLocalCa") {
+        pipelineTitle += "（本地CA）";
+      }
       let pipeline: any = {
-        title: pluginInput.domains[0] + "证书自动化",
+        title: pipelineTitle,
         runnableType: "pipeline",
         stages: [
           {

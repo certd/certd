@@ -614,6 +614,50 @@ describe("CertInfoService", () => {
       assert.ok(updated.set.revokeTime > 0);
     });
 
+    it("本地CA签发的证书直接记录吊销状态，不调用ACME", async () => {
+      const service = new CertInfoService();
+      const cert = createSelfSignedCert();
+      service.info = async () =>
+        ({
+          id: 1,
+          userId: 2,
+          projectId: null,
+          status: CertStatus.inactive,
+          certInfo: JSON.stringify(cert),
+          pipelineId: 5,
+          localCaId: 3,
+          serialNumber: "abc123",
+        }) as any;
+      service.pipelineRepository = {
+        async findOne() {
+          throw new Error("本地CA吊销不应查询流水线");
+        },
+      } as any;
+      let updated: any = null;
+      service.repository = {
+        async update(where: any, set: any) {
+          updated = { where, set };
+          return {} as any;
+        },
+      } as any;
+
+      const original = AcmeService.prototype.revokeCert;
+      let acmeCalled = false;
+      AcmeService.prototype.revokeCert = async function () {
+        acmeCalled = true;
+      };
+      try {
+        await service.revoke(1, 2);
+      } finally {
+        AcmeService.prototype.revokeCert = original;
+      }
+
+      assert.equal(acmeCalled, false);
+      assert.equal(updated.where.id, 1);
+      assert.equal(updated.set.status, CertStatus.revoked);
+      assert.ok(updated.set.revokeTime > 0);
+    });
+
     it("吊销时优先使用记录上的ACME账号，不再解析流水线", async () => {
       const service = new CertInfoService();
       const cert = createSelfSignedCert();

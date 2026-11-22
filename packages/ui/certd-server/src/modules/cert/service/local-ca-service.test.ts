@@ -1,0 +1,339 @@
+import assert from "node:assert/strict";
+import { X509Certificate } from "node:crypto";
+import { Encryptor, EncryptService } from "@certd/lib-server";
+import { LocalCaService } from "./local-ca-service.js";
+import { createCsr } from "./local-ca-crypto.js";
+// @ts-ignore
+import * as x509 from "@peculiar/x509";
+
+function createService() {
+  const store = new Map<number, any>();
+  let nextId = 1;
+  function matches(item: any, where: any) {
+    for (const key of Object.keys(where || {})) {
+      const value = where[key];
+      if (value === undefined) {
+        continue;
+      }
+      if (item[key] !== value) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  const service = new LocalCaService();
+  service.repository = {
+    async findOne({ where }: any) {
+      for (const item of store.values()) {
+        if (matches(item, where)) {
+          return item;
+        }
+      }
+      return null;
+    },
+    async find({ where }: any) {
+      return Array.from(store.values()).filter(item => matches(item, where));
+    },
+    async save(entity: any) {
+      if (!entity.id) {
+        entity.id = nextId++;
+      }
+      store.set(entity.id, entity);
+      return entity;
+    },
+    async create(data: any) {
+      return data;
+    },
+    async delete({ id }: any) {
+      const ids = id?._value || [];
+      for (const itemId of ids) {
+        store.delete(itemId);
+      }
+    },
+  } as any;
+
+  const encryptService = new EncryptService();
+  encryptService.encryptor = new Encryptor(Buffer.alloc(32, 1).toString("base64"));
+  service.encryptService = encryptService;
+  service.certInfoService = {
+    async find() {
+      return [];
+    },
+  } as any;
+  service.pipelineRepository = {
+    async find() {
+      return [];
+    },
+  } as any;
+
+  return { service, store, encryptService };
+}
+
+describe("LocalCaService", () => {
+  async function createIssuingCa(service: LocalCaService, opts: { name: string; allowedDomains?: string[] }) {
+    const root = await service.generateCa({
+      userId: 1,
+      name: `${opts.name} Root`,
+      subject: { CN: `${opts.name} Root` },
+      keyType: "rsa2048",
+      validityYears: 2,
+      allowedDomains: opts.allowedDomains,
+    });
+    const intermediate = await service.generateIntermediateCa({
+      rootId: root.id,
+      userId: 1,
+      name: opts.name,
+      subject: { CN: opts.name },
+      keyType: "rsa2048",
+      validityYears: 1,
+      allowedDomains: opts.allowedDomains,
+    });
+    return { rootId: root.id, id: intermediate.id };
+  }
+
+  it("生成CA时私钥加密存储，接口返回脱敏", async () => {
+    const { service, store, encryptService } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Test Root CA",
+      subject: { CN: "Test Root CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+
+    const entity = store.get(id);
+    assert.ok(entity);
+    assert.match(entity.privateKeyEncrypted, /^[0-9a-f]+:[0-9a-f]+$/);
+    assert.equal(entity.privateKeyHash.length, 64);
+    const plain = encryptService.decrypt(entity.privateKeyEncrypted);
+    assert.match(plain, /BEGIN PRIVATE KEY/);
+    assert.notEqual(entity.privateKeyEncrypted, plain);
+
+    const info: any = await service.infoSafe({ id, userId: 1 });
+    assert.equal(info.name, "Test Root CA");
+    assert.equal(info.privateKeyEncrypted, undefined);
+    assert.equal(info.privateKeyHash, undefined);
+  });
+
+  it("创建中间CA并记录父子关系与 pathLength", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Hierarchy Root",
+      subject: { CN: "Hierarchy Root" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    const intermediate = await service.generateIntermediateCa({
+      rootId: root.id,
+      userId: 1,
+      name: "Hierarchy Intermediate",
+      subject: { CN: "Hierarchy Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    const rootInfo: any = await service.infoSafe({ id: root.id, userId: 1 });
+    const intermediateInfo: any = await service.infoSafe({ id: intermediate.id, userId: 1 });
+    assert.equal(rootInfo.caType, "root");
+    assert.equal(rootInfo.pathLength, 1);
+    assert.equal(intermediateInfo.caType, "intermediate");
+    assert.equal(intermediateInfo.parentId, root.id);
+    assert.equal(intermediateInfo.pathLength, 0);
+    assert.equal(intermediateInfo.parentName, undefined);
+  });
+
+  it("signCsr 按CA策略签发并拒绝越界域名", async () => {
+    const { service } = createService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return { bindUrl: "https://certd.example.com/" };
+      },
+    } as any;
+    const { rootId, id } = await createIssuingCa(service, { name: "Restricted CA", allowedDomains: ["example.com"] });
+
+    const { csrPem } = await createCsr({ domains: ["foo.example.com"], keyType: "rsa2048" });
+    await assert.rejects(() => service.signCsr({ id: rootId, userId: 1, csrPem, validityDays: 30 }), /中间CA/);
+    const signed = await service.signCsr({ id, userId: 1, csrPem, validityDays: 30 });
+    const leaf = new X509Certificate(signed.certPem);
+    const ca = new X509Certificate(signed.chainPem);
+    assert.equal(leaf.verify(ca.publicKey), true);
+    assert.equal(signed.fullchainPem.split("BEGIN CERTIFICATE").length - 1, 2);
+    const x509Leaf = new x509.X509Certificate(signed.certPem);
+    assert.ok(
+      x509Leaf.extensions.find(ext => ext.type === "2.5.29.31"),
+      "证书应带CRL分发点"
+    );
+
+    const evil = await createCsr({ domains: ["evil.example.net"], keyType: "rsa2048" });
+    await assert.rejects(() => service.signCsr({ id, userId: 1, csrPem: evil.csrPem }), /不在该CA允许签发的范围内/);
+  });
+
+  it("禁用CA后拒绝签发", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Disabled CA" });
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    const { csrPem } = await createCsr({ domains: ["foo.example.com"], keyType: "rsa2048" });
+    await assert.rejects(() => service.signCsr({ id, userId: 1, csrPem }), /已禁用/);
+  });
+
+  it("getCrl 包含该CA已吊销证书的序列号", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "CRL CA" });
+    const { csrPem } = await createCsr({ domains: ["crl.example.com"], keyType: "rsa2048" });
+    const signed = await service.signCsr({ id, userId: 1, csrPem });
+    service.certInfoService = {
+      async find() {
+        return [{ serialNumber: signed.serialNumber, revokeTime: Date.now() - 1000 }];
+      },
+    } as any;
+
+    const crl = await service.getCrl(id);
+    const parsed = new x509.X509Crl(crl.pem);
+    assert.ok(parsed.findRevoked(signed.serialNumber));
+    assert.match(crl.pem, /BEGIN X509 CRL/);
+  });
+
+  it("getCrl 会清理已过期的吊销条目", async () => {
+    const { service } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Expired CRL CA",
+      subject: { CN: "Expired CRL CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    service.certInfoService = {
+      async find() {
+        return [
+          { serialNumber: "0ABBCCDDEEFF00112233445566778899", revokeTime: Date.now(), expiresTime: Date.now() + 86400000 },
+          { serialNumber: "0BAABBCCDDEEFF00112233445566778899", revokeTime: Date.now(), expiresTime: Date.now() - 86400000 },
+        ];
+      },
+    } as any;
+
+    const crl = await service.getCrl(id);
+    const parsed = new x509.X509Crl(crl.pem);
+    assert.ok(parsed.findRevoked("0ABBCCDDEEFF00112233445566778899"));
+    assert.equal(parsed.findRevoked("0BAABBCCDDEEFF00112233445566778899"), null);
+  });
+
+  it("exportCa 返回证书和私钥", async () => {
+    const { service } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Export CA",
+      subject: { CN: "Export CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    const res = await service.exportCa({ id, userId: 1 });
+    assert.match(res.filename, /local-ca-/);
+    assert.match(res.content, /BEGIN CERTIFICATE/);
+    assert.match(res.content, /BEGIN PRIVATE KEY/);
+  });
+
+  it("listIssuedCerts 与 revokeIssuedCert 只处理该CA的证书", async () => {
+    const { service } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Issued CA",
+      subject: { CN: "Issued CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    service.certInfoService = {
+      async find() {
+        return [
+          {
+            id: 9,
+            domain: "a.example.com",
+            domains: "a.example.com",
+            serialNumber: "ABC",
+            status: "active",
+            effectiveTime: 1,
+            expiresTime: 2,
+            applyTime: 3,
+            fromType: "pipeline",
+          },
+        ];
+      },
+      async findOne({ where }: any) {
+        assert.equal(where.id, 9);
+        return { id: 9, localCaId: id, status: "active" };
+      },
+      async update() {},
+    } as any;
+
+    const list = await service.listIssuedCerts({ id, userId: 1 });
+    assert.equal(list.length, 1);
+    assert.equal(list[0].serialNumber, "ABC");
+    await service.revokeIssuedCert({ id, userId: 1, certId: 9 });
+  });
+
+  it("被流水线引用的CA不能删除", async () => {
+    const { service } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Pipeline CA",
+      subject: { CN: "Pipeline CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    service.pipelineRepository = {
+      async find() {
+        return [
+          {
+            id: 5,
+            title: "内部证书自动化",
+            content: JSON.stringify({
+              stages: [{ tasks: [{ steps: [{ type: "CertApplyLocalCa", input: { caId: id } }] }] }],
+            }),
+          },
+        ];
+      },
+    } as any;
+
+    await assert.rejects(() => service.deleteCa({ id, userId: 1 }), /流水线「内部证书自动化」引用/);
+  });
+
+  it("跨用户不可访问，已签发证书的CA不能删除", async () => {
+    const { service } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Owned CA",
+      subject: { CN: "Owned CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+
+    await assert.rejects(() => service.infoSafe({ id, userId: 2 }), /不存在或无访问权限/);
+
+    service.certInfoService = {
+      async find() {
+        return [{ id: 99, status: "active", expiresTime: Date.now() + 86400000 }];
+      },
+    } as any;
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    await assert.rejects(() => service.deleteCa({ id, userId: 1 }), /未吊销且未过期/);
+  });
+
+  it("禁用且所有证书已吊销后允许删除CA", async () => {
+    const { service, store } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Deletable CA",
+      subject: { CN: "Deletable CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    service.certInfoService = {
+      async find() {
+        return [{ id: 99, status: "revoked", expiresTime: Date.now() + 86400000 }];
+      },
+    } as any;
+    await service.deleteCa({ id, userId: 1 });
+    assert.equal(store.has(id), false);
+  });
+});

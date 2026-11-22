@@ -53,6 +53,7 @@ export default {
   uploadCustomCert: "上传自定义证书",
   sourcePipeline: "证书流水线",
   sourceManualUpload: "托管流水线",
+  sourceAcme: "ACME服务",
   domains: "域名",
   enterDomain: "请输入域名",
   revoke: {

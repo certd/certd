@@ -63,6 +63,12 @@ export class CertInfoEntity {
   @Column({ name: "cert_password", comment: "证书密码", nullable: true })
   certPassword: string;
 
+  @Column({ name: "local_ca_id", comment: "本地CA id", nullable: true })
+  localCaId: number;
+
+  @Column({ name: "serial_number", comment: "证书序列号", length: 100, nullable: true })
+  serialNumber: string;
+
   // Deprecated 废弃
   @Column({ name: "cert_file", comment: "证书下载" })
   certFile: string;

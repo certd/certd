@@ -13,6 +13,8 @@ import { CertInfoGetter } from "./cert-info-getter.js";
 import { CertInfoService } from "../../../monitor/index.js";
 import { ICertInfoGetter } from "@certd/plugin-lib";
 import { CnameProviderService } from "../../../cname/service/cname-provider-service.js";
+import { LocalCaGetter } from "../../../cert/service/local-ca-getter.js";
+import { LocalCaService } from "../../../cert/service/local-ca-service.js";
 
 const serviceNames = ["ocrService", "certInfoService", "customAcmeProviderService"];
 export class TaskServiceGetter implements IServiceGetter {
@@ -38,6 +40,8 @@ export class TaskServiceGetter implements IServiceGetter {
       return (await this.getDomainVerifierGetter()) as T;
     } else if (serviceName === "certInfoGetter") {
       return (await this.getCertInfoGetter()) as T;
+    } else if (serviceName === "localCaGetter") {
+      return (await this.getLocalCaGetter()) as T;
     } else {
       if (!serviceNames.includes(serviceName)) {
         throw new Error(`${serviceName} not in whitelist`);
@@ -60,6 +64,11 @@ export class TaskServiceGetter implements IServiceGetter {
   async getCertInfoGetter(): Promise<ICertInfoGetter> {
     const certInfoService: CertInfoService = await this.appCtx.getAsync("certInfoService");
     return new CertInfoGetter(this.userId, this.projectId, certInfoService);
+  }
+
+  async getLocalCaGetter(): Promise<LocalCaGetter> {
+    const localCaService: LocalCaService = await this.appCtx.getAsync("localCaService");
+    return new LocalCaGetter(this.userId, this.projectId, localCaService);
   }
 
   async getAccessService(): Promise<AccessGetter> {

@@ -19,6 +19,8 @@ export type UploadCertReq = {
   taskId?: string;
   acmeAccountAccessId?: number;
   certPassword?: string;
+  localCaId?: number;
+  serialNumber?: string;
 };
 
 export type UpdateCertReq = {
@@ -27,6 +29,8 @@ export type UpdateCertReq = {
   fromType?: string;
   taskId?: string;
   certPassword?: string;
+  localCaId?: number;
+  serialNumber?: string;
 };
 
 /**
@@ -195,8 +199,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
    * 4. 同流水线、同申请任务的其他激活状态的证书记录被标记为未激活（inactive）。
    */
   async updateCertByPipelineId(req: UpdateCertReq) {
-    const { pipelineId, cert, fromType, taskId, certPassword } = req;
-
+    const { pipelineId, cert, fromType, taskId, certPassword, localCaId, serialNumber } = req;
 
     const pipeline = await this.pipelineRepository.findOne({
       where: { id: pipelineId },
@@ -240,6 +243,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       id: placeholderRecord?.id,
       acmeAccountAccessId,
       certPassword,
+      localCaId,
+      serialNumber,
     });
     // 旧证书标记为未激活（仅同申请任务产出的旧证书，避免误伤其他任务仍在使用的证书）
     await this.repository.update(
@@ -386,6 +391,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     // 吊销旧证书时直接使用记录上的ACME账号授权id（无需再解析流水线）
     bean.acmeAccountAccessId = req.acmeAccountAccessId;
     bean.certPassword = req.certPassword;
+    bean.localCaId = req.localCaId;
+    bean.serialNumber = req.serialNumber;
     await this.addOrUpdate(bean);
     return bean;
   }
@@ -438,6 +445,18 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       });
     }
     const certInfo = JSON.parse(entity.certInfo) as CertInfo;
+
+    if (entity.localCaId) {
+      // 本地CA签发的证书不经过ACME，直接记录吊销状态；CRL/OCSP后续版本再提供
+      await this.repository.update(
+        { id },
+        {
+          status: CertStatus.revoked,
+          revokeTime: Date.now(),
+        }
+      );
+      return;
+    }
 
     // 优先使用证书记录上保存的ACME账号授权id（吊销不再解析流水线）；旧数据没有该字段时回退解析流水线
     const { sslProvider, acmeAccount, useProxy, reverseProxy } = await this.resolveRevokeParamsWithEntity(entity, userId, projectId);

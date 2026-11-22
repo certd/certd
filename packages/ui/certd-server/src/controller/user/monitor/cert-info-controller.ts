@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import { ApiTags } from "@midwayjs/swagger";
 import { CertReader } from "@certd/plugin-lib";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { getX509Summary } from "../../../modules/cert/service/local-ca-crypto.js";
 
 /**
  */
@@ -175,9 +176,16 @@ export class CertInfoController extends CrudController<CertInfoService> {
     await this.checkOwner(this.getService(), id, "read");
     const certInfoEntity = await this.service.info(id);
     const certInfo = JSON.parse(certInfoEntity.certInfo);
+    certInfo.localCaId = certInfoEntity.localCaId;
+    certInfo.serialNumber = certInfoEntity.serialNumber;
+    certInfo.status = certInfoEntity.status;
+    certInfo.revokeTime = certInfoEntity.revokeTime;
     if (certInfo?.crt) {
       const certReader = new CertReader(certInfo);
       certInfo.detail = certReader.detail;
+      if (certInfoEntity.localCaId) {
+        certInfo.x509 = getX509Summary(certInfo.crt);
+      }
     }
     return this.ok(certInfo);
   }

@@ -101,6 +101,10 @@ export type PipelineEvent<T = any> = {
   certPassword?: string;
   runnableId: string;
   pipelineId: number;
+  /** 本地CA签发时记录来源CA，便于证书仓库追溯/删除保护 */
+  localCaId?: number;
+  /** 本地CA签发时记录序列号 */
+  serialNumber?: string;
 };
 export type TaskInstanceContext = {
   //流水线定义

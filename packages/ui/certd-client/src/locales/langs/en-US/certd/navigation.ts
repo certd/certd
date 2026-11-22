@@ -18,6 +18,7 @@ export default {
   accessManager: "Access Management",
   dnsPersistRecord: "DNS Persist Records",
   certApplyTemplate: "Certificate Apply Templates",
+  localCa: "Local CA",
   certApplyTemplateHelper: "Preset certificate application parameters. They are filled automatically when creating a pipeline (excluding domains and validation methods).",
   subDomain: "Subdomain Delegation Settings",
   pipelineGroup: "Pipeline Group Management",

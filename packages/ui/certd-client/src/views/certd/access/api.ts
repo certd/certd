@@ -3,6 +3,10 @@ import { request } from "/src/api/service";
 let secretVerifyToken = "";
 let secretVerifyExpiresAt = 0;
 
+export function getSecretAccessToken() {
+  return secretVerifyToken && Date.now() < secretVerifyExpiresAt ? secretVerifyToken : "";
+}
+
 export function createAccessApi(from = "user") {
   const apiPrefix = from === "sys" ? "/sys/access" : "/pi/access";
   return {

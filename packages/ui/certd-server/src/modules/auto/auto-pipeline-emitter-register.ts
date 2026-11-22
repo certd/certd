@@ -23,6 +23,8 @@ export class AutoPipelineEmitterRegister {
         fromType: "pipeline",
         taskId,
         certPassword: event.certPassword,
+        localCaId: event.localCaId,
+        serialNumber: event.serialNumber,
       });
     });
   }
