@@ -13,30 +13,14 @@ import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeOrderEntit
 import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "./acme-jws.js";
 import { fetchHttpChallenge } from "./acme-network.js";
 import { isSameAcmeUrl } from "./acme-url.js";
+import { acmeNonceStore } from "./acme-nonce.js";
 
-const NONCE_TTL = 5 * 60 * 1000;
 const ORDER_TTL = 7 * 24 * 3600 * 1000;
-const nonces = new Map<string, number>();
-
-function createNonce() {
-  const now = Date.now();
-  for (const [key, expires] of nonces) {
-    if (expires <= now) {
-      nonces.delete(key);
-    }
-  }
-  const nonce = crypto.randomBytes(16).toString("base64url");
-  nonces.set(nonce, now + NONCE_TTL);
-  return nonce;
-}
 
 function consumeNonce(nonce: string) {
-  const expires = nonces.get(nonce);
-  if (!expires || expires <= Date.now()) {
-    nonces.delete(nonce);
+  if (!acmeNonceStore.consume(nonce)) {
     throw new AcmeProblem("badNonce", "nonce无效或已过期", 400);
   }
-  nonces.delete(nonce);
 }
 
 function toPemCsr(der: Buffer) {
@@ -69,7 +53,7 @@ export class AcmeServerService {
   challengeRepository: Repository<AcmeChallengeEntity>;
 
   prepareResponse(ctx: any) {
-    ctx.set("Replay-Nonce", createNonce());
+    ctx.set("Replay-Nonce", acmeNonceStore.create());
     ctx.set("Cache-Control", "no-store");
   }
 
@@ -125,6 +109,7 @@ export class AcmeServerService {
       if (account.status !== "valid") {
         throw new AcmeProblem("unauthorized", "账户不可用", 401);
       }
+      await this.assertAccountEabActive(account);
       ctx.status = 200;
       ctx.set("Location", `${await this.baseUrl(caId)}/account/${account.id}`);
     } else {
@@ -329,6 +314,7 @@ export class AcmeServerService {
         throw new AcmeProblem("orderNotReady", "订单正在处理中或尚未就绪", 403);
       }
       checkCsrDomains(order);
+      await this.assertOrderStillAuthorized(ca, account, order);
 
       // 条件更新认领订单，保证并发 finalize 只有一个能签发
       const claimed = await orderRepository.update({ id: orderId, caId, accountId: account.id, status: "ready" }, { status: "processing", updateTime: new Date() });
@@ -531,6 +517,7 @@ export class AcmeServerService {
   }
 
   private async verifyAccount(ctx: any, caId: number, body: any, consume = true) {
+    await this.localCaService.getAcmeCa(caId);
     const jws = decodeJws(body);
     this.assertUrl(jws, ctx);
     const account = await this.resolveAccount(jws, caId);
@@ -541,6 +528,24 @@ export class AcmeServerService {
       consumeNonce(jws.header.nonce);
     }
     return { jws, account };
+  }
+
+  private async assertAccountEabActive(account: AcmeAccountEntity) {
+    if (!account.eabId) {
+      throw new AcmeProblem("unauthorized", "账户未通过EAB认证，请重新注册", 401);
+    }
+    const profile = await this.localCaService.getAcmeEabProfile(account.eabId);
+    if (!profile) {
+      throw new AcmeProblem("unauthorized", "EAB凭证已禁用或过期", 401);
+    }
+    return profile;
+  }
+
+  private async assertOrderStillAuthorized(ca: any, account: AcmeAccountEntity, order: AcmeOrderEntity) {
+    const domains = JSON.parse(order.identifiers).map((item: any) => item.value);
+    matchAllowedDomains(domains, this.parseAllowedDomains(ca.allowedDomains));
+    const profile = await this.assertAccountEabActive(account);
+    matchAllowedDomains(domains, profile.allowedDomains);
   }
 
   private async resolveAccount(jws: any, caId: number) {
@@ -563,9 +568,7 @@ export class AcmeServerService {
     if (!account || account.status !== "valid") {
       throw new AcmeProblem("unauthorized", "账户不存在或不可用", 401);
     }
-    if (!account.eabId) {
-      throw new AcmeProblem("unauthorized", "账户未通过EAB认证，请重新注册", 401);
-    }
+    await this.assertAccountEabActive(account);
     return account;
   }
 
@@ -795,9 +798,12 @@ export class AcmeServerService {
     }
     try {
       const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
+      if (!Array.isArray(parsed)) {
+        throw new Error("not an array");
+      }
+      return parsed;
     } catch (e) {
-      return [];
+      throw new AcmeProblem("serverInternal", "allowedDomains配置损坏，已拒绝操作", 500);
     }
   }
 

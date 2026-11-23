@@ -31,6 +31,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       wrapper: { width: 680 },
       body: () => <a-alert type="warning" show-icon message={t("certd.localCa.generateWarning")} description={t("certd.localCa.generateWarningDesc")} class="mb-4" />,
       initialForm: {
+        exportDisabled: false,
         keyType: "rsa2048",
         validityYears: 10,
         usage: "server",
@@ -135,6 +136,20 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
           },
         },
+        exportDisabled: {
+          title: t("certd.localCa.fields.exportDisabled"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("certd.localCa.exportDisabledYes"), value: true, color: "red" },
+              { label: t("certd.localCa.exportDisabledNo"), value: false, color: "green" },
+            ],
+          }),
+          form: {
+            col: { span: 24 },
+            helper: t("certd.localCa.fields.exportDisabledHelper"),
+          },
+        },
         remark: {
           title: t("certd.localCa.fields.remark"),
           type: "textarea",
@@ -159,6 +174,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           maxValidityDays: form.maxValidityDays || 0,
           baseUrl: form.baseUrl,
           remark: form.remark,
+          exportDisabled: form.exportDisabled === true,
         });
         notification.success({ message: t("certd.localCa.generateSuccess") });
         await crudExpose.doRefresh();
@@ -176,6 +192,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         subjectCn: "",
         keyType: "rsa2048",
         validityYears: 5,
+        exportDisabled: false,
         usage: root.usage || "server",
         maxValidityDays: root.maxValidityDays || 0,
         allowedDomainsText: "",
@@ -264,6 +281,20 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
           },
         },
+        exportDisabled: {
+          title: t("certd.localCa.fields.exportDisabled"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("certd.localCa.exportDisabledYes"), value: true, color: "red" },
+              { label: t("certd.localCa.exportDisabledNo"), value: false, color: "green" },
+            ],
+          }),
+          form: {
+            col: { span: 24 },
+            helper: t("certd.localCa.fields.exportDisabledHelper"),
+          },
+        },
         remark: {
           title: t("certd.localCa.fields.remark"),
           type: "textarea",
@@ -286,6 +317,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           maxValidityDays: form.maxValidityDays || 0,
           baseUrl: form.baseUrl,
           remark: form.remark,
+          exportDisabled: form.exportDisabled === true,
         });
         notification.success({ message: t("certd.localCa.intermediateSuccess") });
         await crudExpose.doRefresh();
@@ -376,7 +408,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       title: t("certd.localCa.importTitle"),
       wrapper: { width: 720 },
       body: () => <a-alert type="warning" show-icon message={t("certd.localCa.importWarning")} description={t("certd.localCa.importWarningDesc")} class="mb-4" />,
-      initialForm: { usage: "server", maxValidityDays: 0 },
+      initialForm: { usage: "server", maxValidityDays: 0, exportDisabled: false },
       columns: {
         name: {
           title: t("certd.localCa.fields.name"),
@@ -454,6 +486,20 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
           },
         },
+        exportDisabled: {
+          title: t("certd.localCa.fields.exportDisabled"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("certd.localCa.exportDisabledYes"), value: true, color: "red" },
+              { label: t("certd.localCa.exportDisabledNo"), value: false, color: "green" },
+            ],
+          }),
+          form: {
+            col: { span: 24 },
+            helper: t("certd.localCa.fields.exportDisabledHelper"),
+          },
+        },
         remark: {
           title: t("certd.localCa.fields.remark"),
           type: "textarea",
@@ -471,6 +517,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           maxValidityDays: form.maxValidityDays || 0,
           baseUrl: form.baseUrl,
           remark: form.remark,
+          exportDisabled: form.exportDisabled === true,
         });
         notification.success({ message: t("certd.localCa.importSuccess") });
         await crudExpose.doRefresh();

@@ -81,6 +81,12 @@ export class LocalCaEntity {
   @Column({ name: "acme_direct_issue", comment: "EAB直签：跳过域名校验", default: false })
   acmeDirectIssue: boolean;
 
+  @Column({ name: "crl_number", comment: "CRL单调递增序号", default: 0 })
+  crlNumber: number;
+
+  @Column({ name: "export_disabled", comment: "禁止导出CA（含私钥）", default: false })
+  exportDisabled: boolean;
+
   @Column({ name: "acme_config", comment: "未来ACME配置JSON", type: "text", nullable: true })
   acmeConfig: string;
 

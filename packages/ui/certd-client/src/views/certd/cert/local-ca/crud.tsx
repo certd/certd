@@ -157,7 +157,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             text: null,
             tooltip: { title: t("certd.localCa.export") },
             icon: "ph:export",
-            show: hasActionPermission("write"),
+            show: ({ row }) => hasActionPermission("write") && !row.exportDisabled,
             click: async ({ row }) => {
               await openExport(row);
             },

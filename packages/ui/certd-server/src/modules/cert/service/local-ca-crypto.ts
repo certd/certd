@@ -822,7 +822,7 @@ export async function issueLeafCertificate(req: {
   };
 }
 
-export async function createCrl(req: { caCertPem: string; caPrivateKeyPem: string; entries: CrlEntryInput[]; nextUpdateDays?: number }): Promise<CrlResult> {
+export async function createCrl(req: { caCertPem: string; caPrivateKeyPem: string; entries: CrlEntryInput[]; nextUpdateDays?: number; crlNumber?: number }): Promise<CrlResult> {
   const caCertPem = normalizePem(req.caCertPem);
   const caCert = new x509.X509Certificate(caCertPem);
   const { signingKey, signingAlgorithm } = await importSigningKey(req.caPrivateKeyPem);
@@ -841,7 +841,7 @@ export async function createCrl(req: { caCertPem: string; caPrivateKeyPem: strin
         revocationDate: new Date(entry.revokeTime || Date.now()),
         reason: toCrlReason(entry.reason),
       })),
-      extensions: [await x509.AuthorityKeyIdentifierExtension.create(caCert.publicKey, false, webcrypto), new x509.Extension("2.5.29.20", false, derInteger(Math.floor(thisUpdate.getTime() / 1000)))],
+      extensions: [await x509.AuthorityKeyIdentifierExtension.create(caCert.publicKey, false, webcrypto), new x509.Extension("2.5.29.20", false, derInteger(req.crlNumber ?? Math.floor(thisUpdate.getTime() / 1000)))],
     },
     webcrypto
   );

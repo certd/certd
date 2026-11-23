@@ -39,6 +39,9 @@
             <a-descriptions-item v-if="row.acmeEnabled" :label="t('certd.localCa.acmeDirectory')" :span="2">
               <fs-copyable :model-value="acmeDirectoryUrl">{{ acmeDirectoryUrl }}</fs-copyable>
             </a-descriptions-item>
+            <a-descriptions-item :label="t('certd.localCa.fields.exportDisabled')">
+              {{ row.exportDisabled ? t("certd.localCa.exportDisabledYes") : t("certd.localCa.exportDisabledNo") }}
+            </a-descriptions-item>
             <a-descriptions-item :label="t('certd.localCa.fields.remark')">{{ row.remark || "-" }}</a-descriptions-item>
           </a-descriptions>
         </a-tab-pane>
@@ -49,7 +52,7 @@
     </div>
     <template #footer>
       <a-button :loading="publicKeyLoading" @click="downloadPublicKey">{{ t("certd.localCa.downloadPublicKey") }}</a-button>
-      <a-button @click="props.onExport?.(row)">{{ t("certd.localCa.export") }}</a-button>
+      <a-button :disabled="row?.exportDisabled" @click="props.onExport?.(row)">{{ t("certd.localCa.export") }}</a-button>
       <a-button @click="openCrl">{{ t("certd.localCa.viewCrl") }}</a-button>
       <a-button v-if="row?.acmeEnabled" @click="acmeHelpVisible = true">{{ t("certd.localCa.acmeAccess") }}</a-button>
       <a-button type="primary" @click="visible = false">{{ t("certd.common.close") }}</a-button>

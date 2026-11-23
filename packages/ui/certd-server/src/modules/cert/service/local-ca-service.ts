@@ -23,6 +23,7 @@ import {
   LocalCaKeyType,
   LocalCaSubject,
   LocalCaUsage,
+  matchAllowedDomains,
   signCsr,
   sha256Hex,
   validateImportedIntermediateCa,
@@ -63,6 +64,7 @@ export type LocalCaGenerateReq = {
   maxValidityDays?: number;
   baseUrl?: string;
   remark?: string;
+  exportDisabled?: boolean;
 };
 
 export type LocalCaIntermediateReq = Omit<LocalCaScope, "id"> & {
@@ -76,6 +78,7 @@ export type LocalCaIntermediateReq = Omit<LocalCaScope, "id"> & {
   maxValidityDays?: number;
   baseUrl?: string;
   remark?: string;
+  exportDisabled?: boolean;
 };
 
 export type LocalCaImportReq = {
@@ -90,6 +93,7 @@ export type LocalCaImportReq = {
   maxValidityDays?: number;
   baseUrl?: string;
   remark?: string;
+  exportDisabled?: boolean;
 };
 
 export type LocalCaIssueReq = LocalCaScope & {
@@ -286,7 +290,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.notBefore = material.notBefore;
     bean.notAfter = material.notAfter;
     bean.usage = req.usage || "server";
-    bean.allowedDomains = req.allowedDomains?.length ? JSON.stringify(req.allowedDomains) : null;
+    const list = this.normalizeAllowedDomains(req.allowedDomains);
+    bean.allowedDomains = list.length ? JSON.stringify(list) : null;
     bean.maxValidityDays = req.maxValidityDays || 0;
     bean.acmeEnabled = false;
     bean.acmeDirectIssue = false;
@@ -295,6 +300,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.pathLength = 1;
     bean.disabled = false;
     bean.remark = req.remark || "";
+    bean.exportDisabled = req.exportDisabled === true;
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -336,7 +342,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.notBefore = material.notBefore;
     bean.notAfter = material.notAfter;
     bean.usage = req.usage || root.usage;
-    bean.allowedDomains = req.allowedDomains?.length ? JSON.stringify(req.allowedDomains) : root.allowedDomains;
+    const childAllowedDomains = await this.resolveChildAllowedDomains(req.allowedDomains, root);
+    bean.allowedDomains = childAllowedDomains.length ? JSON.stringify(childAllowedDomains) : null;
     bean.maxValidityDays = req.maxValidityDays ?? root.maxValidityDays;
     bean.acmeEnabled = false;
     bean.acmeDirectIssue = false;
@@ -345,6 +352,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.pathLength = 0;
     bean.disabled = false;
     bean.remark = req.remark || "";
+    bean.exportDisabled = req.exportDisabled === true;
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -398,7 +406,13 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.notBefore = material.notBefore;
     bean.notAfter = material.notAfter;
     bean.usage = req.usage || "server";
-    bean.allowedDomains = req.allowedDomains?.length ? JSON.stringify(req.allowedDomains) : null;
+    if (selfSigned) {
+      const list = this.normalizeAllowedDomains(req.allowedDomains);
+      bean.allowedDomains = list.length ? JSON.stringify(list) : null;
+    } else {
+      const list = await this.resolveChildAllowedDomains(req.allowedDomains, parent!);
+      bean.allowedDomains = list.length ? JSON.stringify(list) : null;
+    }
     bean.maxValidityDays = req.maxValidityDays || 0;
     bean.acmeEnabled = false;
     bean.acmeDirectIssue = false;
@@ -406,6 +420,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.pathLength = material.pathLength ?? (selfSigned ? (getBasicConstraints(material.certPem).pathLength ?? 1) : 0);
     bean.disabled = false;
     bean.remark = req.remark || "";
+    bean.exportDisabled = req.exportDisabled === true;
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -460,6 +475,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const ca = await this.repository.findOne({ where: { id } });
     if (!ca || ca.caType !== "intermediate" || !ca.acmeEnabled) {
       throw new ValidateException("该本地CA未启用ACME服务（仅中间CA支持ACME）");
+    }
+    if (ca.disabled) {
+      throw new ValidateException("该本地CA已禁用，ACME服务不可用");
+    }
+    if (ca.notAfter && ca.notAfter <= Date.now()) {
+      throw new ValidateException("该本地CA已过期，ACME服务不可用");
     }
     return ca;
   }
@@ -573,9 +594,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (bean.allowedDomains) {
       try {
         const parsed = JSON.parse(bean.allowedDomains);
-        allowedDomains = Array.isArray(parsed) ? parsed : [];
+        if (!Array.isArray(parsed)) {
+          throw new Error("not an array");
+        }
+        allowedDomains = parsed;
       } catch (e) {
-        allowedDomains = [];
+        throw new ValidateException("EAB allowedDomains配置损坏，已拒绝操作");
       }
     }
     return { id: bean.id, allowedDomains };
@@ -613,15 +637,39 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         revokeTime: item.revokedTime,
         reason: item.reason,
       }));
+    const crlNumber = await this.nextCrlNumber(ca.id);
     const crl = await createCrl({
       caCertPem: ca.certPem,
       caPrivateKeyPem: privateKeyPem,
       entries,
+      crlNumber,
     });
     return {
       ...crl,
       filename: `local-ca-${ca.id}.crl`,
     };
+  }
+
+  private async nextCrlNumber(caId: number) {
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法生成CRL序号");
+    }
+    const driverType = String(manager.connection?.options?.type || "sqlite");
+    const useLock = !driverType.includes("sqlite");
+    return await manager.transaction(async tx => {
+      const repository = tx.getRepository(LocalCaEntity);
+      const ca = await repository.findOne({
+        where: { id: caId },
+        ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+      });
+      if (!ca) {
+        throw new ValidateException("本地CA不存在");
+      }
+      ca.crlNumber = Number(ca.crlNumber || 0) + 1;
+      await repository.save(ca);
+      return ca.crlNumber;
+    });
   }
 
   async getCaBaseUrl(caId: number) {
@@ -654,6 +702,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       allowedDomains?: string[];
       baseUrl?: string;
       acmeDirectIssue?: boolean;
+      exportDisabled?: boolean;
     }
   ) {
     const ca = await this.getOwnedCa(req);
@@ -682,7 +731,16 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       ca.maxValidityDays = Math.floor(days);
     }
     if (req.allowedDomains != null) {
-      const list = req.allowedDomains.map(item => String(item || "").trim()).filter(Boolean);
+      let list = this.normalizeAllowedDomains(req.allowedDomains);
+      if (ca.caType === "intermediate" && ca.parentId) {
+        const parent = await this.findOne({ where: { id: ca.parentId } });
+        if (!parent) {
+          throw new ValidateException("上级CA不存在，无法设置允许域名");
+        }
+        list = await this.resolveChildAllowedDomains(list, parent);
+      } else if (ca.caType === "root" && list.length > 0) {
+        await this.assertRootAllowedDomainsCoverChildren(ca, list);
+      }
       ca.allowedDomains = list.length ? JSON.stringify(list) : null;
     }
     if (req.baseUrl != null) {
@@ -696,6 +754,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         throw new ValidateException("请先启用该中间CA的ACME服务");
       }
       ca.acmeDirectIssue = req.acmeDirectIssue === true;
+    }
+    if (req.exportDisabled != null) {
+      ca.exportDisabled = req.exportDisabled === true;
     }
     await this.update(ca);
   }
@@ -793,6 +854,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   async exportCa(req: LocalCaScope) {
     const ca = await this.getOwnedCa(req);
+    if (ca.exportDisabled) {
+      throw new ValidateException("该CA已禁止导出");
+    }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     const lines = [
       "# Certd Local CA export",
@@ -915,15 +979,54 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return plain;
   }
 
+  private normalizeAllowedDomains(list?: string[]) {
+    return (list || []).map(item => String(item || "").trim()).filter(Boolean);
+  }
+
+  private async resolveChildAllowedDomains(reqList: string[] | undefined, parent: LocalCaEntity) {
+    const parentList = this.parseAllowedDomains(parent.allowedDomains);
+    const childList = this.normalizeAllowedDomains(reqList);
+    if (childList.length === 0) {
+      return parentList;
+    }
+    if (parentList.length > 0) {
+      matchAllowedDomains(childList, parentList);
+    }
+    return childList;
+  }
+
+  private async assertRootAllowedDomainsCoverChildren(ca: LocalCaEntity, rootAllowedDomains: string[]) {
+    const children = await this.find({ where: { parentId: ca.id } });
+    for (const child of children) {
+      let childList: string[];
+      try {
+        childList = this.parseAllowedDomains(child.allowedDomains);
+      } catch (e) {
+        throw new ValidateException(`子CA「${child.name}」的允许域名配置损坏，无法修改根CA范围`);
+      }
+      if (childList.length === 0) {
+        throw new ValidateException(`子CA「${child.name}」当前未限制允许域名，请先为子CA设置范围`);
+      }
+      try {
+        matchAllowedDomains(childList, rootAllowedDomains);
+      } catch (e) {
+        throw new ValidateException(`子CA「${child.name}」的允许域名超出新的根CA范围`);
+      }
+    }
+  }
+
   private parseAllowedDomains(value: string) {
     if (!value) {
       return [];
     }
     try {
       const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
+      if (!Array.isArray(parsed)) {
+        throw new Error("not an array");
+      }
+      return parsed;
     } catch (e) {
-      return [];
+      throw new ValidateException("allowedDomains配置损坏，已拒绝签发");
     }
   }
 

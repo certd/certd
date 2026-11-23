@@ -69,6 +69,12 @@ function createService() {
       return [];
     },
   } as any;
+  (service.repository as any).manager = {
+    connection: { options: { type: "better-sqlite3" } },
+    async transaction(fn: any) {
+      return await fn({ getRepository: () => service.repository });
+    },
+  };
 
   const revocations = new Map<string, any>();
   service.certRevocationService = {
@@ -226,6 +232,60 @@ describe("LocalCaService", () => {
     assert.match(certText, /https:\/\/pki\.example\.com\/api\/cert\/local-ca\/crl\?id=/);
   });
 
+  it("CA 禁用后 ACME 入口统一拒绝", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Disabled ACME CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    await assert.rejects(() => service.getAcmeCa(id), /已禁用/);
+  });
+
+  it("allowedDomains JSON 损坏时拒绝签发", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Broken Scope CA" });
+    store.get(id).allowedDomains = "{not-json";
+    await assert.rejects(() => service.issueLeaf({ id, userId: 1, domains: ["broken.example.com"], keyType: "rsa2048" }), /allowedDomains配置损坏/);
+  });
+
+  it("中间CA允许域名必须继承且不能扩大根CA范围", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Scope Root CA",
+      subject: { CN: "Scope Root CA" },
+      keyType: "rsa2048",
+      validityYears: 2,
+      allowedDomains: ["example.com"],
+    });
+
+    await assert.rejects(
+      () =>
+        service.generateIntermediateCa({
+          rootId: root.id,
+          userId: 1,
+          name: "Bad Scope Intermediate",
+          subject: { CN: "Bad Scope Intermediate" },
+          keyType: "rsa2048",
+          validityYears: 1,
+          allowedDomains: ["evil.com"],
+        }),
+      /不在该CA允许签发的范围内/
+    );
+
+    const child = await service.generateIntermediateCa({
+      rootId: root.id,
+      userId: 1,
+      name: "Good Scope Intermediate",
+      subject: { CN: "Good Scope Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    const childInfo: any = await service.infoSafe({ id: child.id, userId: 1 });
+    assert.equal(JSON.parse(childInfo.allowedDomains)[0], "example.com");
+
+    await assert.rejects(() => service.updateMeta({ id: root.id, userId: 1, allowedDomains: ["other.com"] }), /子CA「Good Scope Intermediate」的允许域名超出新的根CA范围/);
+  });
+
   it("EAB直签只能为已启用ACME的中间CA开启", async () => {
     const { service } = createService();
     const { rootId, id } = await createIssuingCa(service, { name: "Direct Issue CA" });
@@ -378,6 +438,37 @@ describe("LocalCaService", () => {
     assert.equal(await service.consumeAcmeEab("eab-1"), true);
     assert.equal(expression, "used_count + 1");
     assert.match(condition, /max_uses = 0 OR used_count < max_uses/);
+  });
+
+  it("禁止导出的CA拒绝导出，但查看公钥仍可用", async () => {
+    const { service } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "No Export CA",
+      subject: { CN: "No Export CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+      exportDisabled: true,
+    });
+    const info: any = await service.infoSafe({ id, userId: 1 });
+    assert.equal(info.exportDisabled, true);
+    await assert.rejects(() => service.exportCa({ id, userId: 1 }), /已禁止导出/);
+    const publicKey = await service.getPublicKey({ id, userId: 1 });
+    assert.match(publicKey.pem, /BEGIN PUBLIC KEY/);
+  });
+
+  it("CRL Number 持久化单调递增，同一秒也不同", async () => {
+    const { service } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "CRL Number CA",
+      subject: { CN: "CRL Number CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    const first = await service.getCrlInfo({ id, userId: 1 });
+    const second = await service.getCrlInfo({ id, userId: 1 });
+    assert.ok(Number(second.crlNumber) > Number(first.crlNumber));
   });
 
   it("exportCa 返回证书和私钥", async () => {

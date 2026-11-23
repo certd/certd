@@ -124,6 +124,8 @@ export default {
     caPath: "层级/分支",
     acmeEnabled: "ACME",
     acmeDirectIssue: "EAB直签",
+    exportDisabled: "禁止导出",
+    exportDisabledHelper: "勾选后该CA不允许导出证书和私钥；公钥查看仍可用",
     acmeDirectIssueHelper: "开启后，使用EAB凭证认证的ACME账户可跳过HTTP-01/DNS-01域名校验直接签发；关闭则走真实域名验证",
   },
   acmeDisabledTitle: "ACME 尚未启用",
@@ -171,6 +173,8 @@ export default {
   acmeCertdHelp:
     "<div>1. 系统设置 → 流水线设置 → 自定义 ACME：填写名称、唯一 sslProvider（例如 localca）、Directory URL，并开启 EAB。</div><div>2. 授权管理 → 新增授权 → ACME账号：颁发机构选择刚创建的 localca，填写邮箱、EAB KID/HMAC 并生成账号。</div><div>3. CA 设置开启“EAB直签”时，该账号签发会跳过域名校验；未开启时，证书流水线需配置 DNS/HTTP 校验方式。</div><div>4. 自动匹配：CA 开启 EAB直签时，无需在域名管理里配置校验方式；否则仍需提前配置。</div><div>5. 客户端需信任对应根CA；签发域名仍受CA/EAB的allowedDomains限制。</div>",
   acmeChanged: "ACME服务状态已更新",
+  exportDisabledYes: "禁止导出",
+  exportDisabledNo: "允许导出",
   acmeDirectIssueYes: "已开启",
   acmeDirectIssueNo: "未开启",
   acmeEnabledYes: "已启用",

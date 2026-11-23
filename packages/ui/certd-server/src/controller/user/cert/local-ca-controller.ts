@@ -82,6 +82,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       maxValidityDays: body.maxValidityDays,
       baseUrl: body.baseUrl,
       remark: body.remark,
+      exportDisabled: body.exportDisabled,
     });
     this.auditLog({ content: `生成根CA「${body.name}」(ID:${res.id})` });
     return this.ok(res);
@@ -102,6 +103,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       maxValidityDays: body.maxValidityDays,
       baseUrl: body.baseUrl,
       remark: body.remark,
+      exportDisabled: body.exportDisabled,
     });
     this.auditLog({ content: `导入根CA「${body.name}」(ID:${res.id})` });
     return this.ok(res);
@@ -124,6 +126,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       maxValidityDays: body.maxValidityDays,
       baseUrl: body.baseUrl,
       remark: body.remark,
+      exportDisabled: body.exportDisabled,
     });
     this.auditLog({ content: `根CA(ID:${body.rootId})签发中间CA「${body.name}」(ID:${res.id})` });
     return this.ok(res);

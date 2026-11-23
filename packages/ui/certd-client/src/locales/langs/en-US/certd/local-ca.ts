@@ -124,6 +124,8 @@ export default {
     caPath: "Hierarchy",
     acmeEnabled: "ACME",
     acmeDirectIssue: "EAB Direct Issue",
+    exportDisabled: "Disable Export",
+    exportDisabledHelper: "When enabled, this CA certificate and private key cannot be exported; public key viewing remains available",
     acmeDirectIssueHelper: "When enabled, ACME accounts authenticated with EAB can skip HTTP-01/DNS-01 validation; otherwise real domain validation is required",
   },
   acmeDisabledTitle: "ACME is not enabled",
@@ -172,6 +174,8 @@ export default {
   acmeCertdHelp:
     "<div>1. System Settings → Pipeline Settings → Custom ACME: set a name, unique sslProvider (e.g. localca), the Directory URL, and enable EAB.</div><div>2. Authorization → Add → ACME Account: choose localca, enter an email, fill in the EAB KID/HMAC, and generate the account.</div><div>3. When EAB Direct Issue is enabled on the CA, issuance skips domain validation. Otherwise, configure DNS/HTTP validation in the pipeline.</div><div>4. Auto matching: no domain verification entry is required when EAB Direct Issue is enabled; otherwise it is required.</div><div>5. Trust the root CA on clients; issuance is still restricted by the CA/EAB allowedDomains policy.</div>",
   acmeChanged: "ACME service status updated",
+  exportDisabledYes: "Export Disabled",
+  exportDisabledNo: "Export Allowed",
   acmeDirectIssueYes: "Enabled",
   acmeDirectIssueNo: "Disabled",
   acmeEnabledYes: "Enabled",
