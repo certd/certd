@@ -57,6 +57,13 @@ export const siteInfoApi = {
       data: { id },
     });
   },
+  async GetCert(id: number) {
+    return await request({
+      url: apiPrefix + "/getCert",
+      method: "post",
+      params: { id },
+    });
+  },
   async CheckAll() {
     return await request({
       url: apiPrefix + "/checkAll",

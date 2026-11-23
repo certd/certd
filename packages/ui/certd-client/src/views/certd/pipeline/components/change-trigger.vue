@@ -18,14 +18,19 @@ const emit = defineEmits<{
   change: any;
 }>();
 async function batchUpdateRequest(form: any) {
-  await api.BatchUpdateTrigger(props.selectedRowKeys, {
-    title: "定时触发",
-    type: "timer",
-    props: form.clear ? false : form.props,
-    random: form.random,
-    randomRange: form.randomRange,
-  });
-  emit("change");
+  try {
+    await api.BatchUpdateTrigger(props.selectedRowKeys, {
+      title: "定时触发",
+      type: "timer",
+      props: form.clear ? false : form.props,
+      random: form.random,
+      randomRange: form.randomRange,
+      preserveSchedule: form.preserveSchedule !== false,
+    });
+  } finally {
+    // 写入阶段可能部分成功，失败时也要刷新列表
+    emit("change");
+  }
 }
 
 const { openCrudFormDialog } = useFormWrapper();
@@ -81,6 +86,20 @@ async function openFormDialog() {
                 },
               ],
             }),
+          },
+        },
+      },
+      preserveSchedule: {
+        title: "仅修改触发时间",
+        form: {
+          value: true,
+          helper: "保持原有的每周/每月等日期参数，只随机化时/分/秒。5字段Cron只随机化时/分，秒数不生效。多个定时触发器统一使用同一个随机时间；无法识别的Cron会拒绝本次修改",
+          show: compute(({ form }) => {
+            return form.clear !== true && form.random === true;
+          }),
+          component: {
+            name: "a-switch",
+            vModel: "checked",
           },
         },
       },

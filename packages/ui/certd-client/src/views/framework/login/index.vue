@@ -9,14 +9,14 @@
             <template v-if="formState.loginType === 'password'">
               <!--      <div class="login-title">登录</div>-->
               <a-form-item required has-feedback name="username" :rules="rules.username">
-                <a-input v-model:value="formState.username" :placeholder="t('certd.auth.usernamePlaceholder')" autocomplete="off" @keydown.enter="handleFinish">
+                <a-input v-model:value="formState.username" :placeholder="t('certd.auth.usernamePlaceholder')" autocomplete="off" @keydown.enter="handleKeydownEnter">
                   <template #prefix>
                     <fs-icon icon="ion:phone-portrait-outline"></fs-icon>
                   </template>
                 </a-input>
               </a-form-item>
               <a-form-item has-feedback name="password" :rules="rules.password">
-                <a-input-password v-model:value="formState.password" :placeholder="t('certd.auth.passwordPlaceholder')" autocomplete="off" @keyup.enter="handleFinish">
+                <a-input-password v-model:value="formState.password" :placeholder="t('certd.auth.passwordPlaceholder')" autocomplete="off" @keydown.enter="handleKeydownEnter">
                   <template #prefix>
                     <fs-icon icon="ion:lock-closed-outline"></fs-icon>
                   </template>
@@ -24,7 +24,7 @@
               </a-form-item>
 
               <a-form-item v-if="settingStore.sysPublic.captchaEnabled" has-feedback required name="captcha" :rules="rules.captcha">
-                <CaptchaInput v-model:model-value="formState.captcha" @keydown.enter="handleFinish"></CaptchaInput>
+                <CaptchaInput v-model:model-value="formState.captcha" @keydown.enter="handleKeydownEnter"></CaptchaInput>
               </a-form-item>
             </template>
           </a-tab-pane>
@@ -39,7 +39,7 @@
               </a-form-item>
 
               <a-form-item has-feedback name="smsCaptcha">
-                <CaptchaInput v-model:model-value="formState.smsCaptcha" @keydown.enter="handleFinish"></CaptchaInput>
+                <CaptchaInput v-model:model-value="formState.smsCaptcha" @keydown.enter="handleKeydownEnter"></CaptchaInput>
               </a-form-item>
 
               <a-form-item name="smsCode" :rules="rules.smsCode">
@@ -78,7 +78,7 @@
     <a-form v-else ref="twoFactorFormRef" class="user-layout-login" :model="twoFactor" v-bind="layout">
       <div class="mb-10 flex flex-center">请打开您的Authenticator APP，获取动态验证码。</div>
       <a-form-item name="verifyCode">
-        <a-input ref="verifyCodeInputRef" v-model:value="twoFactor.verifyCode" placeholder="请输入动态验证码" allow-clear @keydown.enter="handleTwoFactorSubmit">
+        <a-input ref="verifyCodeInputRef" v-model:value="twoFactor.verifyCode" placeholder="请输入动态验证码" allow-clear @keydown.enter="handleTwoFactorKeydownEnter">
           <template #prefix>
             <fs-icon icon="ion:lock-closed-outline"></fs-icon>
           </template>
@@ -220,6 +220,23 @@ const handleTwoFactorSubmit = async () => {
     await oauthApi.BindUser(queryBindCode.value);
     notification.success({ message: "绑定第三方账号成功" });
   }
+};
+
+// 输入法合成状态下，回车用于选择候选词，不能触发登录（keyCode 229 兼容部分浏览器）
+const handleKeydownEnter = (e: KeyboardEvent) => {
+  if (e.isComposing || e.keyCode === 229) {
+    return;
+  }
+  e.preventDefault();
+  handleFinish();
+};
+
+const handleTwoFactorKeydownEnter = (e: KeyboardEvent) => {
+  if (e.isComposing || e.keyCode === 229) {
+    return;
+  }
+  e.preventDefault();
+  handleTwoFactorSubmit();
 };
 
 const sysPublicSettings = settingStore.getSysPublic;

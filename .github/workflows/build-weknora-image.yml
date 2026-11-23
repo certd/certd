@@ -1,0 +1,84 @@
+name: build-weknora-image
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: WeKnora 上游发布标签，同时用作镜像版本号
+        required: true
+        default: v0.9.0
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weknora-image-${{ inputs.version }}
+
+jobs:
+  build-weknora-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      IMAGE: docker.io/certd/weknora
+      VERSION: ${{ inputs.version }}
+    steps:
+      - name: Validate version
+        shell: bash
+        run: |
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*)?$ || ${#VERSION} -gt 128 ]]; then
+            echo '请输入 WeKnora 发布标签，例如 v0.9.0。' >&2
+            exit 1
+          fi
+
+      - name: Checkout Certd
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Checkout WeKnora source
+        uses: actions/checkout@v4
+        with:
+          repository: Tencent/WeKnora
+          ref: refs/tags/${{ inputs.version }}
+          path: weknora-source
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build WeKnora Lite
+        uses: docker/build-push-action@v6
+        with:
+          context: ./weknora-source
+          file: ./docker/weknora/Dockerfile
+          platforms: linux/amd64
+          build-args: WEKNORA_VERSION=${{ inputs.version }}
+          tags: ${{ env.IMAGE }}:${{ inputs.version }}
+          load: true
+
+      - name: Verify WeKnora Lite
+        shell: bash
+        run: |
+          container=$(docker run -d -p 127.0.0.1::8080 \
+            -e JWT_SECRET="$(openssl rand -hex 32)" \
+            -e SYSTEM_AES_KEY="$(openssl rand -hex 16)" \
+            "$IMAGE:$VERSION")
+          trap 'docker logs "$container"; docker rm -f -v "$container"' EXIT
+          address=$(docker port "$container" 8080/tcp)
+          curl -fsS --retry 30 --retry-all-errors --retry-delay 2 \
+            --max-time 5 "http://$address/health" -o /dev/null
+          docker exec "$container" test -s /app/jieba/jieba.dict.utf8
+          curl -fsS "http://$address/" -o "$RUNNER_TEMP/weknora-index.html"
+          grep -F '<title>WeKnora</title>' "$RUNNER_TEMP/weknora-index.html"
+          docker exec "$container" test -s /data/weknora.db
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.dockerhub_username2 }}
+          password: ${{ secrets.dockerhub_password2 }}
+
+      - name: Push verified image
+        shell: bash
+        run: docker push "$IMAGE:$VERSION"

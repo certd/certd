@@ -26,6 +26,7 @@ import { SecurityBanService, UserSuiteEntity, UserSuiteService } from "@certd/co
 import { ApplyTaskInfo, CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { TaskServiceBuilder } from "./getter/task-service-getter.js";
 import { nanoid } from "nanoid";
+import { applyRandomTimeToTriggers } from "./cron-random-time.js";
 import { cloneDeep, set } from "lodash-es";
 import { executorQueue } from "@certd/lib-server";
 import parser from "cron-parser";
@@ -486,6 +487,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
    * 应用启动后初始加载记录
    */
   async onStartup(immediateTriggerOnce: boolean, onlyAdminUser: boolean) {
+    // 服务重启后，之前处于运行中的历史不会再结束，先兜底标记失败
+    await this.historyService.markRunningAsInterrupted();
     await this.foreachPipeline(async entity => {
       if (onlyAdminUser && entity.userId !== 1) {
         return;
@@ -1189,39 +1192,63 @@ export class PipelineService extends BaseService<PipelineEntity> {
       },
     });
 
+    const updates: { item: any; pipeline: any }[] = [];
     for (const item of list) {
       const pipeline = JSON.parse(item.content);
       if (trigger.props === false) {
         //清除trigger
         pipeline.triggers = [];
-      } else {
-        const start = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[0];
-        let end = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[1];
-        if (trigger.randomRange[1] < trigger.randomRange[0]) {
-          //跨天
-          end = dayjs().add(1, "day").format("YYYY-MM-DD") + " " + trigger.randomRange[1];
-        }
-        const startTime = dayjs(start).valueOf();
-        const endTime = dayjs(end).valueOf();
-
-        const triggerConf = cloneDeep(trigger);
-        if (trigger.random === true) {
-          //随机时间
-          const randomTime = Math.floor(Math.random() * (endTime - startTime)) + startTime;
-          const time = dayjs(randomTime).format(" ss:mm:HH").replaceAll(":", " ").replaceAll(" 0", " ").trim();
-          set(triggerConf, "props.cron", `${time} * * *`);
-        }
-        delete triggerConf.random;
-        delete triggerConf.randomRange;
-        pipeline.triggers = [
-          {
-            id: nanoid(),
-            title: "定时触发",
-            ...triggerConf,
-          },
-        ];
+        updates.push({ item, pipeline });
+        continue;
       }
-      await this.doUpdatePipelineJson(item, pipeline);
+      const start = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[0];
+      let end = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[1];
+      if (trigger.randomRange[1] < trigger.randomRange[0]) {
+        //跨天
+        end = dayjs().add(1, "day").format("YYYY-MM-DD") + " " + trigger.randomRange[1];
+      }
+      const startTime = dayjs(start).valueOf();
+      const endTime = dayjs(end).valueOf();
+      const triggerConf = cloneDeep(trigger);
+      if (trigger.random === true) {
+        const randomTime = Math.floor(Math.random() * (endTime - startTime)) + startTime;
+        const time = dayjs(randomTime).format(" ss:mm:HH").replaceAll(":", " ").replaceAll(" 0", " ").trim();
+        if (trigger.preserveSchedule === true) {
+          try {
+            pipeline.triggers = applyRandomTimeToTriggers(pipeline.triggers, time, nanoid());
+          } catch (e: any) {
+            throw new ValidateException(`流水线「${item.title}」无法安全修改定时参数：${e?.message || e}。本次批量操作未执行`);
+          }
+          updates.push({ item, pipeline });
+          continue;
+        }
+        set(triggerConf, "props.cron", `${time} * * *`);
+      }
+      delete triggerConf.random;
+      delete triggerConf.randomRange;
+      delete triggerConf.preserveSchedule;
+      pipeline.triggers = [
+        {
+          id: nanoid(),
+          title: "定时触发",
+          ...triggerConf,
+        },
+      ];
+      updates.push({ item, pipeline });
+    }
+
+    const succeeded: string[] = [];
+    const failed: string[] = [];
+    for (const update of updates) {
+      try {
+        await this.doUpdatePipelineJson(update.item, update.pipeline);
+        succeeded.push(update.item.title);
+      } catch (e: any) {
+        failed.push(`${update.item.title}：${e?.message || e}`);
+      }
+    }
+    if (failed.length > 0) {
+      throw new ValidateException(`批量修改未完全成功（该操作不是数据库事务）：成功 ${succeeded.length} 条${succeeded.length ? `（${succeeded.join("、")}）` : ""}；失败 ${failed.length} 条（${failed.join("；")}）。请刷新后核对`);
     }
     return list.length;
   }

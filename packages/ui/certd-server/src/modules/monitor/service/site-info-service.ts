@@ -2,7 +2,7 @@ import { http, logger, utils } from "@certd/basic";
 import { UserSuiteService } from "@certd/commercial-core";
 import { AccessService, BaseService, Constants, isEnterprise, NeedSuiteException, NeedVIPException, NotificationTypes, SysSettingsService } from "@certd/lib-server";
 import { Pager } from "@certd/pipeline";
-import { createDnsProvider, dnsProviderRegistry, DomainParser } from "@certd/plugin-lib";
+import { CertReader, createDnsProvider, dnsProviderRegistry, DomainParser } from "@certd/plugin-lib";
 import { isComm, isPlus } from "@certd/plus-core";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
@@ -24,7 +24,7 @@ import { SiteIpEntity } from "../entity/site-ip.js";
 import { dnsContainer } from "./dns-custom.js";
 import { JobHistoryService } from "./job-history-service.js";
 import { SiteIpService } from "./site-ip-service.js";
-import { siteTester } from "./site-tester.js";
+import { collectCertificateChain, siteTester, summarizeCertificateChain } from "./site-tester.js";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -189,6 +189,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       const issuer = `${certi.issuer.O}<${certi.issuer.CN}>`;
       const isExpired = dayjs().valueOf() > dayjs(expires).valueOf();
       const status = isExpired ? "expired" : "ok";
+      const certChain = summarizeCertificateChain(res.chain?.length ? res.chain : collectCertificateChain(certi));
       const updateData = {
         id: site.id,
         certDomains: domains.join(","),
@@ -205,6 +206,12 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         delete updateData.checkStatus;
       }
       await this.update(updateData);
+      // 证书链仅用于展示，写入失败不能影响原有证书有效期监控
+      try {
+        await this.update({ id: site.id, certChain: JSON.stringify(certChain) });
+      } catch (e: any) {
+        logger.warn(`站点证书链保存失败：site=${site.id}，${e?.message || e}`);
+      }
 
       const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId, site.projectId, UserSiteMonitorSetting);
 
@@ -245,6 +252,41 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         logger.error("send notify error", e);
       }
     }
+  }
+
+  /**
+   * 实时读取站点 TLS 证书，供“查看证书”弹窗复用 CertView 展示。
+   * 站点监控只保存最新证书摘要，不保存私钥，因此这里不返回 key。
+   */
+  async getSiteCert(site: SiteInfoEntity) {
+    if (!site) {
+      throw new Error("站点不存在");
+    }
+    const res = await siteTester.test({
+      host: site.domain,
+      port: site.httpsPort,
+      ipAddress: site.ipAddress,
+      retryTimes: 0,
+    });
+    const certificate = res.certificate;
+    if (!certificate?.raw) {
+      throw new Error("未获取到站点证书");
+    }
+    const crt = this.buildPem(certificate.raw);
+    const certReader = new CertReader({ crt, key: "" });
+    return {
+      ...certReader.toCertInfo(),
+      detail: certReader.detail,
+    };
+  }
+
+  private buildPem(raw: Buffer) {
+    const base64 =
+      raw
+        .toString("base64")
+        .match(/.{1,64}/g)
+        ?.join("\n") ?? "";
+    return `-----BEGIN CERTIFICATE-----\n${base64}\n-----END CERTIFICATE-----`;
   }
 
   async checkAllIp(site: SiteInfoEntity, retryTimes = null, setting: UserSiteMonitorSetting) {
@@ -478,34 +520,10 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       if (!item) {
         continue;
       }
-      const arr = item.trim().split(":");
-      if (arr.length === 0) {
-        continue;
-      }
-      const domain = arr[0];
-      let port = 443;
-      let name = domain;
-      if (arr.length > 1) {
-        try {
-          port = parseInt(arr[1] || "443");
-        } catch (e) {
-          throw new Error(`${item}格式错误`);
-        }
-      }
-      if (arr.length > 2) {
-        name = arr[2] || domain;
-      }
-      let remark = "";
-      if (arr.length > 3) {
-        remark = arr[3] || "";
-      }
-
+      const site = this.parseImportLine(item);
       list.push({
-        domain,
-        name,
-        httpsPort: port,
+        ...site,
         userId: req.userId,
-        remark,
         groupId: req.groupId,
         projectId: req.projectId,
       });
@@ -519,6 +537,56 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       // await this.checkAllByUsers(req.userId);
     };
     await batchAdd(list);
+  }
+
+  /**
+   * 解析一行导入文本，支持两种格式：
+   * 1. 带协议的地址：https://foo.wellin.ltd:8001/，3-5 位字母的协议头自动忽略，备注为空时回填协议头
+   * 2. 旧格式：域名:端口:名称:备注（端口、名称、备注可省略）
+   */
+  private parseImportLine(item: string) {
+    let text = item.trim();
+
+    // 忽略协议头，例如 http://、https://；协议头在备注为空时回填到备注
+    let protocol = "";
+    const protocolMatch = /^([a-zA-Z]{3,5}):\/\//.exec(text);
+    if (protocolMatch) {
+      protocol = protocolMatch[0];
+      text = text.slice(protocol.length);
+      // 去掉路径、查询参数和锚点，仅保留 host[:port]
+      const pathIndex = text.search(/[/?#]/);
+      if (pathIndex >= 0) {
+        text = text.slice(0, pathIndex);
+      }
+    }
+
+    const arr = text.split(":");
+    const domain = arr[0];
+    if (!domain) {
+      throw new Error(`${item}格式错误，请输入正确的域名`);
+    }
+    let port = 443;
+    if (arr.length > 1 && arr[1]) {
+      if (!/^\d+$/.test(arr[1])) {
+        throw new Error(`${item}格式错误，端口必须是 1-65535 的数字`);
+      }
+      port = Number(arr[1]);
+      if (port < 1 || port > 65535) {
+        throw new Error(`${item}格式错误，端口必须是 1-65535 的数字`);
+      }
+    }
+    let name = domain;
+    if (arr.length > 2) {
+      name = arr[2] || domain;
+    }
+    let remark = "";
+    if (arr.length > 3) {
+      remark = arr[3] || "";
+    }
+    if (!remark) {
+      remark = protocol;
+    }
+    return { domain, name, httpsPort: port, remark };
   }
 
   async startSiteInfoImportTask(req: { userId: number; projectId: number; key: string }) {
