@@ -3,7 +3,7 @@ import dns from "node:dns/promises";
 import net from "node:net";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { In, LessThan, MoreThan, Repository } from "typeorm";
+import { In, LessThan, MoreThan, Not, Repository } from "typeorm";
 import { CertReader } from "@certd/plugin-lib";
 import { LocalCaService } from "./local-ca-service.js";
 import { getCsrDomains, matchAllowedDomains, normalizeDomains, verifyCertIssuedBy } from "./local-ca-crypto.js";
@@ -863,7 +863,7 @@ export class AcmeServerService {
   async cleanupExpired() {
     const now = Date.now();
     const expired = await this.orderRepository.find({
-      where: { expiresTime: LessThan(now) },
+      where: { expiresTime: LessThan(now), status: Not("valid") },
       select: { id: true },
     });
     const ids = expired.map(item => item.id);

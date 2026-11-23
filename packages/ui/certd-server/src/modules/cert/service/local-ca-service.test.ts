@@ -43,6 +43,12 @@ function createService() {
       store.set(entity.id, entity);
       return entity;
     },
+    async update(where: any, set: any) {
+      const item = store.get(where.id);
+      if (item) {
+        Object.assign(item, set);
+      }
+    },
     async create(data: any) {
       return data;
     },
@@ -70,7 +76,11 @@ function createService() {
         async execute() {
           const item = store.get(params?.id);
           if (item && (params?.crlNumber == null || Number(item.crlNumber) === Number(params.crlNumber))) {
-            Object.assign(item, values);
+            if (typeof values?.crlNumber === "function") {
+              item.crlNumber = (Number(item.crlNumber) || 0) + 1;
+            } else {
+              Object.assign(item, values);
+            }
             return { affected: 1 };
           }
           return { affected: 0 };
@@ -625,6 +635,25 @@ describe("LocalCaService", () => {
 
     const rootCrl = await service.getCrlInfo({ id: rootId, userId: 1 });
     assert.ok(rootCrl.entries.some((item: any) => item.serialNumber.toUpperCase() === intermediateSerial));
+  });
+
+  it("吊销时Root CRL生成失败也保持CA不可签发，并可重试", async () => {
+    const { service, store } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Fail Closed Intermediate" });
+    const originalStore = (service as any).storeCrlCache;
+    (service as any).storeCrlCache = async () => {
+      throw new Error("模拟CRL写入失败");
+    };
+    await assert.rejects(() => service.revokeIntermediate({ id, userId: 1 }), /模拟CRL写入失败/);
+    assert.equal(store.get(id).revoked, true);
+    assert.equal(store.get(id).disabled, true);
+    await assert.rejects(() => service.issueLeaf({ id, userId: 1, domains: ["x.example.com"], keyType: "rsa2048" }), /已被父CA吊销|已禁用/);
+
+    (service as any).storeCrlCache = originalStore;
+    const retried = await service.revokeIntermediate({ id, userId: 1 });
+    assert.ok(retried.crlNumber > 0);
+    const rootCrl = await service.getCrlInfo({ id: rootId, userId: 1 });
+    assert.ok(rootCrl.entries.some((item: any) => item.serialNumber.toUpperCase() === retried.serialNumber));
   });
 
   it("创建新中间CA不会丢掉Root CRL中已有的吊销项", async () => {

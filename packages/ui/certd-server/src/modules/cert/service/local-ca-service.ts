@@ -457,11 +457,11 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.caType !== "intermediate") {
       throw new ValidateException("根CA不能直接签发叶子证书，请选择中间CA");
     }
-    if (ca.disabled) {
-      throw new ValidateException("该本地CA已禁用");
-    }
     if (ca.revoked) {
       throw new ValidateException("该本地CA已被父CA吊销，不能签发");
+    }
+    if (ca.disabled) {
+      throw new ValidateException("该本地CA已禁用");
     }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     return await signCsr({
@@ -481,11 +481,11 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.caType !== "intermediate") {
       throw new ValidateException("根CA不能直接签发叶子证书，请选择中间CA");
     }
-    if (ca.disabled) {
-      throw new ValidateException("该本地CA已禁用");
-    }
     if (ca.revoked) {
       throw new ValidateException("该本地CA已被父CA吊销，不能签发");
+    }
+    if (ca.disabled) {
+      throw new ValidateException("该本地CA已禁用");
     }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     return await issueLeafCertificate({
@@ -506,11 +506,11 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!ca || ca.caType !== "intermediate" || !ca.acmeEnabled) {
       throw new ValidateException("该本地CA未启用ACME服务（仅中间CA支持ACME）");
     }
-    if (ca.disabled) {
-      throw new ValidateException("该本地CA已禁用，ACME服务不可用");
-    }
     if (ca.revoked) {
       throw new ValidateException("该本地CA已被父CA吊销，ACME服务不可用");
+    }
+    if (ca.disabled) {
+      throw new ValidateException("该本地CA已禁用，ACME服务不可用");
     }
     if (ca.notAfter && ca.notAfter <= Date.now()) {
       throw new ValidateException("该本地CA已过期，ACME服务不可用");
@@ -727,20 +727,21 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!manager?.transaction) {
       throw new ValidateException("数据库事务不可用，无法生成CRL序号");
     }
-    const driverType = String(manager.connection?.options?.type || "sqlite");
-    const useLock = !driverType.includes("sqlite");
     return await manager.transaction(async tx => {
       const repository = tx.getRepository(LocalCaEntity);
-      const ca = await repository.findOne({
-        where: { id: caId },
-        ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
-      });
-      if (!ca) {
+      const metadata: any = repository.metadata;
+      const column = metadata?.findColumnWithPropertyName?.("crlNumber")?.databaseName || "crl_number";
+      const updated = await repository
+        .createQueryBuilder()
+        .update()
+        .set({ crlNumber: () => `${column} + 1` })
+        .where("id = :id", { id: caId })
+        .execute();
+      if (!updated.affected) {
         throw new ValidateException("本地CA不存在");
       }
-      ca.crlNumber = Number(ca.crlNumber || 0) + 1;
-      await repository.save(ca);
-      return ca.crlNumber;
+      const ca = await repository.findOne({ where: { id: caId } });
+      return Number(ca.crlNumber);
     });
   }
 
@@ -965,15 +966,28 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     const serialNumber = getCertSerialNumber(ca.certPem);
     const revokedTime = Date.now();
-    await this.certRevocationService.record({
-      caId: root.id,
-      userId: req.userId,
-      projectId: req.projectId ?? ca.projectId,
-      serialNumber,
-      revokedTime,
-      expiresTime: ca.notAfter,
-      reason: req.reason || "unspecified",
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法安全吊销中间CA");
+    }
+    // 先持久化不可逆吊销状态与吊销记录，再生成CRL；CRL失败也不能恢复签发能力
+    await manager.transaction(async tx => {
+      await tx.getRepository(LocalCaEntity).update({ id: ca.id }, { disabled: true, revoked: true });
+      await this.certRevocationService.record(
+        {
+          caId: root.id,
+          userId: req.userId,
+          projectId: req.projectId ?? ca.projectId,
+          serialNumber,
+          revokedTime,
+          expiresTime: ca.notAfter,
+          reason: req.reason || "unspecified",
+        },
+        tx
+      );
     });
+    ca.disabled = true;
+    ca.revoked = true;
 
     // 这是显式的 Root 私钥使用操作：只在吊销中间CA时解密一次，生成并缓存Root CRL
     let crlNumber: number;
@@ -995,9 +1009,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       throw e;
     }
 
-    ca.disabled = true;
-    ca.revoked = true;
-    await this.update(ca);
     return { serialNumber, crlNumber };
   }
 
