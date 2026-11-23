@@ -691,6 +691,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         // 缓存损坏则重新生成
       }
     }
+    const crlNumber = await this.nextCrlNumber(ca.id);
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     const revoked = await this.certRevocationService.listByCa(ca.id);
     const now = Date.now();
@@ -703,7 +704,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         revokeTime: item.revokedTime,
         reason: item.reason,
       }));
-    const crlNumber = await this.nextCrlNumber(ca.id);
     const crl = await createCrl({
       caCertPem: ca.certPem,
       caPrivateKeyPem: privateKeyPem,
@@ -938,9 +938,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (root.caType !== "root") {
       throw new ValidateException("只有Root CA可以执行Root CRL刷新");
     }
+    const crlNumber = await this.nextCrlNumber(root.id);
     const rootPrivateKey = this.decryptCaPrivateKey(root);
     const entries = await this.getRevocationEntries(root.id);
-    const crlNumber = await this.nextCrlNumber(root.id);
     const crl = await createCrl({
       caCertPem: root.certPem,
       caPrivateKeyPem: rootPrivateKey,
@@ -992,9 +992,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     // 这是显式的 Root 私钥使用操作：只在吊销中间CA时解密一次，生成并缓存Root CRL
     let crlNumber: number;
     try {
+      crlNumber = await this.nextCrlNumber(root.id);
       const rootPrivateKey = this.decryptCaPrivateKey(root);
       const entries = await this.getRevocationEntries(root.id);
-      crlNumber = await this.nextCrlNumber(root.id);
       const crl = await createCrl({
         caCertPem: root.certPem,
         caPrivateKeyPem: rootPrivateKey,

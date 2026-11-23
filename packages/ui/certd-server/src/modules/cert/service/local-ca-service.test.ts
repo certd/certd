@@ -656,6 +656,31 @@ describe("LocalCaService", () => {
     assert.ok(rootCrl.entries.some((item: any) => item.serialNumber.toUpperCase() === retried.serialNumber));
   });
 
+  it("Root CRL先生成序号再读取吊销快照，避免并发漏吊销", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Concurrent Root",
+      subject: { CN: "Concurrent Root" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    const sequence: string[] = [];
+    const originalNext = (service as any).nextCrlNumber;
+    const originalEntries = (service as any).getRevocationEntries;
+    (service as any).nextCrlNumber = async function (caId: number) {
+      sequence.push("number");
+      return await originalNext.call(service, caId);
+    };
+    (service as any).getRevocationEntries = async function (caId: number) {
+      sequence.push("entries");
+      return await originalEntries.call(service, caId);
+    };
+
+    await service.refreshRootCrl({ id: root.id, userId: 1 });
+    assert.deepEqual(sequence, ["number", "entries"]);
+  });
+
   it("创建新中间CA不会丢掉Root CRL中已有的吊销项", async () => {
     const { service } = createService();
     const { rootId, id } = await createIssuingCa(service, { name: "First Intermediate" });
