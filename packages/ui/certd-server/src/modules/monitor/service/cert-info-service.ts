@@ -2,7 +2,7 @@ import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { X509Certificate } from "node:crypto";
 import { AccessService, BaseService, CodeException, Constants, PageReq } from "@certd/lib-server";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Between, Equal, In, IsNull, LessThan, Not, Or, Repository } from "typeorm";
+import { Between, EntityManager, Equal, In, IsNull, LessThan, Not, Or, Repository } from "typeorm";
 import { CertInfoEntity, CertStatus } from "../entity/cert-info.js";
 import { logger, utils } from "@certd/basic";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
@@ -452,25 +452,16 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     const certInfo = JSON.parse(entity.certInfo) as CertInfo;
 
     if (entity.localCaId) {
-      // 本地CA签发的证书不经过ACME，先写入不可删除的吊销记录，再更新证书状态
+      // 本地CA签发的证书不经过ACME，吊销记录与证书状态在同一事务内写入
       const serialNumber = entity.serialNumber || new X509Certificate(certInfo.crt).serialNumber;
-      const revokedTime = Date.now();
-      await this.certRevocationService.record({
+      await this.applyLocalRevocation({
+        certInfoId: entity.id,
         caId: entity.localCaId,
         userId: entity.userId,
         projectId: entity.projectId,
-        certInfoId: entity.id,
         serialNumber,
-        revokedTime,
         expiresTime: entity.expiresTime,
       });
-      await this.repository.update(
-        { id },
-        {
-          status: CertStatus.revoked,
-          revokeTime: revokedTime,
-        }
-      );
       return;
     }
 
@@ -493,6 +484,34 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         revokeTime: Date.now(),
       }
     );
+  }
+
+  async applyLocalRevocation(req: { certInfoId: number; caId: number; userId: number; projectId?: number; serialNumber: string; expiresTime?: number; reason?: string }) {
+    const revokedTime = Date.now();
+    const run = async (manager?: EntityManager) => {
+      await this.certRevocationService.record(
+        {
+          caId: req.caId,
+          userId: req.userId,
+          projectId: req.projectId,
+          certInfoId: req.certInfoId,
+          serialNumber: req.serialNumber,
+          revokedTime,
+          expiresTime: req.expiresTime,
+          reason: req.reason,
+        },
+        manager
+      );
+      const repository = manager ? manager.getRepository(CertInfoEntity) : this.repository;
+      await repository.update({ id: req.certInfoId }, { status: CertStatus.revoked, revokeTime: revokedTime });
+    };
+    const manager = this.repository?.manager;
+    if (manager?.transaction) {
+      await manager.transaction(async tx => run(tx));
+    } else {
+      await run();
+    }
+    return revokedTime;
   }
 
   /**

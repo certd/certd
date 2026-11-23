@@ -8,10 +8,10 @@ import { CertReader } from "@certd/plugin-lib";
 import { LocalCaService } from "./local-ca-service.js";
 import { getCsrDomains, matchAllowedDomains, normalizeDomains } from "./local-ca-crypto.js";
 import { CertInfoService } from "../../monitor/service/cert-info-service.js";
-import { CertRevocationService } from "./cert-revocation-service.js";
 import { CertInfoEntity, CertStatus } from "../../monitor/entity/cert-info.js";
 import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeOrderEntity } from "../entity/acme-server.js";
 import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "./acme-jws.js";
+import { fetchHttpChallenge } from "./acme-network.js";
 
 const NONCE_TTL = 5 * 60 * 1000;
 const ORDER_TTL = 7 * 24 * 3600 * 1000;
@@ -54,9 +54,6 @@ export class AcmeServerService {
 
   @Inject()
   certInfoService: CertInfoService;
-
-  @Inject()
-  certRevocationService: CertRevocationService;
 
   @InjectEntityModel(AcmeAccountEntity)
   accountRepository: Repository<AcmeAccountEntity>;
@@ -357,19 +354,14 @@ export class AcmeServerService {
     if (!certInfo) {
       throw new AcmeProblem("malformed", "证书不是由该本地CA签发");
     }
-    const revokedTime = Date.now();
-    await this.certRevocationService.record({
+    await this.certInfoService.applyLocalRevocation({
+      certInfoId: certInfo.id,
       caId: ca.id,
       userId: ca.userId,
       projectId: ca.projectId,
-      certInfoId: certInfo.id,
       serialNumber,
-      revokedTime,
       expiresTime: certInfo.expiresTime,
     });
-    certInfo.status = CertStatus.revoked;
-    certInfo.revokeTime = revokedTime;
-    await this.certInfoService.update(certInfo);
     ctx.status = 200;
   }
 
@@ -415,7 +407,10 @@ export class AcmeServerService {
     if (expected.length !== actual.length || !crypto.timingSafeEqual(expected, actual)) {
       throw new AcmeProblem("unauthorized", "EAB签名验证失败", 401);
     }
-    await this.localCaService.consumeAcmeEab(info.id);
+    const consumed = await this.localCaService.consumeAcmeEab(info.id);
+    if (!consumed) {
+      throw new AcmeProblem("unauthorized", "EAB凭证使用次数已耗尽", 401);
+    }
     return info.id;
   }
 
@@ -554,8 +549,11 @@ export class AcmeServerService {
       if (type === "ip" && !net.isIP(value)) {
         throw new AcmeProblem("rejectedIdentifier", `IP地址格式错误：${value}`);
       }
-      if (type === "dns" && value.includes("*") && !value.startsWith("*.")) {
-        throw new AcmeProblem("rejectedIdentifier", `域名格式错误：${value}`);
+      if (type === "dns") {
+        const hostname = value.startsWith("*.") ? value.slice(2) : value;
+        if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/.test(hostname)) {
+          throw new AcmeProblem("rejectedIdentifier", `域名格式错误：${value}`);
+        }
       }
       const key = `${type}:${value}`;
       if (seen.has(key)) {
@@ -598,7 +596,12 @@ export class AcmeServerService {
   private async performValidation(challenge: AcmeChallengeEntity, authz: AcmeAuthzEntity) {
     if (challenge.type === "dns-01") {
       const expected = sha256Base64Url(challenge.keyAuthorization);
-      const records = await dns.resolveTxt(`_acme-challenge.${authz.identifierValue}`);
+      let records: string[][];
+      try {
+        records = await dns.resolveTxt(`_acme-challenge.${authz.identifierValue}`);
+      } catch (e: any) {
+        throw new Error(`DNS TXT查询失败（${e.code || e.message}）`);
+      }
       const values = records.map(parts => parts.join(""));
       if (!values.includes(expected)) {
         throw new Error(`DNS TXT记录不匹配，期望值：${expected}`);
@@ -606,12 +609,7 @@ export class AcmeServerService {
       return;
     }
     if (challenge.type === "http-01") {
-      const url = `http://${authz.identifierValue}/.well-known/acme-challenge/${challenge.token}`;
-      const res = await fetch(url, { signal: AbortSignal.timeout(10000), redirect: "manual" });
-      const text = (await res.text()).trim();
-      if (res.status !== 200 || text !== challenge.keyAuthorization) {
-        throw new Error(`HTTP-01校验失败，状态码：${res.status}`);
-      }
+      await fetchHttpChallenge(authz.identifierValue, challenge.token, challenge.keyAuthorization);
       return;
     }
     throw new Error(`不支持的挑战类型：${challenge.type}`);

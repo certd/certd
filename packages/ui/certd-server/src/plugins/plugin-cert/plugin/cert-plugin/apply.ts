@@ -989,7 +989,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     const plan: DomainsVerifyPlan = {};
 
     const missingDomains: string[] = [];
-    for (const domain in verifiers) {
+    // 以请求域名列表为准逐项检查，避免 getVerifiers 直接漏掉某些域名
+    for (const domain of domainList) {
       const verifier = verifiers[domain];
       if (verifier == null) {
         missingDomains.push(domain);

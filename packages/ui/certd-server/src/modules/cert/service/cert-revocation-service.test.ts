@@ -8,13 +8,30 @@ function createService() {
     create(data: any) {
       return { ...data };
     },
-    async save(entity: any) {
-      if (store.some(item => item.caId === entity.caId && item.serialNumber === entity.serialNumber)) {
-        throw new Error("UNIQUE constraint failed");
-      }
-      entity.id = store.length + 1;
-      store.push(entity);
-      return entity;
+    createQueryBuilder() {
+      let values: any;
+      return {
+        insert() {
+          return this;
+        },
+        into() {
+          return this;
+        },
+        values(data: any) {
+          values = data;
+          return this;
+        },
+        orIgnore() {
+          return this;
+        },
+        async execute() {
+          if (!store.some(item => item.caId === values.caId && item.serialNumber === values.serialNumber)) {
+            values.id = store.length + 1;
+            store.push({ ...values });
+          }
+          return { identifiers: [] };
+        },
+      };
     },
     async findOne({ where }: any) {
       return store.find(item => item.caId === where.caId && item.serialNumber === where.serialNumber) || null;

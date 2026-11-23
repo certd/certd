@@ -60,6 +60,9 @@ function createService() {
     async find() {
       return [];
     },
+    async applyLocalRevocation(req: any) {
+      await service.certRevocationService.record(req);
+    },
   } as any;
   service.pipelineRepository = {
     async find() {
@@ -318,6 +321,27 @@ describe("LocalCaService", () => {
     assert.equal(parsed.findRevoked("0BAABBCCDDEEFF00112233445566778899"), null);
   });
 
+  it("过期吊销记录不再进入 CRL，但吊销表记录仍保留", async () => {
+    const { service, revocations } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Expired Revocation CA",
+      subject: { CN: "Expired Revocation CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    const now = Date.now();
+    await service.certRevocationService.record({ caId: id, userId: 1, serialNumber: "0A01", expiresTime: now + 86400000 });
+    await service.certRevocationService.record({ caId: id, userId: 1, serialNumber: "0A02", expiresTime: now - 86400000 });
+
+    const crl = await service.getCrl(id);
+    const parsed = new x509.X509Crl(crl.pem);
+    assert.ok(parsed.findRevoked("0A01"));
+    assert.equal(parsed.findRevoked("0A02"), null);
+    assert.equal(revocations.size, 2);
+    assert.equal((await service.certRevocationService.listByCa(id)).length, 2);
+  });
+
   it("exportCa 返回证书和私钥", async () => {
     const { service } = createService();
     const { id } = await service.generateCa({
@@ -364,7 +388,9 @@ describe("LocalCaService", () => {
         assert.equal(where.id, 9);
         return { id: 9, localCaId: id, status: "active", serialNumber: "ABC", expiresTime: 2 };
       },
-      async update() {},
+      async applyLocalRevocation(req: any) {
+        await service.certRevocationService.record(req);
+      },
     } as any;
 
     const list = await service.listIssuedCerts({ id, userId: 1 });

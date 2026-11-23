@@ -371,7 +371,7 @@ describe("CertApplyPlugin 自动匹配本地CA", () => {
   it("域名未配置校验方式时，本地CA直签可跳过域名校验", async () => {
     const plugin = createPlugin({
       directoryUrl: "https://certd.example.com/api/acme/12/directory",
-      verifiers: { "foo.example.com": null },
+      verifiers: {},
       ca: { id: 12, name: "内部中间CA", caType: "intermediate", acmeEnabled: true, acmeDirectIssue: true, disabled: false, notAfter: Date.now() + 86400000 },
     });
 

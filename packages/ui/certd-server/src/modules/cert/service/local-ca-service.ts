@@ -30,13 +30,8 @@ import {
 } from "./local-ca-crypto.js";
 
 function randomEabHmacKey() {
-  for (let i = 0; i < 20; i++) {
-    const key = crypto.randomBytes(32).toString("base64").replace(/=+$/, "");
-    if (/^[A-Za-z0-9]+$/.test(key)) {
-      return key;
-    }
-  }
-  return crypto.randomBytes(32).toString("hex");
+  // RFC 8555 EAB HMAC key：统一使用无填充的 base64url
+  return crypto.randomBytes(32).toString("base64url");
 }
 
 function normalizeBaseUrl(value?: string) {
@@ -587,13 +582,14 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async consumeAcmeEab(id: string) {
-    const bean = await this.acmeEabRepository.findOne({ where: { id } });
-    if (!bean) {
-      return;
-    }
-    bean.usedCount = Number(bean.usedCount || 0) + 1;
-    bean.updateTime = new Date();
-    await this.acmeEabRepository.save(bean);
+    const result = await this.acmeEabRepository
+      .createQueryBuilder()
+      .update()
+      .set({ usedCount: () => "used_count + 1", updateTime: new Date() })
+      .where("id = :id", { id })
+      .andWhere("(max_uses = 0 OR used_count < max_uses)")
+      .execute();
+    return (result.affected || 0) > 0;
   }
 
   async getCrl(id: number) {
@@ -765,19 +761,14 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!cert.serialNumber) {
       throw new ValidateException("证书序列号缺失，无法写入吊销记录");
     }
-    const revokedTime = Date.now();
-    await this.certRevocationService.record({
+    await this.certInfoService.applyLocalRevocation({
+      certInfoId: cert.id,
       caId: ca.id,
       userId: req.userId,
       projectId: req.projectId ?? ca.projectId,
-      certInfoId: cert.id,
       serialNumber: cert.serialNumber,
-      revokedTime,
       expiresTime: cert.expiresTime,
     });
-    cert.status = CertStatus.revoked;
-    cert.revokeTime = revokedTime;
-    await this.certInfoService.update(cert);
   }
 
   async getPublicKey(req: LocalCaScope) {

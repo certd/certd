@@ -1,6 +1,6 @@
 import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Repository } from "typeorm";
+import { EntityManager, Repository } from "typeorm";
 import { CertRevocationEntity } from "../entity/cert-revocation.js";
 
 export type RecordRevocationReq = {
@@ -27,16 +27,17 @@ export class CertRevocationService {
   @InjectEntityModel(CertRevocationEntity)
   repository: Repository<CertRevocationEntity>;
 
-  async record(req: RecordRevocationReq) {
+  async record(req: RecordRevocationReq, manager?: EntityManager) {
+    const repository = manager ? manager.getRepository(CertRevocationEntity) : this.repository;
     const serialNumber = normalizeSerialNumber(req.serialNumber);
     if (!serialNumber) {
       throw new Error("证书序列号为空，无法记录吊销");
     }
-    const existing = await this.findBySerial(req.caId, serialNumber);
+    const existing = await this.findBySerial(req.caId, serialNumber, manager);
     if (existing) {
       return existing;
     }
-    const bean = this.repository.create({
+    const bean = repository.create({
       caId: req.caId,
       userId: req.userId,
       projectId: req.projectId,
@@ -46,24 +47,22 @@ export class CertRevocationService {
       reason: req.reason || "unspecified",
       expiresTime: req.expiresTime,
     });
-    try {
-      return await this.repository.save(bean);
-    } catch (e) {
-      // 并发吊销时唯一索引会冲突，回查已有记录
-      const again = await this.findBySerial(req.caId, serialNumber);
-      if (again) {
-        return again;
-      }
-      throw e;
+    // 数据库原生 INSERT ... ON CONFLICT/IGNORE，避免并发吊销重复落库
+    await repository.createQueryBuilder().insert().into(CertRevocationEntity).values(bean).orIgnore().execute();
+    const saved = await this.findBySerial(req.caId, serialNumber, manager);
+    if (!saved) {
+      throw new Error("吊销记录写入失败");
     }
+    return saved;
   }
 
-  async findBySerial(caId: number, serialNumber: string) {
+  async findBySerial(caId: number, serialNumber: string, manager?: EntityManager) {
+    const repository = manager ? manager.getRepository(CertRevocationEntity) : this.repository;
     const normalized = normalizeSerialNumber(serialNumber);
     if (!normalized) {
       return null;
     }
-    return await this.repository.findOne({
+    return await repository.findOne({
       where: { caId, serialNumber: normalized },
     });
   }

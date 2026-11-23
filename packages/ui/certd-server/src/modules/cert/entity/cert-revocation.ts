@@ -1,9 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
 /**
  * 不可删除的吊销记录：CRL 只依赖此表，证书记录删除后仍保留吊销状态。
  */
 @Entity("cd_cert_revocation")
+@Index("index_cert_revocation_ca_serial", ["caId", "serialNumber"], { unique: true })
 export class CertRevocationEntity {
   @PrimaryGeneratedColumn()
   id: number;
