@@ -6,6 +6,52 @@ import { IDnsProvider, IDomainParser, ISubDomainsGetter } from "@certd/plugin-li
 import punycode from "punycode.js";
 import { IOssClient } from "../../../plugin-lib/index.js";
 import { NonRetryableException } from "@certd/lib-server";
+import { normalizePrivateKeyPem } from "./cert-key-reuse.js";
+export async function createOrderCsr(req: {
+  domains: string[];
+  csrInfo?: any;
+  privateKeyType?: string;
+  reusePrivateKey?: string;
+}): Promise<{ key: Buffer; csr: Buffer; reused: boolean }> {
+  const altNames = req.domains;
+  let privateKey: Buffer | null = null;
+  let outputKey: Buffer | null = null;
+  if (req.reusePrivateKey) {
+    outputKey = Buffer.from(req.reusePrivateKey);
+    // WebCrypto只接受PKCS#8；证书输出仍保留原始私钥编码
+    privateKey = Buffer.from(normalizePrivateKeyPem(req.reusePrivateKey));
+  }
+  const privateKeyType = req.privateKeyType || "rsa_2048";
+  const privateKeyArr = privateKeyType.split("_");
+  const type = privateKeyArr[0];
+  let size = 2048;
+  if (privateKeyArr.length > 1) {
+    size = parseInt(privateKeyArr[1]);
+  }
+  let encodingType = "pkcs8";
+  if (privateKeyArr.length > 2) {
+    encodingType = privateKeyArr[2];
+  }
+  if (privateKey == null) {
+    if (type === "ec") {
+      privateKey = await acme.crypto.createPrivateEcdsaKey(`P-${size}` as any, encodingType);
+    } else {
+      privateKey = await acme.crypto.createPrivateRsaKey(size, encodingType);
+    }
+  }
+  let createCsr: any = acme.crypto.createCsr;
+  if (!req.reusePrivateKey && encodingType === "pkcs1") {
+    // 兼容老版本
+    createCsr = acme.forge.createCsr;
+  }
+  const csrData: any = {
+    ...req.csrInfo,
+    altNames,
+  };
+  const [key, csr] = await createCsr(csrData, privateKey);
+  return { key: outputKey || Buffer.from(key), csr: Buffer.from(csr), reused: !!req.reusePrivateKey };
+}
+
 export type CnameVerifyPlan = {
   type?: string;
   domain: string;
@@ -515,6 +561,7 @@ export class AcmeService {
     profile?: string;
     preferredChain?: string;
     acmeAccount?: AcmeAccountInfo;
+    reusePrivateKey?: string;
   }): Promise<CertInfo> {
     const { email, csrInfo, dnsProvider, domainsVerifyPlan, profile, preferredChain, acmeAccount } = options;
     const client: acme.Client = acmeAccount ? await this.getAcmeClientByAccount(acmeAccount) : await this.getAcmeClient(email);
@@ -527,40 +574,15 @@ export class AcmeService {
     domains = encodingDomains;
 
     /* Create CSR */
-    const { altNames } = this.buildCommonNameByDomains(domains);
-    let privateKey = null;
-    const privateKeyType = options.privateKeyType || "rsa_2048";
-    const privateKeyArr = privateKeyType.split("_");
-    const type = privateKeyArr[0];
-    let size = 2048;
-    if (privateKeyArr.length > 1) {
-      size = parseInt(privateKeyArr[1]);
+    const { key, csr, reused } = await createOrderCsr({
+      domains,
+      csrInfo,
+      privateKeyType: options.privateKeyType,
+      reusePrivateKey: options.reusePrivateKey,
+    });
+    if (reused) {
+      this.logger.info("复用上次证书私钥，保持证书公钥不变");
     }
-
-    let encodingType = "pkcs8";
-    if (privateKeyArr.length > 2) {
-      encodingType = privateKeyArr[2];
-    }
-
-    if (type == "ec") {
-      const name: any = "P-" + size;
-      privateKey = await acme.crypto.createPrivateEcdsaKey(name, encodingType);
-    } else {
-      privateKey = await acme.crypto.createPrivateRsaKey(size, encodingType);
-    }
-
-    let createCsr: any = acme.crypto.createCsr;
-    if (encodingType === "pkcs1") {
-      //兼容老版本
-      createCsr = acme.forge.createCsr;
-    }
-    const csrData: any = {
-      // commonName,
-      ...csrInfo,
-      altNames,
-      // emailAddress: email,
-    };
-    const [key, csr] = await createCsr(csrData, privateKey);
 
     if (dnsProvider == null && domainsVerifyPlan == null) {
       throw new Error("dnsProvider 、 domainsVerifyPlan不能都为空");

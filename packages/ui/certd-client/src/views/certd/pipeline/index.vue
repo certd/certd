@@ -173,7 +173,7 @@ function batchDelete() {
     display: flex;
     align-items: center;
     width: 100%;
-    background-color: #fafafa;
+    background-color: var(--fn-color-fill-alter);
     padding-left: 10px;
   }
 }
