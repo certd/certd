@@ -53,10 +53,15 @@ export function isPublicIp(address: string) {
     if (mapped) {
       return isPublicIpv4(mapped[1]);
     }
-    if (/^fe[89ab]/.test(lower) || /^f[cd]/.test(lower) || lower.startsWith("ff")) {
+    const compatible = lower.match(/^::(\d+\.\d+\.\d+\.\d+)$/);
+    if (compatible) {
+      return isPublicIpv4(compatible[1]);
+    }
+    // 采用白名单思路：仅允许 2000::/3 全球单播，并排除特殊/过渡范围
+    if (!/^2[0-9a-f]{3}:|^3[0-9a-f]{3}:/.test(lower)) {
       return false;
     }
-    if (lower.startsWith("2001:db8")) {
+    if (lower.startsWith("2001:db8") || lower.startsWith("2001:2:") || lower.startsWith("2001:10:") || lower.startsWith("2001:20:") || lower.startsWith("2002:")) {
       return false;
     }
     return true;

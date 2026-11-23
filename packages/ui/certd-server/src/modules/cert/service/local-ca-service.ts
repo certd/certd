@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { In, Like, Repository } from "typeorm";
+import { EntityManager, In, Like, Repository } from "typeorm";
 import { BaseService, EncryptService, PageReq, SysInstallInfo, SysSettingsService, ValidateException } from "@certd/lib-server";
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { AcmeEabEntity } from "../entity/acme-server.js";
@@ -581,11 +581,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return { id: bean.id, allowedDomains };
   }
 
-  async consumeAcmeEab(id: string) {
-    const metadata: any = this.acmeEabRepository.metadata;
+  async consumeAcmeEab(id: string, manager?: EntityManager) {
+    const repository = manager ? manager.getRepository(AcmeEabEntity) : this.acmeEabRepository;
+    const metadata: any = repository.metadata;
     const usedCountColumn = metadata?.findColumnWithPropertyName?.("usedCount")?.databaseName || "used_count";
     const maxUsesColumn = metadata?.findColumnWithPropertyName?.("maxUses")?.databaseName || "max_uses";
-    const result = await this.acmeEabRepository
+    const result = await repository
       .createQueryBuilder()
       .update()
       .set({ usedCount: () => `${usedCountColumn} + 1`, updateTime: new Date() })

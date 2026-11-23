@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import crypto, { X509Certificate } from "node:crypto";
-import { createCrl, createCsr, createIntermediateCa, createRootCa, getX509Summary, issueLeafCertificate, signCsr, validateImportedIntermediateCa, validateImportedRootCa } from "./local-ca-crypto.js";
+import { createCrl, createCsr, createIntermediateCa, createRootCa, getX509Summary, issueLeafCertificate, signCsr, validateImportedIntermediateCa, validateImportedRootCa, verifyCertIssuedBy } from "./local-ca-crypto.js";
 // @ts-ignore
 import * as x509 from "@peculiar/x509";
 
@@ -218,6 +218,29 @@ describe("local-ca-crypto", () => {
         }),
       /不是CA证书/
     );
+  });
+
+  it("只认签发该证书的CA，拒绝其他CA或自造证书", async () => {
+    const root = await createRootCa({ subject: { CN: "Revoke Root" }, keyType: "rsa2048", validityYears: 2 });
+    const intermediate = await createIntermediateCa({
+      rootCertPem: root.certPem,
+      rootPrivateKeyPem: root.privateKeyPem,
+      subject: { CN: "Revoke Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    const leaf = await issueLeafCertificate({
+      caCertPem: intermediate.certPem,
+      caPrivateKeyPem: intermediate.privateKeyPem,
+      domains: ["revoke.example.com"],
+      keyType: "rsa2048",
+    });
+    const other = await createRootCa({ subject: { CN: "Other Root" }, keyType: "rsa2048", validityYears: 1 });
+
+    assert.equal(verifyCertIssuedBy(leaf.certPem, intermediate.certPem), true);
+    assert.equal(verifyCertIssuedBy(leaf.certPem, other.certPem), false);
+    assert.equal(verifyCertIssuedBy(other.certPem, intermediate.certPem), false);
+    assert.equal(verifyCertIssuedBy("not-a-cert", intermediate.certPem), false);
   });
 
   it("生成CRL并包含已吊销序列号", async () => {

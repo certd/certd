@@ -6,12 +6,13 @@ import { InjectEntityModel } from "@midwayjs/typeorm";
 import { Repository } from "typeorm";
 import { CertReader } from "@certd/plugin-lib";
 import { LocalCaService } from "./local-ca-service.js";
-import { getCsrDomains, matchAllowedDomains, normalizeDomains } from "./local-ca-crypto.js";
+import { getCsrDomains, matchAllowedDomains, normalizeDomains, verifyCertIssuedBy } from "./local-ca-crypto.js";
 import { CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { CertInfoEntity, CertStatus } from "../../monitor/entity/cert-info.js";
 import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeOrderEntity } from "../entity/acme-server.js";
 import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "./acme-jws.js";
 import { fetchHttpChallenge } from "./acme-network.js";
+import { isSameAcmeUrl } from "./acme-url.js";
 
 const NONCE_TTL = 5 * 60 * 1000;
 const ORDER_TTL = 7 * 24 * 3600 * 1000;
@@ -131,6 +132,10 @@ export class AcmeServerService {
         throw new AcmeProblem("accountDoesNotExist", "账户不存在", 400);
       }
       const eabId = await this.verifyExternalAccountBinding(caId, payload.externalAccountBinding, thumbprint);
+      const manager = this.accountRepository.manager;
+      if (!manager?.transaction) {
+        throw new AcmeProblem("serverInternal", "账户事务不可用", 500);
+      }
       account = this.accountRepository.create({
         id: randomId(),
         caId,
@@ -142,7 +147,13 @@ export class AcmeServerService {
         status: "valid",
         contact: JSON.stringify(payload.contact || []),
       });
-      await this.accountRepository.save(account);
+      await manager.transaction(async tx => {
+        const consumed = await this.localCaService.consumeAcmeEab(eabId, tx);
+        if (!consumed) {
+          throw new AcmeProblem("unauthorized", "EAB凭证使用次数已耗尽", 401);
+        }
+        await tx.getRepository(AcmeAccountEntity).save(account);
+      });
       ctx.status = 201;
       ctx.set("Location", `${await this.baseUrl(caId)}/account/${account.id}`);
     }
@@ -231,6 +242,7 @@ export class AcmeServerService {
   async getOrder(ctx: any, caId: number, orderId: string, body: any) {
     const { account } = await this.verifyAccount(ctx, caId, body);
     const order = await this.getOrderForAccount(caId, orderId, account.id);
+    this.assertNotExpired(order, "订单已过期");
     return await this.toOrder(order);
   }
 
@@ -240,6 +252,7 @@ export class AcmeServerService {
     if (!authz || authz.accountId !== account.id) {
       throw new AcmeProblem("unauthorized", "授权不存在", 401);
     }
+    this.assertNotExpired(authz, "授权已过期");
     return await this.toAuthz(authz);
   }
 
@@ -255,6 +268,7 @@ export class AcmeServerService {
       if (!authz) {
         throw new AcmeProblem("serverInternal", "授权不存在", 500);
       }
+      this.assertNotExpired(authz, "授权已过期");
       await this.triggerChallenge(caId, authz, challenge, jws.payload);
     }
     const latest = await this.challengeRepository.findOne({ where: { id: challenge.id } });
@@ -264,9 +278,13 @@ export class AcmeServerService {
   async finalizeOrder(ctx: any, caId: number, orderId: string, body: any) {
     const ca = await this.localCaService.getAcmeCa(caId);
     const { account } = await this.verifyAccount(ctx, caId, body);
-    const order = await this.getOrderForAccount(caId, orderId, account.id);
-    if (order.status !== "ready") {
-      throw new AcmeProblem("orderNotReady", "订单尚未就绪", 403);
+    const current = await this.getOrderForAccount(caId, orderId, account.id);
+    this.assertNotExpired(current, "订单已过期");
+    if (current.status === "valid") {
+      return await this.toOrder(current);
+    }
+    if (current.status !== "ready") {
+      throw new AcmeProblem("orderNotReady", current.status === "processing" ? "订单正在处理中" : "订单尚未就绪", 403);
     }
     const jws = decodeJws(body);
     const csrValue = jws.payload?.csr;
@@ -281,33 +299,68 @@ export class AcmeServerService {
     } catch (e: any) {
       throw new AcmeProblem("badCSR", `CSR解析失败：${e.message}`);
     }
-    const orderIdentifiers = JSON.parse(order.identifiers).map((item: any) => item.value);
-    const expected = normalizeDomains(orderIdentifiers).sort();
-    const actual = normalizeDomains(csrDomains).sort();
-    if (JSON.stringify(expected) !== JSON.stringify(actual)) {
-      throw new AcmeProblem("badCSR", "CSR域名与订单不一致");
-    }
+    const checkCsrDomains = (order: AcmeOrderEntity) => {
+      const orderIdentifiers = JSON.parse(order.identifiers).map((item: any) => item.value);
+      const expected = normalizeDomains(orderIdentifiers).sort();
+      const actual = normalizeDomains(csrDomains).sort();
+      if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+        throw new AcmeProblem("badCSR", "CSR域名与订单不一致");
+      }
+    };
+    checkCsrDomains(current);
 
-    const config = this.parseAcmeConfig(ca.acmeConfig);
-    let signed;
-    try {
-      signed = await this.localCaService.signCsrForAcme(ca.id, csrPem, config.validityDays);
-    } catch (e: any) {
-      throw new AcmeProblem("serverInternal", `证书签发失败：${e.message}`, 500);
+    const manager = this.orderRepository.manager;
+    if (!manager?.transaction) {
+      throw new AcmeProblem("serverInternal", "订单事务不可用", 500);
     }
-    order.status = "valid";
-    order.csr = csrPem;
-    order.certPem = signed.fullchainPem;
-    order.serialNumber = signed.serialNumber;
-    order.updateTime = new Date();
-    await this.orderRepository.save(order);
-    await this.saveCertRecord(ca, order, signed);
-    return await this.toOrder(order);
+    const config = this.parseAcmeConfig(ca.acmeConfig);
+    return await manager.transaction(async tx => {
+      const orderRepository = tx.getRepository(AcmeOrderEntity);
+      const certRepository = tx.getRepository(CertInfoEntity);
+      const order = await orderRepository.findOne({ where: { id: orderId, caId } });
+      if (!order || order.accountId !== account.id) {
+        throw new AcmeProblem("unauthorized", "订单不存在", 401);
+      }
+      this.assertNotExpired(order, "订单已过期");
+      if (order.status === "valid") {
+        return await this.toOrder(order);
+      }
+      if (order.status !== "ready") {
+        throw new AcmeProblem("orderNotReady", "订单正在处理中或尚未就绪", 403);
+      }
+      checkCsrDomains(order);
+
+      // 条件更新认领订单，保证并发 finalize 只有一个能签发
+      const claimed = await orderRepository.update({ id: orderId, caId, accountId: account.id, status: "ready" }, { status: "processing", updateTime: new Date() });
+      if (!claimed.affected) {
+        const latest = await orderRepository.findOne({ where: { id: orderId, caId } });
+        if (latest?.status === "valid") {
+          return await this.toOrder(latest);
+        }
+        throw new AcmeProblem("orderNotReady", "订单正在处理中或尚未就绪", 403);
+      }
+
+      let signed;
+      try {
+        signed = await this.localCaService.signCsrForAcme(ca.id, csrPem, config.validityDays);
+      } catch (e: any) {
+        throw new AcmeProblem("serverInternal", `证书签发失败：${e.message}`, 500);
+      }
+      order.status = "valid";
+      order.csr = csrPem;
+      order.certPem = signed.fullchainPem;
+      order.serialNumber = signed.serialNumber;
+      order.updateTime = new Date();
+      await orderRepository.save(order);
+      await this.saveCertRecord(ca, order, signed, certRepository);
+      return await this.toOrder(order);
+    });
   }
 
   async getCertificate(ctx: any, caId: number, orderId: string, body: any) {
     const { account } = await this.verifyAccount(ctx, caId, body);
     const order = await this.getOrderForAccount(caId, orderId, account.id);
+    this.assertNotExpired(order, "订单已过期");
     if (order.status !== "valid" || !order.certPem) {
       throw new AcmeProblem("orderNotReady", "证书尚未签发", 403);
     }
@@ -342,6 +395,9 @@ export class AcmeServerService {
     }
     if (jws.header.jwk) {
       this.assertJwkMatchesCertificate(jws.header.jwk, cert);
+    }
+    if (!verifyCertIssuedBy(cert.toString(), ca.certPem)) {
+      throw new AcmeProblem("unauthorized", "证书不是由该本地CA签发", 401);
     }
     const serialNumber = cert.serialNumber.toUpperCase();
     if (account) {
@@ -391,7 +447,7 @@ export class AcmeServerService {
       throw new AcmeProblem("malformed", "EAB缺少kid");
     }
     const expectedEabUrl = `${await this.baseUrl(caId)}/new-account`;
-    if (header.url !== expectedEabUrl) {
+    if (!isSameAcmeUrl(header.url, expectedEabUrl)) {
       throw new AcmeProblem("malformed", "EAB url不匹配");
     }
     if (jwkThumbprint(jwk) !== accountThumbprint) {
@@ -411,10 +467,6 @@ export class AcmeServerService {
     const actual = base64urlDecode(eab.signature);
     if (expected.length !== actual.length || !crypto.timingSafeEqual(expected, actual)) {
       throw new AcmeProblem("unauthorized", "EAB签名验证失败", 401);
-    }
-    const consumed = await this.localCaService.consumeAcmeEab(info.id);
-    if (!consumed) {
-      throw new AcmeProblem("unauthorized", "EAB凭证使用次数已耗尽", 401);
     }
     return info.id;
   }
@@ -522,17 +574,8 @@ export class AcmeServerService {
     if (typeof url !== "string") {
       throw new AcmeProblem("malformed", "JWS缺少url");
     }
-    let target: URL;
-    try {
-      target = new URL(url);
-    } catch (e) {
-      throw new AcmeProblem("malformed", "JWS url格式错误");
-    }
-    const expectedOrigin = ctx.origin || `${ctx.protocol}://${ctx.host}`;
-    if (target.origin !== expectedOrigin) {
-      throw new AcmeProblem("unauthorized", "JWS url origin与请求地址不匹配", 401);
-    }
-    if (target.pathname !== ctx.path) {
+    const expectedUrl = `${ctx.origin || `${ctx.protocol}://${ctx.host}`}${ctx.path}`;
+    if (!isSameAcmeUrl(url, expectedUrl)) {
       throw new AcmeProblem("unauthorized", "JWS url与请求地址不匹配", 401);
     }
     if (!jws.header?.nonce) {
@@ -578,6 +621,7 @@ export class AcmeServerService {
   }
 
   private async triggerChallenge(caId: number, authz: AcmeAuthzEntity, challenge: AcmeChallengeEntity, payload: any) {
+    this.assertNotExpired(authz, "授权已过期");
     const ca = await this.localCaService.getAcmeCa(caId);
     if (challenge.status === "valid") {
       return;
@@ -644,6 +688,12 @@ export class AcmeServerService {
     await this.orderRepository.save(order);
   }
 
+  private assertNotExpired(entity: { expiresTime?: number }, message: string) {
+    if (entity?.expiresTime && entity.expiresTime <= Date.now()) {
+      throw new AcmeProblem("orderNotReady", message, 403);
+    }
+  }
+
   private async getOrderForAccount(caId: number, orderId: string, accountId: string) {
     const order = await this.orderRepository.findOne({ where: { id: orderId, caId } });
     if (!order || order.accountId !== accountId) {
@@ -701,7 +751,7 @@ export class AcmeServerService {
     };
   }
 
-  private async saveCertRecord(ca: any, order: AcmeOrderEntity, signed: any) {
+  private async saveCertRecord(ca: any, order: AcmeOrderEntity, signed: any, repository = this.certInfoService.repository) {
     const reader = new CertReader({ crt: signed.fullchainPem, key: "" });
     const orderDomains = JSON.parse(order.identifiers).map((item: any) => item.value);
     const domains = reader.detail.domains.altNames?.length ? reader.detail.domains.altNames : orderDomains;
@@ -721,7 +771,7 @@ export class AcmeServerService {
     bean.localCaId = ca.id;
     bean.serialNumber = signed.serialNumber;
     bean.status = CertStatus.active;
-    await this.certInfoService.add(bean);
+    await repository.save(bean);
   }
 
   private assertJwkMatchesCertificate(jwk: any, cert: X509Certificate) {

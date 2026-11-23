@@ -415,6 +415,16 @@ export async function createRootCa(req: { subject: LocalCaSubject; keyType: Loca
   };
 }
 
+export function verifyCertIssuedBy(certPem: string, caCertPem: string) {
+  try {
+    const cert = new X509Certificate(certPem);
+    const caCert = new X509Certificate(caCertPem);
+    return cert.checkIssued(caCert) && cert.verify(caCert.publicKey);
+  } catch (e) {
+    return false;
+  }
+}
+
 export function isSelfSignedCa(certPem: string) {
   const cert = new X509Certificate(certPem);
   return cert.ca && cert.verify(cert.publicKey);

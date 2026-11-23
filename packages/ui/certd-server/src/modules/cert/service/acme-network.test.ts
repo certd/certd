@@ -26,7 +26,13 @@ describe("ACME HTTP-01 network guard", () => {
       "fd00::1",
       "ff02::1",
       "2001:db8::1",
+      "fec0::1",
+      "2002::1",
+      "64:ff9b::1",
+      "100::1",
+      "2001:2::1",
       "::ffff:127.0.0.1",
+      "::10.0.0.1",
     ];
     for (const ip of blocked) {
       assert.equal(isPublicIp(ip), false, `${ip} 应被拒绝`);
