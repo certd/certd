@@ -673,6 +673,11 @@ describe("CertInfoService", () => {
           return {} as any;
         },
       } as any;
+      (service.repository as any).manager = {
+        async transaction(fn: any) {
+          return await fn({ getRepository: () => service.repository });
+        },
+      };
       let recorded: any = null;
       service.certRevocationService = {
         async record(req: any) {

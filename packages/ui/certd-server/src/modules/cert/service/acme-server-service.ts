@@ -117,8 +117,16 @@ export class AcmeServerService {
     const payload = jws.payload || {};
     let account = await this.accountRepository.findOne({ where: { caId, thumbprint } });
     if (account) {
-      // 已有账户只校验账户状态，不重新校验EAB：停用/过期EAB不会自动停用已注册账户，
-      // 需要管理员在 CA 的 ACME 账户列表中主动停用账户
+      if (!account.eabId) {
+        // EAB强制前创建的旧账户：允许同一 JWK 携带EAB重新绑定，否则拒绝
+        if (!payload.externalAccountBinding) {
+          throw new AcmeProblem("unauthorized", "该账户创建于EAB强制之前，请使用EAB重新注册", 401);
+        }
+        account.eabId = await this.verifyExternalAccountBinding(caId, payload.externalAccountBinding, thumbprint);
+        account.updateTime = new Date();
+        await this.accountRepository.save(account);
+      }
+      // 已有 eab_id 为永久绑定，后续 new-account 不允许切换 EAB
       if (account.status !== "valid") {
         throw new AcmeProblem("unauthorized", "账户不可用", 401);
       }
@@ -388,7 +396,8 @@ export class AcmeServerService {
     if (!header.kid || typeof header.kid !== "string") {
       throw new AcmeProblem("malformed", "EAB缺少kid");
     }
-    if (typeof header.url !== "string" || !header.url.endsWith("/new-account")) {
+    const expectedEabUrl = `${await this.baseUrl(caId)}/new-account`;
+    if (header.url !== expectedEabUrl) {
       throw new AcmeProblem("malformed", "EAB url不匹配");
     }
     if (jwkThumbprint(jwk) !== accountThumbprint) {
@@ -507,6 +516,9 @@ export class AcmeServerService {
     const account = await this.accountRepository.findOne({ where: { id: accountId, caId } });
     if (!account || account.status !== "valid") {
       throw new AcmeProblem("unauthorized", "账户不存在或不可用", 401);
+    }
+    if (!account.eabId) {
+      throw new AcmeProblem("unauthorized", "账户未通过EAB认证，请重新注册", 401);
     }
     return account;
   }

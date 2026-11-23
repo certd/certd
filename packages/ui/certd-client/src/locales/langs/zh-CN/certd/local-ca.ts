@@ -1,5 +1,5 @@
 export default {
-  title: "本地CA",
+  title: "本地CA管理",
   description: "管理本地根CA，签发内部/测试证书；客户端需要信任对应根CA",
   generate: "生成根CA",
   intermediate: "新建中间CA",

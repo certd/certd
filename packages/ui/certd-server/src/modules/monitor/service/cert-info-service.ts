@@ -511,16 +511,19 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         },
         manager
       );
-      const repository = manager ? manager.getRepository(CertInfoEntity) : this.repository;
+      const repository = this.getCertRepository(manager);
       await repository.update({ id: req.certInfoId }, { status: CertStatus.revoked, revokeTime: revokedTime });
     };
     const manager = this.repository?.manager;
-    if (manager?.transaction) {
-      await manager.transaction(async tx => run(tx));
-    } else {
-      await run();
+    if (!manager?.transaction) {
+      throw new Error("数据库事务不可用，无法安全吊销证书");
     }
+    await manager.transaction(async tx => run(tx));
     return revokedTime;
+  }
+
+  protected getCertRepository(manager?: EntityManager) {
+    return manager ? manager.getRepository(CertInfoEntity) : this.repository;
   }
 
   /**

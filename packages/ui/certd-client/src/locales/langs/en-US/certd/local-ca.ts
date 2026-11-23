@@ -1,5 +1,5 @@
 export default {
-  title: "Local CA",
+  title: "Local CA Management",
   description: "Manage local root CAs and issue internal/test certificates. Clients must trust the corresponding root CA.",
   generate: "Generate Root CA",
   intermediate: "New Intermediate CA",

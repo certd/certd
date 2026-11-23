@@ -12,7 +12,7 @@ const dialectDirs = {
 };
 const files = fs
   .readdirSync(migrationDir)
-  .filter(file => /^v1006[1-7]__.*\.sql$/.test(file))
+  .filter(file => /^v1006[1-8]__.*\.sql$/.test(file))
   .sort();
 
 type TableColumns = Map<string, Set<string>>;
@@ -57,7 +57,11 @@ function parseIndexes(sql: string) {
   for (const match of sql.matchAll(reg)) {
     const columns = match[3]
       .split(",")
-      .map(item => stripIdent(item).replace(/\(\d+\)$/, "").trim())
+      .map(item =>
+        stripIdent(item)
+          .replace(/\(\d+\)$/, "")
+          .trim()
+      )
       .filter(Boolean)
       .join(",");
     result.add(`${stripIdent(match[1])}:${stripIdent(match[2])}(${columns})`);
