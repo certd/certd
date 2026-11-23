@@ -83,6 +83,7 @@ export default {
   customAcmeLocalCaQuickAddSelect: "Local CA",
   customAcmeLocalCaQuickAddHelp: "Only intermediate CAs with ACME enabled are listed. Click Save at the bottom of the page after adding.",
   customAcmeLocalCaQuickAddEmpty: "No local CA is available. Enable ACME for an intermediate CA in Local CA Management first.",
+  customAcmeLocalCaQuickAddNoBaseUrl: "Unable to determine the local CA base URL. Configure the access URL in the local CA settings first.",
   customAcmeLocalCaQuickAddExists: "This local CA has already been added.",
   customAcmeLocalCaQuickAddSuccess: "Added. Click Save at the bottom of the page to apply.",
   customAcmeLocalCaQuickAddProviderName: "{name} (Local CA)",

@@ -205,6 +205,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         return item.name.toLowerCase().includes(searchKey) || item.subjectCn.toLowerCase().includes(searchKey);
       })
       .map(item => this.toSafe(item));
+    // 返回服务端实际解析出的访问地址，避免前端用自己的origin猜测ACME/CRL地址
+    for (const item of safeList) {
+      (item as any).effectiveBaseUrl = await this.resolveBaseUrl(item as any);
+    }
     await this.attachParentNames(safeList as any[]);
     return safeList;
   }
@@ -228,7 +232,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async infoSafe(req: LocalCaScope) {
-    return this.toSafe(await this.getOwnedCa(req));
+    const safe = this.toSafe(await this.getOwnedCa(req));
+    (safe as any).effectiveBaseUrl = await this.resolveBaseUrl(safe as any);
+    return safe;
   }
 
   async listOptions(req: { userId: number; projectId?: number; searchKey?: string }) {
@@ -242,7 +248,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       acmeEnabled: item.acmeEnabled,
       disabled: item.disabled,
       notAfter: item.notAfter,
-      baseUrl: item.baseUrl,
+      baseUrl: (item as any).effectiveBaseUrl,
     }));
   }
 
@@ -259,17 +265,21 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         deleted: false,
       },
     });
-    return list.map(item => ({
-      id: item.id,
-      name: item.name,
-      subjectCn: item.subjectCn,
-      caType: item.caType,
-      parentId: item.parentId,
-      acmeEnabled: item.acmeEnabled,
-      disabled: item.disabled,
-      notAfter: item.notAfter,
-      baseUrl: item.baseUrl,
-    }));
+    const result = [];
+    for (const item of list) {
+      result.push({
+        id: item.id,
+        name: item.name,
+        subjectCn: item.subjectCn,
+        caType: item.caType,
+        parentId: item.parentId,
+        acmeEnabled: item.acmeEnabled,
+        disabled: item.disabled,
+        notAfter: item.notAfter,
+        baseUrl: await this.resolveBaseUrl(item),
+      });
+    }
+    return result;
   }
 
   async generateCa(req: LocalCaGenerateReq) {
@@ -735,35 +745,56 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         // 缓存损坏则重新生成
       }
     }
-    const crlNumber = await this.nextCrlNumber(ca.id);
     const privateKeyPem = this.decryptCaPrivateKey(ca);
-    const revoked = await this.certRevocationService.listByCa(ca.id);
-    const now = Date.now();
-    const entries = revoked
-      .filter(item => item.serialNumber)
-      // 证书过期后不再需要出现在完整CRL中；吊销记录本身永久保留
-      .filter(item => !item.expiresTime || item.expiresTime > now)
-      .map(item => ({
-        serialNumber: item.serialNumber,
-        revokeTime: item.revokedTime,
-        reason: item.reason,
-      }));
-    const crl = await createCrl({
-      caCertPem: ca.certPem,
-      caPrivateKeyPem: privateKeyPem,
-      entries,
-      crlNumber,
-    });
-    await this.storeCrlCache(ca.id, crlNumber, crl.pem);
-    return {
-      ...crl,
-      filename: `local-ca-${ca.id}.crl`,
-    };
+    // 条件写入失败说明序号已被并发吊销/生成推进，此时不能把本次生成的旧CRL返回给客户端。
+    // 重新读取吊销快照后再生成；连续冲突时退回已经成功写入的最新缓存。
+    const maxAttempts = 3;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const crlNumber = await this.nextCrlNumber(ca.id);
+      const revoked = await this.certRevocationService.listByCa(ca.id);
+      const now = Date.now();
+      const entries = revoked
+        .filter(item => item.serialNumber)
+        // 证书过期后不再需要出现在完整CRL中；吊销记录本身永久保留
+        .filter(item => !item.expiresTime || item.expiresTime > now)
+        .map(item => ({
+          serialNumber: item.serialNumber,
+          revokeTime: item.revokedTime,
+          reason: item.reason,
+        }));
+      const crl = await createCrl({
+        caCertPem: ca.certPem,
+        caPrivateKeyPem: privateKeyPem,
+        entries,
+        crlNumber,
+      });
+      if (await this.storeCrlCache(ca.id, crlNumber, crl.pem)) {
+        return {
+          ...crl,
+          filename: `local-ca-${ca.id}.crl`,
+        };
+      }
+    }
+    const latest = await this.findOne({ where: { id: ca.id } });
+    if (latest?.lastCrlPem && Number(latest.lastCrlTime || 0) > 0) {
+      try {
+        const cached = new x509.X509Crl(latest.lastCrlPem);
+        return {
+          pem: latest.lastCrlPem,
+          der: Buffer.from(cached.rawData),
+          filename: `local-ca-${ca.id}.crl`,
+        };
+      } catch (e) {
+        // 缓存损坏则继续抛出重试错误
+      }
+    }
+    throw new ValidateException("CRL生成期间吊销状态持续变化，请稍后重试");
   }
 
   private async storeCrlCache(caId: number, crlNumber: number, pem: string) {
     // 只有当前 CRL Number 仍是本次生成值时才能覆盖，避免旧生成覆盖新CRL
-    await this.repository.createQueryBuilder().update().set({ lastCrlPem: pem, lastCrlTime: Date.now() }).where("id = :id AND crl_number = :crlNumber", { id: caId, crlNumber }).execute();
+    const result = await this.repository.createQueryBuilder().update().set({ lastCrlPem: pem, lastCrlTime: Date.now() }).where("id = :id AND crl_number = :crlNumber", { id: caId, crlNumber }).execute();
+    return (result.affected || 0) > 0;
   }
 
   private async nextCrlNumber(caId: number) {

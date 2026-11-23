@@ -393,12 +393,12 @@ async function importSigningKey(privateKeyPem: string) {
   return { signingKey, signingAlgorithm: signingAlgorithmOf(keyType), keyType };
 }
 
-function sanExtension(domains: string[]) {
+function sanExtension(domains: string[], critical = false) {
   const names: x509.JsonGeneralNames = domains.map(domain => ({
     type: (net.isIP(domain) ? x509.IP : x509.DNS) as any,
     value: domain,
   }));
-  return new x509.SubjectAlternativeNameExtension(names);
+  return new x509.SubjectAlternativeNameExtension(names, critical);
 }
 
 function readCsrDomains(csr: x509.Pkcs10CertificateRequest) {
@@ -859,11 +859,13 @@ export async function signCsr(req: {
   const serialNumber = randomSerialHex();
   const leafIsEc = csrKeyType === "ec";
   const leafKeyUsage = x509.KeyUsageFlags.digitalSignature | (leafIsEc ? 0 : x509.KeyUsageFlags.keyEncipherment);
+  // RFC 5280 §4.2.1.6：Subject 为空时 SAN 必须标记为 Critical
+  const subjectIsEmpty = csr.subjectName.toJSON().length === 0;
   const extensions: any[] = [
     new x509.BasicConstraintsExtension(false, undefined, true),
     new x509.KeyUsagesExtension(leafKeyUsage, true),
     new x509.ExtendedKeyUsageExtension(extendedKeyUsage, false),
-    sanExtension(domains),
+    sanExtension(domains, subjectIsEmpty),
     await x509.SubjectKeyIdentifierExtension.create(csr.publicKey, false, webcrypto),
     await x509.AuthorityKeyIdentifierExtension.create(caCert.publicKey, false, webcrypto),
   ];

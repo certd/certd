@@ -193,7 +193,12 @@ async function openQuickAdd() {
       if (!ca) {
         throw new Error(t("certd.sys.settings.customAcmeLocalCaQuickAddEmpty"));
       }
-      const baseUrl = String(ca.baseUrl || window.location.origin).replace(/\/+$/, "");
+      // 使用后端解析后的CA访问地址，避免与ACME服务实际生成的端点地址不一致
+      const baseUrl = String(ca.baseUrl || "").replace(/\/+$/, "");
+      if (!baseUrl) {
+        notification.error({ message: t("certd.sys.settings.customAcmeLocalCaQuickAddNoBaseUrl") });
+        throw new Error(t("certd.sys.settings.customAcmeLocalCaQuickAddNoBaseUrl"));
+      }
       const directoryUrl = `${baseUrl}/api/acme/${ca.id}/directory`;
       const sslProvider = `local-ca-${ca.id}`;
       const duplicated = props.modelValue.some(item => item.sslProvider === sslProvider || item.directoryUrl === directoryUrl);

@@ -141,7 +141,7 @@ const usageLabel = computed(() => {
   if (row.value?.usage === "both") return t("certd.localCa.usage.both");
   return t("certd.localCa.usage.server");
 });
-const baseUrl = computed(() => row.value?.baseUrl || window.location.origin);
+const baseUrl = computed(() => row.value?.effectiveBaseUrl || row.value?.baseUrl || window.location.origin);
 const acmeDirectoryUrl = computed(() => (row.value ? `${baseUrl.value}/api/acme/${row.value.id}/directory` : ""));
 const certbotExample = computed(() => `certbot certonly --server ${acmeDirectoryUrl.value} --eab-kid <EAB_KID> --eab-hmac-key <EAB_HMAC> --standalone -d your.example.com`);
 const acmeShExample = computed(() => `acme.sh --server ${acmeDirectoryUrl.value} --eab-kid <EAB_KID> --eab-hmac-key <EAB_HMAC> --issue -d your.example.com --webroot /var/www/html`);

@@ -408,6 +408,19 @@ describe("LocalCaService", () => {
     await assert.rejects(() => service.signCsr({ id, userId: 1, csrPem }), /已禁用/);
   });
 
+  it("listOptions 返回后端解析后的访问地址", async () => {
+    const { service } = createService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return { bindUrl: "https://cert.example.com" };
+      },
+    } as any;
+    const { id } = await createIssuingCa(service, { name: "Base URL CA" });
+    const options = await service.listOptions({ userId: 1 });
+    const item = options.find((option: any) => option.id === id);
+    assert.equal(item.baseUrl, "https://cert.example.com");
+  });
+
   it("getCrl 包含该CA已吊销证书的序列号", async () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "CRL CA" });
@@ -543,6 +556,35 @@ describe("LocalCaService", () => {
     const crl = await service.getCrl(id);
     const parsed = new x509.X509Crl(crl.pem);
     assert.ok(parsed.findRevoked("0A99"));
+  });
+
+  it("CRL生成期间发生并发吊销时重试并返回最新CRL", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Concurrent CRL CA" });
+    await service.getCrl(id);
+    store.get(id).lastCrlTime = -1;
+
+    const serial = "0AC0FFEE00112233445566778899AABB";
+    const originalList = service.certRevocationService.listByCa.bind(service.certRevocationService);
+    let injected = false;
+    let listCalls = 0;
+    service.certRevocationService.listByCa = async (caId: number) => {
+      listCalls++;
+      const snapshot = await originalList(caId);
+      if (!injected) {
+        // 模拟：本次CRL已读取吊销快照后，另一个请求完成吊销并推进了CRL序号
+        injected = true;
+        await service.certRevocationService.record({ caId, userId: 1, serialNumber: serial, expiresTime: Date.now() + 86400000 });
+        const entity = store.get(caId);
+        entity.crlNumber = Number(entity.crlNumber) + 1;
+        entity.lastCrlTime = -1;
+      }
+      return snapshot;
+    };
+
+    const crl = await service.getCrl(id);
+    assert.ok(listCalls >= 2, "并发冲突后必须重新读取吊销快照");
+    assert.ok(new x509.X509Crl(crl.pem).findRevoked(serial), "响应CRL必须包含并发吊销的序列号");
   });
 
   it("旧CRL生成结果不能覆盖更高CRL Number的缓存", async () => {

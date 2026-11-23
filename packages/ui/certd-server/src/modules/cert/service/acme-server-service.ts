@@ -613,9 +613,16 @@ export class AcmeServerService {
       throw new AcmeProblem("malformed", "kid格式错误");
     }
     const parts = pathname.split("/").filter(Boolean);
-    const accountId = parts[parts.length - 1];
-    if (!parts.includes("account") || !accountId) {
+    const accountIndex = parts.indexOf("account");
+    const caIndex = parts.indexOf("acme");
+    const kidCaId = caIndex >= 0 ? Number(parts[caIndex + 1]) : NaN;
+    const accountId = accountIndex >= 0 ? parts[accountIndex + 1] : "";
+    if (accountIndex < 0 || !accountId) {
       throw new AcmeProblem("malformed", "kid格式错误");
+    }
+    // kid 必须指向当前请求所绑定的CA，避免账户kid在不同CA目录之间被混用
+    if (!Number.isInteger(kidCaId) || kidCaId !== Number(caId)) {
+      throw new AcmeProblem("unauthorized", "账户kid与当前CA不匹配", 401);
     }
     const account = await this.accountRepository.findOne({ where: { id: accountId, caId } });
     if (!account || account.status !== "valid") {

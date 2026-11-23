@@ -81,6 +81,7 @@ export default {
   customAcmeLocalCaQuickAddSelect: "本地CA",
   customAcmeLocalCaQuickAddHelp: "仅列出已启用ACME的中间CA。添加后请点击页面底部「保存」使配置生效。",
   customAcmeLocalCaQuickAddEmpty: "没有可添加的本地CA，请先在「本地CA管理」中为中间CA开启ACME。",
+  customAcmeLocalCaQuickAddNoBaseUrl: "无法确定本地CA的访问地址，请先在本地CA设置中配置访问地址。",
   customAcmeLocalCaQuickAddExists: "该本地CA已添加，无需重复添加。",
   customAcmeLocalCaQuickAddSuccess: "已添加，请点击页面底部「保存」后生效。",
   customAcmeLocalCaQuickAddProviderName: "{name}（本地CA）",

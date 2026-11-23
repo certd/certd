@@ -74,6 +74,8 @@ describe("local-ca-crypto", () => {
       x509Leaf.extensions.find(ext => ext.type === "2.5.29.31"),
       "叶子证书应包含CRL分发点"
     );
+    const san = x509Leaf.extensions.find(ext => ext.type === "2.5.29.17") as any;
+    assert.equal(san?.critical, false, "Subject 非空时 SAN 应为非 Critical");
 
     const summary = getX509Summary(signed.fullchainPem);
     assert.equal(summary.serialNumber, signed.serialNumber);
@@ -320,7 +322,10 @@ describe("local-ca-crypto", () => {
     const longDomain = `${"a".repeat(60)}.${"b".repeat(60)}.example.com`;
     const { csrPem } = await createCsr({ domains: [longDomain], keyType: "rsa2048" });
     const signed = await signCsr({ caCertPem: root.certPem, caPrivateKeyPem: root.privateKeyPem, csrPem, validityDays: 30 });
-    assert.match(new X509Certificate(signed.certPem).subjectAltName || "", new RegExp(longDomain.replaceAll(".", "\\.")));
+    const leaf = new X509Certificate(signed.certPem);
+    assert.match(leaf.subjectAltName || "", new RegExp(longDomain.replaceAll(".", "\\.")));
+    const san = new x509.X509Certificate(signed.certPem).extensions.find(ext => ext.type === "2.5.29.17") as any;
+    assert.equal(san?.critical, true, "Subject 为空时 SAN 必须为 Critical");
   });
 
   it("明确拒绝RSA-PSS CSR", async () => {
