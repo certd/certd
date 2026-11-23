@@ -576,7 +576,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     }
   }
 
-  async function openStepUp(title: string, warning: string, action: () => Promise<void>) {
+  async function openStepUp(title: string, warning: string, action: () => Promise<void>, onClosed?: () => void) {
     if (secretAccessApi.HasSecretAccess()) {
       await action();
       return;
@@ -586,6 +586,10 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       title,
       wrapper: {
         width: 440,
+        onClosed: () => {
+          pendingStepUpAction = null;
+          onClosed?.();
+        },
         slots: {
           "form-body-bottom": () => {
             if (!passkeySupported) {
@@ -628,11 +632,16 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   }
 
   async function openEnableCa(row: any) {
-    await openStepUp(t("certd.localCa.enableCaStepUpTitle"), t("certd.localCa.enableCaStepUpDesc", { name: row.name }), async () => {
-      await localCaApi.Disable(row.id, false, getSecretAccessToken());
-      notification.success({ message: t("certd.localCa.enabledSuccess") });
-      await crudExpose.doRefresh();
-    });
+    await openStepUp(
+      t("certd.localCa.enableCaStepUpTitle"),
+      t("certd.localCa.enableCaStepUpDesc", { name: row.name }),
+      async () => {
+        await localCaApi.Disable(row.id, false, getSecretAccessToken());
+        notification.success({ message: t("certd.localCa.enabledSuccess") });
+        await crudExpose.doRefresh();
+      },
+      () => crudExpose.doRefresh()
+    );
   }
 
   async function openAcmeAccounts(row: any) {
