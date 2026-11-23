@@ -72,6 +72,8 @@ export default {
   generateSuccess: "Root CA generated",
   importSuccess: "Root CA imported",
   disabledSuccess: "Local CA disabled",
+  enableCaStepUpTitle: "Verify before enabling the local CA",
+  enableCaStepUpDesc: 'Enabling CA "{name}" restores certificate issuance and requires TOTP or Passkey verification.',
   enabledSuccess: "Local CA enabled",
   viewFailed: "Failed to parse certificate",
   generateWarning: "Keep the root CA private key safe",

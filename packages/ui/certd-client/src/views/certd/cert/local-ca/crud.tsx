@@ -11,7 +11,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const { t } = useI18n();
   const projectStore = useProjectStore();
   const { hasActionPermission } = useCrudPermission(context);
-  const { openGenerate, openIntermediate, openCreateEab, openImport, openView, openExport, openIssuedCerts, openAcmeAccounts, openRevokeIntermediate } = useLocalCaDialogs(crudExpose, context.caViewRef);
+  const { openGenerate, openIntermediate, openCreateEab, openImport, openView, openExport, openIssuedCerts, openAcmeAccounts, openRevokeIntermediate, openEnableCa } = useLocalCaDialogs(crudExpose, context.caViewRef);
   if (context.caExportHandler) {
     context.caExportHandler.value = openExport;
   }
@@ -379,8 +379,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               vModel: "checked",
               on: {
                 async change({ row, $event }) {
-                  await localCaApi.Disable(row.id, $event);
-                  notification.success({ message: $event ? t("certd.localCa.disabledSuccess") : t("certd.localCa.enabledSuccess") });
+                  if ($event === false) {
+                    await openEnableCa(row);
+                    return;
+                  }
+                  await localCaApi.Disable(row.id, true);
+                  notification.success({ message: t("certd.localCa.disabledSuccess") });
                   await crudExpose.doRefresh();
                 },
               },

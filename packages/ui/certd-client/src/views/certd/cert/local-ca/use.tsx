@@ -627,6 +627,14 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
+  async function openEnableCa(row: any) {
+    await openStepUp(t("certd.localCa.enableCaStepUpTitle"), t("certd.localCa.enableCaStepUpDesc", { name: row.name }), async () => {
+      await localCaApi.Disable(row.id, false, getSecretAccessToken());
+      notification.success({ message: t("certd.localCa.enabledSuccess") });
+      await crudExpose.doRefresh();
+    });
+  }
+
   async function openAcmeAccounts(row: any) {
     model.success({
       title: `${t("certd.localCa.acmeAccountsTitle")} - ${row.name}`,
@@ -673,5 +681,6 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openIssuedCerts,
     openAcmeAccounts,
     openRevokeIntermediate,
+    openEnableCa,
   };
 }

@@ -108,7 +108,10 @@ function createService() {
   (service.repository as any).manager = {
     connection: { options: { type: "better-sqlite3" } },
     async transaction(fn: any) {
-      return await fn({ getRepository: () => service.repository });
+      return await fn({
+        connection: { options: { type: "better-sqlite3" } },
+        getRepository: (entity: any) => (entity?.name === "AcmeEabEntity" ? service.acmeEabRepository : service.repository),
+      });
     },
   };
 
@@ -386,6 +389,15 @@ describe("LocalCaService", () => {
 
     const evil = await createCsr({ domains: ["evil.example.net"], keyType: "rsa2048" });
     await assert.rejects(() => service.signCsr({ id, userId: 1, csrPem: evil.csrPem }), /不在该CA允许签发的范围内/);
+  });
+
+  it("禁用参数必须是布尔值，缺失或字符串不能启用CA", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Boolean Disable CA" });
+    await assert.rejects(() => service.setDisabled({ id, userId: 1, disabled: undefined as any }), /disabled必须是布尔值/);
+    await assert.rejects(() => service.setDisabled({ id, userId: 1, disabled: "false" as any }), /disabled必须是布尔值/);
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    assert.equal((await service.infoSafe({ id, userId: 1 })).disabled, true);
   });
 
   it("禁用CA后拒绝签发", async () => {

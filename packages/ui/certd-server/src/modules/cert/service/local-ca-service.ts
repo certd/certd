@@ -594,14 +594,26 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以管理ACME凭证");
     }
-    const bean = await this.acmeEabRepository.findOne({ where: { id: req.eabId, caId: ca.id } });
-    if (!bean) {
-      throw new ValidateException("ACME凭证不存在或无访问权限");
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法变更ACME凭证状态");
     }
-    bean.disabled = req.disabled === true;
-    bean.updateTime = new Date();
-    await this.acmeEabRepository.save(bean);
-    return { id: bean.id, disabled: bean.disabled };
+    return await runTransaction(manager, async tx => {
+      const repository = tx.getRepository(AcmeEabEntity);
+      const driverType = String(tx.connection?.options?.type || "");
+      const useLock = !driverType.includes("sqlite");
+      const bean = await repository.findOne({
+        where: { id: req.eabId, caId: ca.id },
+        ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+      });
+      if (!bean) {
+        throw new ValidateException("ACME凭证不存在或无访问权限");
+      }
+      bean.disabled = req.disabled;
+      bean.updateTime = new Date();
+      await repository.save(bean);
+      return { id: bean.id, disabled: bean.disabled };
+    });
   }
 
   async listAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number }) {
@@ -637,8 +649,14 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return { ...bean, hmacKey };
   }
 
-  async getAcmeEabProfile(id: string) {
-    const bean = await this.acmeEabRepository.findOne({ where: { id } });
+  async getAcmeEabProfile(id: string, manager?: EntityManager) {
+    const repository = manager ? manager.getRepository(AcmeEabEntity) : this.acmeEabRepository;
+    const driverType = String(repository.manager?.connection?.options?.type || "");
+    const useLock = !!manager && !driverType.includes("sqlite");
+    const bean = await repository.findOne({
+      where: { id },
+      ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+    });
     if (!bean || bean.disabled || (bean.expiresTime && bean.expiresTime <= Date.now())) {
       return null;
     }
@@ -1078,6 +1096,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async setDisabled(req: LocalCaScope & { disabled: boolean }) {
+    if (typeof req.disabled !== "boolean") {
+      throw new ValidateException("disabled必须是布尔值");
+    }
     const ca = await this.getOwnedCa(req);
     if (!req.disabled && ca.revoked) {
       throw new ValidateException("该本地CA已被父CA吊销，不能重新启用");

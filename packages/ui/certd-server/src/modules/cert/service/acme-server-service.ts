@@ -14,6 +14,7 @@ import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha25
 import { fetchHttpChallenge } from "./acme-network.js";
 import { isSameAcmeUrl } from "./acme-url.js";
 import { acmeNonceStore } from "./acme-nonce.js";
+import { runTransaction } from "./db-transaction.js";
 
 const ORDER_TTL = 7 * 24 * 3600 * 1000;
 const PRIVATE_JWK_FIELDS = ["d", "p", "q", "dp", "dq", "qi", "oth"];
@@ -336,7 +337,7 @@ export class AcmeServerService {
       throw new AcmeProblem("serverInternal", "订单事务不可用", 500);
     }
     const config = this.parseAcmeConfig(ca.acmeConfig);
-    return await manager.transaction(async tx => {
+    return await runTransaction(manager, async tx => {
       const orderRepository = tx.getRepository(AcmeOrderEntity);
       const certRepository = tx.getRepository(CertInfoEntity);
       const order = await orderRepository.findOne({ where: { id: orderId, caId } });
@@ -351,7 +352,7 @@ export class AcmeServerService {
         throw new AcmeProblem("orderNotReady", "订单正在处理中或尚未就绪", 403);
       }
       checkCsrDomains(order);
-      await this.assertOrderStillAuthorized(ca, account, order);
+      await this.assertOrderStillAuthorized(ca, account, order, tx);
 
       // 条件更新认领订单，保证并发 finalize 只有一个能签发
       const claimed = await orderRepository.update({ id: orderId, caId, accountId: account.id, status: "ready" }, { status: "processing", updateTime: new Date() });
@@ -567,21 +568,21 @@ export class AcmeServerService {
     return { jws, account };
   }
 
-  private async assertAccountEabActive(account: AcmeAccountEntity) {
+  private async assertAccountEabActive(account: AcmeAccountEntity, manager?: any) {
     if (!account.eabId) {
       throw new AcmeProblem("unauthorized", "账户未通过EAB认证，请重新注册", 401);
     }
-    const profile = await this.localCaService.getAcmeEabProfile(account.eabId);
+    const profile = await this.localCaService.getAcmeEabProfile(account.eabId, manager);
     if (!profile) {
       throw new AcmeProblem("unauthorized", "EAB凭证已禁用或过期", 401);
     }
     return profile;
   }
 
-  private async assertOrderStillAuthorized(ca: any, account: AcmeAccountEntity, order: AcmeOrderEntity) {
+  private async assertOrderStillAuthorized(ca: any, account: AcmeAccountEntity, order: AcmeOrderEntity, manager?: any) {
     const domains = JSON.parse(order.identifiers).map((item: any) => item.value);
     matchAllowedDomains(domains, this.parseAllowedDomains(ca.allowedDomains));
-    const profile = await this.assertAccountEabActive(account);
+    const profile = await this.assertAccountEabActive(account, manager);
     matchAllowedDomains(domains, profile.allowedDomains);
   }
 

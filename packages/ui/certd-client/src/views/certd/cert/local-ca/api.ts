@@ -60,11 +60,11 @@ export const localCaApi = {
     });
   },
 
-  async Disable(id: number, disabled: boolean) {
+  async Disable(id: number, disabled: boolean, verifyToken?: string) {
     return await request({
       url: apiPrefix + "/disable",
       method: "post",
-      data: { id, disabled },
+      data: { id, disabled, verifyToken },
     });
   },
 

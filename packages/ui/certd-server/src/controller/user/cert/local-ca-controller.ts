@@ -189,6 +189,12 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/disable", { description: Constants.per.authOnly, summary: "禁用/启用本地CA" })
   async disable(@Body(ALL) body: any) {
+    if (typeof body.disabled !== "boolean") {
+      throw new ValidateException("disabled必须是布尔值");
+    }
+    if (body.disabled === false) {
+      this.assertStepUp(body.verifyToken, "启用本地CA");
+    }
     const { userId, projectId } = await this.checkOwner(this.service, body.id, "write");
     await this.service.setDisabled({
       id: body.id,

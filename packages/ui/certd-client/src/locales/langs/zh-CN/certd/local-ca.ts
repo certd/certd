@@ -74,6 +74,8 @@ export default {
   generateSuccess: "根CA生成成功",
   importSuccess: "根CA导入成功",
   disabledSuccess: "已禁用本地CA",
+  enableCaStepUpTitle: "验证后启用本地CA",
+  enableCaStepUpDesc: "启用本地CA「{name}」将恢复证书签发能力，需要先验证动态码或Passkey。",
   enabledSuccess: "已启用本地CA",
   viewFailed: "证书解析失败",
   generateWarning: "请妥善保管根CA私钥",
