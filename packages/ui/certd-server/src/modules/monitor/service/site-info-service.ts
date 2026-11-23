@@ -24,7 +24,7 @@ import { SiteIpEntity } from "../entity/site-ip.js";
 import { dnsContainer } from "./dns-custom.js";
 import { JobHistoryService } from "./job-history-service.js";
 import { SiteIpService } from "./site-ip-service.js";
-import { siteTester } from "./site-tester.js";
+import { collectCertificateChain, siteTester, summarizeCertificateChain } from "./site-tester.js";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -189,9 +189,11 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       const issuer = `${certi.issuer.O}<${certi.issuer.CN}>`;
       const isExpired = dayjs().valueOf() > dayjs(expires).valueOf();
       const status = isExpired ? "expired" : "ok";
+      const certChain = summarizeCertificateChain(res.chain?.length ? res.chain : collectCertificateChain(certi));
       const updateData = {
         id: site.id,
         certDomains: domains.join(","),
+        certInfo: JSON.stringify(certChain),
         certStatus: status,
         certProvider: issuer,
         certEffectiveTime: dayjs(effective).valueOf(),

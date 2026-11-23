@@ -2,6 +2,7 @@ import { logger, safePromise, utils } from "@certd/basic";
 import { merge } from "lodash-es";
 import https from "https";
 import { PeerCertificate } from "tls";
+import { X509Certificate } from "node:crypto";
 import { DnsCustom } from "./dns-custom.js";
 
 export type SiteTestReq = {
@@ -16,7 +17,82 @@ export type SiteTestReq = {
 
 export type SiteTestRes = {
   certificate?: PeerCertificate;
+  chain?: PeerCertificate[];
 };
+
+export type SiteCertChainItem = {
+  subject: string;
+  issuer: string;
+  validFrom?: number;
+  validTo?: number;
+  serialNumber?: string;
+  fingerprintSha256?: string;
+  ca?: boolean;
+};
+
+function formatCertificateName(name: any) {
+  if (!name) {
+    return "-";
+  }
+  return [name.CN ? `CN=${name.CN}` : "", name.O ? `O=${name.O}` : ""].filter(Boolean).join(", ") || "-";
+}
+
+function certificateKey(cert: any) {
+  return cert?.fingerprint256 || cert?.fingerprint || (cert?.raw ? Buffer.from(cert.raw).toString("base64").slice(0, 32) : "");
+}
+
+export function collectCertificateChain(cert?: PeerCertificate | null) {
+  const chain: PeerCertificate[] = [];
+  const seen = new Set<string>();
+  let current: any = cert;
+  while (current && chain.length < 10) {
+    const key = certificateKey(current);
+    if (key && seen.has(key)) {
+      break;
+    }
+    if (key) {
+      seen.add(key);
+    }
+    chain.push(current);
+    current = current.issuerCertificate;
+  }
+  return chain;
+}
+
+export function summarizeCertificateChain(chain: PeerCertificate[]) {
+  return chain.map(cert => {
+    let subject = formatCertificateName(cert.subject);
+    let issuer = formatCertificateName(cert.issuer);
+    let validFrom = Date.parse(cert.valid_from);
+    let validTo = Date.parse(cert.valid_to);
+    let serialNumber: string | undefined = cert.serialNumber;
+    let fingerprintSha256: string | undefined = cert.fingerprint256?.replaceAll(":", "").toLowerCase();
+    let ca: boolean | undefined;
+    if (cert.raw) {
+      try {
+        const x509 = new X509Certificate(cert.raw);
+        subject = x509.subject;
+        issuer = x509.issuer;
+        validFrom = Date.parse(x509.validFrom);
+        validTo = Date.parse(x509.validTo);
+        serialNumber = x509.serialNumber;
+        fingerprintSha256 = x509.fingerprint256.replaceAll(":", "").toLowerCase();
+        ca = x509.ca;
+      } catch (e) {
+        // 保留PeerCertificate回退字段
+      }
+    }
+    return {
+      subject,
+      issuer,
+      validFrom: Number.isFinite(validFrom) ? validFrom : undefined,
+      validTo: Number.isFinite(validTo) ? validTo : undefined,
+      serialNumber,
+      fingerprintSha256,
+      ca,
+    } as SiteCertChainItem;
+  });
+}
 
 export class SiteTester {
   async test(req: SiteTestReq): Promise<SiteTestRes> {
@@ -98,11 +174,13 @@ export class SiteTester {
       req.on("socket", (socket: any) => {
         socket.on("secureConnect", () => {
           // TLS握手完成，证书已经可用
-          const certificate = socket.getPeerCertificate();
+          const certificate = socket.getPeerCertificate(true);
           if (certificate.subject) {
-            logger.info("证书获取成功", certificate.subject);
+            const chain = collectCertificateChain(certificate);
+            logger.info("证书获取成功", certificate.subject, `chain=${chain.length}`);
             resolve({
               certificate,
+              chain,
             });
           } else {
             logger.warn("证书信息为空");
