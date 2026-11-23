@@ -74,6 +74,22 @@ describe("AcmeServerService CA isolation", () => {
     assert.equal(lookupCalled, false);
   });
 
+  it("kid中的CA ID必须是正十进制数字", async () => {
+    const service: any = new AcmeServerService();
+    service.localCaService = { async getAcmeCa() {} };
+    let lookupCalled = false;
+    service.accountRepository = {
+      async findOne() {
+        lookupCalled = true;
+        return null;
+      },
+    };
+    const ctx = { origin: "https://certd.example.com", path: "/api/acme/102/order/o1", protocol: "https", host: "certd.example.com" };
+    const body = createJwsBody({ kid: "https://certd.example.com/api/acme/0x66/account/account-b", url: "https://certd.example.com/api/acme/102/order/o1", nonce: "nonce-b" });
+    await assert.rejects(() => service.getOrder(ctx, 102, "o1", body), /kid格式错误/);
+    assert.equal(lookupCalled, false);
+  });
+
   it("账号kid中的CA路径匹配时，查询仍带URL中的CA id", async () => {
     const service: any = new AcmeServerService();
     service.localCaService = { async getAcmeCa() {} };

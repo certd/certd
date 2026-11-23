@@ -616,11 +616,13 @@ export class AcmeServerService {
     // kid 必须严格符合 .../api/acme/{caId}/account/{accountId}，允许前面存在反代路径前缀
     const length = parts.length;
     const validShape = length >= 5 && parts[length - 5] === "api" && parts[length - 4] === "acme" && parts[length - 2] === "account";
-    const kidCaId = validShape ? Number(parts[length - 3]) : NaN;
+    const caIdText = validShape ? parts[length - 3] : "";
     const accountId = validShape ? parts[length - 1] : "";
-    if (!validShape || !Number.isInteger(kidCaId) || !/^[A-Za-z0-9_-]+$/.test(accountId)) {
+    // Number() 会接受 0x66/1e2/+102 等格式，CA ID必须限定为正十进制整数
+    if (!validShape || !/^[1-9]\d*$/.test(caIdText) || !/^[A-Za-z0-9_-]+$/.test(accountId)) {
       throw new AcmeProblem("malformed", "kid格式错误");
     }
+    const kidCaId = Number(caIdText);
     // kid 必须指向当前请求所绑定的CA，避免账户kid在不同CA目录之间被混用
     if (kidCaId !== Number(caId)) {
       throw new AcmeProblem("unauthorized", "账户kid与当前CA不匹配", 401);

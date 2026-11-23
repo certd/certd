@@ -733,6 +733,18 @@ describe("LocalCaService", () => {
     assert.ok(rootCrl.entries.some((item: any) => item.serialNumber.toUpperCase() === retried.serialNumber));
   });
 
+  it("吊销中间CA时Root CRL持续写入冲突，保持吊销状态并标记缓存失效", async () => {
+    const { service, store } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Conflict Intermediate" });
+    (service as any).storeCrlCache = async () => false;
+
+    await assert.rejects(() => service.revokeIntermediate({ id, userId: 1 }), /并发变更/);
+
+    assert.equal(store.get(id).revoked, true);
+    assert.equal(store.get(id).disabled, true);
+    assert.equal(Number(store.get(rootId).lastCrlTime), -1);
+  });
+
   it("Root CRL先生成序号再读取吊销快照，避免并发漏吊销", async () => {
     const { service } = createService();
     const root = await service.generateCa({
