@@ -53,9 +53,9 @@ function parseAlterColumns(sql: string) {
 
 function parseIndexes(sql: string) {
   const result = new Set<string>();
-  const reg = /CREATE\s+(?:UNIQUE\s+)?INDEX\s+[`"]?(\w+)[`"]?\s+ON\s+[`"]?(\w+)[`"]?\s*\(([^)]*)\)/gi;
+  const reg = /CREATE\s+(UNIQUE\s+)?INDEX\s+[`"]?(\w+)[`"]?\s+ON\s+[`"]?(\w+)[`"]?\s*\(([^)]*)\)/gi;
   for (const match of sql.matchAll(reg)) {
-    const columns = match[3]
+    const columns = match[4]
       .split(",")
       .map(item =>
         stripIdent(item)
