@@ -31,7 +31,7 @@ function normalizeCron(cron: string) {
   }
   const macroKey = value.toLowerCase();
   if (macroKey.startsWith("@")) {
-    if (!(macroKey in CRON_MACROS)) {
+    if (!Object.hasOwn(CRON_MACROS, macroKey)) {
       throw new Error(`不支持的Cron宏表达式：${value}`);
     }
     const expanded = CRON_MACROS[macroKey];
@@ -45,7 +45,7 @@ function normalizeCron(cron: string) {
     throw new Error(`不支持的Cron格式（仅支持5或6字段）：${value}`);
   }
   try {
-    parser.parseExpression(parts.length === 6 ? parts.join(" ") : parts.join(" "));
+    parser.parseExpression(parts.join(" "));
   } catch (e) {
     throw new Error(`Cron表达式无效：${value}`);
   }
