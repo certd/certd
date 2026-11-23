@@ -153,6 +153,7 @@ export default {
   revokeIntermediateTitle: "Revoke Intermediate CA and refresh Root CRL",
   revokeIntermediateDesc: 'Revoke intermediate CA "{name}" and re-sign the Root CRL. This decrypts the root private key once and cannot be undone.',
   revokeIntermediateOk: "Revoke",
+  revokeIntermediateStepUp: "Revoking an intermediate CA re-signs the Root CRL and requires TOTP or Passkey verification.",
   revokeIntermediateSuccess: "Intermediate CA revoked. Serial {serial}, Root CRL number {crlNumber}",
   acmeAccounts: "ACME Accounts",
   acmeAccountsTitle: "ACME Accounts",

@@ -24,6 +24,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   const passkeySupported = typeof window !== "undefined" && "PublicKeyCredential" in window && "credentials" in navigator;
   const passkeyLoading = ref(false);
   const verifyDialogRef = ref<any>(null);
+  let pendingStepUpAction: (() => Promise<void>) | null = null;
 
   async function openGenerate() {
     await openFormDialog({
@@ -539,7 +540,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     notification.success({ message: t("certd.localCa.exportSaved", { path: res.path }), duration: 15 });
   }
 
-  async function handlePasskeyVerify(row: any) {
+  async function handlePasskeyVerify() {
     if (!passkeySupported) {
       notification.error({ message: t("certd.localCa.passkeyNotSupported") });
       return;
@@ -563,7 +564,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         throw new Error(t("certd.localCa.passkeyCancelled"));
       }
       await secretAccessApi.VerifyPasskeySecretAccess(credential, options.challenge);
-      await downloadExport(row);
+      await pendingStepUpAction?.();
       verifyDialogRef.value?.close?.();
     } catch (e: any) {
       notification.error({ message: e.message || t("certd.localCa.passkeyFailed") });
@@ -572,13 +573,14 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     }
   }
 
-  async function openExport(row: any) {
+  async function openStepUp(title: string, warning: string, action: () => Promise<void>) {
     if (secretAccessApi.HasSecretAccess()) {
-      await downloadExport(row);
+      await action();
       return;
     }
+    pendingStepUpAction = action;
     verifyDialogRef.value = await openFormDialog({
-      title: t("certd.localCa.exportTitle"),
+      title,
       wrapper: {
         width: 440,
         slots: {
@@ -588,7 +590,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             }
             return (
               <div class="mt-2 text-center">
-                <a-button type="link" loading={passkeyLoading.value} onClick={() => handlePasskeyVerify(row)}>
+                <a-button type="link" loading={passkeyLoading.value} onClick={() => handlePasskeyVerify()}>
                   {t("certd.localCa.passkeyVerify")}
                 </a-button>
               </div>
@@ -596,7 +598,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           },
         },
       },
-      body: () => <a-alert type="warning" show-icon message={t("certd.localCa.exportWarning")} class="mb-4" />,
+      body: () => <a-alert type="warning" show-icon message={warning} class="mb-4" />,
       initialForm: { verifyCode: "" },
       columns: {
         verifyCode: {
@@ -611,8 +613,14 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       },
       async onSubmit(form: any) {
         await secretAccessApi.VerifySecretAccess(form.verifyCode);
-        await downloadExport(row);
+        await action();
       },
+    });
+  }
+
+  async function openExport(row: any) {
+    await openStepUp(t("certd.localCa.exportTitle"), t("certd.localCa.exportWarning"), async () => {
+      await downloadExport(row);
     });
   }
 
@@ -633,9 +641,11 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       okText: t("certd.localCa.revokeIntermediateOk"),
       okType: "danger",
       async onOk() {
-        const res = await localCaApi.RevokeIntermediate(row.id);
-        notification.success({ message: t("certd.localCa.revokeIntermediateSuccess", { serial: res.serialNumber, crlNumber: res.crlNumber }), duration: 10 });
-        await crudExpose.doRefresh();
+        await openStepUp(t("certd.localCa.revokeIntermediateTitle"), t("certd.localCa.revokeIntermediateStepUp"), async () => {
+          const res = await localCaApi.RevokeIntermediate(row.id, getSecretAccessToken());
+          notification.success({ message: t("certd.localCa.revokeIntermediateSuccess", { serial: res.serialNumber, crlNumber: res.crlNumber }), duration: 10 });
+          await crudExpose.doRefresh();
+        });
       },
     });
   }

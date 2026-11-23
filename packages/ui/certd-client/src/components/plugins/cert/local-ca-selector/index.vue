@@ -43,6 +43,7 @@ function toOption(item: any) {
   return {
     label: `${item.name} (${item.subjectCn}) [${type}]${item.disabled ? " [已禁用]" : ""}`,
     value: item.id,
+    disabled: item.disabled === true,
   };
 }
 

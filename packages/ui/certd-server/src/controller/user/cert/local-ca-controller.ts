@@ -174,6 +174,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/intermediate/revoke", { description: Constants.per.authOnly, summary: "吊销中间CA并刷新Root CRL" })
   async revokeIntermediate(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "吊销中间CA");
     const { userId, projectId } = await this.checkOwner(this.service, body.id, "write");
     const res = await this.service.revokeIntermediate({
       id: body.id,
@@ -315,12 +316,25 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(true);
   }
 
+  private assertStepUp(verifyToken: string | undefined, action: string) {
+    const tokenUserId = verifyToken ? cache.get(`secret_access_2fa:${verifyToken}`) : undefined;
+    if (!verifyToken || tokenUserId !== this.getUserId()) {
+      throw new Error(`请先验证 2FA 或 Passkey 后再${action}`);
+    }
+  }
+
+  @Post("/crl/refresh", { description: Constants.per.authOnly, summary: "显式刷新Root CRL（需2FA/Passkey）" })
+  async refreshCrl(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "刷新Root CRL");
+    const { userId, projectId } = await this.checkOwner(this.service, body.id, "write");
+    const res = await this.service.refreshRootCrl({ id: body.id, userId, projectId });
+    this.auditLog({ content: `刷新了Root CRL(ID:${body.id})，CRL序号:${res.crlNumber}` });
+    return this.ok(res);
+  }
+
   @Post("/export", { description: Constants.per.authOnly, summary: "导出本地CA证书和私钥（需2FA/Passkey）" })
   async export(@Body(ALL) body: { id: number; verifyToken: string }) {
-    const tokenUserId = cache.get(`secret_access_2fa:${body.verifyToken}`);
-    if (!body.verifyToken || tokenUserId !== this.getUserId()) {
-      throw new Error("请先验证 2FA 或 Passkey 后再导出CA私钥");
-    }
+    this.assertStepUp(body.verifyToken, "导出CA私钥");
     const { userId, projectId } = await this.checkOwner(this.service, body.id, "read");
     const res = await this.service.exportCa({ id: body.id, userId, projectId });
     this.auditLog({ content: `导出了本地CA证书和私钥(ID:${body.id})` });

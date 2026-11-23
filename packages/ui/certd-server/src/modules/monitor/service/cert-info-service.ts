@@ -515,7 +515,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       const repository = this.getCertRepository(manager);
       await repository.update({ id: req.certInfoId }, { status: CertStatus.revoked, revokeTime: revokedTime });
       const caRepository = manager ? manager.getRepository(LocalCaEntity) : this.repository.manager.getRepository(LocalCaEntity);
-      await caRepository.update({ id: req.caId }, { lastCrlPem: null, lastCrlTime: null } as any);
+      await caRepository.update({ id: req.caId }, { lastCrlTime: -1 } as any);
     };
     const manager = this.repository?.manager;
     if (!manager?.transaction) {

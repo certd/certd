@@ -160,11 +160,19 @@ export const localCaApi = {
     });
   },
 
-  async RevokeIntermediate(id: number) {
+  async RevokeIntermediate(id: number, verifyToken: string) {
     return await request({
       url: apiPrefix + "/intermediate/revoke",
       method: "post",
-      data: { id },
+      data: { id, verifyToken },
+    });
+  },
+
+  async RefreshRootCrl(id: number, verifyToken: string) {
+    return await request({
+      url: apiPrefix + "/crl/refresh",
+      method: "post",
+      data: { id, verifyToken },
     });
   },
 

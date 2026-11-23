@@ -151,6 +151,7 @@ export default {
   revokeIntermediateTitle: "吊销中间CA并刷新Root CRL",
   revokeIntermediateDesc: "将吊销中间CA「{name}」并由根CA重新签发CRL。此操作会解密根CA私钥一次，且不可撤销。",
   revokeIntermediateOk: "确认吊销",
+  revokeIntermediateStepUp: "吊销中间CA并由Root重签CRL，需要先验证动态码或Passkey。",
   revokeIntermediateSuccess: "中间CA已吊销，序列号 {serial}，Root CRL序号 {crlNumber}",
   acmeAccounts: "ACME账户",
   acmeAccountsTitle: "ACME账户列表",

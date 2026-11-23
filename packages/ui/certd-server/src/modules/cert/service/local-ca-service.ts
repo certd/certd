@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import * as x509 from "@peculiar/x509";
+import { logger } from "@certd/basic";
 import fs from "node:fs";
 import path from "node:path";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
@@ -630,11 +631,15 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const metadata: any = repository.metadata;
     const usedCountColumn = metadata?.findColumnWithPropertyName?.("usedCount")?.databaseName || "used_count";
     const maxUsesColumn = metadata?.findColumnWithPropertyName?.("maxUses")?.databaseName || "max_uses";
+    const disabledColumn = metadata?.findColumnWithPropertyName?.("disabled")?.databaseName || "disabled";
+    const expiresColumn = metadata?.findColumnWithPropertyName?.("expiresTime")?.databaseName || "expires_time";
     const result = await repository
       .createQueryBuilder()
       .update()
       .set({ usedCount: () => `${usedCountColumn} + 1`, updateTime: new Date() })
       .where("id = :id", { id })
+      .andWhere(`${disabledColumn} = :disabled`, { disabled: false })
+      .andWhere(`(${expiresColumn} IS NULL OR ${expiresColumn} > :now)`, { now: Date.now() })
       .andWhere(`(${maxUsesColumn} = 0 OR ${usedCountColumn} < ${maxUsesColumn})`)
       .execute();
     return (result.affected || 0) > 0;
@@ -883,6 +888,46 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       serialNumber: cert.serialNumber,
       expiresTime: cert.expiresTime,
     });
+  }
+
+  async refreshAllCrls() {
+    const list = await this.find({ where: { deleted: false, caType: "intermediate" } });
+    for (const ca of list) {
+      try {
+        await this.getCrl(ca.id);
+      } catch (e: any) {
+        logger.warn(`本地CA CRL定时刷新失败(ca=${ca.id}): ${e?.message || e}`);
+      }
+    }
+  }
+
+  async refreshRootCrl(req: LocalCaScope) {
+    const root = await this.getOwnedCa(req);
+    if (root.caType !== "root") {
+      throw new ValidateException("只有Root CA可以执行Root CRL刷新");
+    }
+    const rootPrivateKey = this.decryptCaPrivateKey(root);
+    const revoked = await this.certRevocationService.listByCa(root.id);
+    const now = Date.now();
+    const entries = revoked
+      .filter(item => item.serialNumber)
+      .filter(item => !item.expiresTime || item.expiresTime > now)
+      .map(item => ({
+        serialNumber: item.serialNumber,
+        revokeTime: item.revokedTime,
+        reason: item.reason,
+      }));
+    const crlNumber = await this.nextCrlNumber(root.id);
+    const crl = await createCrl({
+      caCertPem: root.certPem,
+      caPrivateKeyPem: rootPrivateKey,
+      entries,
+      crlNumber,
+    });
+    root.lastCrlPem = crl.pem;
+    root.lastCrlTime = Date.now();
+    await this.update(root);
+    return { crlNumber };
   }
 
   async revokeIntermediate(req: LocalCaScope & { reason?: string }) {

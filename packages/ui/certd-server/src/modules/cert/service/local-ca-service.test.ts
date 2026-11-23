@@ -395,10 +395,16 @@ describe("LocalCaService", () => {
     const { service } = createService();
     let expression = "";
     let condition = "";
+    let whereSql = "";
     service.acmeEabRepository = {
       metadata: {
         findColumnWithPropertyName(name: string) {
-          return { usedCount: { databaseName: "used_count" }, maxUses: { databaseName: "max_uses" } }[name];
+          return {
+            usedCount: { databaseName: "used_count" },
+            maxUses: { databaseName: "max_uses" },
+            disabled: { databaseName: "disabled" },
+            expiresTime: { databaseName: "expires_time" },
+          }[name];
         },
       },
       createQueryBuilder() {
@@ -410,11 +416,13 @@ describe("LocalCaService", () => {
             expression = values.usedCount();
             return this;
           },
-          where() {
+          where(value: string) {
+            whereSql = value;
             return this;
           },
           andWhere(value: string) {
             condition = value;
+            whereSql += ` AND ${value}`;
             return this;
           },
           async execute() {
@@ -427,6 +435,8 @@ describe("LocalCaService", () => {
     assert.equal(await service.consumeAcmeEab("eab-1"), true);
     assert.equal(expression, "used_count + 1");
     assert.match(condition, /max_uses = 0 OR used_count < max_uses/);
+    assert.match(whereSql, /disabled = :disabled/);
+    assert.match(whereSql, /expires_time IS NULL OR expires_time > :now/);
   });
 
   it("禁止导出的CA拒绝导出，但查看公钥仍可用", async () => {
