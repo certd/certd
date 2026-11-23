@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { EntityManager, In, Like, Repository } from "typeorm";
@@ -301,6 +303,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.disabled = false;
     bean.remark = req.remark || "";
     bean.exportDisabled = req.exportDisabled === true;
+    bean.rootKeyOnlineEnabled = false;
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -314,6 +317,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (root.disabled) {
       throw new ValidateException("根CA已禁用，不能签发中间CA");
     }
+    if (!root.rootKeyOnlineEnabled) {
+      throw new ValidateException("Root CA默认禁止在线解密私钥，请先在Root CA设置中允许在线使用私钥");
+    }
     const rootPrivateKey = this.decryptCaPrivateKey(root);
     const material = await createIntermediateCa({
       rootCertPem: root.certPem,
@@ -321,6 +327,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       subject: req.subject,
       keyType: req.keyType,
       validityYears: req.validityYears,
+      crlDistributionPoint: await this.getCrlUrl(root),
     });
     const bean = new LocalCaEntity();
     bean.userId = req.userId;
@@ -353,6 +360,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.disabled = false;
     bean.remark = req.remark || "";
     bean.exportDisabled = req.exportDisabled === true;
+    bean.rootKeyOnlineEnabled = false;
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -625,6 +633,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!ca) {
       throw new ValidateException("本地CA不存在");
     }
+    if (ca.caType === "root" && !ca.rootKeyOnlineEnabled) {
+      throw new ValidateException("Root CA默认禁止在线解密私钥，请先开启在线私钥后才能生成Root CRL");
+    }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     const revoked = await this.certRevocationService.listByCa(ca.id);
     const now = Date.now();
@@ -703,6 +714,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       baseUrl?: string;
       acmeDirectIssue?: boolean;
       exportDisabled?: boolean;
+      rootKeyOnlineEnabled?: boolean;
     }
   ) {
     const ca = await this.getOwnedCa(req);
@@ -757,6 +769,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     if (req.exportDisabled != null) {
       ca.exportDisabled = req.exportDisabled === true;
+    }
+    if (req.rootKeyOnlineEnabled != null) {
+      if (ca.caType !== "root") {
+        throw new ValidateException("只有Root CA可以设置在线私钥策略");
+      }
+      ca.rootKeyOnlineEnabled = req.rootKeyOnlineEnabled === true;
     }
     await this.update(ca);
   }
@@ -857,6 +875,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.exportDisabled) {
       throw new ValidateException("该CA已禁止导出");
     }
+    if (ca.caType === "root" && !ca.rootKeyOnlineEnabled) {
+      throw new ValidateException("Root CA默认禁止在线解密私钥，请先在Root CA设置中允许在线使用私钥");
+    }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     const lines = [
       "# Certd Local CA export",
@@ -871,9 +892,14 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       privateKeyPem.trim(),
       "",
     ];
+    const filename = `local-ca-${ca.id}-${ca.subjectCn.replace(/[^a-zA-Z0-9._-]/g, "_")}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}.pem`;
+    // 按用户要求写在 Certd 进程运行目录，不写入持久化数据目录；权限仅当前用户可读
+    const filePath = path.join(process.cwd(), filename);
+    await fs.promises.writeFile(filePath, lines.join("\n"), { encoding: "utf8", mode: 0o600, flag: "wx" });
+    await fs.promises.chmod(filePath, 0o600);
     return {
-      filename: `local-ca-${ca.id}-${ca.subjectCn.replace(/[^a-zA-Z0-9._-]/g, "_")}.pem`,
-      content: lines.join("\n"),
+      filename,
+      path: filePath,
     };
   }
 

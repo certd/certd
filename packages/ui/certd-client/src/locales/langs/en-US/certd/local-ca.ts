@@ -31,6 +31,7 @@ export default {
   exportTitle: "Verify to Export CA",
   exportWarning: "The export contains the CA private key. Anyone with this key can issue trusted certificates; keep it secure.",
   exportSuccess: "CA exported",
+  exportSaved: "CA written to the server runtime directory: {path}. Retrieve it from the server.",
   passkeyVerify: "Verify with Passkey",
   passkeyNotSupported: "This browser does not support Passkey",
   passkeyCancelled: "Passkey verification cancelled",
@@ -125,7 +126,10 @@ export default {
     acmeEnabled: "ACME",
     acmeDirectIssue: "EAB Direct Issue",
     exportDisabled: "Disable Export",
-    exportDisabledHelper: "When enabled, this CA certificate and private key cannot be exported; public key viewing remains available",
+    exportDisabledHelper:
+      "When enabled, the CA certificate and private key cannot be exported. Allowing export still only writes a file to the server runtime directory; no browser download is provided, so you may leave this off",
+    rootKeyOnlineEnabled: "Root Key Online Use",
+    rootKeyOnlineEnabledHelper: "Disabled by default; enable to sign intermediate CAs or export the root private key online",
     acmeDirectIssueHelper: "When enabled, ACME accounts authenticated with EAB can skip HTTP-01/DNS-01 validation; otherwise real domain validation is required",
   },
   acmeDisabledTitle: "ACME is not enabled",
@@ -174,6 +178,8 @@ export default {
   acmeCertdHelp:
     "<div>1. System Settings → Pipeline Settings → Custom ACME: set a name, unique sslProvider (e.g. localca), the Directory URL, and enable EAB.</div><div>2. Authorization → Add → ACME Account: choose localca, enter an email, fill in the EAB KID/HMAC, and generate the account.</div><div>3. When EAB Direct Issue is enabled on the CA, issuance skips domain validation. Otherwise, configure DNS/HTTP validation in the pipeline.</div><div>4. Auto matching: no domain verification entry is required when EAB Direct Issue is enabled; otherwise it is required.</div><div>5. Trust the root CA on clients; issuance is still restricted by the CA/EAB allowedDomains policy.</div>",
   acmeChanged: "ACME service status updated",
+  rootKeyOnlineYes: "Online Use Allowed",
+  rootKeyOnlineNo: "Online Use Disabled (default)",
   exportDisabledYes: "Export Disabled",
   exportDisabledNo: "Export Allowed",
   acmeDirectIssueYes: "Enabled",

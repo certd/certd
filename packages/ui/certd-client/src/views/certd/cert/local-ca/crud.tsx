@@ -422,6 +422,23 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           search: { show: false },
           column: { show: false },
         },
+        rootKeyOnlineEnabled: {
+          title: t("certd.localCa.fields.rootKeyOnlineEnabled"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("certd.localCa.rootKeyOnlineYes"), value: true, color: "red" },
+              { label: t("certd.localCa.rootKeyOnlineNo"), value: false, color: "green" },
+            ],
+          }),
+          form: {
+            show: compute(({ form }) => form.caType === "root"),
+            col: { span: 24 },
+            helper: t("certd.localCa.fields.rootKeyOnlineEnabledHelper"),
+          },
+          search: { show: false },
+          column: { show: false },
+        },
         remark: {
           title: t("certd.localCa.fields.remark"),
           type: "textarea",

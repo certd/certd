@@ -536,14 +536,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
 
   async function downloadExport(row: any) {
     const res = await localCaApi.Export(row.id, getSecretAccessToken());
-    const blob = new Blob([res.content], { type: "application/x-pem-file" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = res.filename;
-    link.click();
-    URL.revokeObjectURL(url);
-    notification.success({ message: t("certd.localCa.exportSuccess") });
+    notification.success({ message: t("certd.localCa.exportSaved", { path: res.path }), duration: 15 });
   }
 
   async function handlePasskeyVerify(row: any) {

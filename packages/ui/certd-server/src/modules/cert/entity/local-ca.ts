@@ -87,6 +87,9 @@ export class LocalCaEntity {
   @Column({ name: "export_disabled", comment: "禁止导出CA（含私钥）", default: false })
   exportDisabled: boolean;
 
+  @Column({ name: "root_key_online_enabled", comment: "Root私钥允许在线解密（签中间CA/导出）", default: false })
+  rootKeyOnlineEnabled: boolean;
+
   @Column({ name: "acme_config", comment: "未来ACME配置JSON", type: "text", nullable: true })
   acmeConfig: string;
 

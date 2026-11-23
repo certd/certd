@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { X509Certificate } from "node:crypto";
 import { Encryptor, EncryptService } from "@certd/lib-server";
 import { LocalCaService } from "./local-ca-service.js";
@@ -103,6 +104,7 @@ describe("LocalCaService", () => {
       validityYears: 2,
       allowedDomains: opts.allowedDomains,
     });
+    await service.updateMeta({ id: root.id, userId: 1, rootKeyOnlineEnabled: true });
     const intermediate = await service.generateIntermediateCa({
       rootId: root.id,
       userId: 1,
@@ -148,6 +150,7 @@ describe("LocalCaService", () => {
       keyType: "rsa2048",
       validityYears: 2,
     });
+    await service.updateMeta({ id: root.id, userId: 1, rootKeyOnlineEnabled: true });
     const intermediate = await service.generateIntermediateCa({
       rootId: root.id,
       userId: 1,
@@ -208,6 +211,7 @@ describe("LocalCaService", () => {
       validityYears: 2,
       baseUrl: "https://ca.example.com/",
     });
+    await service.updateMeta({ id: root.id, userId: 1, rootKeyOnlineEnabled: true });
     const rootInfo: any = await service.infoSafe({ id: root.id, userId: 1 });
     assert.equal(rootInfo.baseUrl, "https://ca.example.com");
     assert.equal(await service.getCaBaseUrl(root.id), "https://ca.example.com");
@@ -257,6 +261,7 @@ describe("LocalCaService", () => {
       validityYears: 2,
       allowedDomains: ["example.com"],
     });
+    await service.updateMeta({ id: root.id, userId: 1, rootKeyOnlineEnabled: true });
 
     await assert.rejects(
       () =>
@@ -366,6 +371,7 @@ describe("LocalCaService", () => {
       keyType: "rsa2048",
       validityYears: 1,
     });
+    await service.updateMeta({ id, userId: 1, rootKeyOnlineEnabled: true });
     service.certRevocationService = {
       async listByCa() {
         return [
@@ -390,6 +396,7 @@ describe("LocalCaService", () => {
       keyType: "rsa2048",
       validityYears: 1,
     });
+    await service.updateMeta({ id, userId: 1, rootKeyOnlineEnabled: true });
     const now = Date.now();
     await service.certRevocationService.record({ caId: id, userId: 1, serialNumber: "0A01", expiresTime: now + 86400000 });
     await service.certRevocationService.record({ caId: id, userId: 1, serialNumber: "0A02", expiresTime: now - 86400000 });
@@ -466,9 +473,54 @@ describe("LocalCaService", () => {
       keyType: "rsa2048",
       validityYears: 1,
     });
+    await service.updateMeta({ id, userId: 1, rootKeyOnlineEnabled: true });
     const first = await service.getCrlInfo({ id, userId: 1 });
     const second = await service.getCrlInfo({ id, userId: 1 });
     assert.ok(Number(second.crlNumber) > Number(first.crlNumber));
+  });
+
+  it("Root私钥默认禁止在线使用，显式开启后才允许", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Offline Root",
+      subject: { CN: "Offline Root" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    await assert.rejects(
+      () =>
+        service.generateIntermediateCa({
+          rootId: root.id,
+          userId: 1,
+          name: "Blocked Intermediate",
+          subject: { CN: "Blocked Intermediate" },
+          keyType: "rsa2048",
+          validityYears: 1,
+        }),
+      /默认禁止在线解密私钥/
+    );
+    await assert.rejects(() => service.exportCa({ id: root.id, userId: 1 }), /默认禁止在线解密私钥/);
+    await assert.rejects(() => service.getCrl(root.id), /Root CA默认禁止在线解密私钥/);
+
+    await service.updateMeta({ id: root.id, userId: 1, rootKeyOnlineEnabled: true });
+    const rootCrl = await service.getCrl(root.id);
+    assert.match(rootCrl.pem, /BEGIN X509 CRL/);
+    const child = await service.generateIntermediateCa({
+      rootId: root.id,
+      userId: 1,
+      name: "Allowed Intermediate",
+      subject: { CN: "Allowed Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    assert.ok(child.id);
+    const exported = await service.exportCa({ id: root.id, userId: 1 });
+    const exportedContent = await fs.promises.readFile(exported.path, "utf8");
+    const mode = (await fs.promises.stat(exported.path)).mode & 0o777;
+    assert.match(exportedContent, /BEGIN PRIVATE KEY/);
+    assert.equal(mode, 0o600);
+    await fs.promises.unlink(exported.path);
   });
 
   it("exportCa 返回证书和私钥", async () => {
@@ -480,10 +532,13 @@ describe("LocalCaService", () => {
       keyType: "rsa2048",
       validityYears: 1,
     });
+    await service.updateMeta({ id, userId: 1, rootKeyOnlineEnabled: true });
     const res = await service.exportCa({ id, userId: 1 });
     assert.match(res.filename, /local-ca-/);
-    assert.match(res.content, /BEGIN CERTIFICATE/);
-    assert.match(res.content, /BEGIN PRIVATE KEY/);
+    const content = await fs.promises.readFile(res.path, "utf8");
+    assert.match(content, /BEGIN CERTIFICATE/);
+    assert.match(content, /BEGIN PRIVATE KEY/);
+    await fs.promises.unlink(res.path);
     const publicKey = await service.getPublicKey({ id, userId: 1 });
     assert.match(publicKey.pem, /BEGIN PUBLIC KEY/);
   });

@@ -83,8 +83,12 @@ describe("local-ca-crypto", () => {
       subject: { CN: "Two Tier Intermediate CA" },
       keyType: "rsa2048",
       validityYears: 5,
+      crlDistributionPoint: "https://ca.example.com/api/cert/local-ca/crl?id=1",
     });
     const intermediateCert = new X509Certificate(intermediate.certPem);
+    const intermediateText = new x509.X509Certificate(intermediate.certPem).toString("text");
+    assert.match(intermediateText, /CRL Distribution Points/);
+    assert.match(intermediateText, /https:\/\/ca\.example\.com\/api\/cert\/local-ca\/crl\?id=1/);
     const rootCert = new X509Certificate(root.certPem);
     assert.equal(intermediateCert.ca, true);
     assert.equal(intermediateCert.verify(rootCert.publicKey), true);

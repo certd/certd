@@ -29,6 +29,7 @@ export type CreatedRootCa = {
   notBefore: number;
   notAfter: number;
   pathLength?: number;
+  serialNumber?: string;
 };
 
 export type ImportedRootCa = CreatedRootCa;
@@ -484,7 +485,14 @@ export function getBasicConstraints(certPem: string) {
   };
 }
 
-export async function createIntermediateCa(req: { rootCertPem: string; rootPrivateKeyPem: string; subject: LocalCaSubject; keyType?: LocalCaKeyType; validityYears?: number }): Promise<CreatedRootCa> {
+export async function createIntermediateCa(req: {
+  rootCertPem: string;
+  rootPrivateKeyPem: string;
+  subject: LocalCaSubject;
+  keyType?: LocalCaKeyType;
+  validityYears?: number;
+  crlDistributionPoint?: string;
+}): Promise<CreatedRootCa> {
   if (!req.subject?.CN) {
     throw new Error("中间CA名称(CN)不能为空");
   }
@@ -522,6 +530,7 @@ export async function createIntermediateCa(req: { rootCertPem: string; rootPriva
         new x509.KeyUsagesExtension(x509.KeyUsageFlags.keyCertSign | x509.KeyUsageFlags.cRLSign | x509.KeyUsageFlags.digitalSignature, true),
         await x509.SubjectKeyIdentifierExtension.create(keys.publicKey, false, webcrypto),
         await x509.AuthorityKeyIdentifierExtension.create(rootCert.publicKey, false, webcrypto),
+        ...(req.crlDistributionPoint ? [new x509.CRLDistributionPointsExtension([req.crlDistributionPoint])] : []),
       ],
     },
     webcrypto
@@ -538,6 +547,7 @@ export async function createIntermediateCa(req: { rootCertPem: string; rootPriva
     notBefore: notBefore.getTime(),
     notAfter: notAfter.getTime(),
     pathLength: 0,
+    serialNumber: getCertSerialNumber(certPem),
   };
 }
 
