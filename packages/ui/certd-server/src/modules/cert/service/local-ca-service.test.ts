@@ -464,6 +464,14 @@ describe("LocalCaService", () => {
     assert.match(publicKey.pem, /BEGIN PUBLIC KEY/);
   });
 
+  it("中间CA禁用后仍可提供CRL，存量证书可继续校验", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Retired Intermediate CA" });
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    const crl = await service.getCrl(id);
+    assert.match(crl.pem, /BEGIN X509 CRL/);
+  });
+
   it("CRL Number 持久化单调递增，同一秒也不同", async () => {
     const { service } = createService();
     const { id } = await service.generateCa({
