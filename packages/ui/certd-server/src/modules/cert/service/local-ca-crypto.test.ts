@@ -195,6 +195,31 @@ describe("local-ca-crypto", () => {
     assert.equal(importedIntermediate.pathLength, 0);
   });
 
+  it("普通叶子证书不能伪装成中间CA导入", async () => {
+    const root = await createRootCa({
+      subject: { CN: "Leaf Guard Root" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    const leaf = await issueLeafCertificate({
+      caCertPem: root.certPem,
+      caPrivateKeyPem: root.privateKeyPem,
+      domains: ["leaf.example.com"],
+      keyType: "rsa2048",
+      validityDays: 30,
+    });
+
+    await assert.rejects(
+      () =>
+        validateImportedIntermediateCa({
+          certPem: leaf.certPem,
+          privateKeyPem: leaf.key,
+          parentCertPem: root.certPem,
+        }),
+      /不是CA证书/
+    );
+  });
+
   it("生成CRL并包含已吊销序列号", async () => {
     const ca = await createRootCa({
       subject: { CN: "CRL Root CA" },
@@ -222,6 +247,45 @@ describe("local-ca-crypto", () => {
     assert.equal(revoked.reason, x509.X509CrlReason.keyCompromise);
     const verified = await parsed.verify({ publicKey: new x509.X509Certificate(ca.certPem).publicKey }, crypto.webcrypto as any);
     assert.equal(verified, true);
+  });
+
+  it("有效期参数裁剪到合法范围", async () => {
+    const ca = await createRootCa({
+      subject: { CN: "Validity Root CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    const { csrPem } = await createCsr({ domains: ["validity.example.com"], keyType: "rsa2048" });
+    const sign = async (validityDays: number, maxValidityDays?: number) => {
+      const signed = await signCsr({
+        caCertPem: ca.certPem,
+        caPrivateKeyPem: ca.privateKeyPem,
+        csrPem,
+        validityDays,
+        maxValidityDays,
+      });
+      return new X509Certificate(signed.certPem);
+    };
+
+    const now = Date.now();
+    const defaultDays = await sign(0);
+    assert.ok(new Date(defaultDays.validTo).getTime() - now > 89 * 86400000);
+    assert.ok(new Date(defaultDays.validTo).getTime() - now < 91 * 86400000);
+
+    const oneDay = await sign(-5);
+    assert.ok(new Date(oneDay.validTo).getTime() - now > 0);
+    assert.ok(new Date(oneDay.validTo).getTime() - now < 2 * 86400000);
+
+    const capped = await sign(30, 5);
+    assert.ok(new Date(capped.validTo).getTime() - now <= 6 * 86400000);
+
+    const huge = await sign(1e9);
+    assert.ok(new Date(huge.validTo).getTime() <= ca.notAfter - 86400000 + 5 * 60 * 1000);
+
+    for (const cert of [defaultDays, oneDay, capped, huge]) {
+      assert.ok(new Date(cert.validFrom).getTime() <= Date.now());
+      assert.ok(new Date(cert.validTo).getTime() > Date.now());
+    }
   });
 
   it("允许域名白名单会拒绝越界域名", async () => {
