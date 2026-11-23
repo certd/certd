@@ -121,7 +121,7 @@ export default {
     caType: "CA Type",
     parentCa: "Parent CA",
     baseUrl: "Base URL",
-    baseUrlHelper: "Leave empty to use {origin}; CRL and ACME URLs in certificates use this address",
+    baseUrlHelper: "Leave empty to use {origin}; CRL and ACME URLs use this address. Existing certificates keep the old address, so the old host must stay available until they expire",
     caPath: "Hierarchy",
     acmeEnabled: "ACME",
     acmeDirectIssue: "EAB Direct Issue",

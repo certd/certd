@@ -160,6 +160,14 @@ export const localCaApi = {
     });
   },
 
+  async SetEabStatus(caId: number, eabId: string, disabled: boolean, verifyToken: string) {
+    return await request({
+      url: apiPrefix + "/eab/status",
+      method: "post",
+      data: { caId, eabId, disabled, verifyToken },
+    });
+  },
+
   async RevokeIntermediate(id: number, verifyToken: string) {
     return await request({
       url: apiPrefix + "/intermediate/revoke",

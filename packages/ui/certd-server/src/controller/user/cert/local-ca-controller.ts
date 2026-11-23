@@ -296,6 +296,22 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(res);
   }
 
+  @Post("/eab/status", { description: Constants.per.authOnly, summary: "启用/禁用本地ACME的EAB凭证（需2FA/Passkey）" })
+  async setEabStatus(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "变更ACME凭证状态");
+    const { userId, projectId } = await this.getProjectUserIdWrite();
+    await this.checkOwner(this.service, body.caId, "write");
+    const res = await this.service.setAcmeEabDisabled({
+      caId: body.caId,
+      eabId: body.eabId,
+      userId,
+      projectId,
+      disabled: body.disabled === true,
+    });
+    this.auditLog({ content: `${body.disabled ? "禁用" : "启用"}了本地CA的ACME EAB凭证(ID:${body.eabId})` });
+    return this.ok(res);
+  }
+
   @Post("/eab/list", { description: Constants.per.authOnly, summary: "查询本地ACME的EAB凭证" })
   async listEab(@Body(ALL) body: any) {
     const { userId, projectId } = await this.checkOwner(this.service, body.caId, "read");

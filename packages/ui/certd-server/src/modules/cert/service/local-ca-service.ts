@@ -586,6 +586,21 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     };
   }
 
+  async setAcmeEabDisabled(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; disabled: boolean }) {
+    const ca = await this.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("只有中间CA可以管理ACME凭证");
+    }
+    const bean = await this.acmeEabRepository.findOne({ where: { id: req.eabId, caId: ca.id } });
+    if (!bean) {
+      throw new ValidateException("ACME凭证不存在或无访问权限");
+    }
+    bean.disabled = req.disabled === true;
+    bean.updateTime = new Date();
+    await this.acmeEabRepository.save(bean);
+    return { id: bean.id, disabled: bean.disabled };
+  }
+
   async listAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number }) {
     const ca = await this.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
     const list = await this.acmeEabRepository.find({ where: { caId: ca.id }, order: { createTime: "DESC" } });

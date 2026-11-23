@@ -322,6 +322,27 @@ describe("LocalCaService", () => {
     await assert.rejects(() => service.updateMeta({ id: root.id, userId: 1, allowedDomains: ["other.com"] }), /子CA「Good Scope Intermediate」的允许域名超出新的根CA范围/);
   });
 
+  it("EAB凭证可以单独禁用和启用", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "EAB Status CA" });
+    const bean: any = { id: "eab-1", caId: id, disabled: false, updateTime: null };
+    service.acmeEabRepository = {
+      async findOne({ where }: any) {
+        return where.id === bean.id && where.caId === bean.caId ? bean : null;
+      },
+      async save(item: any) {
+        Object.assign(bean, item);
+        return item;
+      },
+    } as any;
+
+    await service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: true });
+    assert.equal(bean.disabled, true);
+    await service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: false });
+    assert.equal(bean.disabled, false);
+    await assert.rejects(() => service.setAcmeEabDisabled({ caId: 999, eabId: "eab-1", userId: 1, disabled: true }), /不存在或无访问权限/);
+  });
+
   it("EAB直签只能为已启用ACME的中间CA开启", async () => {
     const { service } = createService();
     const { rootId, id } = await createIssuingCa(service, { name: "Direct Issue CA" });
