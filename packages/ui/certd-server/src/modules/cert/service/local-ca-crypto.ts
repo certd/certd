@@ -761,6 +761,24 @@ export async function createCsr(req: { domains: string[]; keyType: LocalCaKeyTyp
   };
 }
 
+function assertCsrPublicKeyAllowed(csr: x509.Pkcs10CertificateRequest): "rsa" | "ec" {
+  const algorithm: any = csr.publicKey?.algorithm || {};
+  if (algorithm.name === "RSASSA-PKCS1-v1_5" || algorithm.name === "RSA-PSS") {
+    const bits = Number(algorithm.modulusLength);
+    if (![2048, 3072, 4096].includes(bits)) {
+      throw new Error(`CSR RSA公钥长度不允许：${bits}；仅支持 2048/3072/4096`);
+    }
+    return "rsa";
+  }
+  if (algorithm.name === "ECDSA") {
+    if (!["P-256", "P-384"].includes(algorithm.namedCurve)) {
+      throw new Error(`CSR ECDSA曲线不允许：${algorithm.namedCurve}；仅支持 P-256/P-384`);
+    }
+    return "ec";
+  }
+  throw new Error(`CSR公钥算法不支持：${algorithm.name || "unknown"}；仅支持 RSA 2048/3072/4096、ECDSA P-256/P-384`);
+}
+
 export async function signCsr(req: {
   caCertPem: string;
   caPrivateKeyPem: string;
@@ -787,6 +805,7 @@ export async function signCsr(req: {
   if (!(await csr.verify(webcrypto))) {
     throw new Error("CSR签名验证失败");
   }
+  const csrKeyType = assertCsrPublicKeyAllowed(csr);
   const domains = readCsrDomains(csr);
   matchAllowedDomains(domains, req.allowedDomains);
 
@@ -811,8 +830,7 @@ export async function signCsr(req: {
   }
 
   const serialNumber = randomSerialHex();
-  const leafKeyAlgorithm = (csr.publicKey as any)?.algorithm?.name || "";
-  const leafIsEc = /EC/i.test(leafKeyAlgorithm);
+  const leafIsEc = csrKeyType === "ec";
   const leafKeyUsage = x509.KeyUsageFlags.digitalSignature | (leafIsEc ? 0 : x509.KeyUsageFlags.keyEncipherment);
   const extensions: any[] = [
     new x509.BasicConstraintsExtension(false, undefined, true),
