@@ -18,6 +18,32 @@ import { useDicts } from "../../dicts";
 import { useCrudPermission } from "/@/plugin/permission";
 import CertView from "/@/views/certd/pipeline/cert-view.vue";
 import { useModal } from "/@/use/use-modal";
+
+type SiteCertChainItem = {
+  subject: string;
+  issuer: string;
+  validFrom?: number;
+  validTo?: number;
+  serialNumber?: string;
+  fingerprintSha256?: string;
+  ca?: boolean;
+};
+
+function parseCertChain(certChain: string): SiteCertChainItem[] {
+  if (!certChain) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(certChain);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter(item => item && typeof item.subject === "string" && typeof item.issuer === "string");
+  } catch (e) {
+    return [];
+  }
+}
+
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const api = siteInfoApi;
@@ -74,6 +100,57 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const { openSiteIpMonitorDialog } = useSiteIpMonitor();
   const { openSiteImportDialog } = useSiteImport();
   const openSiteImportTaskManageDialog = useSiteImportTaskManage();
+
+  function showCertChain(row: any) {
+    const chain = parseCertChain(row.certChain);
+    if (chain.length === 0) {
+      notification.warning({ message: t("certd.monitor.certChainEmpty") });
+      return;
+    }
+    const columns = [
+      {
+        title: t("certd.monitor.certChainLevel"),
+        dataIndex: "level",
+        key: "level",
+        width: 90,
+      },
+      {
+        title: t("certd.monitor.certChainSubject"),
+        dataIndex: "subject",
+        key: "subject",
+      },
+      {
+        title: t("certd.monitor.certChainIssuer"),
+        dataIndex: "issuer",
+        key: "issuer",
+      },
+      {
+        title: t("certd.monitor.certChainValidity"),
+        key: "validity",
+        width: 210,
+        customRender: ({ record }: any) => {
+          const from = record.validFrom ? dayjs(record.validFrom).format("YYYY-MM-DD") : "-";
+          const to = record.validTo ? dayjs(record.validTo).format("YYYY-MM-DD") : "-";
+          return `${from} ~ ${to}`;
+        },
+      },
+    ];
+    const dataSource = chain.map((item, index) => ({
+      key: index,
+      level: index === 0 ? t("certd.monitor.certChainLeaf") : index + 1,
+      ...item,
+    }));
+    Modal.info({
+      title: `${t("certd.monitor.certChainTitle")} - ${row.domain}`,
+      width: 900,
+      content: () => (
+        <div>
+          <a-alert type="info" show-icon message={t("certd.monitor.certChainNotice")} class="mb-3" />
+          <a-table columns={columns} dataSource={dataSource} pagination={false} size="small" scroll={{ x: 760 }} />
+        </div>
+      ),
+    });
+  }
 
   const certValidDaysRef = ref(10);
 
@@ -470,6 +547,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
             conditionalRender: false,
             cellRender({ value, row }) {
+              const chain = parseCertChain(row.certChain);
               const slots = {
                 content() {
                   return (
@@ -480,6 +558,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                       <div>
                         {t("certd.monitor.certDomains")}: {row.certDomains}
                       </div>
+                      {chain.length > 1 && (
+                        <a-button type="link" size="small" class="px-0" onClick={() => showCertChain(row)}>
+                          {t("certd.monitor.certChainView")} ({chain.length})
+                        </a-button>
+                      )}
                     </div>
                   );
                 },
