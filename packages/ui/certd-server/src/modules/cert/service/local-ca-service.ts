@@ -122,14 +122,44 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async page(pageReq: PageReq<LocalCaEntity>) {
-    const res = await super.page(pageReq);
-    for (const item of res.records) {
+    const { query = {}, page } = pageReq;
+    for (const key of Object.keys(query)) {
+      if ((query as any)[key] == null) {
+        delete (query as any)[key];
+      }
+    }
+    if ((page as any).offset == null) {
+      (page as any).offset = 0;
+    }
+    if ((page as any).limit == null) {
+      (page as any).limit = 20;
+    }
+    const qb = this.repository.createQueryBuilder("main");
+    if (Object.keys(query).length > 0) {
+      qb.where(query);
+    }
+    if (pageReq.buildQuery) {
+      pageReq.buildQuery(qb);
+    }
+    // 根CA按根分组；根在前，中间CA紧跟其父级
+    qb.addOrderBy("CASE WHEN main.parent_id IS NULL THEN main.id ELSE main.parent_id END", "DESC");
+    qb.addOrderBy("CASE WHEN main.parent_id IS NULL THEN 0 ELSE 1 END", "ASC");
+    qb.addOrderBy("main.id", "ASC");
+    qb.offset((page as any).offset).limit((page as any).limit);
+    const records = await qb.getMany();
+    const total = await qb.getCount();
+    for (const item of records) {
       const safe = item as any;
       delete safe.privateKeyEncrypted;
       delete safe.privateKeyHash;
     }
-    await this.attachParentNames(res.records as any[]);
-    return res;
+    await this.attachParentNames(records as any[]);
+    return {
+      records,
+      total,
+      offset: (page as any).offset,
+      limit: (page as any).limit,
+    };
   }
 
   async listSafe(req: { userId: number; projectId?: number; searchKey?: string }) {
