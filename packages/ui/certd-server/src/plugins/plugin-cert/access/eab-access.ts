@@ -39,6 +39,7 @@ export class EabAccess extends BaseAccess {
         { value: "zerossl", label: "ZeroSSL", icon: "emojione:digit-zero" },
         { value: "litessl", label: "litessl", icon: "roentgen:free" },
         { value: "sslcom", label: "SSL.com", icon: "la:expeditedssl" },
+        { value: "custom", label: "自定义/本地CA", icon: "ph:seal-check" },
       ],
     },
     helper: "请选择EAB类型",

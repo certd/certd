@@ -3,6 +3,7 @@ import { Constants, CrudController } from "@certd/lib-server";
 import { cache } from "@certd/basic";
 import { ApiTags } from "@midwayjs/swagger";
 import { LocalCaService } from "../../../modules/cert/service/local-ca-service.js";
+import { AcmeServerService } from "../../../modules/cert/service/acme-server-service.js";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 @Provide()
@@ -11,6 +12,9 @@ import { AuditType } from "../../../modules/sys/enterprise/service/audit-constan
 export class LocalCaController extends CrudController<LocalCaService> {
   @Inject()
   service: LocalCaService;
+
+  @Inject()
+  acmeServerService: AcmeServerService;
 
   getService(): LocalCaService {
     return this.service;
@@ -144,6 +148,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       maxValidityDays: body.maxValidityDays,
       allowedDomains: body.allowedDomains,
       baseUrl: body.baseUrl,
+      acmeDirectIssue: body.acmeDirectIssue,
     });
     this.auditLog({ content: `修改了本地CA「${body.name}」(ID:${body.id})` });
     return this.ok(true);
@@ -234,6 +239,48 @@ export class LocalCaController extends CrudController<LocalCaService> {
   async crlInfo(@Query("id") id: number) {
     const { userId, projectId } = await this.checkOwner(this.service, id, "read");
     return this.ok(await this.service.getCrlInfo({ id, userId, projectId }));
+  }
+
+  @Post("/acme/accounts", { description: Constants.per.authOnly, summary: "查询本地ACME账户" })
+  async acmeAccounts(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.checkOwner(this.service, body.id, "read");
+    return this.ok(await this.acmeServerService.listAccounts(body.id, userId, projectId));
+  }
+
+  @Post("/acme/accountOrders", { description: Constants.per.authOnly, summary: "查询本地ACME账户订单" })
+  async acmeAccountOrders(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.checkOwner(this.service, body.id, "read");
+    return this.ok(await this.acmeServerService.listAccountOrders(body.id, body.accountId, userId, projectId));
+  }
+
+  @Post("/acme/accountStatus", { description: Constants.per.authOnly, summary: "启用/停用本地ACME账户" })
+  async acmeAccountStatus(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.checkOwner(this.service, body.id, "write");
+    await this.acmeServerService.setAccountStatus(body.id, body.accountId, body.status, userId, projectId);
+    this.auditLog({ content: `${body.status === "valid" ? "启用" : "停用"}了本地ACME账户(${body.accountId})` });
+    return this.ok(true);
+  }
+
+  @Post("/eab/create", { description: Constants.per.authOnly, summary: "创建本地ACME的EAB凭证" })
+  async createEab(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.checkOwner(this.service, body.caId, "write");
+    const res = await this.service.createAcmeEab({
+      caId: body.caId,
+      userId,
+      projectId,
+      name: body.name,
+      maxUses: body.maxUses,
+      expiresDays: body.expiresDays,
+      allowedDomains: body.allowedDomains,
+    });
+    this.auditLog({ content: `创建本地ACME EAB凭证「${res.name}」(KID:${res.kid})` });
+    return this.ok(res);
+  }
+
+  @Post("/eab/list", { description: Constants.per.authOnly, summary: "查询本地ACME的EAB凭证" })
+  async listEab(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.checkOwner(this.service, body.caId, "read");
+    return this.ok(await this.service.listAcmeEab({ caId: body.caId, userId, projectId }));
   }
 
   @Post("/certs", { description: Constants.per.authOnly, summary: "查询本地CA签发的证书" })

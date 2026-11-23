@@ -1,11 +1,14 @@
+import crypto from "node:crypto";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { In, Like, Repository } from "typeorm";
 import { BaseService, EncryptService, PageReq, SysInstallInfo, SysSettingsService, ValidateException } from "@certd/lib-server";
 import { LocalCaEntity } from "../entity/local-ca.js";
+import { AcmeEabEntity } from "../entity/acme-server.js";
 import { CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { CertStatus } from "../../monitor/entity/cert-info.js";
 import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
+import { randomId } from "./acme-jws.js";
 import {
   createCrl,
   createIntermediateCa,
@@ -24,6 +27,16 @@ import {
   validateImportedIntermediateCa,
   validateImportedRootCa,
 } from "./local-ca-crypto.js";
+
+function randomEabHmacKey() {
+  for (let i = 0; i < 20; i++) {
+    const key = crypto.randomBytes(32).toString("base64").replace(/=+$/, "");
+    if (/^[A-Za-z0-9]+$/.test(key)) {
+      return key;
+    }
+  }
+  return crypto.randomBytes(32).toString("hex");
+}
 
 function normalizeBaseUrl(value?: string) {
   const text = String(value || "").trim();
@@ -106,6 +119,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   @InjectEntityModel(PipelineEntity)
   pipelineRepository: Repository<PipelineEntity>;
+
+  @InjectEntityModel(AcmeEabEntity)
+  acmeEabRepository: Repository<AcmeEabEntity>;
 
   @Inject()
   encryptService: EncryptService;
@@ -213,6 +229,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       subjectCn: item.subjectCn,
       caType: item.caType,
       parentId: item.parentId,
+      acmeEnabled: item.acmeEnabled,
       disabled: item.disabled,
       notAfter: item.notAfter,
     }));
@@ -236,6 +253,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       subjectCn: item.subjectCn,
       caType: item.caType,
       parentId: item.parentId,
+      acmeEnabled: item.acmeEnabled,
       disabled: item.disabled,
       notAfter: item.notAfter,
     }));
@@ -272,6 +290,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.allowedDomains = req.allowedDomains?.length ? JSON.stringify(req.allowedDomains) : null;
     bean.maxValidityDays = req.maxValidityDays || 0;
     bean.acmeEnabled = false;
+    bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
     bean.baseUrl = normalizeBaseUrl(req.baseUrl);
     bean.pathLength = 1;
@@ -321,6 +340,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.allowedDomains = req.allowedDomains?.length ? JSON.stringify(req.allowedDomains) : root.allowedDomains;
     bean.maxValidityDays = req.maxValidityDays ?? root.maxValidityDays;
     bean.acmeEnabled = false;
+    bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
     bean.baseUrl = normalizeBaseUrl(req.baseUrl) || root.baseUrl || null;
     bean.pathLength = 0;
@@ -382,6 +402,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.allowedDomains = req.allowedDomains?.length ? JSON.stringify(req.allowedDomains) : null;
     bean.maxValidityDays = req.maxValidityDays || 0;
     bean.acmeEnabled = false;
+    bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
     bean.pathLength = material.pathLength ?? (selfSigned ? (getBasicConstraints(material.certPem).pathLength ?? 1) : 0);
     bean.disabled = false;
@@ -461,10 +482,114 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       throw new ValidateException("只有中间CA可以启用ACME服务");
     }
     ca.acmeEnabled = req.enabled;
+    if (!req.enabled) {
+      ca.acmeDirectIssue = false;
+    }
     if (req.enabled && req.validityDays) {
       ca.acmeConfig = JSON.stringify({ validityDays: Math.max(1, Math.min(3650, req.validityDays)) });
     }
     await this.update(ca);
+  }
+
+  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[] }) {
+    const ca = await this.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("只有中间CA可以创建ACME凭证");
+    }
+    if (!ca.acmeEnabled) {
+      throw new ValidateException("请先启用该中间CA的ACME服务");
+    }
+    const id = randomId(16);
+    const kid = `eab_${randomId(12)}`;
+    const hmacKey = randomEabHmacKey();
+    const maxUses = Math.max(0, Math.min(10000, Number(req.maxUses ?? 1)));
+    const expiresDays = Math.max(0, Math.min(3650, Number(req.expiresDays ?? 0)));
+    const bean = this.acmeEabRepository.create({
+      id,
+      caId: ca.id,
+      userId: req.userId,
+      projectId: req.projectId,
+      name: String(req.name || "").trim() || "ACME凭证",
+      kid,
+      allowedDomains: req.allowedDomains?.length ? JSON.stringify(req.allowedDomains) : null,
+      hmacKeyEncrypted: this.encryptService.encrypt(hmacKey),
+      hmacKeyHash: sha256Hex(hmacKey),
+      maxUses,
+      usedCount: 0,
+      expiresTime: expiresDays > 0 ? Date.now() + expiresDays * 24 * 3600 * 1000 : null,
+      disabled: false,
+    });
+    await this.acmeEabRepository.save(bean);
+    return {
+      id,
+      caId: ca.id,
+      name: bean.name,
+      kid,
+      hmacKey,
+      maxUses,
+      allowedDomains: req.allowedDomains || [],
+      expiresTime: bean.expiresTime,
+    };
+  }
+
+  async listAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number }) {
+    const ca = await this.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+    const list = await this.acmeEabRepository.find({ where: { caId: ca.id }, order: { createTime: "DESC" } });
+    return list.map(item => ({
+      id: item.id,
+      name: item.name,
+      kid: item.kid,
+      allowedDomains: item.allowedDomains,
+      maxUses: item.maxUses,
+      usedCount: item.usedCount,
+      expiresTime: item.expiresTime,
+      disabled: item.disabled,
+      createTime: item.createTime,
+    }));
+  }
+
+  async getAcmeEabSecret(caId: number, kid: string) {
+    const bean = await this.acmeEabRepository.findOne({ where: { caId, kid } });
+    if (!bean) {
+      return null;
+    }
+    let hmacKey: string;
+    try {
+      hmacKey = this.encryptService.decrypt(bean.hmacKeyEncrypted);
+    } catch (e) {
+      return null;
+    }
+    if (bean.hmacKeyHash && sha256Hex(hmacKey) !== bean.hmacKeyHash) {
+      return null;
+    }
+    return { ...bean, hmacKey };
+  }
+
+  async getAcmeEabProfile(id: string) {
+    const bean = await this.acmeEabRepository.findOne({ where: { id } });
+    if (!bean || bean.disabled || (bean.expiresTime && bean.expiresTime <= Date.now())) {
+      return null;
+    }
+    let allowedDomains: string[] = [];
+    if (bean.allowedDomains) {
+      try {
+        const parsed = JSON.parse(bean.allowedDomains);
+        allowedDomains = Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        allowedDomains = [];
+      }
+    }
+    return { id: bean.id, allowedDomains };
+  }
+
+  async consumeAcmeEab(id: string) {
+    const bean = await this.acmeEabRepository.findOne({ where: { id } });
+    if (!bean) {
+      return;
+    }
+    bean.usedCount = Number(bean.usedCount || 0) + 1;
+    bean.updateTime = new Date();
+    await this.acmeEabRepository.save(bean);
   }
 
   async getCrl(id: number) {
@@ -528,6 +653,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       maxValidityDays?: number;
       allowedDomains?: string[];
       baseUrl?: string;
+      acmeDirectIssue?: boolean;
     }
   ) {
     const ca = await this.getOwnedCa(req);
@@ -561,6 +687,15 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     if (req.baseUrl != null) {
       ca.baseUrl = normalizeBaseUrl(req.baseUrl) || null;
+    }
+    if (req.acmeDirectIssue != null) {
+      if (req.acmeDirectIssue && ca.caType !== "intermediate") {
+        throw new ValidateException("只有中间CA可以开启EAB直签");
+      }
+      if (req.acmeDirectIssue && !ca.acmeEnabled) {
+        throw new ValidateException("请先启用该中间CA的ACME服务");
+      }
+      ca.acmeDirectIssue = req.acmeDirectIssue === true;
     }
     await this.update(ca);
   }
@@ -739,6 +874,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       filename: `local-ca-${ca.id}.pem`,
       pem: ca.certPem,
     };
+  }
+
+  async assertCaOwner(req: LocalCaScope) {
+    await this.getOwnedCa(req);
   }
 
   private async getOwnedCa(req: LocalCaScope) {

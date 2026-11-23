@@ -87,5 +87,6 @@ export default {
     auditLogHelper: "查看所有用户的操作记录",
     domainMonitorSetting: "域名监控设置",
     jobHistory: "监控执行记录",
+    localCa: "本地CA",
   },
 };

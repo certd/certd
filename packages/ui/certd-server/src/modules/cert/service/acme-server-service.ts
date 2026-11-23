@@ -96,7 +96,7 @@ export class AcmeServerService {
         termsOfService: "",
         website: "",
         caaIdentities: [],
-        externalAccountRequired: false,
+        externalAccountRequired: true,
       },
     };
   }
@@ -125,6 +125,7 @@ export class AcmeServerService {
       if (payload.onlyReturnExisting === true) {
         throw new AcmeProblem("accountDoesNotExist", "账户不存在", 400);
       }
+      const eabId = await this.verifyExternalAccountBinding(caId, payload.externalAccountBinding, thumbprint);
       account = this.accountRepository.create({
         id: randomId(),
         caId,
@@ -132,6 +133,7 @@ export class AcmeServerService {
         projectId: ca.projectId,
         jwk: JSON.stringify(jws.header.jwk),
         thumbprint,
+        eabId,
         status: "valid",
         contact: JSON.stringify(payload.contact || []),
       });
@@ -152,16 +154,23 @@ export class AcmeServerService {
     const { jws, account } = await this.verifyAccount(ctx, caId, body);
     const payload = jws.payload || {};
     const identifiers = this.normalizeIdentifiers(payload.identifiers);
-    matchAllowedDomains(
-      identifiers.map(item => item.value),
-      this.parseAllowedDomains(ca.allowedDomains)
-    );
+    const identifierValues = identifiers.map(item => item.value);
+    matchAllowedDomains(identifierValues, this.parseAllowedDomains(ca.allowedDomains));
+    if (account.eabId) {
+      const profile = await this.localCaService.getAcmeEabProfile(account.eabId);
+      if (!profile) {
+        throw new AcmeProblem("unauthorized", "EAB凭证已禁用或过期", 401);
+      }
+      matchAllowedDomains(identifierValues, profile.allowedDomains);
+    }
 
     const orderId = randomId();
     const now = Date.now();
     const expiresTime = now + ORDER_TTL;
     const authzIds: string[] = [];
     const base = await this.baseUrl(caId);
+    // EAB直签：仅对通过EAB认证的账户生效，跳过域名所有权校验
+    const directIssue = ca.acmeDirectIssue === true && !!account.eabId;
 
     for (const identifier of identifiers) {
       const wildcard = identifier.type === "dns" && identifier.value.startsWith("*.");
@@ -174,16 +183,13 @@ export class AcmeServerService {
         identifierType: identifier.type,
         identifierValue: authzValue,
         wildcard,
-        status: "pending",
+        status: directIssue ? "valid" : "pending",
         expiresTime,
       });
       await this.authzRepository.save(authz);
       authzIds.push(authz.id);
 
-      const challengeTypes = ["dns-01"];
-      if (!wildcard && identifier.type === "dns") {
-        challengeTypes.push("http-01");
-      }
+      const challengeTypes = identifier.type === "ip" ? ["http-01"] : wildcard ? ["dns-01"] : ["dns-01", "http-01"];
       for (const type of challengeTypes) {
         const token = crypto.randomBytes(32).toString("base64url");
         const challenge = this.challengeRepository.create({
@@ -195,7 +201,8 @@ export class AcmeServerService {
           type,
           token,
           keyAuthorization: `${token}.${account.thumbprint}`,
-          status: "pending",
+          status: directIssue ? "valid" : "pending",
+          validatedTime: directIssue ? now : null,
         });
         await this.challengeRepository.save(challenge);
       }
@@ -205,7 +212,7 @@ export class AcmeServerService {
       id: orderId,
       caId,
       accountId: account.id,
-      status: "pending",
+      status: directIssue ? "ready" : "pending",
       identifiers: JSON.stringify(identifiers),
       authzIds: JSON.stringify(authzIds),
       expiresTime,
@@ -350,6 +357,107 @@ export class AcmeServerService {
     certInfo.revokeTime = Date.now();
     await this.certInfoService.update(certInfo);
     ctx.status = 200;
+  }
+
+  private async verifyExternalAccountBinding(caId: number, eab: any, accountThumbprint: string) {
+    if (!eab || typeof eab !== "object") {
+      throw new AcmeProblem("externalAccountRequired", "该本地CA要求EAB认证，请在CA页面创建ACME凭证", 400);
+    }
+    if (typeof eab.protected !== "string" || typeof eab.payload !== "string" || typeof eab.signature !== "string") {
+      throw new AcmeProblem("malformed", "externalAccountBinding格式错误");
+    }
+    let header: any;
+    let jwk: any;
+    try {
+      header = JSON.parse(base64urlDecode(eab.protected).toString("utf8"));
+      jwk = JSON.parse(base64urlDecode(eab.payload).toString("utf8"));
+    } catch (e: any) {
+      throw new AcmeProblem("malformed", `EAB解析失败：${e.message}`);
+    }
+    if (header.alg !== "HS256") {
+      throw new AcmeProblem("badSignatureAlgorithm", "EAB仅支持HS256", 400);
+    }
+    if (!header.kid || typeof header.kid !== "string") {
+      throw new AcmeProblem("malformed", "EAB缺少kid");
+    }
+    if (typeof header.url !== "string" || !header.url.endsWith("/new-account")) {
+      throw new AcmeProblem("malformed", "EAB url不匹配");
+    }
+    if (jwkThumbprint(jwk) !== accountThumbprint) {
+      throw new AcmeProblem("malformed", "EAB绑定的账号公钥不匹配");
+    }
+    const info = await this.localCaService.getAcmeEabSecret(caId, header.kid);
+    if (!info || info.disabled) {
+      throw new AcmeProblem("unauthorized", "EAB凭证不存在或已禁用", 401);
+    }
+    if (info.expiresTime && info.expiresTime <= Date.now()) {
+      throw new AcmeProblem("unauthorized", "EAB凭证已过期", 401);
+    }
+    if (info.maxUses > 0 && info.usedCount >= info.maxUses) {
+      throw new AcmeProblem("unauthorized", "EAB凭证使用次数已耗尽", 401);
+    }
+    const expected = crypto.createHmac("sha256", Buffer.from(info.hmacKey, "base64url")).update(`${eab.protected}.${eab.payload}`).digest();
+    const actual = base64urlDecode(eab.signature);
+    if (expected.length !== actual.length || !crypto.timingSafeEqual(expected, actual)) {
+      throw new AcmeProblem("unauthorized", "EAB签名验证失败", 401);
+    }
+    await this.localCaService.consumeAcmeEab(info.id);
+    return info.id;
+  }
+
+  async listAccounts(caId: number, userId: number, projectId?: number) {
+    await this.localCaService.assertCaOwner({ id: caId, userId, projectId });
+    const accounts = await this.accountRepository.find({ where: { caId }, order: { createTime: "DESC" } });
+    const result = [];
+    for (const account of accounts) {
+      const orderCount = await this.orderRepository.count({ where: { caId, accountId: account.id } });
+      const issuedCount = await this.orderRepository.count({ where: { caId, accountId: account.id, status: "valid" } });
+      result.push({
+        id: account.id,
+        status: account.status,
+        contact: account.contact ? JSON.parse(account.contact) : [],
+        thumbprint: account.thumbprint,
+        eabId: account.eabId,
+        createTime: account.createTime,
+        orderCount,
+        issuedCount,
+      });
+    }
+    return result;
+  }
+
+  async listAccountOrders(caId: number, accountId: string, userId: number, projectId?: number) {
+    await this.localCaService.assertCaOwner({ id: caId, userId, projectId });
+    const account = await this.accountRepository.findOne({ where: { id: accountId, caId } });
+    if (!account) {
+      throw new AcmeProblem("unauthorized", "ACME账户不存在", 404);
+    }
+    const orders = await this.orderRepository.find({
+      where: { caId, accountId },
+      order: { createTime: "DESC" },
+    });
+    return orders.map(order => ({
+      id: order.id,
+      status: order.status,
+      identifiers: JSON.parse(order.identifiers),
+      serialNumber: order.serialNumber,
+      createTime: order.createTime,
+      expiresTime: order.expiresTime,
+    }));
+  }
+
+  async setAccountStatus(caId: number, accountId: string, status: string, userId: number, projectId?: number) {
+    await this.localCaService.assertCaOwner({ id: caId, userId, projectId });
+    if (!["valid", "deactivated"].includes(status)) {
+      throw new AcmeProblem("malformed", "账户状态不合法");
+    }
+    const account = await this.accountRepository.findOne({ where: { id: accountId, caId } });
+    if (!account) {
+      throw new AcmeProblem("unauthorized", "ACME账户不存在", 404);
+    }
+    account.status = status;
+    account.updateTime = new Date();
+    await this.accountRepository.save(account);
   }
 
   async notImplemented() {

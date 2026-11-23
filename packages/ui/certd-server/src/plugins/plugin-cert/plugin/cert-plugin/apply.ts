@@ -13,6 +13,20 @@ import { DomainParser } from "@certd/plugin-lib";
 import { ossClientFactory } from "../../../plugin-lib/oss/factory.js";
 import { merge } from "lodash-es";
 
+function getLocalCaIdFromAcmeDirectory(directoryUrl?: string): number | null {
+  if (!directoryUrl) {
+    return null;
+  }
+  let pathname = "";
+  try {
+    pathname = new URL(directoryUrl).pathname;
+  } catch {
+    pathname = directoryUrl.split(/[?#]/)[0];
+  }
+  const matched = pathname.match(/\/api\/acme\/(\d+)\/directory\/?$/i);
+  return matched ? Number(matched[1]) : null;
+}
+
 export type CnameRecordInput = {
   id: number;
   status: string;
@@ -220,7 +234,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 3.  <b>CNAME代理验证</b>：支持任何注册商的域名，第一次需要手动添加[CNAME记录](#/certd/cname/record)（如果经常申请失败，建议将DNS服务器修改为阿里云/腾讯云的，然后使用DNS直接验证）
 4.  <b>HTTP文件验证</b>：不支持泛域名，需要配置网站文件上传（IP证书必须选它）
 5.  <b>多DNS提供商</b>：每个域名可以选择独立的DNS提供商或校验方式
-6.  <b>自动匹配</b>：此处无需选择校验方式，需要在[域名管理](#/certd/cert/domain)中提前配置好校验方式
+6.  <b>自动匹配</b>：默认需在[域名管理](#/certd/cert/domain)提前配置校验方式；本地CA开启EAB直签时自动跳过
 `,
   })
   challengeType!: string;
@@ -787,7 +801,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     } else if (this.challengeType === "cname" || this.challengeType === "http" || this.challengeType === "dnses") {
       domainsVerifyPlan = await this.createDomainsVerifyPlan(domains, this.domainsVerifyPlan, acmeAccount);
     } else if (this.challengeType === "auto") {
-      domainsVerifyPlan = await this.createDomainsVerifyPlanByAuto(domains);
+      domainsVerifyPlan = await this.createDomainsVerifyPlanByAuto(domains, acmeAccount);
     } else {
       const dnsProviderType = this.dnsProviderType;
       const access = await this.getAccess(this.dnsProviderAccess);
@@ -959,7 +973,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     return plan;
   }
 
-  private async createDomainsVerifyPlanByAuto(domains: string[]) {
+  private async createDomainsVerifyPlanByAuto(domains: string[], acmeAccount?: AcmeAccountInfo) {
     //从数据库里面自动选择校验方式
     // domain list
     const domainList = new Set<string>();
@@ -974,10 +988,12 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
     const plan: DomainsVerifyPlan = {};
 
+    const missingDomains: string[] = [];
     for (const domain in verifiers) {
       const verifier = verifiers[domain];
       if (verifier == null) {
-        throw new Error(`没有找到与该域名（${domain}）匹配的校验方式，请先到‘域名管理’页面添加校验方式`);
+        missingDomains.push(domain);
+        continue;
       }
       if (verifier.type === "dns") {
         plan[domain] = await this.createDnsDomainVerifyPlan(verifier.dns, domain, verifier.mainDomain);
@@ -987,7 +1003,46 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         plan[domain] = await this.createHttpDomainVerifyPlan(verifier.http, domain, verifier.mainDomain);
       }
     }
+
+    if (missingDomains.length > 0) {
+      const localCaId = await this.getDirectIssueLocalCaId(acmeAccount);
+      if (localCaId == null) {
+        throw new Error(`没有找到与该域名（${missingDomains[0]}）匹配的校验方式，请先到‘域名管理’页面添加校验方式`);
+      }
+      this.logger.info(`域名【${missingDomains.join(",")}】未配置校验方式，本地CA【${localCaId}】支持直接签发，跳过域名校验`);
+    }
     return plan;
+  }
+
+  private async getDirectIssueLocalCaId(acmeAccount?: AcmeAccountInfo): Promise<number | null> {
+    const caId = getLocalCaIdFromAcmeDirectory(this.acmeProvider?.directoryUrl);
+    if (caId == null) {
+      return null;
+    }
+    const localCaGetter: any = await this.ctx.serviceGetter.get("localCaGetter");
+    if (!localCaGetter) {
+      throw new Error("当前颁发机构是本地CA，但未找到本地CA服务");
+    }
+    const ca = await localCaGetter.getCa(caId);
+    if (ca.disabled) {
+      throw new Error(`本地CA【${ca.name}】已禁用，无法直接签发`);
+    }
+    if (ca.caType !== "intermediate") {
+      throw new Error(`本地CA【${ca.name}】不是中间CA，无法签发叶子证书`);
+    }
+    if (!ca.acmeEnabled) {
+      throw new Error(`本地CA【${ca.name}】未启用ACME服务，无法直接签发`);
+    }
+    if (!ca.acmeDirectIssue) {
+      throw new Error(`本地CA【${ca.name}】未开启EAB直签，请先在CA设置中开启，或到‘域名管理’页面配置校验方式`);
+    }
+    if (!acmeAccount?.eab) {
+      throw new Error(`本地CA【${ca.name}】的ACME账号未通过EAB认证，无法跳过域名校验；请重新生成EAB账号`);
+    }
+    if (ca.notAfter && ca.notAfter < Date.now()) {
+      throw new Error(`本地CA【${ca.name}】已过期，无法直接签发`);
+    }
+    return caId;
   }
 
   private async createDnsDomainVerifyPlan(planSetting: DnsVerifier, domain: string, mainDomain: string): Promise<DomainVerifyPlan> {

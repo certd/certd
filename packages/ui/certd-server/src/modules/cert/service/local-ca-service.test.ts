@@ -209,6 +209,23 @@ describe("LocalCaService", () => {
     assert.match(certText, /https:\/\/pki\.example\.com\/api\/cert\/local-ca\/crl\?id=/);
   });
 
+  it("EAB直签只能为已启用ACME的中间CA开启", async () => {
+    const { service } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Direct Issue CA" });
+
+    await assert.rejects(() => service.updateMeta({ id, userId: 1, acmeDirectIssue: true }), /请先启用该中间CA的ACME服务/);
+    await assert.rejects(() => service.updateMeta({ id: rootId, userId: 1, acmeDirectIssue: true }), /只有中间CA可以开启EAB直签/);
+
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    await service.updateMeta({ id, userId: 1, acmeDirectIssue: true });
+    const info: any = await service.infoSafe({ id, userId: 1 });
+    assert.equal(info.acmeDirectIssue, true);
+
+    await service.updateMeta({ id, userId: 1, acmeDirectIssue: false });
+    const updated: any = await service.infoSafe({ id, userId: 1 });
+    assert.equal(updated.acmeDirectIssue, false);
+  });
+
   it("signCsr 按CA策略签发并拒绝越界域名", async () => {
     const { service } = createService();
     service.sysSettingsService = {

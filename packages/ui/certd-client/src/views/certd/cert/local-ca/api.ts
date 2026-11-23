@@ -96,6 +96,46 @@ export const localCaApi = {
     return await ReadCertDetail(certPem);
   },
 
+  async ListAcmeAccounts(id: number) {
+    return await request({
+      url: apiPrefix + "/acme/accounts",
+      method: "post",
+      data: { id },
+    });
+  },
+
+  async ListAcmeOrders(id: number, accountId: string) {
+    return await request({
+      url: apiPrefix + "/acme/accountOrders",
+      method: "post",
+      data: { id, accountId },
+    });
+  },
+
+  async SetAcmeAccountStatus(id: number, accountId: string, status: string) {
+    return await request({
+      url: apiPrefix + "/acme/accountStatus",
+      method: "post",
+      data: { id, accountId, status },
+    });
+  },
+
+  async CreateEab(data: any) {
+    return await request({
+      url: apiPrefix + "/eab/create",
+      method: "post",
+      data,
+    });
+  },
+
+  async ListEab(id: number) {
+    return await request({
+      url: apiPrefix + "/eab/list",
+      method: "post",
+      data: { caId: id },
+    });
+  },
+
   async GetPublicKey(id: number) {
     return await request({
       url: apiPrefix + "/publicKey",

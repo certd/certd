@@ -20,6 +20,9 @@ export class AcmeAccountEntity {
   @Column({ length: 64 })
   thumbprint: string;
 
+  @Column({ name: "eab_id", length: 32, nullable: true })
+  eabId: string;
+
   @Column({ length: 20, default: "valid" })
   status: string;
 
@@ -145,6 +148,54 @@ export class AcmeChallengeEntity {
 
   @Column({ name: "validated_time", type: "bigint", nullable: true })
   validatedTime: number;
+
+  @Column({ name: "create_time", default: () => "CURRENT_TIMESTAMP" })
+  createTime: Date;
+
+  @Column({ name: "update_time", default: () => "CURRENT_TIMESTAMP" })
+  updateTime: Date;
+}
+
+@Entity("cd_acme_eab")
+export class AcmeEabEntity {
+  @PrimaryColumn({ length: 32 })
+  id: string;
+
+  @Column({ name: "ca_id" })
+  caId: number;
+
+  @Column({ name: "user_id" })
+  userId: number;
+
+  @Column({ name: "project_id", nullable: true })
+  projectId: number;
+
+  @Column({ length: 100 })
+  name: string;
+
+  @Column({ length: 100 })
+  kid: string;
+
+  @Column({ name: "hmac_key_encrypted", type: "text" })
+  hmacKeyEncrypted: string;
+
+  @Column({ name: "hmac_key_hash", length: 64 })
+  hmacKeyHash: string;
+
+  @Column({ name: "allowed_domains", type: "text", nullable: true })
+  allowedDomains: string;
+
+  @Column({ name: "max_uses", default: 1 })
+  maxUses: number;
+
+  @Column({ name: "used_count", default: 0 })
+  usedCount: number;
+
+  @Column({ name: "expires_time", type: "bigint", nullable: true })
+  expiresTime: number;
+
+  @Column({ default: false })
+  disabled: boolean;
 
   @Column({ name: "create_time", default: () => "CURRENT_TIMESTAMP" })
   createTime: Date;

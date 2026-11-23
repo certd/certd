@@ -5,7 +5,7 @@
       <div class="sub">{{ t("certd.localCa.description") }}</div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"></fs-crud>
-    <LocalCaView ref="caViewRef" :on-export="row => caExportHandler?.(row)" />
+    <LocalCaView ref="caViewRef" :on-export="row => caExportHandler?.(row)" :on-changed="() => crudExpose.doRefresh()" />
   </fs-page>
 </template>
 

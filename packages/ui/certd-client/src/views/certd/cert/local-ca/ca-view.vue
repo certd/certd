@@ -3,6 +3,11 @@
     <div v-if="row" class="local-ca-view">
       <a-tabs v-model:activeKey="activeTab">
         <a-tab-pane key="settings" :tab="t('certd.localCa.tabSettings')">
+          <a-alert v-if="row.caType === 'intermediate' && !row.acmeEnabled" type="warning" show-icon class="mb-3" :message="t('certd.localCa.acmeDisabledTitle')" :description="t('certd.localCa.acmeDisabledDesc')">
+            <template #action>
+              <a-button size="small" type="primary" :loading="acmeEnabling" @click="enableAcme">{{ t("certd.localCa.enableAcme") }}</a-button>
+            </template>
+          </a-alert>
           <a-descriptions class="local-ca-settings" bordered :column="1" size="small">
             <a-descriptions-item :label="t('certd.localCa.fields.name')">{{ row.name }}</a-descriptions-item>
             <a-descriptions-item :label="t('certd.localCa.fields.caType')">
@@ -27,6 +32,9 @@
             <a-descriptions-item :label="t('certd.localCa.fields.fingerprint')">{{ row.fingerprintSha256 }}</a-descriptions-item>
             <a-descriptions-item v-if="row.caType === 'intermediate'" :label="t('certd.localCa.fields.acmeEnabled')">
               {{ row.acmeEnabled ? t("certd.localCa.acmeEnabledYes") : t("certd.localCa.acmeEnabledNo") }}
+            </a-descriptions-item>
+            <a-descriptions-item v-if="row.caType === 'intermediate' && row.acmeEnabled" :label="t('certd.localCa.fields.acmeDirectIssue')">
+              {{ row.acmeDirectIssue ? t("certd.localCa.acmeDirectIssueYes") : t("certd.localCa.acmeDirectIssueNo") }}
             </a-descriptions-item>
             <a-descriptions-item v-if="row.acmeEnabled" :label="t('certd.localCa.acmeDirectory')" :span="2">
               <fs-copyable :model-value="acmeDirectoryUrl">{{ acmeDirectoryUrl }}</fs-copyable>
@@ -108,6 +116,7 @@ defineOptions({
 
 const props = defineProps<{
   onExport?: (row: any) => void;
+  onChanged?: () => void;
 }>();
 
 const { t } = useI18n();
@@ -119,6 +128,7 @@ const row = ref<any>(null);
 const cert = ref<any>(null);
 const crlInfo = ref<any>(null);
 const publicKeyLoading = ref(false);
+const acmeEnabling = ref(false);
 
 const subject = computed(() => parseJson(row.value?.subject, {}));
 const allowedDomains = computed(() => parseJson(row.value?.allowedDomains, []));
@@ -130,8 +140,8 @@ const usageLabel = computed(() => {
 });
 const baseUrl = computed(() => row.value?.baseUrl || window.location.origin);
 const acmeDirectoryUrl = computed(() => (row.value ? `${baseUrl.value}/api/acme/${row.value.id}/directory` : ""));
-const certbotExample = computed(() => `certbot certonly --server ${acmeDirectoryUrl.value} --standalone -d your.example.com`);
-const acmeShExample = computed(() => `acme.sh --server ${acmeDirectoryUrl.value} --issue -d your.example.com --webroot /var/www/html`);
+const certbotExample = computed(() => `certbot certonly --server ${acmeDirectoryUrl.value} --eab-kid <EAB_KID> --eab-hmac-key <EAB_HMAC> --standalone -d your.example.com`);
+const acmeShExample = computed(() => `acme.sh --server ${acmeDirectoryUrl.value} --eab-kid <EAB_KID> --eab-hmac-key <EAB_HMAC> --issue -d your.example.com --webroot /var/www/html`);
 const keyTypeLabel = computed(() => {
   const map: any = {
     rsa2048: "RSA 2048",
@@ -185,6 +195,18 @@ async function open(data: any) {
     };
   } catch (e: any) {
     notification.error({ message: e.message || t("certd.localCa.viewFailed") });
+  }
+}
+
+async function enableAcme() {
+  acmeEnabling.value = true;
+  try {
+    await localCaApi.EnableAcme(row.value.id, true);
+    row.value.acmeEnabled = true;
+    notification.success({ message: t("certd.localCa.acmeChanged") });
+    props.onChanged?.();
+  } finally {
+    acmeEnabling.value = false;
   }
 }
 

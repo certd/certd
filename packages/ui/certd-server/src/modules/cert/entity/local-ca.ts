@@ -78,6 +78,9 @@ export class LocalCaEntity {
   @Column({ name: "acme_enabled", comment: "未来ACME服务端开关", default: false })
   acmeEnabled: boolean;
 
+  @Column({ name: "acme_direct_issue", comment: "EAB直签：跳过域名校验", default: false })
+  acmeDirectIssue: boolean;
+
   @Column({ name: "acme_config", comment: "未来ACME配置JSON", type: "text", nullable: true })
   acmeConfig: string;
 

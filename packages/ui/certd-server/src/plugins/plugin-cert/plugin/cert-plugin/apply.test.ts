@@ -333,3 +333,89 @@ describe("CertApplyPlugin custom 颁发机构", () => {
     await assert.rejects(() => plugin.doCertApply(), /自定义ACME必须选择对应的ACME账号/);
   });
 });
+
+describe("CertApplyPlugin 自动匹配本地CA", () => {
+  function createPlugin(options: { directoryUrl?: string; verifiers?: Record<string, any>; ca?: any; caError?: Error }) {
+    const plugin: any = new CertApplyPlugin();
+    plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
+    plugin.acmeProvider = { sslProvider: "myca", title: "本地CA", directoryUrl: options.directoryUrl, builtIn: false };
+    plugin.ctx = {
+      user: { id: 1 },
+      projectId: undefined,
+      serviceGetter: {
+        async get(name: string) {
+          if (name === "domainVerifierGetter") {
+            return {
+              async getVerifiers() {
+                return options.verifiers || {};
+              },
+            };
+          }
+          if (name === "localCaGetter") {
+            return {
+              async getCa() {
+                if (options.caError) {
+                  throw options.caError;
+                }
+                return options.ca;
+              },
+            };
+          }
+          return {};
+        },
+      },
+    };
+    return plugin;
+  }
+
+  it("域名未配置校验方式时，本地CA直签可跳过域名校验", async () => {
+    const plugin = createPlugin({
+      directoryUrl: "https://certd.example.com/api/acme/12/directory",
+      verifiers: { "foo.example.com": null },
+      ca: { id: 12, name: "内部中间CA", caType: "intermediate", acmeEnabled: true, acmeDirectIssue: true, disabled: false, notAfter: Date.now() + 86400000 },
+    });
+
+    const plan = await plugin.createDomainsVerifyPlanByAuto(["foo.example.com"], { eab: { kid: "k", hmacKey: "h" } });
+
+    assert.deepEqual(plan, {});
+  });
+
+  it("本地CA未启用ACME时不允许跳过域名校验", async () => {
+    const plugin = createPlugin({
+      directoryUrl: "https://certd.example.com/api/acme/12/directory",
+      verifiers: { "foo.example.com": null },
+      ca: { id: 12, name: "内部中间CA", caType: "intermediate", acmeEnabled: false, acmeDirectIssue: false, disabled: false, notAfter: Date.now() + 86400000 },
+    });
+
+    await assert.rejects(() => plugin.createDomainsVerifyPlanByAuto(["foo.example.com"]), /未启用ACME服务/);
+  });
+
+  it("本地CA未开启EAB直签时不允许跳过域名校验", async () => {
+    const plugin = createPlugin({
+      directoryUrl: "https://certd.example.com/api/acme/12/directory",
+      verifiers: { "foo.example.com": null },
+      ca: { id: 12, name: "内部中间CA", caType: "intermediate", acmeEnabled: true, acmeDirectIssue: false, disabled: false, notAfter: Date.now() + 86400000 },
+    });
+
+    await assert.rejects(() => plugin.createDomainsVerifyPlanByAuto(["foo.example.com"]), /未开启EAB直签/);
+  });
+
+  it("本地CA的ACME账号未通过EAB认证时不允许跳过域名校验", async () => {
+    const plugin = createPlugin({
+      directoryUrl: "https://certd.example.com/api/acme/12/directory",
+      verifiers: { "foo.example.com": null },
+      ca: { id: 12, name: "内部中间CA", caType: "intermediate", acmeEnabled: true, acmeDirectIssue: true, disabled: false, notAfter: Date.now() + 86400000 },
+    });
+
+    await assert.rejects(() => plugin.createDomainsVerifyPlanByAuto(["foo.example.com"], {}), /未通过EAB认证/);
+  });
+
+  it("非本地CA地址在缺少域名校验方式时保持原有报错", async () => {
+    const plugin = createPlugin({
+      directoryUrl: "https://acme.example.com/directory",
+      verifiers: { "foo.example.com": null },
+    });
+
+    await assert.rejects(() => plugin.createDomainsVerifyPlanByAuto(["foo.example.com"]), /没有找到与该域名（foo.example.com）匹配的校验方式/);
+  });
+});

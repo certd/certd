@@ -11,7 +11,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const { t } = useI18n();
   const projectStore = useProjectStore();
   const { hasActionPermission } = useCrudPermission(context);
-  const { openGenerate, openIntermediate, openImport, openView, openExport, openIssuedCerts } = useLocalCaDialogs(crudExpose, context.caViewRef);
+  const { openGenerate, openIntermediate, openCreateEab, openImport, openView, openExport, openIssuedCerts, openAcmeAccounts } = useLocalCaDialogs(crudExpose, context.caViewRef);
   if (context.caExportHandler) {
     context.caExportHandler.value = openExport;
   }
@@ -83,6 +83,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         editRequest,
         delRequest,
       },
+      pagination: {
+        pageSize: 1000,
+        pageSizeOptions: ["50", "100", "200", "500", "1000"],
+      },
       table: {
         rowKey: "id",
       },
@@ -112,6 +116,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: hasActionPermission("write"),
             click: async () => {
               await openImport();
+            },
+          },
+          eab: {
+            text: t("certd.localCa.eabCreate"),
+            icon: "ph:key",
+            show: hasActionPermission("write"),
+            click: async () => {
+              await openCreateEab();
             },
           },
         },
@@ -158,6 +170,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             icon: "ph:file-text",
             click: async ({ row }) => {
               await openIssuedCerts(row);
+            },
+          },
+          acmeAccounts: {
+            order: 7,
+            type: "link",
+            text: null,
+            tooltip: { title: t("certd.localCa.acmeAccounts") },
+            icon: "ph:users-three",
+            show: ({ row }) => row.caType === "intermediate" && row.acmeEnabled,
+            click: async ({ row }) => {
+              await openAcmeAccounts(row);
             },
           },
           edit: {
@@ -381,6 +404,23 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               },
             },
           },
+        },
+        acmeDirectIssue: {
+          title: t("certd.localCa.fields.acmeDirectIssue"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("certd.localCa.acmeDirectIssueYes"), value: true, color: "green" },
+              { label: t("certd.localCa.acmeDirectIssueNo"), value: false, color: "default" },
+            ],
+          }),
+          form: {
+            show: compute(({ form }) => form.caType === "intermediate" && form.acmeEnabled),
+            col: { span: 24 },
+            helper: t("certd.localCa.fields.acmeDirectIssueHelper"),
+          },
+          search: { show: false },
+          column: { show: false },
         },
         remark: {
           title: t("certd.localCa.fields.remark"),

@@ -88,5 +88,6 @@ export default {
     auditLogHelper: "View all users' operation records",
     jobHistory: "Monitoring Execution History",
     domainMonitorSetting: "Domain Monitor Settings",
+    localCa: "Local CA",
   },
 };

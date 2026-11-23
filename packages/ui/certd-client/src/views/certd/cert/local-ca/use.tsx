@@ -6,6 +6,7 @@ import { useModal } from "/@/use/use-modal";
 import { useI18n } from "/src/locales";
 import { createAccessApi, getSecretAccessToken } from "/@/views/certd/access/api";
 import LocalCaIssuedCerts from "./issued-certs.vue";
+import LocalCaAcmeAccounts from "./acme-accounts.vue";
 import { localCaApi } from "./api";
 
 function parseAllowedDomains(text: string) {
@@ -292,6 +293,82 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
+  async function openCreateEab() {
+    const allCas = await localCaApi.GetOptions();
+    const caOptions = (allCas || []).filter((item: any) => item.caType === "intermediate" && item.acmeEnabled && !item.disabled).map((item: any) => ({ label: `${item.name} (${item.subjectCn})`, value: item.id }));
+    if (caOptions.length === 0) {
+      notification.error({ message: t("certd.localCa.eabNoCa") });
+      return;
+    }
+    await openFormDialog({
+      title: t("certd.localCa.eabCreateTitle"),
+      wrapper: { width: 600 },
+      body: () => <a-alert type="warning" show-icon message={t("certd.localCa.eabCreateWarning")} description={t("certd.localCa.eabCreateWarningDesc")} class="mb-4" />,
+      initialForm: { maxUses: 1, expiresDays: 3650 },
+      columns: {
+        caId: {
+          title: t("certd.localCa.eabCa"),
+          type: "dict-select",
+          dict: dict({ data: caOptions }),
+          form: { required: true, col: { span: 24 } },
+        },
+        name: {
+          title: t("certd.localCa.eabName"),
+          type: "text",
+          form: { required: true, col: { span: 24 }, rules: [{ required: true, message: t("certd.common.required") }] },
+        },
+        allowedDomains: {
+          title: t("certd.localCa.eabAllowedDomains"),
+          type: "textarea",
+          form: {
+            col: { span: 24 },
+            component: { rows: 3, placeholder: "team-a.example.com\n*.team-a.example.com" },
+            helper: t("certd.localCa.eabAllowedDomainsHelper"),
+          },
+        },
+        maxUses: {
+          title: t("certd.localCa.eabMaxUses"),
+          type: "number",
+          form: { col: { span: 12 }, component: { min: 0 } },
+          helper: t("certd.localCa.eabMaxUsesHelper"),
+        },
+        expiresDays: {
+          title: t("certd.localCa.eabExpiresDays"),
+          type: "number",
+          form: { col: { span: 12 }, component: { min: 0 } },
+          helper: t("certd.localCa.eabExpiresDaysHelper"),
+        },
+      },
+      async onSubmit(form: any) {
+        const res = await localCaApi.CreateEab({
+          caId: form.caId,
+          name: form.name,
+          maxUses: form.maxUses || 0,
+          expiresDays: form.expiresDays || 0,
+          allowedDomains: parseAllowedDomains(form.allowedDomains),
+        });
+        model.success({
+          title: t("certd.localCa.eabCreatedTitle"),
+          width: 620,
+          okText: t("certd.common.close"),
+          content: () => (
+            <div>
+              <a-alert type="warning" show-icon message={t("certd.localCa.eabSecretOnce")} class="mb-4" />
+              <a-descriptions bordered column={1} size="small">
+                <a-descriptions-item label="KID">
+                  <fs-copyable modelValue={res.kid}>{res.kid}</fs-copyable>
+                </a-descriptions-item>
+                <a-descriptions-item label="HMAC Key">
+                  <fs-copyable modelValue={res.hmacKey}>{res.hmacKey}</fs-copyable>
+                </a-descriptions-item>
+              </a-descriptions>
+            </div>
+          ),
+        });
+      },
+    });
+  }
+
   async function openImport() {
     const allCas = await localCaApi.GetOptions();
     const rootOptions = (allCas || []).filter((item: any) => item.caType === "root" && !item.disabled).map((item: any) => ({ label: `${item.name} (${item.subjectCn})`, value: item.id }));
@@ -499,6 +576,16 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
+  async function openAcmeAccounts(row: any) {
+    model.success({
+      title: `${t("certd.localCa.acmeAccountsTitle")} - ${row.name}`,
+      maskClosable: true,
+      okText: t("certd.common.close"),
+      width: 1050,
+      content: () => <LocalCaAcmeAccounts caId={row.id} />,
+    });
+  }
+
   async function openIssuedCerts(row: any) {
     model.success({
       title: `${t("certd.localCa.issuedCertsTitle")} - ${row.name}`,
@@ -512,9 +599,11 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   return {
     openGenerate,
     openIntermediate,
+    openCreateEab,
     openImport,
     openView,
     openExport,
     openIssuedCerts,
+    openAcmeAccounts,
   };
 }
