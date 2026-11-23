@@ -367,7 +367,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const rootCrl = await createCrl({
       caCertPem: root.certPem,
       caPrivateKeyPem: rootPrivateKey,
-      entries: [],
+      entries: await this.getRevocationEntries(root.id),
       crlNumber: rootCrlNumber,
       nextUpdateDays: 365,
     });
@@ -895,6 +895,19 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     });
   }
 
+  private async getRevocationEntries(caId: number) {
+    const revoked = await this.certRevocationService.listByCa(caId);
+    const now = Date.now();
+    return revoked
+      .filter(item => item.serialNumber)
+      .filter(item => !item.expiresTime || item.expiresTime > now)
+      .map(item => ({
+        serialNumber: item.serialNumber,
+        revokeTime: item.revokedTime,
+        reason: item.reason,
+      }));
+  }
+
   async refreshAllCrls() {
     const list = await this.find({ where: { caType: "intermediate" } });
     for (const ca of list) {
@@ -912,16 +925,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       throw new ValidateException("只有Root CA可以执行Root CRL刷新");
     }
     const rootPrivateKey = this.decryptCaPrivateKey(root);
-    const revoked = await this.certRevocationService.listByCa(root.id);
-    const now = Date.now();
-    const entries = revoked
-      .filter(item => item.serialNumber)
-      .filter(item => !item.expiresTime || item.expiresTime > now)
-      .map(item => ({
-        serialNumber: item.serialNumber,
-        revokeTime: item.revokedTime,
-        reason: item.reason,
-      }));
+    const entries = await this.getRevocationEntries(root.id);
     const crlNumber = await this.nextCrlNumber(root.id);
     const crl = await createCrl({
       caCertPem: root.certPem,
@@ -962,16 +966,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     let crlNumber: number;
     try {
       const rootPrivateKey = this.decryptCaPrivateKey(root);
-      const revoked = await this.certRevocationService.listByCa(root.id);
-      const now = Date.now();
-      const entries = revoked
-        .filter(item => item.serialNumber)
-        .filter(item => !item.expiresTime || item.expiresTime > now)
-        .map(item => ({
-          serialNumber: item.serialNumber,
-          revokeTime: item.revokedTime,
-          reason: item.reason,
-        }));
+      const entries = await this.getRevocationEntries(root.id);
       crlNumber = await this.nextCrlNumber(root.id);
       const crl = await createCrl({
         caCertPem: root.certPem,

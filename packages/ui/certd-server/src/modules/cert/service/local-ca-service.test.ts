@@ -613,6 +613,26 @@ describe("LocalCaService", () => {
     assert.ok(rootCrl.entries.some((item: any) => item.serialNumber.toUpperCase() === intermediateSerial));
   });
 
+  it("创建新中间CA不会丢掉Root CRL中已有的吊销项", async () => {
+    const { service } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "First Intermediate" });
+    const firstInfo: any = await service.infoSafe({ id, userId: 1 });
+    const firstSerial = getCertSerialNumber(firstInfo.certPem);
+    await service.revokeIntermediate({ id, userId: 1, reason: "superseded" });
+
+    await service.generateIntermediateCa({
+      rootId,
+      userId: 1,
+      name: "Second Intermediate",
+      subject: { CN: "Second Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+
+    const rootCrl = await service.getCrlInfo({ id: rootId, userId: 1 });
+    assert.ok(rootCrl.entries.some((item: any) => item.serialNumber.toUpperCase() === firstSerial));
+  });
+
   it("根CA签发列表包含下级中间CA", async () => {
     const { service } = createService();
     const { rootId } = await createIssuingCa(service, { name: "Branch CA" });
