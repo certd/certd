@@ -172,6 +172,19 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(true);
   }
 
+  @Post("/intermediate/revoke", { description: Constants.per.authOnly, summary: "吊销中间CA并刷新Root CRL" })
+  async revokeIntermediate(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.checkOwner(this.service, body.id, "write");
+    const res = await this.service.revokeIntermediate({
+      id: body.id,
+      userId,
+      projectId,
+      reason: body.reason,
+    });
+    this.auditLog({ content: `吊销了中间CA(ID:${body.id})，序列号:${res.serialNumber}，Root CRL序号:${res.crlNumber}` });
+    return this.ok(res);
+  }
+
   @Post("/disable", { description: Constants.per.authOnly, summary: "禁用/启用本地CA" })
   async disable(@Body(ALL) body: any) {
     const { userId, projectId } = await this.checkOwner(this.service, body.id, "write");

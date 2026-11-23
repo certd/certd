@@ -27,6 +27,7 @@ import {
   LocalCaSubject,
   LocalCaUsage,
   matchAllowedDomains,
+  verifyCertIssuedBy,
   signCsr,
   sha256Hex,
   validateImportedIntermediateCa,
@@ -645,8 +646,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       throw new ValidateException("本地CA不存在");
     }
     if (ca.caType === "root") {
-      if (!ca.lastCrlPem) {
-        throw new ValidateException("Root CRL尚未生成；请先创建中间CA以生成Root CRL，或离线生成后导入");
+      if (!ca.lastCrlPem || Number(ca.lastCrlTime || 0) <= 0) {
+        throw new ValidateException("Root CRL尚未生成或已失效；请先创建中间CA或执行显式的Root CRL刷新");
       }
       const parsed = new x509.X509Crl(ca.lastCrlPem);
       return {
@@ -882,6 +883,65 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       serialNumber: cert.serialNumber,
       expiresTime: cert.expiresTime,
     });
+  }
+
+  async revokeIntermediate(req: LocalCaScope & { reason?: string }) {
+    const ca = await this.getOwnedCa(req);
+    if (ca.caType !== "intermediate" || !ca.parentId) {
+      throw new ValidateException("只能吊销中间CA");
+    }
+    const root = await this.findOne({ where: { id: ca.parentId, deleted: false } });
+    if (!root || root.caType !== "root") {
+      throw new ValidateException("中间CA的上级根CA不存在");
+    }
+    if (!verifyCertIssuedBy(ca.certPem, root.certPem)) {
+      throw new ValidateException("中间CA证书不是由该根CA签发，拒绝吊销");
+    }
+    const serialNumber = getCertSerialNumber(ca.certPem);
+    const revokedTime = Date.now();
+    await this.certRevocationService.record({
+      caId: root.id,
+      userId: req.userId,
+      projectId: req.projectId ?? ca.projectId,
+      serialNumber,
+      revokedTime,
+      expiresTime: ca.notAfter,
+      reason: req.reason || "unspecified",
+    });
+
+    // 这是显式的 Root 私钥使用操作：只在吊销中间CA时解密一次，生成并缓存Root CRL
+    let crlNumber: number;
+    try {
+      const rootPrivateKey = this.decryptCaPrivateKey(root);
+      const revoked = await this.certRevocationService.listByCa(root.id);
+      const now = Date.now();
+      const entries = revoked
+        .filter(item => item.serialNumber)
+        .filter(item => !item.expiresTime || item.expiresTime > now)
+        .map(item => ({
+          serialNumber: item.serialNumber,
+          revokeTime: item.revokedTime,
+          reason: item.reason,
+        }));
+      crlNumber = await this.nextCrlNumber(root.id);
+      const crl = await createCrl({
+        caCertPem: root.certPem,
+        caPrivateKeyPem: rootPrivateKey,
+        entries,
+        crlNumber,
+      });
+      root.lastCrlPem = crl.pem;
+      root.lastCrlTime = Date.now();
+      await this.update(root);
+    } catch (e) {
+      root.lastCrlTime = -1;
+      await this.update(root);
+      throw e;
+    }
+
+    ca.disabled = true;
+    await this.update(ca);
+    return { serialNumber, crlNumber };
   }
 
   async getPublicKey(req: LocalCaScope) {

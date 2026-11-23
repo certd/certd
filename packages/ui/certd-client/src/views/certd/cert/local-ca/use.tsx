@@ -1,5 +1,5 @@
 import { dict } from "@fast-crud/fast-crud";
-import { notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { ref } from "vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useModal } from "/@/use/use-modal";
@@ -626,6 +626,20 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
+  function openRevokeIntermediate(row: any) {
+    Modal.confirm({
+      title: t("certd.localCa.revokeIntermediateTitle"),
+      content: t("certd.localCa.revokeIntermediateDesc", { name: row.name }),
+      okText: t("certd.localCa.revokeIntermediateOk"),
+      okType: "danger",
+      async onOk() {
+        const res = await localCaApi.RevokeIntermediate(row.id);
+        notification.success({ message: t("certd.localCa.revokeIntermediateSuccess", { serial: res.serialNumber, crlNumber: res.crlNumber }), duration: 10 });
+        await crudExpose.doRefresh();
+      },
+    });
+  }
+
   async function openIssuedCerts(row: any) {
     model.success({
       title: `${t("certd.localCa.issuedCertsTitle")} - ${row.name}`,
@@ -645,5 +659,6 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openExport,
     openIssuedCerts,
     openAcmeAccounts,
+    openRevokeIntermediate,
   };
 }

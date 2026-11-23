@@ -160,6 +160,14 @@ export const localCaApi = {
     });
   },
 
+  async RevokeIntermediate(id: number) {
+    return await request({
+      url: apiPrefix + "/intermediate/revoke",
+      method: "post",
+      data: { id },
+    });
+  },
+
   async ListCerts(id: number) {
     return await request({
       url: apiPrefix + "/certs",

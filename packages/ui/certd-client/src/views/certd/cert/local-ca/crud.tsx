@@ -11,7 +11,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const { t } = useI18n();
   const projectStore = useProjectStore();
   const { hasActionPermission } = useCrudPermission(context);
-  const { openGenerate, openIntermediate, openCreateEab, openImport, openView, openExport, openIssuedCerts, openAcmeAccounts } = useLocalCaDialogs(crudExpose, context.caViewRef);
+  const { openGenerate, openIntermediate, openCreateEab, openImport, openView, openExport, openIssuedCerts, openAcmeAccounts, openRevokeIntermediate } = useLocalCaDialogs(crudExpose, context.caViewRef);
   if (context.caExportHandler) {
     context.caExportHandler.value = openExport;
   }
@@ -141,8 +141,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               await openIntermediate(row);
             },
           },
-          view: {
+          revokeIntermediate: {
             order: 1,
+            type: "link",
+            text: t("certd.localCa.revokeIntermediate"),
+            icon: "ph:prohibit",
+            show: ({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled,
+            click: async ({ row }) => {
+              openRevokeIntermediate(row);
+            },
+          },
+          view: {
+            order: 2,
             type: "link",
             text: null,
             tooltip: { title: t("certd.localCa.view") },

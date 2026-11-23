@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { X509Certificate } from "node:crypto";
 import { Encryptor, EncryptService } from "@certd/lib-server";
 import { LocalCaService } from "./local-ca-service.js";
-import { createCsr, createIntermediateCa } from "./local-ca-crypto.js";
+import { createCsr, createIntermediateCa, getCertSerialNumber } from "./local-ca-crypto.js";
 // @ts-ignore
 import * as x509 from "@peculiar/x509";
 
@@ -563,6 +563,19 @@ describe("LocalCaService", () => {
     assert.equal(list[0].serialNumber, "ABC");
     await service.revokeIssuedCert({ id, userId: 1, certId: 9 });
     assert.equal(revocations.get(`${id}:ABC`).caId, id);
+  });
+
+  it("吊销中间CA会更新Root CRL并可验证", async () => {
+    const { service, store } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Revoke Intermediate CA" });
+    const serial = (await service.infoSafe({ id, userId: 1 })) as any;
+    const intermediateSerial = getCertSerialNumber(serial.certPem);
+    const result = await service.revokeIntermediate({ id, userId: 1, reason: "superseded" });
+    assert.equal(result.serialNumber, intermediateSerial);
+    assert.equal(store.get(id).disabled, true);
+
+    const rootCrl = await service.getCrlInfo({ id: rootId, userId: 1 });
+    assert.ok(rootCrl.entries.some((item: any) => item.serialNumber.toUpperCase() === intermediateSerial));
   });
 
   it("根CA签发列表包含下级中间CA", async () => {
