@@ -261,14 +261,9 @@ describe("local-ca-crypto", () => {
 
   it("拒绝弱RSA和不允许的ECDSA CSR公钥", async () => {
     const root = await createRootCa({ subject: { CN: "CSR Policy Root" }, keyType: "rsa2048", validityYears: 2 });
-    const sign = (csrPem: string) =>
-      signCsr({ caCertPem: root.certPem, caPrivateKeyPem: root.privateKeyPem, csrPem, validityDays: 30 });
+    const sign = (csrPem: string) => signCsr({ caCertPem: root.certPem, caPrivateKeyPem: root.privateKeyPem, csrPem, validityDays: 30 });
 
-    const rsaKeys: any = await crypto.webcrypto.subtle.generateKey(
-      { name: "RSASSA-PKCS1-v1_5", modulusLength: 1024, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
-      true,
-      ["sign", "verify"]
-    );
+    const rsaKeys: any = await crypto.webcrypto.subtle.generateKey({ name: "RSASSA-PKCS1-v1_5", modulusLength: 1024, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]);
     const weakRsa = await x509.Pkcs10CertificateRequestGenerator.create(
       {
         name: new x509.Name([{ CN: ["weak-rsa.example.com"] }] as any),
