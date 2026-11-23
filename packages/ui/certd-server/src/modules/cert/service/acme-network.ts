@@ -41,6 +41,93 @@ function isPublicIpv4(address: string) {
   return true;
 }
 
+function ipv4FromInt(value: number) {
+  return `${(value >>> 24) & 0xff}.${(value >>> 16) & 0xff}.${(value >>> 8) & 0xff}.${value & 0xff}`;
+}
+
+function ipv6ToBigInt(address: string): bigint | null {
+  let text = address.split("%")[0].toLowerCase();
+  const lastColon = text.lastIndexOf(":");
+  const tail = text.slice(lastColon + 1);
+  if (tail.includes(".")) {
+    const parts = tail.split(".").map(Number);
+    if (parts.length !== 4 || parts.some(part => !Number.isInteger(part) || part < 0 || part > 255)) {
+      return null;
+    }
+    const hi = ((parts[0] << 8) | parts[1]).toString(16);
+    const lo = ((parts[2] << 8) | parts[3]).toString(16);
+    text = `${text.slice(0, lastColon + 1)}${hi}:${lo}`;
+  }
+  const sections = text.split("::");
+  if (sections.length > 2) {
+    return null;
+  }
+  const parseGroups = (section: string) => {
+    if (!section) {
+      return [];
+    }
+    return section.split(":");
+  };
+  const left = parseGroups(sections[0]);
+  const right = sections.length === 2 ? parseGroups(sections[1]) : [];
+  const groupPattern = /^[0-9a-f]{1,4}$/;
+  if ([...left, ...right].some(group => !groupPattern.test(group))) {
+    return null;
+  }
+  if (sections.length === 1 && left.length !== 8) {
+    return null;
+  }
+  const missing = 8 - left.length - right.length;
+  if (sections.length === 2 && missing <= 0) {
+    return null;
+  }
+  const groups = [...left, ...Array(Math.max(0, missing)).fill("0"), ...right].map(group => parseInt(group, 16));
+  if (groups.length !== 8 || groups.some(group => !Number.isInteger(group) || group < 0 || group > 0xffff)) {
+    return null;
+  }
+  let value = 0n;
+  for (const group of groups) {
+    value = (value << 16n) | BigInt(group);
+  }
+  return value;
+}
+
+function isPublicIpv6(address: string) {
+  const value = ipv6ToBigInt(address);
+  if (value == null) {
+    return false;
+  }
+  const high96 = value >> 32n;
+  // IPv4-mapped ::ffff:0:0/96 按内嵌IPv4判断；已废弃的 IPv4-compatible ::/96 直接拒绝
+  if (high96 === 0xffffn) {
+    return isPublicIpv4(ipv4FromInt(Number(value & 0xffffffffn)));
+  }
+  if (high96 === 0n) {
+    return false;
+  }
+  // 仅允许 2000::/3 全球单播
+  if ((value >> 125n) !== 1n) {
+    return false;
+  }
+  const high16 = Number(value >> 112n);
+  if (high16 === 0x2001) {
+    const secondGroup = Number((value >> 96n) & 0xffffn);
+    // 2001::/23 包含 Teredo、ORCHID、基准测试等特殊用途地址
+    if (secondGroup <= 0x1ff) {
+      return false;
+    }
+  }
+  if ((value >> 96n) === 0x20010db8n) {
+    // 2001:db8::/32 文档地址
+    return false;
+  }
+  if (high16 === 0x2002 || high16 === 0x3fff) {
+    // 6to4 与 3fff::/20 文档地址
+    return false;
+  }
+  return true;
+}
+
 export function isPublicIp(address: string) {
   const value = String(address || "").trim();
   const version = net.isIP(value);
@@ -48,33 +135,7 @@ export function isPublicIp(address: string) {
     return isPublicIpv4(value);
   }
   if (version === 6) {
-    const lower = value.toLowerCase();
-    if (lower === "::" || lower === "::1") {
-      return false;
-    }
-    const mapped = lower.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-    if (mapped) {
-      return isPublicIpv4(mapped[1]);
-    }
-    const compatible = lower.match(/^::(\d+\.\d+\.\d+\.\d+)$/);
-    if (compatible) {
-      return isPublicIpv4(compatible[1]);
-    }
-    // 采用白名单思路：仅允许 2000::/3 全球单播，并排除特殊/过渡范围
-    if (!/^2[0-9a-f]{3}:|^3[0-9a-f]{3}:/.test(lower)) {
-      return false;
-    }
-    if (lower.startsWith("2001:")) {
-      const secondGroup = parseInt(lower.split(":")[1] || "0", 16);
-      // 2001::/23 包含 Teredo(2001::/32) 等特殊用途地址
-      if (secondGroup <= 0x1ff) {
-        return false;
-      }
-    }
-    if (lower.startsWith("2001:db8") || lower.startsWith("2002:") || lower.startsWith("3fff:")) {
-      return false;
-    }
-    return true;
+    return isPublicIpv6(value);
   }
   return false;
 }

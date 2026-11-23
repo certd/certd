@@ -9,7 +9,7 @@ import { InjectEntityModel } from "@midwayjs/typeorm";
 import { EntityManager, In, Like, Repository } from "typeorm";
 import { BaseService, EncryptService, PageReq, SysInstallInfo, SysSettingsService, ValidateException } from "@certd/lib-server";
 import { LocalCaEntity } from "../entity/local-ca.js";
-import { AcmeEabEntity } from "../entity/acme-server.js";
+import { AcmeEabEntity, AcmeOrderEntity } from "../entity/acme-server.js";
 import { CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { CertRevocationService } from "./cert-revocation-service.js";
 import { CertStatus } from "../../monitor/entity/cert-info.js";
@@ -381,6 +381,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.revoked = false;
     await this.refreshRootCrlCache(root, rootPrivateKey);
     const res = await this.add(bean);
+    await this.markBaseUrlLocked(root.id);
     logger.info(`[local-ca] intermediate generated ca=${res.id} root=${root.id} user=${req.userId} project=${req.projectId ?? "-"}`);
     return { id: res.id };
   }
@@ -453,6 +454,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.deleted = false;
     bean.revoked = false;
     const res = await this.add(bean);
+    if (parent) {
+      await this.markBaseUrlLocked(parent.id);
+    }
     logger.info(`[local-ca] ca imported ca=${res.id} type=${bean.caType} parent=${bean.parentId ?? "-"} user=${req.userId} project=${req.projectId ?? "-"}`);
     return { id: res.id };
   }
@@ -482,6 +486,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       usage: (req.usage || ca.usage) as LocalCaUsage,
       crlDistributionPoint: await this.getCrlUrl(ca),
     });
+    if (!ca.baseUrlLocked) {
+      await this.markBaseUrlLocked(ca.id);
+      ca.baseUrlLocked = true;
+    }
     logger.info(`[local-ca] leaf issued ca=${ca.id} serial=${result.serialNumber} user=${req.userId} project=${req.projectId ?? "-"}`);
     return result;
   }
@@ -509,12 +517,15 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       usage: (req.usage || ca.usage) as LocalCaUsage,
       crlDistributionPoint: await this.getCrlUrl(ca),
     });
+    if (!ca.baseUrlLocked) {
+      await this.markBaseUrlLocked(ca.id);
+      ca.baseUrlLocked = true;
+    }
     logger.info(`[local-ca] leaf issued ca=${ca.id} serial=${result.serialNumber} domains=${req.domains.length} user=${req.userId} project=${req.projectId ?? "-"}`);
     return result;
   }
 
-  async getAcmeCa(id: number) {
-    const ca = await this.repository.findOne({ where: { id, deleted: false } });
+  private assertAcmeCaUsable(ca: LocalCaEntity | null) {
     if (!ca || ca.caType !== "intermediate" || !ca.acmeEnabled) {
       throw new ValidateException("该本地CA未启用ACME服务（仅中间CA支持ACME）");
     }
@@ -527,7 +538,32 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.notAfter && ca.notAfter <= Date.now()) {
       throw new ValidateException("该本地CA已过期，ACME服务不可用");
     }
+  }
+
+  async getAcmeCa(id: number) {
+    const ca = await this.repository.findOne({ where: { id, deleted: false } });
+    this.assertAcmeCaUsable(ca);
     return ca;
+  }
+
+  /**
+   * finalize 时在事务内重新读取并锁定CA行，确保关闭直签/收紧域名范围与签发不会交错。
+   */
+  async getAcmeCaForUpdate(id: number, manager: EntityManager) {
+    const repository = manager.getRepository(LocalCaEntity);
+    const driverType = String(manager.connection?.options?.type || "");
+    const useLock = !driverType.includes("sqlite");
+    const ca = await repository.findOne({
+      where: { id, deleted: false },
+      ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+    });
+    this.assertAcmeCaUsable(ca);
+    return ca;
+  }
+
+  async markBaseUrlLocked(caId: number, manager?: EntityManager) {
+    const repository = manager ? manager.getRepository(LocalCaEntity) : this.repository;
+    await repository.update({ id: caId, baseUrlLocked: false } as any, { baseUrlLocked: true } as any);
   }
 
   async signCsrForAcme(caId: number, csrPem: string, validityDays = 90) {
@@ -846,6 +882,30 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return `${baseUrl}/api/cert/local-ca/crl?id=${ca.id}`;
   }
 
+  /**
+   * 关闭EAB直签时在同一事务内失效尚未完成的直签订单，
+   * 避免策略变更后旧订单继续免验证签发。
+   */
+  private async disableAcmeDirectIssue(ca: LocalCaEntity) {
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法关闭EAB直签");
+    }
+    await runTransaction(manager, async tx => {
+      const caRepository = tx.getRepository(LocalCaEntity);
+      const driverType = String(tx.connection?.options?.type || "");
+      if (!driverType.includes("sqlite")) {
+        await caRepository.findOne({ where: { id: ca.id }, lock: { mode: "pessimistic_write" as const } });
+      }
+      await caRepository.update({ id: ca.id }, { acmeDirectIssue: false } as any);
+      await tx.getRepository(AcmeOrderEntity).update(
+        { caId: ca.id, directIssue: true, status: In(["pending", "ready"]) },
+        { status: "invalid", error: "EAB直签已关闭，请重新创建订单", updateTime: new Date() } as any
+      );
+    });
+    logger.info(`[local-ca] direct issue disabled ca=${ca.id}; unfinished direct orders invalidated`);
+  }
+
   async updateMeta(
     req: LocalCaScope & {
       name?: string;
@@ -897,8 +957,19 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       ca.allowedDomains = list.length ? JSON.stringify(list) : null;
     }
     if (req.baseUrl != null) {
-      ca.baseUrl = normalizeBaseUrl(req.baseUrl) || null;
+      const nextBaseUrl = normalizeBaseUrl(req.baseUrl) || null;
+      const currentBaseUrl = normalizeBaseUrl(ca.baseUrl) || null;
+      if (nextBaseUrl !== currentBaseUrl) {
+        if (ca.baseUrlLocked) {
+          throw new ValidateException("该CA的访问地址已用于签发证书或创建ACME账户，修改会导致历史CRL/ACME地址失效，已禁止变更");
+        }
+        if (ca.acmeEnabled) {
+          throw new ValidateException("该CA的ACME服务已启用，修改访问地址会影响现有Directory URL，请先停用ACME服务");
+        }
+      }
+      ca.baseUrl = nextBaseUrl;
     }
+    let disableDirectIssue = false;
     if (req.acmeDirectIssue != null) {
       if (req.acmeDirectIssue && ca.caType !== "intermediate") {
         throw new ValidateException("只有中间CA可以开启EAB直签");
@@ -906,12 +977,20 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       if (req.acmeDirectIssue && !ca.acmeEnabled) {
         throw new ValidateException("请先启用该中间CA的ACME服务");
       }
-      ca.acmeDirectIssue = req.acmeDirectIssue === true;
+      if (!req.acmeDirectIssue && ca.acmeDirectIssue) {
+        // 保留当前值交给 this.update 写入，随后用事务关闭并失效未完成订单
+        disableDirectIssue = true;
+      } else {
+        ca.acmeDirectIssue = req.acmeDirectIssue === true;
+      }
     }
     if (req.exportDisabled != null) {
       ca.exportDisabled = req.exportDisabled === true;
     }
     await this.update(ca);
+    if (disableDirectIssue) {
+      await this.disableAcmeDirectIssue(ca);
+    }
   }
 
   async listIssuedCerts(req: LocalCaScope) {

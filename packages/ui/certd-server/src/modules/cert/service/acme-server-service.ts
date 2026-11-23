@@ -135,6 +135,7 @@ export class AcmeServerService {
         throw new AcmeProblem("unauthorized", "账户不可用", 401);
       }
       await this.assertAccountEabActive(account);
+      await this.localCaService.markBaseUrlLocked(caId);
       logger.info(`[acme] account reused ca=${caId} account=${account.id}`);
       ctx.status = 200;
       ctx.set("Location", `${await this.baseUrl(caId)}/account/${account.id}`);
@@ -165,6 +166,7 @@ export class AcmeServerService {
         }
         await tx.getRepository(AcmeAccountEntity).save(account);
       });
+      await this.localCaService.markBaseUrlLocked(caId);
       logger.info(`[acme] account created ca=${caId} account=${account.id} eab=${eabId}`);
       ctx.status = 201;
       ctx.set("Location", `${await this.baseUrl(caId)}/account/${account.id}`);
@@ -272,6 +274,7 @@ export class AcmeServerService {
           identifiers: JSON.stringify(identifiers),
           authzIds: JSON.stringify(authzIds),
           expiresTime,
+          directIssue,
         })
       );
     });
@@ -372,7 +375,10 @@ export class AcmeServerService {
         throw new AcmeProblem("orderNotReady", "订单正在处理中或尚未就绪", 403);
       }
       checkCsrDomains(order);
-      await this.assertOrderStillAuthorized(ca, account, order, tx);
+      // 在事务内锁定并重新读取CA策略，确保关闭直签/收紧域名范围与签发串行化
+      const freshCa = await this.localCaService.getAcmeCaForUpdate(caId, tx);
+      this.assertDirectIssueAllowed(order, freshCa);
+      await this.assertOrderStillAuthorized(freshCa, account, order, tx);
 
       // 条件更新认领订单，保证并发 finalize 只有一个能签发
       const claimed = await orderRepository.update({ id: orderId, caId, accountId: account.id, status: "ready" }, { status: "processing", updateTime: new Date() });
@@ -599,6 +605,12 @@ export class AcmeServerService {
       throw new AcmeProblem("unauthorized", "EAB凭证已禁用或过期", 401);
     }
     return profile;
+  }
+
+  private assertDirectIssueAllowed(order: AcmeOrderEntity, ca: any) {
+    if (order.directIssue && ca.acmeDirectIssue !== true) {
+      throw new AcmeProblem("unauthorized", "该订单依赖EAB直签，当前已关闭直签，无法签发", 403);
+    }
   }
 
   private async assertOrderStillAuthorized(ca: any, account: AcmeAccountEntity, order: AcmeOrderEntity, manager?: any) {

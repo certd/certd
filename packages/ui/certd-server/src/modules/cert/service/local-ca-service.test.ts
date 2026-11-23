@@ -105,12 +105,30 @@ function createService() {
       return [];
     },
   } as any;
+  let acmeOrderUpdate: any = null;
+  (service as any).acmeOrderRepository = {
+    async update(where: any, set: any) {
+      acmeOrderUpdate = { where, set };
+      return { affected: 1 };
+    },
+    getLastUpdate() {
+      return acmeOrderUpdate;
+    },
+  } as any;
   (service.repository as any).manager = {
     connection: { options: { type: "better-sqlite3" } },
     async transaction(fn: any) {
       return await fn({
         connection: { options: { type: "better-sqlite3" } },
-        getRepository: (entity: any) => (entity?.name === "AcmeEabEntity" ? service.acmeEabRepository : service.repository),
+        getRepository: (entity: any) => {
+          if (entity?.name === "AcmeEabEntity") {
+            return service.acmeEabRepository;
+          }
+          if (entity?.name === "AcmeOrderEntity") {
+            return (service as any).acmeOrderRepository;
+          }
+          return service.repository;
+        },
       });
     },
   };
@@ -363,6 +381,58 @@ describe("LocalCaService", () => {
     await service.updateMeta({ id, userId: 1, acmeDirectIssue: false });
     const updated: any = await service.infoSafe({ id, userId: 1 });
     assert.equal(updated.acmeDirectIssue, false);
+  });
+
+  it("关闭EAB直签会失效未完成的直签订单", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Disable Direct Issue CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    await service.updateMeta({ id, userId: 1, acmeDirectIssue: true });
+    await service.updateMeta({ id, userId: 1, acmeDirectIssue: false });
+
+    const last = (service as any).acmeOrderRepository.getLastUpdate();
+    assert.equal(last.where.caId, id);
+    assert.equal(last.where.directIssue, true);
+    assert.equal(last.set.status, "invalid");
+    assert.match(last.set.error, /直签已关闭/);
+    const info: any = await service.infoSafe({ id, userId: 1 });
+    assert.equal(info.acmeDirectIssue, false);
+  });
+
+  it("finalize读取CA时在非SQLite数据库加行锁", async () => {
+    const { service } = createService();
+    let findArgs: any = null;
+    const manager: any = {
+      connection: { options: { type: "postgres" } },
+      getRepository() {
+        return {
+          async findOne(args: any) {
+            findArgs = args;
+            return { id: 2, caType: "intermediate", acmeEnabled: true, disabled: false, revoked: false, deleted: false };
+          },
+        };
+      },
+    };
+    const ca = await service.getAcmeCaForUpdate(2, manager);
+    assert.equal(ca.id, 2);
+    assert.equal(findArgs.lock.mode, "pessimistic_write");
+  });
+
+  it("Base URL 在签发后会锁定，避免历史 CRL 地址失效", async () => {
+    const { service } = createService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return { bindUrl: "https://certd.example.com" };
+      },
+    } as any;
+    const { rootId, id } = await createIssuingCa(service, { name: "Locked Base Url CA" });
+    await service.updateMeta({ id, userId: 1, baseUrl: "https://ca.example.com" });
+
+    const { csrPem } = await createCsr({ domains: ["lock.example.com"], keyType: "rsa2048" });
+    await service.signCsr({ id, userId: 1, csrPem, validityDays: 30 });
+
+    await assert.rejects(() => service.updateMeta({ id, userId: 1, baseUrl: "https://new.example.com" }), /已用于签发/);
+    await assert.rejects(() => service.updateMeta({ id: rootId, userId: 1, baseUrl: "https://new-root.example.com" }), /已用于签发/);
   });
 
   it("signCsr 按CA策略签发并拒绝越界域名", async () => {

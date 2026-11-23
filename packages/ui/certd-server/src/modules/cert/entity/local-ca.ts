@@ -108,6 +108,9 @@ export class LocalCaEntity {
   @Column({ name: "base_url", comment: "CA对外访问基址，用于CRL/ACME链接；为空使用站点bindUrl", length: 500, nullable: true })
   baseUrl: string;
 
+  @Column({ name: "base_url_locked", comment: "访问基址已用于签发，禁止变更", default: false })
+  baseUrlLocked: boolean;
+
   @Column({ name: "path_length", comment: "未来中间CA的pathLength", nullable: true })
   pathLength: number;
 

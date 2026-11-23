@@ -71,6 +71,9 @@ export class AcmeOrderEntity {
   @Column({ name: "expires_time", type: "bigint" })
   expiresTime: number;
 
+  @Column({ name: "direct_issue", default: false })
+  directIssue: boolean;
+
   @Column({ name: "create_time", default: () => "CURRENT_TIMESTAMP" })
   createTime: Date;
 

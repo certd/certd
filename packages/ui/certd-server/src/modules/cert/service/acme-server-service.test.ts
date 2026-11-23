@@ -149,6 +149,13 @@ describe("AcmeServerService CA isolation", () => {
 });
 
 describe("AcmeServerService finalize authorization", () => {
+  it("关闭直签后未完成的直签订单不能签发", () => {
+    const service: any = new AcmeServerService();
+    assert.doesNotThrow(() => service.assertDirectIssueAllowed({ directIssue: true }, { acmeDirectIssue: true }));
+    assert.doesNotThrow(() => service.assertDirectIssueAllowed({ directIssue: false }, { acmeDirectIssue: false }));
+    assert.throws(() => service.assertDirectIssueAllowed({ directIssue: true }, { acmeDirectIssue: false }), /当前已关闭直签/);
+  });
+
   it("EAB 禁用后已有订单不能 finalize", async () => {
     const service: any = new AcmeServerService();
     service.localCaService = { getAcmeEabProfile: async () => null };
