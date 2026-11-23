@@ -422,6 +422,17 @@ describe("CertApplyPlugin 自动匹配本地CA", () => {
     await assert.rejects(() => plugin.createDomainsVerifyPlanByAuto(["foo.example.com"], {}), /未通过EAB认证/);
   });
 
+
+  it("远程Certd ACME声明直签时自动匹配跳过校验计划", async () => {
+    const plugin = createPlugin({
+      directoryUrl: "https://remote.example.com/api/acme/12/directory",
+      verifiers: {},
+    });
+    plugin.isRemoteCertdDirectIssue = async () => true;
+    const plan = await plugin.createDomainsVerifyPlanByAuto(["foo.example.com"], { eab: { kid: "k", hmacKey: "h" } });
+    assert.deepEqual(plan, {});
+  });
+
   it("非本地CA地址在缺少域名校验方式时保持原有报错", async () => {
     const plugin = createPlugin({
       directoryUrl: "https://acme.example.com/directory",
@@ -429,5 +440,47 @@ describe("CertApplyPlugin 自动匹配本地CA", () => {
     });
 
     await assert.rejects(() => plugin.createDomainsVerifyPlanByAuto(["foo.example.com"]), /没有找到与该域名（foo.example.com）匹配的校验方式/);
+  });
+});
+
+describe("CertApplyPlugin 远程Certd直签元数据", () => {
+  function createRemotePlugin() {
+    const plugin: any = new CertApplyPlugin();
+    plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
+    plugin.acmeProvider = { directoryUrl: "https://remote.example.com/api/acme/2/directory", builtIn: false };
+    return plugin;
+  }
+
+  it("EAB账号且远端声明直签时返回true", async () => {
+    const originalFetch = (globalThis as any).fetch;
+    (globalThis as any).fetch = async () => ({
+      ok: true,
+      async json() {
+        return { meta: { certdLocalCa: { caId: 2, eabRequired: true, directIssue: true } } };
+      },
+    });
+    try {
+      const plugin = createRemotePlugin();
+      assert.equal(await plugin.isRemoteCertdDirectIssue({ eab: { kid: "k", hmacKey: "h" } }), true);
+    } finally {
+      (globalThis as any).fetch = originalFetch;
+    }
+  });
+
+  it("无EAB、直签关闭或CA ID不匹配时返回false", async () => {
+    const originalFetch = (globalThis as any).fetch;
+    let payload: any = { meta: { certdLocalCa: { caId: 2, eabRequired: true, directIssue: false } } };
+    (globalThis as any).fetch = async () => ({ ok: true, async json() { return payload; } });
+    try {
+      const plugin = createRemotePlugin();
+      assert.equal(await plugin.isRemoteCertdDirectIssue({}), false);
+      const plugin2 = createRemotePlugin();
+      assert.equal(await plugin2.isRemoteCertdDirectIssue({ eab: { kid: "k", hmacKey: "h" } }), false);
+      payload = { meta: { certdLocalCa: { caId: 3, eabRequired: true, directIssue: true } } };
+      const plugin3 = createRemotePlugin();
+      assert.equal(await plugin3.isRemoteCertdDirectIssue({ eab: { kid: "k", hmacKey: "h" } }), false);
+    } finally {
+      (globalThis as any).fetch = originalFetch;
+    }
   });
 });

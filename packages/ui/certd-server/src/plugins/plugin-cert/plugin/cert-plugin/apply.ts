@@ -1062,12 +1062,61 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
     if (missingDomains.length > 0) {
       const localCaId = await this.getDirectIssueLocalCaId(acmeAccount);
-      if (localCaId == null) {
-        throw new Error(`没有找到与该域名（${missingDomains[0]}）匹配的校验方式，请先到‘域名管理’页面添加校验方式`);
+      if (localCaId != null) {
+        this.logger.info(`域名【${missingDomains.join(",")}】未配置校验方式，本地CA【${localCaId}】支持直接签发，跳过域名校验`);
+        return {};
       }
-      this.logger.info(`域名【${missingDomains.join(",")}】未配置校验方式，本地CA【${localCaId}】支持直接签发，跳过域名校验`);
+      const remoteDirectIssue = await this.isRemoteCertdDirectIssue(acmeAccount);
+      if (remoteDirectIssue) {
+        this.logger.info(`域名【${missingDomains.join(",")}】未配置校验方式，远程Certd ACME已开启EAB直签，跳过域名校验计划`);
+        return {};
+      }
+      throw new Error(`没有找到与该域名（${missingDomains[0]}）匹配的校验方式，请先到‘域名管理’页面添加校验方式`);
     }
     return plan;
+  }
+
+  private remoteDirectIssueCache?: boolean;
+
+  /**
+   * 自动匹配缺少校验方式时，探测远程Certd ACME目录是否声明EAB直签。
+   * 该元数据只用于规划，实际授权仍由远端服务器执行；失败则回退真实验证。
+   */
+  private async isRemoteCertdDirectIssue(acmeAccount?: AcmeAccountInfo): Promise<boolean> {
+    if (this.remoteDirectIssueCache != null) {
+      return this.remoteDirectIssueCache;
+    }
+    if (!acmeAccount?.eab) {
+      return false;
+    }
+    const directoryUrl = this.acmeProvider?.directoryUrl;
+    const candidate = parseLocalCaDirectory(directoryUrl);
+    if (!directoryUrl || !candidate || this.acmeProvider?.builtIn === true) {
+      return false;
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    try {
+      const response = await (globalThis as any).fetch(directoryUrl, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      const meta = data?.meta?.certdLocalCa;
+      const directIssue = Number(meta?.caId) === candidate.caId && meta?.directIssue === true && meta?.eabRequired === true;
+      this.remoteDirectIssueCache = directIssue;
+      return directIssue;
+    } catch (e: any) {
+      this.remoteDirectIssueCache = false;
+      this.logger.warn(`读取远程ACME目录直签配置失败，按真实验证处理：${e?.message || e}`);
+      return false;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   private async getDirectIssueLocalCaId(acmeAccount?: AcmeAccountInfo): Promise<number | null> {
@@ -1080,7 +1129,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       throw new Error("当前颁发机构是本地CA，但未找到本地CA服务");
     }
     const ca = await localCaGetter.getCa(caId);
-    if (!isLocalCaDirectory(this.acmeProvider?.directoryUrl, ca, caId)) {
+    if (!ca || !isLocalCaDirectory(this.acmeProvider?.directoryUrl, ca, caId)) {
       return null;
     }
     if (ca.disabled) {

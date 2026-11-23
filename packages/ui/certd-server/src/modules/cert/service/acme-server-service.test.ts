@@ -24,6 +24,21 @@ describe("AcmeServerService account JWK", () => {
   });
 });
 
+
+  it("Directory 暴露远程可识别的直签元数据", async () => {
+    const service: any = new AcmeServerService();
+    service.localCaService = {
+      async getAcmeCa() {
+        return { id: 2, acmeDirectIssue: true };
+      },
+      async getCaBaseUrl() {
+        return "https://certd.example.com";
+      },
+    };
+    const dir = await service.directory(2);
+    assert.deepEqual(dir.meta.certdLocalCa, { caId: 2, eabRequired: true, directIssue: true });
+  });
+
 describe("AcmeServerService CA isolation", () => {
   it("每个中间CA拥有独立的Directory和端点URL", async () => {
     const service: any = new AcmeServerService();

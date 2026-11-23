@@ -94,7 +94,7 @@ export class AcmeServerService {
   }
 
   async directory(caId: number) {
-    await this.localCaService.getAcmeCa(caId);
+    const ca = await this.localCaService.getAcmeCa(caId);
     const base = await this.baseUrl(caId);
     return {
       newNonce: `${base}/new-nonce`,
@@ -107,6 +107,12 @@ export class AcmeServerService {
         website: "",
         caaIdentities: [],
         externalAccountRequired: true,
+        // Certd扩展元数据：仅用作客户端规划提示，实际授权仍由服务端执行
+        certdLocalCa: {
+          caId: ca.id,
+          eabRequired: true,
+          directIssue: ca.acmeDirectIssue === true,
+        },
       },
     };
   }
