@@ -199,6 +199,10 @@ export class CertInfoController extends CrudController<CertInfoService> {
     if (certInfo?.crt) {
       const certReader = new CertReader(certInfo);
       certInfo.detail = certReader.detail;
+      // ACME CSR可以不包含CN，查看页用第一个SAN作为主域名展示
+      if (certInfo.detail?.domains && !certInfo.detail.domains.commonName) {
+        certInfo.detail.domains.commonName = certInfo.detail.domains.altNames?.[0] || "";
+      }
       if (certInfoEntity.localCaId) {
         certInfo.x509 = getX509Summary(certInfo.crt);
         const baseUrl = await this.localCaService.getCaBaseUrl(certInfoEntity.localCaId);
