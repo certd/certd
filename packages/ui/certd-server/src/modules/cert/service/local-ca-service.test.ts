@@ -145,6 +145,10 @@ function createService() {
     async listByCa(caId: number) {
       return [...revocations.values()].filter(item => item.caId === caId);
     },
+    async findBySerial(caId: number, serialNumber: string) {
+      const key = `${caId}:${String(serialNumber || "").toUpperCase()}`;
+      return revocations.get(key) || null;
+    },
   } as any;
 
   return { service, store, encryptService, revocations };
@@ -253,6 +257,74 @@ describe("LocalCaService", () => {
     assert.equal(info.parentId, root.id);
     assert.equal(info.keyType, "ecdsa384");
     assert.equal(info.pathLength, 0);
+  });
+
+  it("同一管理范围不能重复导入相同CA证书", async () => {
+    const { service, store, encryptService } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Duplicate Root",
+      subject: { CN: "Duplicate Root" },
+      keyType: "ecdsa256",
+      validityYears: 2,
+    });
+    const rootEntity = store.get(root.id);
+    const material = await createIntermediateCa({
+      rootCertPem: rootEntity.certPem,
+      rootPrivateKeyPem: encryptService.decrypt(rootEntity.privateKeyEncrypted),
+      subject: { CN: "Duplicate Intermediate" },
+      keyType: "ecdsa256",
+      validityYears: 1,
+    });
+    await service.importCa({
+      userId: 1,
+      parentId: root.id,
+      name: "Imported Once",
+      certPem: material.certPem,
+      privateKeyPem: material.privateKeyPem,
+    });
+    await assert.rejects(
+      () =>
+        service.importCa({
+          userId: 1,
+          parentId: root.id,
+          name: "Imported Twice",
+          certPem: material.certPem,
+          privateKeyPem: material.privateKeyPem,
+        }),
+      /不能重复导入/
+    );
+  });
+
+  it("已被上级CA吊销的中间CA不能重新导入", async () => {
+    const { service, store, encryptService } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Revoked Import CA" });
+    const entity = store.get(id);
+    const certPem = entity.certPem;
+    const privateKeyPem = encryptService.decrypt(entity.privateKeyEncrypted);
+    await service.revokeIntermediate({ id, userId: 1 });
+
+    await assert.rejects(
+      () =>
+        service.importCa({
+          userId: 1,
+          parentId: rootId,
+          name: "Revoked Reimport",
+          certPem,
+          privateKeyPem,
+        }),
+      /已被上级根CA吊销，不能导入/
+    );
+  });
+
+  it("父CA吊销记录存在时，即使记录未标记revoked也不能签发", async () => {
+    const { service, store } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Consistency CA" });
+    const serialNumber = getCertSerialNumber(store.get(id).certPem);
+    await service.certRevocationService.record({ caId: rootId, userId: 1, serialNumber, expiresTime: Date.now() + 86400000 });
+
+    const { csrPem } = await createCsr({ domains: ["consistency.example.com"], keyType: "rsa2048" });
+    await assert.rejects(() => service.signCsr({ id, userId: 1, csrPem, validityDays: 30 }), /已被上级根CA吊销/);
   });
 
   it("CA 级 Base URL 可保存、继承和修改", async () => {

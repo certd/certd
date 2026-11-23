@@ -414,6 +414,19 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         privateKeyPem: req.privateKeyPem,
         parentCertPem: parent.certPem,
       });
+      // 重新导入不能绕过父CA的吊销记录
+      const serialNumber = getCertSerialNumber(material.certPem);
+      const revoked = await this.certRevocationService.findBySerial(parent.id, serialNumber);
+      if (revoked) {
+        throw new ValidateException("该中间CA已被上级根CA吊销，不能导入");
+      }
+    }
+    const owner = this.buildUserProjectQuery(req.userId, req.projectId);
+    const duplicated = await this.repository.findOne({
+      where: { ...owner, fingerprintSha256: material.fingerprintSha256 } as any,
+    });
+    if (duplicated) {
+      throw new ValidateException(`该CA证书已在「${duplicated.name}」中登记，不能重复导入`);
     }
     const bean = new LocalCaEntity();
     bean.userId = req.userId;
@@ -475,6 +488,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.disabled) {
       throw new ValidateException("该本地CA已禁用");
     }
+    await this.assertCaNotRevokedByParent(ca);
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     const result = await signCsr({
       caCertPem: ca.certPem,
@@ -505,6 +519,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.disabled) {
       throw new ValidateException("该本地CA已禁用");
     }
+    await this.assertCaNotRevokedByParent(ca);
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     const result = await issueLeafCertificate({
       caCertPem: ca.certPem,
@@ -543,6 +558,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   async getAcmeCa(id: number) {
     const ca = await this.repository.findOne({ where: { id, deleted: false } });
     this.assertAcmeCaUsable(ca);
+    await this.assertCaNotRevokedByParent(ca);
     return ca;
   }
 
@@ -558,6 +574,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
     });
     this.assertAcmeCaUsable(ca);
+    await this.assertCaNotRevokedByParent(ca);
     return ca;
   }
 
@@ -1066,6 +1083,20 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       serialNumber: cert.serialNumber,
       expiresTime: cert.expiresTime,
     });
+  }
+
+  /**
+   * 中间CA的吊销状态以父CA的吊销记录为准，防止历史数据或重新导入记录绕过 revoked 字段。
+   */
+  private async assertCaNotRevokedByParent(ca: LocalCaEntity | null) {
+    if (!ca || ca.caType !== "intermediate" || !ca.parentId) {
+      return;
+    }
+    const serialNumber = getCertSerialNumber(ca.certPem);
+    const revoked = await this.certRevocationService.findBySerial(ca.parentId, serialNumber);
+    if (revoked) {
+      throw new ValidateException("该本地CA已被上级根CA吊销，不能签发");
+    }
   }
 
   private async getRevocationEntries(caId: number) {
