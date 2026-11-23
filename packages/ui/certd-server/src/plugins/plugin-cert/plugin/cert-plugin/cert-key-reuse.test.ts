@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
-import { isPkcs1PrivateKey, isPrivateKeyCompatible } from "./cert-key-reuse.js";
+import { isPrivateKeyCompatible } from "./cert-key-reuse.js";
 
 function rsaKey(bits = 2048, type: "pkcs1" | "pkcs8" = "pkcs8") {
   return generateKeyPairSync("rsa", {
@@ -27,10 +27,5 @@ describe("cert-key-reuse", () => {
     assert.equal(isPrivateKeyCompatible(ecKey("prime256v1"), "ec_384"), false);
     assert.equal(isPrivateKeyCompatible(ecKey("secp384r1"), "ec_384"), true);
     assert.equal(isPrivateKeyCompatible("not-a-key", "rsa_2048"), false);
-  });
-
-  it("识别PKCS#1私钥格式", () => {
-    assert.equal(isPkcs1PrivateKey(rsaKey(2048, "pkcs1")), true);
-    assert.equal(isPkcs1PrivateKey(rsaKey(2048, "pkcs8")), false);
   });
 });

@@ -6,6 +6,10 @@ const EC_CURVES: Record<string, string[]> = {
   "521": ["secp521r1", "P-521"],
 };
 
+export function normalizePrivateKeyPem(keyPem: string) {
+  return createPrivateKey(keyPem).export({ type: "pkcs8", format: "pem" }).toString();
+}
+
 export function isPrivateKeyCompatible(keyPem: string, privateKeyType?: string) {
   const matched = String(privateKeyType || "").match(/^(rsa|ec)_(\d+)/i);
   if (!matched) {
@@ -23,8 +27,4 @@ export function isPrivateKeyCompatible(keyPem: string, privateKeyType?: string) 
   } catch (e) {
     return false;
   }
-}
-
-export function isPkcs1PrivateKey(keyPem: string) {
-  return /-----BEGIN RSA PRIVATE KEY-----/.test(keyPem);
 }

@@ -150,7 +150,7 @@ const preferredChainMergeScript = (() => {
           helper: "For Google, choose either service account credentials or EAB. See the [setup guide](https://certd.docmirror.cn/guide/use/google/). A proxy or an overseas server may be required.",
         },
         privateKeyType: { title: "Key Algorithm", optionsMapping: { rsa_2048_pkcs1: "RSA 2048 PKCS#1 (Legacy)" }, helper: "Keep the default unless needed. RSA 2048 PKCS#1 produces a legacy RSA certificate." },
-        reuseKey: { title: "Reuse Previous Public Key", helper: "Reuse the previous certificate private key on renewal to keep the public key unchanged. Falls back to a new key if the old key is missing, invalid or uses a different algorithm." },
+        reuseKey: { title: "Reuse Previous Private Key", helper: "Reuse the previous certificate private key on renewal to keep the public key unchanged. When enabled, renewals will not rotate the private key; disable this option and renew to rotate the key. Falls back to a new key if the old key is missing, invalid or uses a different algorithm." },
         certProfile: {
           title: "Certificate Profile",
           optionsMapping: { classic: "Classic (classic)", tlsserver: "TLS Server (tlsserver)", shortlived: "Short-lived (shortlived)" },
@@ -533,13 +533,13 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   privateKeyType!: PrivateKeyType;
 
   @TaskInput({
-    title: "复用上次证书公钥",
+    title: "复用上次证书私钥",
     value: false,
     component: {
       name: "a-switch",
       vModel: "checked",
     },
-    helper: "续期时沿用上次证书私钥，保持公钥不变（类似 certbot --reuse-key）。旧私钥缺失、损坏或算法不一致时会自动重新生成。",
+    helper: "续期时沿用上次证书私钥，保持公钥不变（类似 certbot --reuse-key）。启用后续期不会自动轮换私钥；如需轮换，请关闭此选项并执行证书更新。旧私钥缺失、损坏或算法不一致时会自动重新生成。",
     order: 101,
     maybeNeed: true,
   })
