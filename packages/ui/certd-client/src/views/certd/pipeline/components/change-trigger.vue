@@ -89,7 +89,7 @@ async function openFormDialog() {
         title: "仅修改触发时间",
         form: {
           value: true,
-          helper: "保持原有的每周/每月等日期参数，只随机化时/分/秒",
+          helper: "保持原有的每周/每月等日期参数，只随机化时/分/秒。多个定时触发器统一使用同一个随机时间；无法识别的Cron会拒绝本次修改",
           show: compute(({ form }) => {
             return form.clear !== true && form.random === true;
           }),
