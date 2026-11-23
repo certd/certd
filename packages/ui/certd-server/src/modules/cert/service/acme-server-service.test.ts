@@ -1,5 +1,19 @@
 import assert from "node:assert/strict";
-import { AcmeServerService } from "./acme-server-service.js";
+import { AcmeServerService, sanitizePublicJwk } from "./acme-server-service.js";
+
+describe("AcmeServerService account JWK", () => {
+  it("拒绝包含私钥参数的 JWK，并只返回公钥字段", () => {
+    assert.throws(
+      () => sanitizePublicJwk({ kty: "RSA", n: "n", e: "AQAB", d: "secret" }),
+      (e: any) => String(e?.message || "").includes("不能包含私钥参数")
+    );
+    assert.throws(
+      () => sanitizePublicJwk({ kty: "EC", crv: "P-256", x: "x", y: "y", d: "secret" }),
+      (e: any) => String(e?.message || "").includes("不能包含私钥参数")
+    );
+    assert.deepEqual(sanitizePublicJwk({ kty: "RSA", n: "n", e: "AQAB", use: "sig" }), { kty: "RSA", n: "n", e: "AQAB" });
+  });
+});
 
 describe("AcmeServerService finalize authorization", () => {
   it("EAB 禁用后已有订单不能 finalize", async () => {

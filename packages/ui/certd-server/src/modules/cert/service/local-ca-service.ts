@@ -309,6 +309,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.remark = req.remark || "";
     bean.exportDisabled = req.exportDisabled === true;
     bean.deleted = false;
+    bean.revoked = false;
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -363,6 +364,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.remark = req.remark || "";
     bean.exportDisabled = req.exportDisabled === true;
     bean.deleted = false;
+    bean.revoked = false;
     const rootCrlNumber = await this.nextCrlNumber(root.id);
     const rootCrl = await createCrl({
       caCertPem: root.certPem,
@@ -424,7 +426,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.fingerprintSha256 = material.fingerprintSha256;
     bean.notBefore = material.notBefore;
     bean.notAfter = material.notAfter;
-    bean.usage = req.usage || "server";
+    bean.usage = req.usage || parent?.usage || "server";
     if (selfSigned) {
       const list = this.normalizeAllowedDomains(req.allowedDomains);
       bean.allowedDomains = list.length ? JSON.stringify(list) : null;
@@ -432,15 +434,17 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       const list = await this.resolveChildAllowedDomains(req.allowedDomains, parent!);
       bean.allowedDomains = list.length ? JSON.stringify(list) : null;
     }
-    bean.maxValidityDays = req.maxValidityDays || 0;
+    bean.maxValidityDays = req.maxValidityDays ?? parent?.maxValidityDays ?? 0;
     bean.acmeEnabled = false;
     bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
+    bean.baseUrl = normalizeBaseUrl(req.baseUrl) || parent?.baseUrl || null;
     bean.pathLength = material.pathLength ?? (selfSigned ? (getBasicConstraints(material.certPem).pathLength ?? 1) : 0);
     bean.disabled = false;
     bean.remark = req.remark || "";
     bean.exportDisabled = req.exportDisabled === true;
     bean.deleted = false;
+    bean.revoked = false;
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -455,6 +459,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     if (ca.disabled) {
       throw new ValidateException("该本地CA已禁用");
+    }
+    if (ca.revoked) {
+      throw new ValidateException("该本地CA已被父CA吊销，不能签发");
     }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     return await signCsr({
@@ -477,6 +484,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.disabled) {
       throw new ValidateException("该本地CA已禁用");
     }
+    if (ca.revoked) {
+      throw new ValidateException("该本地CA已被父CA吊销，不能签发");
+    }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     return await issueLeafCertificate({
       caCertPem: ca.certPem,
@@ -498,6 +508,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     if (ca.disabled) {
       throw new ValidateException("该本地CA已禁用，ACME服务不可用");
+    }
+    if (ca.revoked) {
+      throw new ValidateException("该本地CA已被父CA吊销，ACME服务不可用");
     }
     if (ca.notAfter && ca.notAfter <= Date.now()) {
       throw new ValidateException("该本地CA已过期，ACME服务不可用");
@@ -833,7 +846,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       where,
       order: { id: "DESC" },
     });
-    const children = await this.find({ where: { parentId: ca.id }, order: { id: "DESC" } });
+    const children = await this.find({ where: { parentId: ca.id, deleted: false }, order: { id: "DESC" } });
     const childRows = children.map(item => ({
       id: item.id,
       type: "ca",
@@ -983,6 +996,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
 
     ca.disabled = true;
+    ca.revoked = true;
     await this.update(ca);
     return { serialNumber, crlNumber };
   }
@@ -1035,6 +1049,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   async setDisabled(req: LocalCaScope & { disabled: boolean }) {
     const ca = await this.getOwnedCa(req);
+    if (!req.disabled && ca.revoked) {
+      throw new ValidateException("该本地CA已被父CA吊销，不能重新启用");
+    }
     ca.disabled = req.disabled;
     await this.update(ca);
   }
@@ -1059,7 +1076,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!ca.disabled) {
       throw new ValidateException("请先禁用该本地CA，并确认所有已签发证书均已吊销或过期");
     }
-    const children = await this.find({ where: { parentId: ca.id } });
+    if (ca.caType === "intermediate" && !ca.revoked) {
+      throw new ValidateException("请先吊销该中间CA，再归档");
+    }
+    const children = await this.find({ where: { parentId: ca.id, deleted: false } });
     if (children.length > 0) {
       throw new ValidateException("该CA下仍有中间CA，请先删除中间CA");
     }
@@ -1155,7 +1175,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   private async assertRootAllowedDomainsCoverChildren(ca: LocalCaEntity, rootAllowedDomains: string[]) {
-    const children = await this.find({ where: { parentId: ca.id } });
+    const children = await this.find({ where: { parentId: ca.id, deleted: false } });
     for (const child of children) {
       let childList: string[];
       try {

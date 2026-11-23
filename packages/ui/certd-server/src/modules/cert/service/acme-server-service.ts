@@ -3,7 +3,7 @@ import dns from "node:dns/promises";
 import net from "node:net";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Repository } from "typeorm";
+import { In, LessThan, MoreThan, Repository } from "typeorm";
 import { CertReader } from "@certd/plugin-lib";
 import { LocalCaService } from "./local-ca-service.js";
 import { getCsrDomains, matchAllowedDomains, normalizeDomains, verifyCertIssuedBy } from "./local-ca-crypto.js";
@@ -16,6 +16,28 @@ import { isSameAcmeUrl } from "./acme-url.js";
 import { acmeNonceStore } from "./acme-nonce.js";
 
 const ORDER_TTL = 7 * 24 * 3600 * 1000;
+const PRIVATE_JWK_FIELDS = ["d", "p", "q", "dp", "dq", "qi", "oth"];
+
+export function sanitizePublicJwk(jwk: any) {
+  if (!jwk || typeof jwk !== "object") {
+    throw new AcmeProblem("malformed", "JWK格式错误");
+  }
+  if (PRIVATE_JWK_FIELDS.some(field => jwk[field] != null)) {
+    throw new AcmeProblem("malformed", "JWK不能包含私钥参数");
+  }
+  const fields = jwk.kty === "RSA" ? ["kty", "n", "e"] : jwk.kty === "EC" ? ["kty", "crv", "x", "y"] : jwk.kty === "OKP" ? ["kty", "crv", "x"] : null;
+  if (!fields) {
+    throw new AcmeProblem("badPublicKey", "不支持的JWK类型");
+  }
+  const result: any = {};
+  for (const field of fields) {
+    if (jwk[field] == null) {
+      throw new AcmeProblem("malformed", `JWK缺少${field}`);
+    }
+    result[field] = jwk[field];
+  }
+  return result;
+}
 
 function consumeNonce(nonce: string) {
   if (!acmeNonceStore.consume(nonce)) {
@@ -98,7 +120,8 @@ export class AcmeServerService {
       throw new AcmeProblem("unauthorized", "JWS签名验证失败", 401);
     }
     consumeNonce(jws.header.nonce);
-    const thumbprint = jwkThumbprint(jws.header.jwk);
+    const accountJwk = sanitizePublicJwk(jws.header.jwk);
+    const thumbprint = jwkThumbprint(accountJwk);
     const payload = jws.payload || {};
     let account = await this.accountRepository.findOne({ where: { caId, thumbprint } });
     if (account) {
@@ -126,7 +149,7 @@ export class AcmeServerService {
         caId,
         userId: ca.userId,
         projectId: ca.projectId,
-        jwk: JSON.stringify(jws.header.jwk),
+        jwk: JSON.stringify(accountJwk),
         thumbprint,
         eabId,
         status: "valid",
@@ -163,6 +186,20 @@ export class AcmeServerService {
         throw new AcmeProblem("unauthorized", "EAB凭证已禁用或过期", 401);
       }
       matchAllowedDomains(identifierValues, profile.allowedDomains);
+    }
+
+    const acmeConfig = this.parseAcmeConfig(ca.acmeConfig);
+    const pendingCount = await this.orderRepository.count({
+      where: { caId, accountId: account.id, status: In(["pending", "ready", "processing"]) },
+    });
+    if (pendingCount >= acmeConfig.maxPendingOrders) {
+      throw new AcmeProblem("rateLimited", "该账户未完成订单过多，请稍后再试", 429);
+    }
+    const recentCount = await this.orderRepository.count({
+      where: { caId, accountId: account.id, createTime: MoreThan(new Date(Date.now() - 60 * 1000)) },
+    });
+    if (recentCount >= acmeConfig.maxOrdersPerMinute) {
+      throw new AcmeProblem("rateLimited", "订单创建过于频繁，请稍后再试", 429);
     }
 
     const orderId = randomId();
@@ -809,14 +846,33 @@ export class AcmeServerService {
 
   private parseAcmeConfig(value?: string) {
     if (!value) {
-      return { validityDays: 90 };
+      return { validityDays: 90, maxPendingOrders: 20, maxOrdersPerMinute: 10 };
     }
     try {
       const parsed = JSON.parse(value);
-      return { validityDays: parsed.validityDays || 90 };
+      return {
+        validityDays: parsed.validityDays || 90,
+        maxPendingOrders: Math.max(1, Number(parsed.maxPendingOrders) || 20),
+        maxOrdersPerMinute: Math.max(1, Number(parsed.maxOrdersPerMinute) || 10),
+      };
     } catch (e) {
-      return { validityDays: 90 };
+      return { validityDays: 90, maxPendingOrders: 20, maxOrdersPerMinute: 10 };
     }
+  }
+
+  async cleanupExpired() {
+    const now = Date.now();
+    const expired = await this.orderRepository.find({
+      where: { expiresTime: LessThan(now) },
+      select: { id: true },
+    });
+    const ids = expired.map(item => item.id);
+    if (ids.length === 0) {
+      return;
+    }
+    await this.challengeRepository.delete({ orderId: In(ids) });
+    await this.authzRepository.delete({ orderId: In(ids) });
+    await this.orderRepository.delete({ id: In(ids) });
   }
 
   private async baseUrl(caId: number) {

@@ -236,26 +236,39 @@ export function matchAllowedDomains(domains: string[], allowedDomains: string[] 
   if (!allowedDomains || allowedDomains.length === 0) {
     return;
   }
-  const prefixes = allowedDomains
+  const rules = allowedDomains
     .map(item =>
       String(item || "")
         .trim()
         .toLowerCase()
     )
     .filter(Boolean)
-    .map(item => (item.startsWith("*.") ? item.slice(2) : item));
-  if (prefixes.length === 0) {
+    .map(item => ({
+      wildcard: item.startsWith("*."),
+      suffix: item.startsWith("*.") ? item.slice(2) : item,
+    }));
+  if (rules.length === 0) {
     return;
   }
   for (const domain of domains) {
     if (net.isIP(domain)) {
-      if (!prefixes.includes(domain)) {
+      if (!rules.some(rule => !rule.wildcard && rule.suffix === domain)) {
         throw new Error(`域名 ${domain} 不在该CA允许签发的范围内`);
       }
       continue;
     }
-    const host = domain.startsWith("*.") ? domain.slice(2) : domain;
-    const matched = prefixes.some(prefix => host === prefix || host.endsWith(`.${prefix}`));
+    const isWildcard = domain.startsWith("*.");
+    const host = isWildcard ? domain.slice(2) : domain;
+    const matched = rules.some(rule => {
+      if (rule.wildcard) {
+        // *.example.com 授权 *.example.com 及其子域，但不授权 apex example.com
+        if (host === rule.suffix) {
+          return isWildcard;
+        }
+        return host.endsWith(`.${rule.suffix}`);
+      }
+      return host === rule.suffix || host.endsWith(`.${rule.suffix}`);
+    });
     if (!matched) {
       throw new Error(`域名 ${domain} 不在该CA允许签发的范围内`);
     }
@@ -677,6 +690,13 @@ export async function validateImportedIntermediateCa(req: { certPem: string; pri
     throw new Error("上级CA pathlen=0，不能签发中间CA");
   }
   const now = Date.now();
+  const parentValidFrom = new Date(parentCert.validFrom).getTime();
+  if (parentValidFrom > now + 5 * 60 * 1000) {
+    throw new Error("上级根CA尚未生效");
+  }
+  if (new Date(cert.validFrom).getTime() < parentValidFrom - 5 * 60 * 1000) {
+    throw new Error("中间CA的生效时间早于上级CA");
+  }
   if (new Date(parentCert.validTo).getTime() <= now) {
     throw new Error("上级根CA已过期");
   }
@@ -868,7 +888,7 @@ export async function createCrl(req: { caCertPem: string; caPrivateKeyPem: strin
   const caCert = new x509.X509Certificate(caCertPem);
   const { signingKey, signingAlgorithm } = await importSigningKey(req.caPrivateKeyPem);
   const thisUpdate = new Date(Date.now() - 5 * 60 * 1000);
-  const nextUpdateDays = Math.max(1, Math.min(30, req.nextUpdateDays || 7));
+  const nextUpdateDays = Math.max(1, Math.min(365, req.nextUpdateDays || 7));
   const nextUpdate = new Date(thisUpdate.getTime() + nextUpdateDays * 24 * 3600 * 1000);
   const crl = await x509.X509CrlGenerator.create(
     {

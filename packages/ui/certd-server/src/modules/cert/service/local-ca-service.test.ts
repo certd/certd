@@ -69,7 +69,7 @@ function createService() {
         },
         async execute() {
           const item = store.get(params?.id);
-          if (item) {
+          if (item && (params?.crlNumber == null || Number(item.crlNumber) === Number(params.crlNumber))) {
             Object.assign(item, values);
             return { affected: 1 };
           }
@@ -498,6 +498,20 @@ describe("LocalCaService", () => {
     const crl = await service.getCrl(id);
     const parsed = new x509.X509Crl(crl.pem);
     assert.ok(parsed.findRevoked("0A99"));
+  });
+
+  it("旧CRL生成结果不能覆盖更高CRL Number的缓存", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "CAS Cache CA" });
+    const entity = store.get(id);
+    entity.crlNumber = 11;
+    entity.lastCrlPem = "newer-crl";
+    entity.lastCrlTime = 1;
+
+    await (service as any).storeCrlCache(id, 10, "older-crl");
+    assert.equal(entity.lastCrlPem, "newer-crl");
+    await (service as any).storeCrlCache(id, 11, "current-crl");
+    assert.equal(entity.lastCrlPem, "current-crl");
   });
 
   it("CRL Number 持久化单调递增，同一秒也不同", async () => {

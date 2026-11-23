@@ -1,6 +1,18 @@
 import assert from "node:assert/strict";
 import crypto, { X509Certificate } from "node:crypto";
-import { createCrl, createCsr, createIntermediateCa, createRootCa, getX509Summary, issueLeafCertificate, signCsr, validateImportedIntermediateCa, validateImportedRootCa, verifyCertIssuedBy } from "./local-ca-crypto.js";
+import {
+  createCrl,
+  createCsr,
+  createIntermediateCa,
+  createRootCa,
+  getX509Summary,
+  issueLeafCertificate,
+  matchAllowedDomains,
+  signCsr,
+  validateImportedIntermediateCa,
+  validateImportedRootCa,
+  verifyCertIssuedBy,
+} from "./local-ca-crypto.js";
 // @ts-ignore
 import * as x509 from "@peculiar/x509";
 
@@ -245,6 +257,25 @@ describe("local-ca-crypto", () => {
     assert.equal(verifyCertIssuedBy(leaf.certPem, other.certPem), false);
     assert.equal(verifyCertIssuedBy(other.certPem, intermediate.certPem), false);
     assert.equal(verifyCertIssuedBy("not-a-cert", intermediate.certPem), false);
+  });
+
+  it("通配符允许项不包含apex，但允许通配符和子域", () => {
+    assert.throws(() => matchAllowedDomains(["example.com"], ["*.example.com"]), /不在该CA允许签发的范围内/);
+    assert.doesNotThrow(() => matchAllowedDomains(["*.example.com"], ["*.example.com"]));
+    assert.doesNotThrow(() => matchAllowedDomains(["foo.example.com", "*.foo.example.com"], ["*.example.com"]));
+    assert.doesNotThrow(() => matchAllowedDomains(["example.com"], ["example.com"]));
+  });
+
+  it("Root CRL 可以显式设置365天有效期", async () => {
+    const root = await createRootCa({ subject: { CN: "Long CRL Root" }, keyType: "rsa2048", validityYears: 2 });
+    const crl = await createCrl({
+      caCertPem: root.certPem,
+      caPrivateKeyPem: root.privateKeyPem,
+      entries: [],
+      nextUpdateDays: 365,
+    });
+    const parsed = new x509.X509Crl(crl.pem);
+    assert.ok(parsed.nextUpdate.getTime() - parsed.thisUpdate.getTime() > 360 * 86400000);
   });
 
   it("生成CRL并包含已吊销序列号", async () => {

@@ -71,7 +71,7 @@ export function isPublicIp(address: string) {
         return false;
       }
     }
-    if (lower.startsWith("2001:db8") || lower.startsWith("2002:")) {
+    if (lower.startsWith("2001:db8") || lower.startsWith("2002:") || lower.startsWith("3fff:")) {
       return false;
     }
     return true;

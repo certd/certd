@@ -99,6 +99,9 @@ export class LocalCaEntity {
   @Column({ name: "deleted", comment: "软删除/归档", default: false })
   deleted: boolean;
 
+  @Column({ name: "revoked", comment: "证书已被父CA吊销（不可逆）", default: false })
+  revoked: boolean;
+
   @Column({ name: "acme_config", comment: "未来ACME配置JSON", type: "text", nullable: true })
   acmeConfig: string;
 
