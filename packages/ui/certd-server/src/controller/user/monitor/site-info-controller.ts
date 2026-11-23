@@ -126,6 +126,14 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     return this.ok();
   }
 
+  @Post("/getCert", { description: Constants.per.authOnly, summary: "查看站点证书" })
+  async getCert(@Query("id") id: number) {
+    await this.checkOwner(this.service, id, "read");
+    const site = await this.service.info(id);
+    const cert = await this.service.getSiteCert(site);
+    return this.ok(cert);
+  }
+
   @Post("/check", { description: Constants.per.authOnly, summary: "检查站点监控" })
   async check(@Body("id") id: number) {
     await this.checkOwner(this.service, id, "read");

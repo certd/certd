@@ -2,7 +2,7 @@ import { http, logger, utils } from "@certd/basic";
 import { UserSuiteService } from "@certd/commercial-core";
 import { AccessService, BaseService, Constants, isEnterprise, NeedSuiteException, NeedVIPException, NotificationTypes, SysSettingsService } from "@certd/lib-server";
 import { Pager } from "@certd/pipeline";
-import { createDnsProvider, dnsProviderRegistry, DomainParser } from "@certd/plugin-lib";
+import { CertReader, createDnsProvider, dnsProviderRegistry, DomainParser } from "@certd/plugin-lib";
 import { isComm, isPlus } from "@certd/plus-core";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
@@ -252,6 +252,41 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         logger.error("send notify error", e);
       }
     }
+  }
+
+  /**
+   * 实时读取站点 TLS 证书，供“查看证书”弹窗复用 CertView 展示。
+   * 站点监控只保存最新证书摘要，不保存私钥，因此这里不返回 key。
+   */
+  async getSiteCert(site: SiteInfoEntity) {
+    if (!site) {
+      throw new Error("站点不存在");
+    }
+    const res = await siteTester.test({
+      host: site.domain,
+      port: site.httpsPort,
+      ipAddress: site.ipAddress,
+      retryTimes: 0,
+    });
+    const certificate = res.certificate;
+    if (!certificate?.raw) {
+      throw new Error("未获取到站点证书");
+    }
+    const crt = this.buildPem(certificate.raw);
+    const certReader = new CertReader({ crt, key: "" });
+    return {
+      ...certReader.toCertInfo(),
+      detail: certReader.detail,
+    };
+  }
+
+  private buildPem(raw: Buffer) {
+    const base64 =
+      raw
+        .toString("base64")
+        .match(/.{1,64}/g)
+        ?.join("\n") ?? "";
+    return `-----BEGIN CERTIFICATE-----\n${base64}\n-----END CERTIFICATE-----`;
   }
 
   async checkAllIp(site: SiteInfoEntity, retryTimes = null, setting: UserSiteMonitorSetting) {
