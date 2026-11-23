@@ -1,32 +1,17 @@
 # 镜像说明
 
-## 镜像版本说明
+在 Docker Compose 中填写完整的 `仓库地址:标签`。例如使用 Docker Hub 稳定通道时，填写 `certd/certd:stable`。
 
-| 版本标签 | 基础系统 | OpenJDK | 说明 |
-| --- | --- | --- | --- |
-| `latest` / `[version]` | Alpine Linux | 有 | **推荐**，默认版本，镜像体积更小，功能完整，支持所有插件 |
-| `slim` / `[version]-slim` | Debian slim | 有 | glibc 兼容性更好，适用于依赖 glibc 的特殊场景 |
-| `armv7` / `[version]-armv7` | Alpine Linux | 有 | ARMv7 架构专用版本 |
+| 仓库 | 镜像地址 |
+| --- | --- |
+| 阿里云 | `registry.cn-shenzhen.aliyuncs.com/certd/certd` |
+| Docker Hub | `certd/certd` |
+| GitHub Container Registry | `ghcr.io/certd/certd` |
 
-## 国内镜像地址:
+| 标签 | 基础系统和用途 |
+| --- | --- |
+| `stable` / `latest` | Alpine，分别为稳定和预览通道 |
+| `slim-stable` / `slim` | Debian slim，分别为稳定和预览通道，适合需要 glibc 的环境 |
+| `armv7` | 32 位 ARMv7，使用 Alpine |
 
-* `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest`
-* `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:slim`、`[version]-slim`
-* `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:armv7`、`[version]-armv7`
-
-## DockerHub地址：
-* `https://hub.docker.com/r/greper/certd`
-* `greper/certd:latest`
-* `greper/certd:slim`、`greper/certd:[version]-slim`
-* `greper/certd:armv7`、`greper/certd:[version]-armv7`
-
-## GitHub Packages地址:
-* `ghcr.io/certd/certd:latest`
-* `ghcr.io/certd/certd:slim`、`ghcr.io/certd/certd:[version]-slim`
-* `ghcr.io/certd/certd:armv7`、`ghcr.io/certd/certd:[version]-armv7`
-
-## 镜像构建公开
-镜像构建通过`Actions`自动执行，过程公开透明，请放心使用
-* [点我查看镜像构建日志](https://github.com/certd/certd/actions/workflows/build-image.yml)
-
-![](../images/action/action-build.jpg)
+固定版本可使用发布版本号，或其 `-slim`、`-armv7` 变体。历史 Compose 文件可能引用 `greper/certd` 或阿里云 `handsfree/certd`，更新镜像地址时请保留原有数据目录挂载。[Docker 安装和升级](./install/docker/) · [公开构建记录](https://github.com/certd/certd/actions/workflows/build-image.yml)
