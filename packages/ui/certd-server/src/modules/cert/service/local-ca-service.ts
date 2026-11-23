@@ -324,6 +324,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.deleted = false;
     bean.revoked = false;
     const res = await this.add(bean);
+    logger.info(`[local-ca] root generated ca=${res.id} user=${req.userId} project=${req.projectId ?? "-"} key=${keyType}`);
     return { id: res.id };
   }
 
@@ -380,6 +381,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.revoked = false;
     await this.refreshRootCrlCache(root, rootPrivateKey);
     const res = await this.add(bean);
+    logger.info(`[local-ca] intermediate generated ca=${res.id} root=${root.id} user=${req.userId} project=${req.projectId ?? "-"}`);
     return { id: res.id };
   }
 
@@ -451,6 +453,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.deleted = false;
     bean.revoked = false;
     const res = await this.add(bean);
+    logger.info(`[local-ca] ca imported ca=${res.id} type=${bean.caType} parent=${bean.parentId ?? "-"} user=${req.userId} project=${req.projectId ?? "-"}`);
     return { id: res.id };
   }
 
@@ -469,7 +472,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       throw new ValidateException("该本地CA已禁用");
     }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
-    return await signCsr({
+    const result = await signCsr({
       caCertPem: ca.certPem,
       caPrivateKeyPem: privateKeyPem,
       csrPem: req.csrPem,
@@ -479,6 +482,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       usage: (req.usage || ca.usage) as LocalCaUsage,
       crlDistributionPoint: await this.getCrlUrl(ca),
     });
+    logger.info(`[local-ca] leaf issued ca=${ca.id} serial=${result.serialNumber} user=${req.userId} project=${req.projectId ?? "-"}`);
+    return result;
   }
 
   async issueLeaf(req: LocalCaIssueReq) {
@@ -493,7 +498,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       throw new ValidateException("该本地CA已禁用");
     }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
-    return await issueLeafCertificate({
+    const result = await issueLeafCertificate({
       caCertPem: ca.certPem,
       caPrivateKeyPem: privateKeyPem,
       domains: req.domains,
@@ -504,6 +509,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       usage: (req.usage || ca.usage) as LocalCaUsage,
       crlDistributionPoint: await this.getCrlUrl(ca),
     });
+    logger.info(`[local-ca] leaf issued ca=${ca.id} serial=${result.serialNumber} domains=${req.domains.length} user=${req.userId} project=${req.projectId ?? "-"}`);
+    return result;
   }
 
   async getAcmeCa(id: number) {
@@ -547,6 +554,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       ca.acmeConfig = JSON.stringify({ validityDays: Math.max(1, Math.min(3650, req.validityDays)) });
     }
     await this.update(ca);
+    logger.info(`[local-ca] acme ${req.enabled ? "enabled" : "disabled"} ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
   }
 
   async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[] }) {
@@ -583,6 +591,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       disabled: false,
     });
     await this.acmeEabRepository.save(bean);
+    logger.info(`[local-ca] eab created ca=${ca.id} eab=${bean.id} kid=${kid} maxUses=${maxUses} allowedDomains=${allowedDomains.length}`);
     return {
       id,
       caId: ca.id,
@@ -607,7 +616,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!manager?.transaction) {
       throw new ValidateException("数据库事务不可用，无法变更ACME凭证状态");
     }
-    return await runTransaction(manager, async tx => {
+    const result = await runTransaction(manager, async tx => {
       const repository = tx.getRepository(AcmeEabEntity);
       const driverType = String(tx.connection?.options?.type || "");
       const useLock = !driverType.includes("sqlite");
@@ -623,6 +632,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       await repository.save(bean);
       return { id: bean.id, disabled: bean.disabled };
     });
+    logger.info(`[local-ca] eab ${result.disabled ? "disabled" : "enabled"} ca=${ca.id} eab=${result.id} user=${req.userId}`);
+    return result;
   }
 
   async listAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number }) {
@@ -761,11 +772,13 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         crlNumber,
       });
       if (await this.storeCrlCache(ca.id, crlNumber, crl.pem)) {
+        logger.info(`[local-ca] crl generated ca=${ca.id} number=${crlNumber} entries=${entries.length} attempts=${attempt + 1}`);
         return {
           ...crl,
           filename: `local-ca-${ca.id}.crl`,
         };
       }
+      logger.warn(`[local-ca] crl cache conflict ca=${ca.id} number=${crlNumber} attempt=${attempt + 1}`);
     }
     const latest = await this.findOne({ where: { id: ca.id } });
     if (latest?.lastCrlPem && Number(latest.lastCrlTime || 0) > 0) {
@@ -1008,9 +1021,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         nextUpdateDays: 365,
       });
       if (await this.storeCrlCache(root.id, crlNumber, crl.pem)) {
+        logger.info(`[local-ca] root crl generated ca=${root.id} number=${crlNumber} entries=${entries.length} attempts=${attempt + 1}`);
         return crlNumber;
       }
+      logger.warn(`[local-ca] root crl cache conflict ca=${root.id} number=${crlNumber} attempt=${attempt + 1}`);
     }
+    logger.warn(`[local-ca] root crl refresh exhausted ca=${root.id} attempts=${maxAttempts}`);
     throw new ValidateException("Root CRL刷新期间发生并发变更，请重试");
   }
 
@@ -1083,12 +1099,14 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     let crlNumber: number;
     try {
       crlNumber = await this.refreshRootCrlCache(root);
-    } catch (e) {
+    } catch (e: any) {
+      logger.warn(`[local-ca] intermediate revoke crl refresh failed ca=${ca.id} root=${root.id}: ${e?.message || e}`);
       // 只更新缓存标记，避免用事务前的旧实体覆盖已经递增的CRL序号
       await this.repository.update({ id: root.id }, { lastCrlTime: -1 } as any);
       throw e;
     }
 
+    logger.info(`[local-ca] intermediate revoked ca=${ca.id} root=${root.id} serial=${serialNumber} crl=${crlNumber} user=${req.userId}`);
     return { serialNumber, crlNumber };
   }
 
@@ -1132,6 +1150,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const filePath = path.join(process.cwd(), filename);
     await fs.promises.writeFile(filePath, lines.join("\n"), { encoding: "utf8", mode: 0o600, flag: "wx" });
     await fs.promises.chmod(filePath, 0o600);
+    logger.info(`[local-ca] private key exported ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
     return {
       filename,
       path: filePath,
@@ -1148,6 +1167,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     ca.disabled = req.disabled;
     await this.update(ca);
+    logger.info(`[local-ca] ca ${req.disabled ? "disabled" : "enabled"} ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
   }
 
   async deleteCa(req: LocalCaScope) {
@@ -1189,6 +1209,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     ca.deleted = true;
     ca.disabled = true;
     await this.update(ca);
+    logger.info(`[local-ca] ca archived ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
   }
 
   private pipelineUsesCa(content: string, caId: number) {

@@ -3,6 +3,7 @@ import dns from "node:dns/promises";
 import net from "node:net";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
+import { logger } from "@certd/basic";
 import { In, LessThan, MoreThan, Not, Repository } from "typeorm";
 import { CertReader } from "@certd/plugin-lib";
 import { LocalCaService } from "./local-ca-service.js";
@@ -134,6 +135,7 @@ export class AcmeServerService {
         throw new AcmeProblem("unauthorized", "账户不可用", 401);
       }
       await this.assertAccountEabActive(account);
+      logger.info(`[acme] account reused ca=${caId} account=${account.id}`);
       ctx.status = 200;
       ctx.set("Location", `${await this.baseUrl(caId)}/account/${account.id}`);
     } else {
@@ -163,6 +165,7 @@ export class AcmeServerService {
         }
         await tx.getRepository(AcmeAccountEntity).save(account);
       });
+      logger.info(`[acme] account created ca=${caId} account=${account.id} eab=${eabId}`);
       ctx.status = 201;
       ctx.set("Location", `${await this.baseUrl(caId)}/account/${account.id}`);
     }
@@ -272,6 +275,7 @@ export class AcmeServerService {
         })
       );
     });
+    logger.info(`[acme] order created ca=${caId} account=${account.id} order=${order.id} identifiers=${identifiers.length} directIssue=${directIssue}`);
     ctx.status = 201;
     ctx.set("Location", `${base}/order/${order.id}`);
     return await this.toOrder(order);
@@ -310,6 +314,7 @@ export class AcmeServerService {
       await this.triggerChallenge(caId, authz, challenge, jws.payload);
     }
     const latest = await this.challengeRepository.findOne({ where: { id: challenge.id } });
+    logger.info(`[acme] challenge processed ca=${caId} authz=${challenge.authzId} type=${latest.type} status=${latest.status}`);
     return this.toChallenge(latest, await this.baseUrl(caId));
   }
 
@@ -383,6 +388,7 @@ export class AcmeServerService {
       try {
         signed = await this.localCaService.signCsrForAcme(ca.id, csrPem, config.validityDays);
       } catch (e: any) {
+        logger.warn(`[acme] finalize signing failed ca=${ca.id} order=${order.id} account=${account.id}: ${e?.message || e}`);
         throw new AcmeProblem("serverInternal", `证书签发失败：${e.message}`, 500);
       }
       order.status = "valid";
@@ -392,6 +398,7 @@ export class AcmeServerService {
       order.updateTime = new Date();
       await orderRepository.save(order);
       await this.saveCertRecord(ca, order, signed, certRepository);
+      logger.info(`[acme] certificate issued ca=${ca.id} order=${order.id} account=${account.id} serial=${signed.serialNumber}`);
       return await this.toOrder(order);
     });
   }

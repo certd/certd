@@ -509,6 +509,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       select: { id: true },
     });
     if (!ownedCa) {
+      logger.warn(`[local-ca] revocation denied ca=${req.caId} cert=${req.certInfoId} user=${req.userId} project=${req.projectId ?? "-"}`);
       throw new CodeException({
         ...Constants.res.openCertNotFound,
         message: "本地CA不存在或无访问权限",

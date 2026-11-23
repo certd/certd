@@ -1,6 +1,7 @@
 import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
+import { logger } from "@certd/basic";
 import { CertRevocationEntity } from "../entity/cert-revocation.js";
 
 export type RecordRevocationReq = {
@@ -53,6 +54,7 @@ export class CertRevocationService {
     if (!saved) {
       throw new Error("吊销记录写入失败");
     }
+    logger.info(`[local-ca] revocation recorded ca=${req.caId} cert=${req.certInfoId ?? "-"} serial=${serialNumber} user=${req.userId} reason=${saved.reason}`);
     return saved;
   }
 
