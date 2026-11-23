@@ -7,6 +7,7 @@ import { AcmeAccountInfo, AcmeService, DomainsVerifyPlan, DomainVerifyPlan, Priv
 import { createDnsProvider, DnsProviderContext, DnsVerifier, DomainVerifiers, HttpVerifier, IDnsProvider, IDomainVerifierGetter, ISubDomainsGetter, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { CertReader } from "@certd/plugin-lib";
 import { CertApplyBasePlugin } from "./base.js";
+import { isPrivateKeyCompatible } from "./cert-key-reuse.js";
 import { GoogleClient } from "../../libs/google.js";
 import { EabAccess } from "../../access/index.js";
 import { DomainParser } from "@certd/plugin-lib";
@@ -149,6 +150,7 @@ const preferredChainMergeScript = (() => {
           helper: "For Google, choose either service account credentials or EAB. See the [setup guide](https://certd.docmirror.cn/guide/use/google/). A proxy or an overseas server may be required.",
         },
         privateKeyType: { title: "Key Algorithm", optionsMapping: { rsa_2048_pkcs1: "RSA 2048 PKCS#1 (Legacy)" }, helper: "Keep the default unless needed. RSA 2048 PKCS#1 produces a legacy RSA certificate." },
+        reuseKey: { title: "Reuse Previous Public Key", helper: "Reuse the previous certificate private key on renewal to keep the public key unchanged. Falls back to a new key if the old key is missing, invalid or uses a different algorithm." },
         certProfile: {
           title: "Certificate Profile",
           optionsMapping: { classic: "Classic (classic)", tlsserver: "TLS Server (tlsserver)", shortlived: "Short-lived (shortlived)" },
@@ -531,6 +533,19 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   privateKeyType!: PrivateKeyType;
 
   @TaskInput({
+    title: "复用上次证书公钥",
+    value: false,
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+    helper: "续期时沿用上次证书私钥，保持公钥不变（类似 certbot --reuse-key）。旧私钥缺失、损坏或算法不一致时会自动重新生成。",
+    order: 101,
+    maybeNeed: true,
+  })
+  reuseKey = false;
+
+  @TaskInput({
     title: "证书配置",
     value: "classic",
     component: {
@@ -740,6 +755,30 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       }));
   }
 
+  private async resolveReusePrivateKey(): Promise<string | undefined> {
+    if (!this.reuseKey) {
+      return undefined;
+    }
+    let oldCert: CertReader | undefined;
+    try {
+      oldCert = await this.readLastCert();
+    } catch (e: any) {
+      this.logger.warn(`读取上次证书失败，重新生成私钥：${e?.message || e}`);
+      return undefined;
+    }
+    const oldKey = oldCert?.cert?.key;
+    if (!oldKey) {
+      this.logger.info("没有找到上次证书私钥，重新生成私钥");
+      return undefined;
+    }
+    if (!isPrivateKeyCompatible(oldKey, this.privateKeyType)) {
+      this.logger.warn("上次证书私钥算法与当前配置不一致或无法解析，重新生成私钥");
+      return undefined;
+    }
+    this.logger.info("复用上次证书私钥，保持证书公钥不变");
+    return oldKey;
+  }
+
   async doCertApply() {
     await this.getAcmeClient();
     // 自定义ACME暂不支持DNS持久验证
@@ -794,9 +833,11 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       dnsProvider = await this.createDnsProvider(dnsProviderType, access);
     }
 
+    const reusePrivateKey = await this.resolveReusePrivateKey();
     const cert = await this.orderWithRetry({
       email,
       domains,
+      reusePrivateKey,
       dnsProvider,
       domainsVerifyPlan,
       csrInfo,

@@ -6,6 +6,7 @@ import { IDnsProvider, IDomainParser, ISubDomainsGetter } from "@certd/plugin-li
 import punycode from "punycode.js";
 import { IOssClient } from "../../../plugin-lib/index.js";
 import { NonRetryableException } from "@certd/lib-server";
+import { isPkcs1PrivateKey } from "./cert-key-reuse.js";
 export type CnameVerifyPlan = {
   type?: string;
   domain: string;
@@ -510,6 +511,7 @@ export class AcmeService {
     profile?: string;
     preferredChain?: string;
     acmeAccount?: AcmeAccountInfo;
+    reusePrivateKey?: string;
   }): Promise<CertInfo> {
     const { email, csrInfo, dnsProvider, domainsVerifyPlan, profile, preferredChain, acmeAccount } = options;
     const client: acme.Client = acmeAccount ? await this.getAcmeClientByAccount(acmeAccount) : await this.getAcmeClient(email);
@@ -524,6 +526,10 @@ export class AcmeService {
     /* Create CSR */
     const { altNames } = this.buildCommonNameByDomains(domains);
     let privateKey = null;
+    if (options.reusePrivateKey) {
+      privateKey = Buffer.from(options.reusePrivateKey);
+      this.logger.info("复用上次证书私钥，保持证书公钥不变");
+    }
     const privateKeyType = options.privateKeyType || "rsa_2048";
     const privateKeyArr = privateKeyType.split("_");
     const type = privateKeyArr[0];
@@ -537,15 +543,20 @@ export class AcmeService {
       encodingType = privateKeyArr[2];
     }
 
-    if (type == "ec") {
-      const name: any = "P-" + size;
-      privateKey = await acme.crypto.createPrivateEcdsaKey(name, encodingType);
-    } else {
-      privateKey = await acme.crypto.createPrivateRsaKey(size, encodingType);
+    if (privateKey == null) {
+      if (type == "ec") {
+        const name: any = "P-" + size;
+        privateKey = await acme.crypto.createPrivateEcdsaKey(name, encodingType);
+      } else {
+        privateKey = await acme.crypto.createPrivateRsaKey(size, encodingType);
+      }
     }
 
     let createCsr: any = acme.crypto.createCsr;
-    if (encodingType === "pkcs1") {
+    if (options.reusePrivateKey) {
+      // 复用的密钥格式决定CSR实现，忽略当前新密钥编码选项
+      createCsr = isPkcs1PrivateKey(options.reusePrivateKey) ? acme.forge.createCsr : acme.crypto.createCsr;
+    } else if (encodingType === "pkcs1") {
       //兼容老版本
       createCsr = acme.forge.createCsr;
     }
