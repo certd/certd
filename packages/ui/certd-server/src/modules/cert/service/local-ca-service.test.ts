@@ -341,14 +341,8 @@ describe("LocalCaService", () => {
     await service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: false });
     assert.equal(bean.disabled, false);
     await assert.rejects(() => service.setAcmeEabDisabled({ caId: 999, eabId: "eab-1", userId: 1, disabled: true }), /不存在或无访问权限/);
-    await assert.rejects(
-      () => service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: undefined as any }),
-      /disabled必须是布尔值/
-    );
-    await assert.rejects(
-      () => service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: "true" as any }),
-      /disabled必须是布尔值/
-    );
+    await assert.rejects(() => service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: undefined as any }), /disabled必须是布尔值/);
+    await assert.rejects(() => service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: "true" as any }), /disabled必须是布尔值/);
   });
 
   it("EAB直签只能为已启用ACME的中间CA开启", async () => {
