@@ -29,7 +29,7 @@ export const localCaApi = {
     });
   },
 
-  async CheckImportDuplicate(data: { certPem: string }) {
+  async CheckImportDuplicate(data: { certPem: string; parentId?: number }) {
     return await request({
       url: apiPrefix + "/import/check",
       method: "post",

@@ -106,6 +106,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       remark: body.remark,
       exportDisabled: body.exportDisabled,
       allowDuplicate: body.allowDuplicate === true,
+      allowExternalCrl: body.allowExternalCrl === true,
     });
     this.auditLog({ content: `经step-up验证，导入CA「${body.name}」(ID:${res.id})` });
     return this.ok(res);
@@ -114,7 +115,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
   @Post("/import/check", { description: Constants.per.authOnly, summary: "检查CA证书是否重复" })
   async checkImport(@Body(ALL) body: any) {
     const { userId, projectId } = await this.getProjectUserIdRead();
-    return this.ok(await this.service.checkImportDuplicate({ userId, projectId, certPem: body.certPem }));
+    return this.ok(await this.service.checkImportDuplicate({ userId, projectId, parentId: body.parentId, certPem: body.certPem }));
   }
 
   @Post("/intermediate", { description: Constants.per.authOnly, summary: "由根CA签发中间CA" })

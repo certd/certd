@@ -451,10 +451,9 @@ export class Executor {
       utils,
       user: this.options.user,
       emitter: pipelineEmitter,
-      serviceGetter: this.options.serviceGetter,
+      serviceGetter: this.options.serviceGetter?.forPlugin?.(step.type) || this.options.serviceGetter,
       projectId: this.pipeline.projectId,
     };
-    this.options.serviceGetter?.setPluginType?.(step.type);
     await instance.setCtx(taskCtx);
 
     if (!(instance instanceof AbstractTaskPlugin)) {

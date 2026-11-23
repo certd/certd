@@ -30,6 +30,8 @@ export type CreatedRootCa = {
   notAfter: number;
   pathLength?: number;
   serialNumber?: string;
+  crlDistributionUrls?: string[];
+  hasExternalCrl?: boolean;
 };
 
 export type ImportedRootCa = CreatedRootCa;
@@ -660,7 +662,26 @@ export async function validateImportedRootCa(req: { certPem: string; privateKeyP
   };
 }
 
-export async function validateImportedIntermediateCa(req: { certPem: string; privateKeyPem: string; parentCertPem: string }): Promise<ImportedRootCa> {
+export function getCrlDistributionUrls(certPem: string) {
+  const cert = new x509.X509Certificate(certPem);
+  const ext = cert.extensions.find(item => item.type === "2.5.29.31") as x509.CRLDistributionPointsExtension | undefined;
+  const urls: string[] = [];
+  for (const point of ext?.distributionPoints || []) {
+    for (const name of point.distributionPoint?.fullName || []) {
+      if (name.uniformResourceIdentifier) {
+        urls.push(name.uniformResourceIdentifier);
+      }
+    }
+  }
+  return urls;
+}
+
+function normalizeCrlUrl(value: string) {
+  const url = new URL(value);
+  return url.toString().replace(/\/+$/, "");
+}
+
+export async function validateImportedIntermediateCa(req: { certPem: string; privateKeyPem: string; parentCertPem: string; expectedCrlUrl?: string; allowExternalCrl?: boolean }): Promise<ImportedRootCa> {
   const certPem = normalizePem(req.certPem);
   const privateKeyPem = normalizePem(req.privateKeyPem);
   const parentCertPem = normalizePem(req.parentCertPem);
@@ -724,6 +745,37 @@ export async function validateImportedIntermediateCa(req: { certPem: string; pri
   if (!cert.checkPrivateKey(privateKey)) {
     throw new Error("CA私钥与CA证书不匹配");
   }
+  const crlDistributionUrls = getCrlDistributionUrls(certPem).filter(url => {
+    try {
+      return ["http:", "https:"].includes(new URL(url).protocol);
+    } catch (e) {
+      return false;
+    }
+  });
+  if (crlDistributionUrls.length === 0) {
+    throw new Error("中间CA证书缺少有效的CRL Distribution Point，吊销链将不可用");
+  }
+  let matchedLocalCrl = false;
+  let hasExternalCrl = false;
+  if (req.expectedCrlUrl) {
+    const expected = normalizeCrlUrl(req.expectedCrlUrl);
+    const expectedUrl = new URL(expected);
+    for (const value of crlDistributionUrls) {
+      const url = new URL(value);
+      const looksLikeLocal = url.pathname.includes("/api/cert/local-ca/crl");
+      if (url.origin === expectedUrl.origin || looksLikeLocal) {
+        if (normalizeCrlUrl(value) !== expected) {
+          throw new Error("中间CA证书的CRL Distribution Point与本系统Root CRL地址不一致");
+        }
+        matchedLocalCrl = true;
+      } else {
+        hasExternalCrl = true;
+      }
+    }
+    if (!matchedLocalCrl && hasExternalCrl && req.allowExternalCrl !== true) {
+      throw new Error("中间CA使用了外部CRL地址，无法校验其可用性；如确认继续，请确认后重试");
+    }
+  }
   const { keyType, keySize } = keyTypeOfPrivateKey(privateKey);
   const x509Cert = new x509.X509Certificate(certPem);
   const subject = nameToSubject(x509Cert.subjectName);
@@ -742,6 +794,8 @@ export async function validateImportedIntermediateCa(req: { certPem: string; pri
     notBefore: new Date(cert.validFrom).getTime(),
     notAfter: new Date(cert.validTo).getTime(),
     pathLength: getBasicConstraints(certPem).pathLength ?? 0,
+    crlDistributionUrls,
+    hasExternalCrl: hasExternalCrl && !matchedLocalCrl,
   };
 }
 

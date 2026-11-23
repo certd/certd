@@ -23,13 +23,14 @@ export class TaskServiceGetter implements IServiceGetter {
   private projectId: number;
   private appCtx: IMidwayContainer;
   private pluginType?: string;
-  constructor(userId: number, projectId: number, appCtx: IMidwayContainer) {
+  constructor(userId: number, projectId: number, appCtx: IMidwayContainer, pluginType?: string) {
     this.userId = userId;
     this.projectId = projectId;
     this.appCtx = appCtx;
-  }
-  setPluginType(pluginType: string) {
     this.pluginType = pluginType;
+  }
+  forPlugin(pluginType: string): IServiceGetter {
+    return new TaskServiceGetter(this.userId, this.projectId, this.appCtx, pluginType);
   }
   async get<T>(serviceName: string): Promise<T> {
     if (serviceName === "subDomainsGetter") {

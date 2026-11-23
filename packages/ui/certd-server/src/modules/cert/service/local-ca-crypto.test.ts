@@ -203,6 +203,7 @@ describe("local-ca-crypto", () => {
       subject: { CN: "Imported ECDSA Intermediate" },
       keyType: "ecdsa384",
       validityYears: 5,
+      crlDistributionPoint: "https://certd.example.com/api/cert/local-ca/crl?id=1",
     });
     const importedIntermediate = await validateImportedIntermediateCa({
       certPem: intermediate.certPem,
@@ -472,4 +473,49 @@ describe("local-ca-crypto", () => {
     const ca2 = await createRootCa({ subject: { CN: "Root B" }, keyType: "rsa2048", validityYears: 1 });
     await assert.rejects(() => validateImportedRootCa({ certPem: ca1.certPem, privateKeyPem: ca2.privateKeyPem }), /不匹配/);
   });
+
+  it("导入中间CA必须包含有效CRL地址，外部CDP需显式确认", async () => {
+    const root = await createRootCa({ subject: { CN: "CDP Root" }, keyType: "rsa2048", validityYears: 3 });
+    const noCdp = await createIntermediateCa({
+      rootCertPem: root.certPem,
+      rootPrivateKeyPem: root.privateKeyPem,
+      subject: { CN: "No CDP Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    await assert.rejects(
+      () => validateImportedIntermediateCa({ certPem: noCdp.certPem, privateKeyPem: noCdp.privateKeyPem, parentCertPem: root.certPem }),
+      /缺少有效的CRL Distribution Point/
+    );
+
+    const expectedCrlUrl = "https://certd.example.com/api/cert/local-ca/crl?id=1";
+    const external = await createIntermediateCa({
+      rootCertPem: root.certPem,
+      rootPrivateKeyPem: root.privateKeyPem,
+      subject: { CN: "External CDP Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+      crlDistributionPoint: "https://external.example.com/root.crl",
+    });
+    await assert.rejects(
+      () => validateImportedIntermediateCa({ certPem: external.certPem, privateKeyPem: external.privateKeyPem, parentCertPem: root.certPem, expectedCrlUrl }),
+      /外部CRL地址/
+    );
+    const imported = await validateImportedIntermediateCa({ certPem: external.certPem, privateKeyPem: external.privateKeyPem, parentCertPem: root.certPem, expectedCrlUrl, allowExternalCrl: true });
+    assert.equal(imported.hasExternalCrl, true);
+
+    const mismatched = await createIntermediateCa({
+      rootCertPem: root.certPem,
+      rootPrivateKeyPem: root.privateKeyPem,
+      subject: { CN: "Mismatched CDP Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+      crlDistributionPoint: "https://certd.example.com/api/cert/local-ca/crl?id=999",
+    });
+    await assert.rejects(
+      () => validateImportedIntermediateCa({ certPem: mismatched.certPem, privateKeyPem: mismatched.privateKeyPem, parentCertPem: root.certPem, expectedCrlUrl }),
+      /CRL Distribution Point与本系统Root CRL地址不一致/
+    );
+  });
+
 });

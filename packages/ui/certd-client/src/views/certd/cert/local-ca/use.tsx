@@ -518,8 +518,38 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         },
       },
       async onSubmit(form: any) {
-        const duplicate = await localCaApi.CheckImportDuplicate({ certPem: form.certPem });
+        const duplicate = await localCaApi.CheckImportDuplicate({ certPem: form.certPem, parentId: form.parentId });
         let allowDuplicate = false;
+        let allowExternalCrl = false;
+        if (duplicate?.missingCrl) {
+          notification.error({ message: t("certd.localCa.crlMissing") });
+          return;
+        }
+        if (duplicate?.mismatchCrl) {
+          notification.error({ message: t("certd.localCa.crlMismatch") });
+          return;
+        }
+        if (duplicate?.externalCrl) {
+          const confirmed = await new Promise<boolean>(resolve => {
+            Modal.confirm({
+              title: t("certd.localCa.externalCrlTitle"),
+              content: t("certd.localCa.externalCrlContent", { url: (duplicate.expectedCrlUrl || "").toString() }),
+              okText: t("certd.localCa.externalCrlContinue"),
+              okType: "danger",
+              cancelText: t("certd.common.cancel"),
+              onOk() {
+                resolve(true);
+              },
+              onCancel() {
+                resolve(false);
+              },
+            });
+          });
+          if (!confirmed) {
+            return;
+          }
+          allowExternalCrl = true;
+        }
         if (duplicate?.duplicated) {
           const confirmed = await new Promise<boolean>(resolve => {
             Modal.confirm({
@@ -554,6 +584,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             remark: form.remark,
             exportDisabled: form.exportDisabled === true,
             allowDuplicate,
+            allowExternalCrl,
           });
         });
         if (!verified) {

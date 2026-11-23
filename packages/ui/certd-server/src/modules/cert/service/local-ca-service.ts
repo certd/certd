@@ -21,6 +21,7 @@ import {
   createRootCa,
   getBasicConstraints,
   getCertSerialNumber,
+  getCrlDistributionUrls,
   getCrlInfo as parseCrlInfo,
   getPublicKeyPem,
   isSelfSignedCa,
@@ -120,6 +121,7 @@ export type LocalCaImportReq = {
   remark?: string;
   exportDisabled?: boolean;
   allowDuplicate?: boolean;
+  allowExternalCrl?: boolean;
 };
 
 export type LocalCaIssueReq = LocalCaScope & {
@@ -406,10 +408,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return { id: res.id };
   }
 
-  async checkImportDuplicate(req: { userId: number; projectId?: number; certPem: string }) {
+  async checkImportDuplicate(req: { userId: number; projectId?: number; parentId?: number; certPem: string }) {
     let fingerprint: string;
+    let selfSigned: boolean;
     try {
       fingerprint = new crypto.X509Certificate(req.certPem).fingerprint256.replaceAll(":", "").toLowerCase();
+      selfSigned = isSelfSignedCa(req.certPem);
     } catch (e: any) {
       throw new ValidateException(`证书解析失败：${e.message}`);
     }
@@ -418,7 +422,43 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       where: { ...owner, fingerprintSha256: fingerprint } as any,
       select: { id: true, name: true },
     });
-    return duplicated ? { duplicated: true, id: duplicated.id, name: duplicated.name } : { duplicated: false };
+    const base = duplicated ? { duplicated: true, id: duplicated.id, name: duplicated.name } : { duplicated: false };
+    if (selfSigned || req.parentId == null) {
+      return base;
+    }
+    const parent = await this.getOwnedCa({ id: req.parentId, userId: req.userId, projectId: req.projectId });
+    const expectedCrlUrl = await this.getCrlUrl(parent);
+    const expected = new URL(expectedCrlUrl).toString().replace(/\/+$/, "");
+    const urls = getCrlDistributionUrls(req.certPem).filter(url => {
+      try {
+        return ["http:", "https:"].includes(new URL(url).protocol);
+      } catch (e) {
+        return false;
+      }
+    });
+    let matchedLocalCrl = false;
+    let externalCrl = false;
+    let mismatchCrl = false;
+    for (const value of urls) {
+      const url = new URL(value);
+      const looksLikeLocal = url.pathname.includes("/api/cert/local-ca/crl");
+      if (url.origin === new URL(expected).origin || looksLikeLocal) {
+        if (url.toString().replace(/\/+$/, "") !== expected) {
+          mismatchCrl = true;
+        } else {
+          matchedLocalCrl = true;
+        }
+      } else {
+        externalCrl = true;
+      }
+    }
+    return {
+      ...base,
+      expectedCrlUrl,
+      missingCrl: urls.length === 0,
+      mismatchCrl,
+      externalCrl: externalCrl && !matchedLocalCrl,
+    };
   }
 
   async importCa(req: LocalCaImportReq) {
@@ -448,6 +488,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         certPem: req.certPem,
         privateKeyPem: req.privateKeyPem,
         parentCertPem: parent.certPem,
+        expectedCrlUrl: await this.getCrlUrl(parent),
+        allowExternalCrl: req.allowExternalCrl === true,
       });
       // 重新导入不能绕过父CA的吊销记录
       const serialNumber = getCertSerialNumber(material.certPem);

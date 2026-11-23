@@ -246,6 +246,7 @@ describe("LocalCaService", () => {
       subject: { CN: "Imported Intermediate" },
       keyType: "ecdsa384",
       validityYears: 1,
+      crlDistributionPoint: `http://127.0.0.1:7001/api/cert/local-ca/crl?id=${root.id}`,
     });
     const imported = await service.importCa({
       userId: 1,
@@ -278,6 +279,7 @@ describe("LocalCaService", () => {
       subject: { CN: "Duplicate Intermediate" },
       keyType: "ecdsa256",
       validityYears: 1,
+      crlDistributionPoint: `http://127.0.0.1:7001/api/cert/local-ca/crl?id=${root.id}`,
     });
     await service.importCa({
       userId: 1,
