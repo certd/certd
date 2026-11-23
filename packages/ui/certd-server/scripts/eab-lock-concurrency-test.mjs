@@ -5,6 +5,12 @@ import { LocalCaService } from "../dist/modules/cert/service/local-ca-service.js
 import { runTransaction } from "../dist/modules/cert/service/db-transaction.js";
 
 const dialect = process.env.EAB_TEST_DB || "sqlite";
+
+function assertTestDatabase(name) {
+  if (!/^certd_.*_test$/.test(String(name || ""))) {
+    throw new Error(`拒绝在非测试数据库 ${name} 上运行；数据库名必须以 certd_ 开头并以 _test 结尾`);
+  }
+}
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function dataSourceOptions() {
@@ -15,10 +21,9 @@ function dataSourceOptions() {
       port: Number(process.env.MYSQL_PORT || 3306),
       username: process.env.MYSQL_USER || "certd_test",
       password: process.env.MYSQL_PASSWORD || "certd_test",
-      database: process.env.MYSQL_DATABASE || "certd_crl_test",
+      database: process.env.MYSQL_DATABASE || "certd_eab_test",
       entities: [LocalCaEntity, AcmeEabEntity],
       synchronize: true,
-      dropSchema: true,
     };
   }
   if (dialect === "postgres" || dialect === "pg") {
@@ -28,10 +33,9 @@ function dataSourceOptions() {
       port: Number(process.env.PG_PORT || 5432),
       username: process.env.PG_USER || "postgres",
       password: process.env.PG_PASSWORD || "postgres",
-      database: process.env.PG_DATABASE || "certd_test",
+      database: process.env.PG_DATABASE || "certd_eab_test",
       entities: [LocalCaEntity, AcmeEabEntity],
       synchronize: true,
-      dropSchema: true,
     };
   }
   return {
@@ -94,9 +98,15 @@ function eabEntity() {
 }
 
 async function main() {
-  const ds = new DataSource(dataSourceOptions());
+  const options = dataSourceOptions();
+  if (options.type !== "better-sqlite3") {
+    assertTestDatabase(options.database);
+  }
+  const ds = new DataSource(options);
   await ds.initialize();
   try {
+    await ds.query("DELETE FROM cd_acme_eab");
+    await ds.query("DELETE FROM cd_local_ca");
     await ds.getRepository(LocalCaEntity).save(caEntity());
     await ds.getRepository(AcmeEabEntity).save(eabEntity());
     const service = new LocalCaService();

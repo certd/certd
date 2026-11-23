@@ -9,6 +9,12 @@ import { createIntermediateCa, createRootCa, sha256Hex } from "../dist/modules/c
 
 const dialect = process.env.CRL_TEST_DB || "sqlite";
 
+function assertTestDatabase(name) {
+  if (!/^certd_.*_test$/.test(String(name || ""))) {
+    throw new Error(`拒绝在非测试数据库 ${name} 上运行；数据库名必须以 certd_ 开头并以 _test 结尾`);
+  }
+}
+
 function dataSourceOptions() {
   if (dialect === "mysql") {
     return {
@@ -20,7 +26,6 @@ function dataSourceOptions() {
       database: process.env.MYSQL_DATABASE || "certd_crl_test",
       entities: [LocalCaEntity, CertRevocationEntity],
       synchronize: true,
-      dropSchema: true,
     };
   }
   if (dialect === "postgres" || dialect === "pg") {
@@ -30,10 +35,9 @@ function dataSourceOptions() {
       port: Number(process.env.PG_PORT || 5432),
       username: process.env.PG_USER || "postgres",
       password: process.env.PG_PASSWORD || "postgres",
-      database: process.env.PG_DATABASE || "certd_test",
+      database: process.env.PG_DATABASE || "certd_crl_test",
       entities: [LocalCaEntity, CertRevocationEntity],
       synchronize: true,
-      dropSchema: true,
     };
   }
   return {
@@ -80,8 +84,15 @@ function caEntity({ id, type, name, certPem, privateKeyPem, parentId, notBefore,
 }
 
 async function main() {
-  const ds = new DataSource(dataSourceOptions());
+  const options = dataSourceOptions();
+  if (options.type !== "better-sqlite3") {
+    assertTestDatabase(options.database);
+  }
+  const ds = new DataSource(options);
   await ds.initialize();
+  // 只清理脚本自己的表，绝不 dropSchema
+  await ds.query("DELETE FROM cd_cert_revocation");
+  await ds.query("DELETE FROM cd_local_ca");
   const caRepo = ds.getRepository(LocalCaEntity);
   const revocationRepo = ds.getRepository(CertRevocationEntity);
   const encryptor = new Encryptor(Buffer.alloc(32, 7).toString("base64"));
