@@ -1,5 +1,5 @@
 import { ALL, Body, Controller, Get, Inject, Post, Provide, Query } from "@midwayjs/core";
-import { Constants, CrudController } from "@certd/lib-server";
+import { Constants, CrudController, ValidateException } from "@certd/lib-server";
 import { cache } from "@certd/basic";
 import { ApiTags } from "@midwayjs/swagger";
 import { LocalCaService } from "../../../modules/cert/service/local-ca-service.js";
@@ -298,6 +298,9 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/eab/status", { description: Constants.per.authOnly, summary: "启用/禁用本地ACME的EAB凭证（需2FA/Passkey）" })
   async setEabStatus(@Body(ALL) body: any) {
+    if (typeof body.disabled !== "boolean") {
+      throw new ValidateException("disabled必须是布尔值");
+    }
     this.assertStepUp(body.verifyToken, "变更ACME凭证状态");
     const { userId, projectId } = await this.getProjectUserIdWrite();
     await this.checkOwner(this.service, body.caId, "write");

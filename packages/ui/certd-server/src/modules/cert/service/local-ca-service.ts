@@ -587,6 +587,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async setAcmeEabDisabled(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; disabled: boolean }) {
+    if (typeof req.disabled !== "boolean") {
+      throw new ValidateException("disabled必须是布尔值");
+    }
     const ca = await this.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以管理ACME凭证");
