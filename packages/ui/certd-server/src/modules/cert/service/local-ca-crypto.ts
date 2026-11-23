@@ -763,7 +763,11 @@ export async function createCsr(req: { domains: string[]; keyType: LocalCaKeyTyp
 
 function assertCsrPublicKeyAllowed(csr: x509.Pkcs10CertificateRequest): "rsa" | "ec" {
   const algorithm: any = csr.publicKey?.algorithm || {};
-  if (algorithm.name === "RSASSA-PKCS1-v1_5" || algorithm.name === "RSA-PSS") {
+  const signatureAlgorithm: any = (csr as any).signatureAlgorithm || {};
+  if (signatureAlgorithm.name === "RSA-PSS") {
+    throw new Error("暂不支持 RSA-PSS CSR，请使用 RSASSA-PKCS1-v1_5");
+  }
+  if (algorithm.name === "RSASSA-PKCS1-v1_5") {
     const bits = Number(algorithm.modulusLength);
     if (![2048, 3072, 4096].includes(bits)) {
       throw new Error(`CSR RSA公钥长度不允许：${bits}；仅支持 2048/3072/4096`);
