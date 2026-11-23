@@ -1,4 +1,3 @@
-import { LocalCaKeyType, LocalCaUsage } from "./local-ca-crypto.js";
 import { LocalCaService } from "./local-ca-service.js";
 
 /**
@@ -25,29 +24,6 @@ export class LocalCaGetter {
       userId: this.userId,
       projectId: this.projectId,
       searchKey,
-    });
-  }
-
-  async signCsr(req: { caId: number; csrPem: string; validityDays?: number; usage?: LocalCaUsage }) {
-    return await this.service.signCsr({
-      id: req.caId,
-      csrPem: req.csrPem,
-      validityDays: req.validityDays,
-      usage: req.usage,
-      userId: this.userId,
-      projectId: this.projectId,
-    });
-  }
-
-  async issueLeaf(req: { caId: number; domains: string[]; keyType?: LocalCaKeyType; validityDays?: number; usage?: LocalCaUsage }) {
-    return await this.service.issueLeaf({
-      id: req.caId,
-      domains: req.domains,
-      keyType: req.keyType,
-      validityDays: req.validityDays,
-      usage: req.usage,
-      userId: this.userId,
-      projectId: this.projectId,
     });
   }
 }

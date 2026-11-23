@@ -25,6 +25,14 @@ export const localCaApi = {
     return await request({
       url: apiPrefix + "/import",
       method: "post",
+      data: { ...data, verifyToken: getSecretAccessToken() },
+    });
+  },
+
+  async CheckImportDuplicate(data: { certPem: string }) {
+    return await request({
+      url: apiPrefix + "/import/check",
+      method: "post",
       data,
     });
   },
@@ -41,7 +49,7 @@ export const localCaApi = {
     return await request({
       url: apiPrefix + "/update",
       method: "post",
-      data,
+      data: { ...data, verifyToken: getSecretAccessToken() },
     });
   },
 
@@ -69,11 +77,11 @@ export const localCaApi = {
     });
   },
 
-  async EnableAcme(id: number, enabled: boolean) {
+  async EnableAcme(id: number, enabled: boolean, verifyToken?: string) {
     return await request({
       url: apiPrefix + "/acme",
       method: "post",
-      data: { id, enabled },
+      data: { id, enabled, verifyToken },
     });
   },
 
@@ -125,7 +133,7 @@ export const localCaApi = {
     return await request({
       url: apiPrefix + "/eab/create",
       method: "post",
-      data,
+      data: { ...data, verifyToken: getSecretAccessToken() },
     });
   },
 
@@ -180,6 +188,22 @@ export const localCaApi = {
   async RefreshRootCrl(id: number, verifyToken: string) {
     return await request({
       url: apiPrefix + "/crl/refresh",
+      method: "post",
+      data: { id, verifyToken },
+    });
+  },
+
+  async ListArchivedRoots() {
+    return await request({
+      url: apiPrefix + "/archived/roots",
+      method: "post",
+      data: {},
+    });
+  },
+
+  async RefreshArchivedRootCrl(id: number, verifyToken: string) {
+    return await request({
+      url: apiPrefix + "/crl/refreshArchived",
       method: "post",
       data: { id, verifyToken },
     });

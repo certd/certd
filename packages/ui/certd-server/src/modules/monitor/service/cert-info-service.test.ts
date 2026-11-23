@@ -623,6 +623,9 @@ describe("CertInfoService", () => {
       } as any;
       let updated: any = null;
       service.repository = {
+        async findOne() {
+          return { id: 1, status: CertStatus.inactive };
+        },
         async update(where: any, set: any) {
           updated = { where, set };
           return {} as any;
@@ -668,6 +671,9 @@ describe("CertInfoService", () => {
       } as any;
       let updated: any = null;
       service.repository = {
+        async findOne() {
+          return { id: 1, status: CertStatus.inactive };
+        },
         async update(where: any, set: any) {
           updated = { where, set };
           return {} as any;
@@ -765,6 +771,46 @@ describe("CertInfoService", () => {
       await assert.rejects(() => service.revoke(1, 2), /本地CA不存在或无访问权限/);
 
       assert.deepEqual(findWhere, { id: 99, userId: 2, deleted: false });
+      assert.equal(recordCalled, false);
+      assert.equal(updateCalled, false);
+    });
+
+
+    it("证书与CA、序列号或租户不匹配时拒绝吊销", async () => {
+      const service = new CertInfoService();
+      const cert = createSelfSignedCert();
+      service.info = async () =>
+        ({
+          id: 1,
+          userId: 2,
+          projectId: null,
+          status: CertStatus.inactive,
+          certInfo: JSON.stringify(cert),
+          localCaId: 3,
+          serialNumber: "abc123",
+        }) as any;
+      service.localCaRepository = { async findOne() { return { id: 3 }; } } as any;
+      let findWhere: any = null;
+      let recordCalled = false;
+      let updateCalled = false;
+      service.repository = {
+        async findOne(args: any) {
+          findWhere = args.where;
+          return null;
+        },
+        async update() {
+          updateCalled = true;
+          return {} as any;
+        },
+      } as any;
+      service.certRevocationService = {
+        async record() {
+          recordCalled = true;
+        },
+      } as any;
+
+      await assert.rejects(() => service.revoke(1, 2), /不匹配/);
+      assert.deepEqual(findWhere, { id: 1, userId: 2, localCaId: 3, serialNumber: "ABC123" });
       assert.equal(recordCalled, false);
       assert.equal(updateCalled, false);
     });

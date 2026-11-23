@@ -357,7 +357,7 @@ describe("CertApplyPlugin 自动匹配本地CA", () => {
                 if (options.caError) {
                   throw options.caError;
                 }
-                return options.ca;
+                return options.ca ? { effectiveBaseUrl: "https://certd.example.com", ...options.ca } : options.ca;
               },
             };
           }

@@ -119,6 +119,7 @@ defineOptions({
 
 const props = defineProps<{
   onExport?: (row: any) => void;
+  onAcmeEnable?: (row: any) => Promise<boolean>;
   onChanged?: () => void;
 }>();
 
@@ -204,7 +205,10 @@ async function open(data: any) {
 async function enableAcme() {
   acmeEnabling.value = true;
   try {
-    await localCaApi.EnableAcme(row.value.id, true);
+    const verified = props.onAcmeEnable ? await props.onAcmeEnable(row.value) : (await localCaApi.EnableAcme(row.value.id, true), true);
+    if (!verified) {
+      return;
+    }
     row.value.acmeEnabled = true;
     notification.success({ message: t("certd.localCa.acmeChanged") });
     props.onChanged?.();

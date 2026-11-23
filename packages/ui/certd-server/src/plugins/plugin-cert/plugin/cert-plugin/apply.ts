@@ -13,19 +13,38 @@ import { EabAccess } from "../../access/index.js";
 import { DomainParser } from "@certd/plugin-lib";
 import { ossClientFactory } from "../../../plugin-lib/oss/factory.js";
 import { merge } from "lodash-es";
+import { verifyCertIssuedBy } from "../../../../modules/cert/service/local-ca-crypto.js";
 
-function getLocalCaIdFromAcmeDirectory(directoryUrl?: string): number | null {
+function parseLocalCaDirectory(directoryUrl?: string): { caId: number; url: URL } | null {
   if (!directoryUrl) {
     return null;
   }
-  let pathname = "";
+  let url: URL;
   try {
-    pathname = new URL(directoryUrl).pathname;
+    url = new URL(directoryUrl);
   } catch {
-    pathname = directoryUrl.split(/[?#]/)[0];
+    return null;
   }
-  const matched = pathname.match(/\/api\/acme\/(\d+)\/directory\/?$/i);
-  return matched ? Number(matched[1]) : null;
+  const matched = url.pathname.match(/\/api\/acme\/(\d+)\/directory\/?$/i);
+  return matched ? { caId: Number(matched[1]), url } : null;
+}
+
+function getLocalCaIdFromAcmeDirectory(directoryUrl?: string): number | null {
+  return parseLocalCaDirectory(directoryUrl)?.caId ?? null;
+}
+
+function isLocalCaDirectory(directoryUrl: string | undefined, ca: any, caId: number) {
+  const parsed = parseLocalCaDirectory(directoryUrl);
+  if (!parsed || parsed.caId !== caId || !ca?.effectiveBaseUrl) {
+    return false;
+  }
+  try {
+    const base = new URL(ca.effectiveBaseUrl);
+    const expectedPath = `${base.pathname.replace(/\/+$/, "")}/api/acme/${caId}/directory`;
+    return parsed.url.origin === base.origin && parsed.url.pathname.replace(/\/+$/, "") === expectedPath;
+  } catch {
+    return false;
+  }
 }
 
 export type CnameRecordInput = {
@@ -760,17 +779,23 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
    * 目录地址中带有本地CA id，签发结果的叶子证书首张即为本地CA签发。
    */
   async emitCertApplySuccess() {
-    const localCaId = getLocalCaIdFromAcmeDirectory(this.acmeProvider?.directoryUrl);
-    if (localCaId == null || !this.cert?.crt) {
+    const candidate = parseLocalCaDirectory(this.acmeProvider?.directoryUrl);
+    if (!candidate || !this.cert?.crt) {
       return await super.emitCertApplySuccess();
     }
-    let serialNumber: string | undefined;
     try {
-      serialNumber = new X509Certificate(this.cert.crt).serialNumber.toUpperCase();
-    } catch (e) {
-      this.logger.warn(`解析本地CA证书序列号失败：${e.message}`);
+      const getter: any = await this.ctx.serviceGetter.get("localCaGetter");
+      const ca = await getter.getCa(candidate.caId);
+      if (!ca?.certPem || !verifyCertIssuedBy(this.cert.crt, ca.certPem)) {
+        this.logger.warn(`证书并非由本地CA(${candidate.caId})签发，不写入本地CA关联`);
+        return await super.emitCertApplySuccess();
+      }
+      const serialNumber = new X509Certificate(this.cert.crt).serialNumber.toUpperCase();
+      return await super.emitCertApplySuccess({ localCaId: candidate.caId, serialNumber });
+    } catch (e: any) {
+      this.logger.warn(`校验本地CA证书关联失败，不写入本地CA关联：${e?.message || e}`);
+      return await super.emitCertApplySuccess();
     }
-    return await super.emitCertApplySuccess({ localCaId, serialNumber });
   }
 
   async doCertApply() {
@@ -1055,6 +1080,9 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       throw new Error("当前颁发机构是本地CA，但未找到本地CA服务");
     }
     const ca = await localCaGetter.getCa(caId);
+    if (!isLocalCaDirectory(this.acmeProvider?.directoryUrl, ca, caId)) {
+      return null;
+    }
     if (ca.disabled) {
       throw new Error(`本地CA【${ca.name}】已禁用，无法直接签发`);
     }

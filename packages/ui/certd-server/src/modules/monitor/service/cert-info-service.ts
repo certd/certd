@@ -515,6 +515,26 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         message: "本地CA不存在或无访问权限",
       });
     }
+    const certWhere: any = {
+      id: req.certInfoId,
+      userId: req.userId,
+      localCaId: req.caId,
+      serialNumber: String(req.serialNumber || "").toUpperCase(),
+    };
+    if (req.projectId != null) {
+      certWhere.projectId = req.projectId;
+    }
+    const cert = await this.repository.findOne({
+      where: certWhere,
+      select: { id: true, status: true },
+    });
+    if (!cert) {
+      logger.warn(`[local-ca] revocation target mismatch ca=${req.caId} cert=${req.certInfoId} user=${req.userId} project=${req.projectId ?? "-"}`);
+      throw new CodeException({
+        ...Constants.res.openCertNotFound,
+        message: "证书记录与CA或序列号不匹配",
+      });
+    }
     const revokedTime = Date.now();
     const run = async (manager?: EntityManager) => {
       await this.certRevocationService.record(
@@ -531,7 +551,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         manager
       );
       const repository = this.getCertRepository(manager);
-      await repository.update({ id: req.certInfoId }, { status: CertStatus.revoked, revokeTime: revokedTime });
+      await repository.update(certWhere, { status: CertStatus.revoked, revokeTime: revokedTime });
       const caRepository = manager ? manager.getRepository(LocalCaEntity) : this.repository.manager.getRepository(LocalCaEntity);
       // 同时递增CRL序号并标记缓存失效。getCrl 只在“读取时的序号仍等于当前序号”时才写缓存，
       // 因此吊销与CRL生成并发时，旧CRL不会覆盖新状态（RFC 5280允许序号跳跃）。

@@ -7,6 +7,7 @@ import { useI18n } from "/src/locales";
 import { createAccessApi, getSecretAccessToken } from "/@/views/certd/access/api";
 import LocalCaIssuedCerts from "./issued-certs.vue";
 import LocalCaAcmeAccounts from "./acme-accounts.vue";
+import LocalCaArchivedRoots from "./archived-roots.vue";
 import { localCaApi } from "./api";
 
 function parseAllowedDomains(text: string) {
@@ -376,13 +377,19 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         },
       },
       async onSubmit(form: any) {
-        const res = await localCaApi.CreateEab({
-          caId: form.caId,
-          name: form.name,
-          maxUses: form.maxUses || 0,
-          expiresDays: form.expiresDays || 0,
-          allowedDomains: parseAllowedDomains(form.allowedDomains),
+        let res: any;
+        const verified = await openStepUp(t("certd.localCa.eabStepUpTitle"), t("certd.localCa.eabStepUpDesc"), async () => {
+          res = await localCaApi.CreateEab({
+            caId: form.caId,
+            name: form.name,
+            maxUses: form.maxUses || 0,
+            expiresDays: form.expiresDays || 0,
+            allowedDomains: parseAllowedDomains(form.allowedDomains),
+          });
         });
+        if (!verified) {
+          return;
+        }
         model.success({
           title: t("certd.localCa.eabCreatedTitle"),
           width: 620,
@@ -511,18 +518,47 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         },
       },
       async onSubmit(form: any) {
-        await localCaApi.Import({
-          name: form.name,
-          parentId: form.parentId,
-          certPem: form.certPem,
-          privateKeyPem: form.privateKeyPem,
-          usage: form.usage,
-          allowedDomains: parseAllowedDomains(form.allowedDomains),
-          maxValidityDays: form.maxValidityDays || 0,
-          baseUrl: form.baseUrl,
-          remark: form.remark,
-          exportDisabled: form.exportDisabled === true,
+        const duplicate = await localCaApi.CheckImportDuplicate({ certPem: form.certPem });
+        let allowDuplicate = false;
+        if (duplicate?.duplicated) {
+          const confirmed = await new Promise<boolean>(resolve => {
+            Modal.confirm({
+              title: t("certd.localCa.duplicateImportTitle"),
+              content: t("certd.localCa.duplicateImportContent", { name: duplicate.name }),
+              okText: t("certd.localCa.duplicateImportContinue"),
+              okType: "danger",
+              cancelText: t("certd.common.cancel"),
+              onOk() {
+                resolve(true);
+              },
+              onCancel() {
+                resolve(false);
+              },
+            });
+          });
+          if (!confirmed) {
+            return;
+          }
+          allowDuplicate = true;
+        }
+        const verified = await openStepUp(t("certd.localCa.importStepUpTitle"), t("certd.localCa.importStepUpDesc"), async () => {
+          await localCaApi.Import({
+            name: form.name,
+            parentId: form.parentId,
+            certPem: form.certPem,
+            privateKeyPem: form.privateKeyPem,
+            usage: form.usage,
+            allowedDomains: parseAllowedDomains(form.allowedDomains),
+            maxValidityDays: form.maxValidityDays || 0,
+            baseUrl: form.baseUrl,
+            remark: form.remark,
+            exportDisabled: form.exportDisabled === true,
+            allowDuplicate,
+          });
         });
+        if (!verified) {
+          return;
+        }
         notification.success({ message: t("certd.localCa.importSuccess") });
         await crudExpose.doRefresh();
       },
@@ -576,12 +612,17 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     }
   }
 
-  async function openStepUp(title: string, warning: string, action: () => Promise<void>, onClosed?: () => void) {
+  async function openStepUp(title: string, warning: string, action: () => Promise<void>, onClosed?: () => void): Promise<boolean> {
     if (secretAccessApi.HasSecretAccess()) {
       await action();
-      return;
+      return true;
     }
-    pendingStepUpAction = action;
+    let completed = false;
+    const wrappedAction = async () => {
+      await action();
+      completed = true;
+    };
+    pendingStepUpAction = wrappedAction;
     verifyDialogRef.value = await openFormDialog({
       title,
       wrapper: {
@@ -620,9 +661,10 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       },
       async onSubmit(form: any) {
         await secretAccessApi.VerifySecretAccess(form.verifyCode);
-        await action();
+        await wrappedAction();
       },
     });
+    return completed;
   }
 
   async function openExport(row: any) {
@@ -701,6 +743,16 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
+  async function openArchivedRoots() {
+    model.success({
+      title: t("certd.localCa.archivedRootsTitle"),
+      maskClosable: true,
+      okText: t("certd.common.close"),
+      width: 760,
+      content: () => <LocalCaArchivedRoots runStepUp={(action: () => Promise<void>) => openStepUp(t("certd.localCa.archivedRootsTitle"), t("certd.localCa.archivedRootsRefreshStepUp"), action)} />,
+    });
+  }
+
   async function openIssuedCerts(row: any) {
     model.success({
       title: `${t("certd.localCa.issuedCertsTitle")} - ${row.name}`,
@@ -723,5 +775,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openRevokeIntermediate,
     openEnableCa,
     openDeleteCa,
+    openStepUp,
+    openArchivedRoots,
   };
 }

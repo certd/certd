@@ -5,7 +5,7 @@
       <div class="sub">{{ t("certd.localCa.description") }}</div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"></fs-crud>
-    <LocalCaView ref="caViewRef" :on-export="row => caExportHandler?.(row)" :on-changed="() => crudExpose.doRefresh()" />
+    <LocalCaView ref="caViewRef" :on-export="row => caExportHandler?.(row)" :on-acme-enable="row => caAcmeEnableHandler?.(row)" :on-changed="() => crudExpose.doRefresh()" />
   </fs-page>
 </template>
 
@@ -24,10 +24,12 @@ defineOptions({
 const { t } = useI18n();
 const caViewRef = ref<any>();
 const caExportHandler = ref<any>();
+const caAcmeEnableHandler = ref<any>();
 const context: any = {
   permission: { isProjectPermission: true },
   caViewRef,
   caExportHandler,
+  caAcmeEnableHandler,
 };
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 

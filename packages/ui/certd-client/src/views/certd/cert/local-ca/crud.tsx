@@ -6,17 +6,23 @@ import { useLocalCaDialogs } from "./use";
 import { useI18n } from "/src/locales";
 import { useCrudPermission } from "/@/plugin/permission";
 import { useProjectStore } from "/@/store/project";
+import { getSecretAccessToken } from "/@/views/certd/access/api";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const projectStore = useProjectStore();
   const { hasActionPermission } = useCrudPermission(context);
-  const { openGenerate, openIntermediate, openCreateEab, openImport, openView, openExport, openIssuedCerts, openAcmeAccounts, openRevokeIntermediate, openEnableCa, openDeleteCa } = useLocalCaDialogs(
-    crudExpose,
-    context.caViewRef
-  );
+  const { openGenerate, openIntermediate, openCreateEab, openImport, openView, openExport, openIssuedCerts, openAcmeAccounts, openRevokeIntermediate, openEnableCa, openDeleteCa, openArchivedRoots, openStepUp } =
+    useLocalCaDialogs(crudExpose, context.caViewRef);
   if (context.caExportHandler) {
     context.caExportHandler.value = openExport;
+  }
+  if (context.caAcmeEnableHandler) {
+    context.caAcmeEnableHandler.value = async (row: any) => {
+      return await openStepUp(t("certd.localCa.acmeStepUpTitle"), t("certd.localCa.acmeStepUpDesc"), async () => {
+        await localCaApi.EnableAcme(row.id, true, getSecretAccessToken());
+      });
+    };
   }
 
   const sourceDict = dict({
@@ -69,7 +75,19 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       .map((item: string) => item.trim())
       .filter(Boolean);
     delete form.allowedDomainsText;
-    return await localCaApi.UpdateObj(form);
+    try {
+      return await localCaApi.UpdateObj(form);
+    } catch (e: any) {
+      const message = String(e?.message || "");
+      if (!/2FA|Passkey|验证/.test(message)) {
+        throw e;
+      }
+      const verified = await openStepUp(t("certd.localCa.updateStepUpTitle"), t("certd.localCa.updateStepUpDesc"), async () => {});
+      if (!verified) {
+        throw e;
+      }
+      return await localCaApi.UpdateObj(form);
+    }
   };
   const delRequest = async ({ row }: DelReq) => {
     return await localCaApi.DelObj(row.id);
@@ -127,6 +145,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: hasActionPermission("write"),
             click: async () => {
               await openCreateEab();
+            },
+          },
+          archivedRoots: {
+            text: t("certd.localCa.archivedRootsTitle"),
+            type: "link",
+            icon: "ph:archive-box",
+            show: hasActionPermission("write"),
+            click: async () => {
+              await openArchivedRoots();
             },
           },
         },
@@ -420,7 +447,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               vModel: "checked",
               on: {
                 async change({ row, $event }) {
-                  await localCaApi.EnableAcme(row.id, $event);
+                  if ($event === true) {
+                    const verified = await openStepUp(t("certd.localCa.acmeStepUpTitle"), t("certd.localCa.acmeStepUpDesc"), async () => {
+                      await localCaApi.EnableAcme(row.id, true, getSecretAccessToken());
+                    });
+                    if (!verified) {
+                      await crudExpose.doRefresh();
+                      return;
+                    }
+                  } else {
+                    await localCaApi.EnableAcme(row.id, false);
+                  }
                   notification.success({ message: t("certd.localCa.acmeChanged") });
                   await crudExpose.doRefresh();
                 },

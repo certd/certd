@@ -64,7 +64,8 @@ function parseIndexes(sql: string) {
       )
       .filter(Boolean)
       .join(",");
-    result.add(`${stripIdent(match[1])}:${stripIdent(match[2])}(${columns})`);
+    const unique = match[1] ? "unique:" : "";
+    result.add(`${unique}${stripIdent(match[2])}:${stripIdent(match[3])}(${columns})`);
   }
   return result;
 }

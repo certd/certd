@@ -14,6 +14,7 @@ import { CertInfoService } from "../../../monitor/index.js";
 import { ICertInfoGetter } from "@certd/plugin-lib";
 import { CnameProviderService } from "../../../cname/service/cname-provider-service.js";
 import { LocalCaGetter } from "../../../cert/service/local-ca-getter.js";
+import { LocalCaSignerGetter } from "../../../cert/service/local-ca-signer-getter.js";
 import { LocalCaService } from "../../../cert/service/local-ca-service.js";
 
 const serviceNames = ["ocrService", "certInfoService", "customAcmeProviderService"];
@@ -21,10 +22,14 @@ export class TaskServiceGetter implements IServiceGetter {
   private userId: number;
   private projectId: number;
   private appCtx: IMidwayContainer;
+  private pluginType?: string;
   constructor(userId: number, projectId: number, appCtx: IMidwayContainer) {
     this.userId = userId;
     this.projectId = projectId;
     this.appCtx = appCtx;
+  }
+  setPluginType(pluginType: string) {
+    this.pluginType = pluginType;
   }
   async get<T>(serviceName: string): Promise<T> {
     if (serviceName === "subDomainsGetter") {
@@ -42,6 +47,11 @@ export class TaskServiceGetter implements IServiceGetter {
       return (await this.getCertInfoGetter()) as T;
     } else if (serviceName === "localCaGetter") {
       return (await this.getLocalCaGetter()) as T;
+    } else if (serviceName === "localCaSignerGetter") {
+      if (this.pluginType !== "CertApplyLocalCa") {
+        throw new Error(`插件 ${this.pluginType || "unknown"} 无权获取本地CA签发能力`);
+      }
+      return (await this.getLocalCaSignerGetter()) as T;
     } else {
       if (!serviceNames.includes(serviceName)) {
         throw new Error(`${serviceName} not in whitelist`);
@@ -69,6 +79,11 @@ export class TaskServiceGetter implements IServiceGetter {
   async getLocalCaGetter(): Promise<LocalCaGetter> {
     const localCaService: LocalCaService = await this.appCtx.getAsync("localCaService");
     return new LocalCaGetter(this.userId, this.projectId, localCaService);
+  }
+
+  async getLocalCaSignerGetter(): Promise<LocalCaSignerGetter> {
+    const localCaService: LocalCaService = await this.appCtx.getAsync("localCaService");
+    return new LocalCaSignerGetter(this.userId, this.projectId, localCaService);
   }
 
   async getAccessService(): Promise<AccessGetter> {

@@ -454,6 +454,7 @@ export class Executor {
       serviceGetter: this.options.serviceGetter,
       projectId: this.pipeline.projectId,
     };
+    this.options.serviceGetter?.setPluginType?.(step.type);
     await instance.setCtx(taskCtx);
 
     if (!(instance instanceof AbstractTaskPlugin)) {

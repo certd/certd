@@ -90,6 +90,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/import", { description: Constants.per.authOnly, summary: "导入根CA" })
   async import(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "导入CA私钥");
     const { projectId, userId } = await this.getProjectUserIdWrite();
     const res = await this.service.importCa({
       userId,
@@ -104,9 +105,16 @@ export class LocalCaController extends CrudController<LocalCaService> {
       baseUrl: body.baseUrl,
       remark: body.remark,
       exportDisabled: body.exportDisabled,
+      allowDuplicate: body.allowDuplicate === true,
     });
-    this.auditLog({ content: `导入根CA「${body.name}」(ID:${res.id})` });
+    this.auditLog({ content: `经step-up验证，导入CA「${body.name}」(ID:${res.id})` });
     return this.ok(res);
+  }
+
+  @Post("/import/check", { description: Constants.per.authOnly, summary: "检查CA证书是否重复" })
+  async checkImport(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.getProjectUserIdRead();
+    return this.ok(await this.service.checkImportDuplicate({ userId, projectId, certPem: body.certPem }));
   }
 
   @Post("/intermediate", { description: Constants.per.authOnly, summary: "由根CA签发中间CA" })
@@ -142,6 +150,20 @@ export class LocalCaController extends CrudController<LocalCaService> {
   @Post("/update", { description: Constants.per.authOnly, summary: "修改本地CA信息" })
   async update(@Body(ALL) body: any) {
     const { userId, projectId } = await this.checkOwner(this.service, body.id, "write");
+    const sensitive = await this.service.requiresStepUpForUpdate({
+      id: body.id,
+      userId,
+      projectId,
+      usage: body.usage,
+      maxValidityDays: body.maxValidityDays,
+      allowedDomains: body.allowedDomains,
+      baseUrl: body.baseUrl,
+      acmeDirectIssue: body.acmeDirectIssue,
+      exportDisabled: body.exportDisabled,
+    });
+    if (sensitive) {
+      this.assertStepUp(body.verifyToken, "修改本地CA安全策略");
+    }
     await this.service.updateMeta({
       id: body.id,
       userId,
@@ -161,6 +183,9 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/acme", { description: Constants.per.authOnly, summary: "启用/停用本地CA的ACME服务" })
   async acme(@Body(ALL) body: any) {
+    if (body.enabled === true || body.validityDays != null) {
+      this.assertStepUp(body.verifyToken, "启用或调整ACME服务");
+    }
     const { userId, projectId } = await this.checkOwner(this.service, body.id, "write");
     await this.service.setAcmeEnabled({
       id: body.id,
@@ -290,6 +315,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/eab/create", { description: Constants.per.authOnly, summary: "创建本地ACME的EAB凭证" })
   async createEab(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "创建EAB凭证");
     const { userId, projectId } = await this.checkOwner(this.service, body.caId, "write");
     const res = await this.service.createAcmeEab({
       caId: body.caId,
@@ -358,6 +384,21 @@ export class LocalCaController extends CrudController<LocalCaService> {
     const { userId, projectId } = await this.checkOwner(this.service, body.id, "write");
     const res = await this.service.refreshRootCrl({ id: body.id, userId, projectId });
     this.auditLog({ content: `刷新了Root CRL(ID:${body.id})，CRL序号:${res.crlNumber}` });
+    return this.ok(res);
+  }
+
+  @Post("/archived/roots", { description: Constants.per.authOnly, summary: "查询已归档Root CA" })
+  async archivedRoots() {
+    const { userId, projectId } = await this.getProjectUserIdRead();
+    return this.ok(await this.service.listArchivedRoots({ userId, projectId }));
+  }
+
+  @Post("/crl/refreshArchived", { description: Constants.per.authOnly, summary: "刷新已归档Root CA的CRL（需2FA/Passkey）" })
+  async refreshArchivedCrl(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "刷新已归档Root CRL");
+    const { userId, projectId } = await this.getProjectUserIdWrite();
+    const res = await this.service.refreshArchivedRootCrl({ id: body.id, userId, projectId });
+    this.auditLog({ content: `经step-up验证，刷新了归档Root CRL(ID:${body.id})，CRL序号:${res.crlNumber}` });
     return this.ok(res);
   }
 

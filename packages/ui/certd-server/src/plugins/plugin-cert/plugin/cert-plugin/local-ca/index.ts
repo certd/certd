@@ -2,6 +2,7 @@ import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipel
 import { CertReader } from "@certd/plugin-lib";
 import { CertApplyBaseConvertPlugin } from "../base-convert.js";
 import type { LocalCaGetter } from "../../../../../modules/cert/service/local-ca-getter.js";
+import type { LocalCaSignerGetter } from "../../../../../modules/cert/service/local-ca-signer-getter.js";
 import { filterAllowedDomains, type LocalCaKeyType } from "../../../../../modules/cert/service/local-ca-crypto.js";
 
 @IsTaskPlugin({
@@ -170,7 +171,8 @@ export class CertApplyLocalCa extends CertApplyBaseConvertPlugin {
     }
 
     this.checkSignal();
-    const result = await getter.issueLeaf({
+    const signer = await this.ctx.serviceGetter.get<LocalCaSignerGetter>("localCaSignerGetter");
+    const result = await signer.issueLeaf({
       caId: this.caId,
       domains: allowedList,
       keyType: this.keyType,
