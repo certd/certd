@@ -1,65 +1,45 @@
 # 常见问题
 
+## 是否支持 IP 证书
 
-## 1. 是否支持IP证书
+支持。申请公网 IP 证书时可选 Let's Encrypt，验证方式使用 HTTP 文件验证。按 [IP 证书申请](../use/cert/ip.md) 配置。
 
-因为ACME协议不支持IP证书，所以certd目前也不支持IP证书
+## 多久运行一次流水线
 
+证书流水线可设为每天运行一次。证书是否重新申请取决于申请任务的到期更新天数，后续部署任务也会按其运行策略执行。首次配置可参考 [创建申请流水线](../use/cert/index.md#创建申请流水线)。
 
-## 2. 建议设置多长时间运行一次流水线
-建议每天运行一次，检查证书过期时间
-当证书没过期时，自动跳过部署
-当证书到期前35天（创建流水线时可以修改），将会自动重新申请证书，自动部署
+## `too many certificates` 或其它申请限流
 
+这是颁发机构返回的限流。先查看日志中的限流类型和重试时间，按颁发机构提示等待。本地调试 Let's Encrypt 流程时可用测试环境，确认成功后切换到生产机构。避免在限流期间反复强制运行生产申请。
 
-## 3. too many certificates 错误
-当出现如下报错时，说明相同的域名短时间内申请超过5次
-解决方案：可以加多一个子域名，重新执行就可以规避次错误
-```
-"detail": too many certificates (5) already issued for this exact set of idantifiers in the last 168hm0s
-```
+## SSL.com 提示 CAA 未允许签发
 
-## 4. ssl.com报错  CAA record does not include ssl.com which is required to issue the certificate
-ssl.com申请证书要求必须设置CAA记录，表示允许ssl.com为该域名颁发证书
-请按如下格式添加CAA记录
+在实际控制申请域名的 DNS 区域检查 CAA。普通域名使用 `issue`，如果区域通过 `issuewild` 限制了泛域名，也应检查相应条目。下表示例允许 SSL.com 签发。
 
-| 示例    | 类型  | 域名前缀 | flag      | tag    | 值                    |
-|-------|-----| -- |-----------|--------|----------------------|
-| 顶级域名  | CAA | @ | 0         | issue  |  "ssl.com"  （注意有双引号） |
-| 一级泛域名 | CAA | * | 0         | issue/issuewild | "ssl.com" |
-| 固定子域名 | CAA | sub |  0         | issue  |"ssl.com" |
+| 记录类型 | 主机记录 | 标志 | 标签 | 颁发机构值 |
+| --- | --- | --- | --- | --- |
+| CAA | `@` | `0` | `issue` | `ssl.com` |
+| CAA | `@` | `0` | `issuewild` | `ssl.com` |
 
-## 5. address family not supported
-启动时出现此错误，是由于您的服务器不支持绑定ipv6地址
+检查现有记录涉及的其它证书后再调整，避免影响其它颁发机构。
 
-请配置环境变量 certd_koa_hostname=0.0.0.0
+## 启动时出现 `address family not supported`
 
-在docker-compose.yml中添加如下配置
+如果系统不支持绑定 IPv6，可以给 Certd 设置 `certd_koa_hostname=0.0.0.0`。Docker Compose 示例将环境变量加入现有的 Certd 服务。
 
 ```yaml
-service:
+services:
   certd:
     environment:
-      certd_koa_hostname: 0.0.0.0
+      certd_koa_hostname: "0.0.0.0"
 ```
 
-## 6. DNS记录问题
+需要 IPv6 时，按 [IPv6 支持](../use/setting/ipv6.md) 配置部署环境。
 
-1. DNS 不要设置CAA记录，删除即可
+## DNS 验证失败
 
-2. DNSSEC相关报错，DNSSEC管理中删除即可
+例如看到 `NXDOMAIN looking up TXT for _acme-challenge`，先核对实际权威 DNS、记录名称和 DNS 授权。按 [DNS 验证排错](../use/cert/validation.md#排查-dns-验证失败) 检查 CNAME、DNSSEC、CAA 或记录传播。
 
-3. DNS 有其他平台申请过的_acme-challenge记录，删除即可
+## 同一份证书多次上传到云平台
 
-
-## 7. DNS problem: NXDOMAIN looking up TXT for  _acme-challenge.xxx 
-`
-DNS problem: NXDOMAIN looking up TXT for  _acme-challenge.xxxxx - check that a DNS record exists for this domain
-`
-证书颁发机构向域名ns查询TXT验证记录失败，有以下几种可能
-1、域名的ns服务器修改成别的了，但申请证书时的DNS提供商选择错误（检查确认，配置正确的DNS提供商）
-2、证书颁发机构与ns域名服务器之间访问不通，无法查询到TXT记录（尝试更换证书颁发机构）
-3、ns服务商解析值生效慢（尝试修改证书申请任务里面的等待生效时长600-1000s）
-
-## 8. 同一份证书上传多次的问题
-同一份证书在阿里云、腾讯云中上传多次，[请使用证书复用功能](../use/pretask/index.md)，避免重复上传。
+可以先上传一次证书，再让后续任务引用该次上传输出的云端证书 ID。详见 [证书复用](../use/pretask/index.md)。

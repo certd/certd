@@ -1,48 +1,37 @@
-# google证书申请教程
+# Google 证书申请
 
-## 1、 添加流水线
+申请 Google 证书前，先获取 EAB 凭据并在 Certd 中生成 Google ACME 账号。申请任务可使用 DNS 直接验证或 DNS 持久验证。
 
- 点击“创建证书流水线”按钮
+## 获取 Google EAB
 
-## 2、 生成google ACME账号
+1. 在 Google Cloud 控制台选择项目，启用 [Public Certificate Authority API](https://console.cloud.google.com/apis/library/publicca.googleapis.com)。
+2. 在该项目的 Cloud Shell 执行命令，按提示授权。
 
-![](./images/google-acme.png)
+   ```sh
+   gcloud publicca external-account-keys create
+   ```
 
-## 3、 获取Google EAB
+3. 保存返回的 `keyId` 和 `b64MacKey`，复制时排除输出末尾的括号。
 
-### 3.1、启用API
-打开如下链接，启用 API
+如果命令执行失败，先检查 Cloud Shell 选中的项目、API 状态以及账号是否有生成 EAB 的权限。新 EAB 须在 7 天内用于注册，已注册的 ACME 账号可继续使用。[Google Cloud 官方步骤](https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial?hl=zh-CN)
 
-https://console.cloud.google.com/apis/library/publicca.googleapis.com
+## 生成 ACME 账号
 
-打开该链接后点击“启用”，随后等待右侧出现“API已启用”则可以关闭该页。
+1. 在 Certd 打开 **设置 → 授权管理**，新增 **ACME账号** 授权。
+2. 颁发机构选 **Google**，填写邮箱。把 `keyId` 填到 **EAB KID**，把 `b64MacKey` 填到 **EAB HMAC Key**。
+3. 点击 **生成ACME账号**，然后保存授权。回到证书申请任务，颁发机构选 **Google**，并选择这个账号。
 
-## 3.2、 创建EAB
+![生成 Google ACME 账号的表单](./images/google-acme.png)
 
+遇到 `Unknown external account binding` 时，检查 EAB 是否输错、已使用或过期。重新申请 EAB 并生成账号后，保存授权再重试。已有有效 ACME 账号可直接复用。
 
-1. 打开“Google Cloud Shell”（在右上角点击激活CloudShell图标）。   
-等待分配完成后在 Shell 窗口内输入如下命令：
-    
-```shell
-gcloud beta publicca external-account-keys create
-```
-2. 此时会弹出“为 Cloud Shell 提供授权”，点击授权即可。    
-执行完成后会返回类似如下输出；注意不要在没有收到 Google 的邮件时执行该命令，会返回命令不存在。
+## DNS 持久验证
 
-```shell
-Created an external account key
-[b64MacKey: xxxxxxxxxxxxxxxx
-keyId: xxxxxxxxxxxxx]
-```
-![](./images/google-eab.png)
+DNS 持久验证使用与 Google ACME 账号绑定的长期 TXT 记录。只要账号和记录仍有效，续期时可以复用这条记录。
 
-3. 到Certd中，创建一条EAB授权记录，填写keyId(=kid) 和 b64MacKey 信息      
-   注意：keyId没有`]`结尾，不要把`]`也复制了   
+1. 在证书申请任务选择 **Google** 和对应的 **ACME账号**，验证方式选 **DNS 持久验证**。如果列表还没有对应记录，先在 **设置 → DNS持久验证记录** 新增，填写域名并选择同一个账号。
+2. 在验证计划中点击 **设置TXT**。可以选择 DNS 服务商和授权让 Certd 自动创建，也可以在 DNS 控制台手动复制表单给出的 TXT 主机名和完整值。记录名前缀是 `_validation-persist`。
+3. 手动添加后点击 **校验**。自动创建可以等待后台校验，也可手动检查。确认状态变为 **有效**，再保存流水线并运行。
+4. 保留 TXT 供后续续期。更换 ACME 账号后，使用新账号生成对应记录并重新校验。
 
-## 4、 生成Google ACME账号
-
-注意：EAB授权使用过一次之后，会绑定邮箱，后续再次使用时，要使用相同的邮箱，所以邮箱切记不要修改    
-否则会报错 `Unknown external account binding (EAB) key. This may be due to the EAB key expiring which occurs 7 days after creation`
-
-## 5、创建证书流水线，运行流水线申请证书
-
+如果校验迟迟不成功，核对 TXT 是否写入正确的权威 DNS 区域，以及控制台是否重复附加了域名。任务提示 CA 不支持 `dns-persist-01` 时，可为该证书改用 [DNS 直接验证](../cert/validation.md#dns-直接验证)。
