@@ -673,7 +673,29 @@ describe("CertInfoService", () => {
           return {} as any;
         },
       } as any;
-      const caRepo = { async update() {} };
+      const caRepo = {
+        createQueryBuilder() {
+          return {
+            update() {
+              return this;
+            },
+            set() {
+              return this;
+            },
+            where() {
+              return this;
+            },
+            async execute() {
+              return { affected: 1 };
+            },
+          };
+        },
+      };
+      service.localCaRepository = {
+        async findOne() {
+          return { id: 3 };
+        },
+      } as any;
       (service.repository as any).manager = {
         async transaction(fn: any) {
           return await fn({ getRepository: (entity: any) => (entity?.name === "LocalCaEntity" ? caRepo : service.repository) });
@@ -704,6 +726,47 @@ describe("CertInfoService", () => {
       assert.equal(updated.where.id, 1);
       assert.equal(updated.set.status, CertStatus.revoked);
       assert.ok(updated.set.revokeTime > 0);
+    });
+
+    it("归属校验失败时不得向他人CA写入吊销记录", async () => {
+      const service = new CertInfoService();
+      const cert = createSelfSignedCert();
+      service.info = async () =>
+        ({
+          id: 1,
+          userId: 2,
+          projectId: null,
+          status: CertStatus.inactive,
+          certInfo: JSON.stringify(cert),
+          localCaId: 99,
+          serialNumber: "abc123",
+        }) as any;
+      let findWhere: any = null;
+      service.localCaRepository = {
+        async findOne(args: any) {
+          findWhere = args.where;
+          return null;
+        },
+      } as any;
+      let recordCalled = false;
+      service.certRevocationService = {
+        async record() {
+          recordCalled = true;
+        },
+      } as any;
+      let updateCalled = false;
+      service.repository = {
+        async update() {
+          updateCalled = true;
+          return {} as any;
+        },
+      } as any;
+
+      await assert.rejects(() => service.revoke(1, 2), /本地CA不存在或无访问权限/);
+
+      assert.deepEqual(findWhere, { id: 99, userId: 2, deleted: false });
+      assert.equal(recordCalled, false);
+      assert.equal(updateCalled, false);
     });
 
     it("吊销时优先使用记录上的ACME账号，不再解析流水线", async () => {

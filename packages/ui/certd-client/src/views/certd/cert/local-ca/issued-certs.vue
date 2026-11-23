@@ -50,6 +50,7 @@ defineOptions({
 
 const props = defineProps<{
   caId: number;
+  runStepUp?: (action: () => Promise<void>) => Promise<void>;
 }>();
 
 const { t } = useI18n();
@@ -133,9 +134,16 @@ function revokeCert(record: any) {
     cancelText: t("certd.common.cancel"),
     okButtonProps: { danger: true },
     async onOk() {
-      await localCaApi.RevokeCert(props.caId, record.id);
-      notification.success({ message: t("certd.localCa.revokeSuccess") });
-      await load();
+      const action = async () => {
+        await localCaApi.RevokeCert(props.caId, record.id);
+        notification.success({ message: t("certd.localCa.revokeSuccess") });
+        await load();
+      };
+      if (props.runStepUp) {
+        await props.runStepUp(action);
+      } else {
+        await action();
+      }
     },
   });
 }

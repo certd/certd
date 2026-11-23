@@ -286,6 +286,43 @@ describe("local-ca-crypto", () => {
     await assert.rejects(() => sign(weakEc.toString("pem")), /ECDSA曲线不允许/);
   });
 
+  it("CSR Subject CN 不在 SAN 中时拒绝签发", async () => {
+    const root = await createRootCa({ subject: { CN: "CN Escape Root" }, keyType: "rsa2048", validityYears: 2 });
+    const keys: any = await crypto.webcrypto.subtle.generateKey({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]);
+    const csr = await x509.Pkcs10CertificateRequestGenerator.create(
+      {
+        name: new x509.Name([{ CN: ["bank.example.com"] }] as any),
+        extensions: [new x509.SubjectAlternativeNameExtension([{ type: x509.DNS, value: "evil.example.net" }] as any)],
+        signingAlgorithm: { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+        keys,
+      },
+      crypto.webcrypto as any
+    );
+    await assert.rejects(
+      () => signCsr({ caCertPem: root.certPem, caPrivateKeyPem: root.privateKeyPem, csrPem: csr.toString("pem"), validityDays: 30 }),
+      /CSR Subject CN 不在 SAN 域名范围内/
+    );
+  });
+
+  it("随机序列号不以0字节开头且不为0", async () => {
+    const root = await createRootCa({ subject: { CN: "Serial Root" }, keyType: "rsa2048", validityYears: 2 });
+    for (let i = 0; i < 5; i++) {
+      const { csrPem } = await createCsr({ domains: [`serial-${i}.example.com`], keyType: "rsa2048" });
+      const signed = await signCsr({ caCertPem: root.certPem, caPrivateKeyPem: root.privateKeyPem, csrPem, validityDays: 30 });
+      const firstByte = parseInt(signed.serialNumber.slice(0, 2), 16);
+      assert.ok(firstByte >= 1 && firstByte <= 0x7f, `序列号首字节非法：${signed.serialNumber}`);
+      assert.notEqual(signed.serialNumber.replace(/^0+/, ""), "");
+    }
+  });
+
+  it("超长域名不在CN中截断，仍可按SAN签发", async () => {
+    const root = await createRootCa({ subject: { CN: "Long Root" }, keyType: "rsa2048", validityYears: 2 });
+    const longDomain = `${"a".repeat(60)}.${"b".repeat(60)}.example.com`;
+    const { csrPem } = await createCsr({ domains: [longDomain], keyType: "rsa2048" });
+    const signed = await signCsr({ caCertPem: root.certPem, caPrivateKeyPem: root.privateKeyPem, csrPem, validityDays: 30 });
+    assert.match(new X509Certificate(signed.certPem).subjectAltName || "", new RegExp(longDomain.replaceAll(".", "\\.")));
+  });
+
   it("明确拒绝RSA-PSS CSR", async () => {
     const root = await createRootCa({ subject: { CN: "PSS Root" }, keyType: "rsa2048", validityYears: 2 });
     const keys: any = await crypto.webcrypto.subtle.generateKey({ name: "RSA-PSS", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]);

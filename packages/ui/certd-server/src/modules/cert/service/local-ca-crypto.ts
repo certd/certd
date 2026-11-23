@@ -312,7 +312,11 @@ function toPem(der: ArrayBuffer | Buffer, label = "PRIVATE KEY") {
 
 function randomSerialHex() {
   const bytes = crypto.randomBytes(16);
+  // X.509 序列号按正整数编码，最高位必须为0，且不能为全0
   bytes[0] &= 0x7f;
+  if (bytes[0] === 0) {
+    bytes[0] = 1;
+  }
   return bytes.toString("hex").toUpperCase();
 }
 
@@ -744,10 +748,12 @@ export async function validateImportedIntermediateCa(req: { certPem: string; pri
 export async function createCsr(req: { domains: string[]; keyType: LocalCaKeyType; usage?: LocalCaUsage }): Promise<CreateCsrResult> {
   const domains = normalizeDomains(req.domains);
   const { keys, privateKeyPem, keySize, signingAlgorithm } = await generateKeyPair(req.keyType || "rsa2048");
-  const cn = domains[0].slice(0, 64);
+  // CN最长64字符；超长域名不能截断后写入CN，否则会与SAN不一致并被签发校验拒绝
+  const cn = domains[0];
+  const name = cn.length <= 64 ? new x509.Name([{ CN: [cn] }] as any) : new x509.Name([]);
   const csr = await x509.Pkcs10CertificateRequestGenerator.create(
     {
-      name: new x509.Name([{ CN: [cn] }] as any),
+      name,
       extensions: [sanExtension(domains)],
       signingAlgorithm,
       keys,
@@ -811,6 +817,23 @@ export async function signCsr(req: {
   }
   const csrKeyType = assertCsrPublicKeyAllowed(csr);
   const domains = readCsrDomains(csr);
+  // 签发的叶子证书会沿用 CSR Subject，若 CN 不在 SAN 中，会生成“展示名”与真实域名不一致的证书
+  const csrCn = csr.subjectName.getField("CN")[0];
+  if (csrCn) {
+    const normalizedCn = String(csrCn)
+      .trim()
+      .toLowerCase()
+      .replace(/\.$/, "");
+    const normalizedDomains = domains.map(domain =>
+      String(domain)
+        .trim()
+        .toLowerCase()
+        .replace(/\.$/, "")
+    );
+    if (!normalizedDomains.includes(normalizedCn)) {
+      throw new Error("CSR Subject CN 不在 SAN 域名范围内");
+    }
+  }
   matchAllowedDomains(domains, req.allowedDomains);
 
   const requestedDays = Math.max(1, Math.floor(req.validityDays || 90));

@@ -125,6 +125,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
   @Post("/add", { description: Constants.per.authOnly, summary: "添加证书" })
   async add(@Body(ALL) bean: any) {
     const { projectId, userId } = await this.getProjectUserIdWrite();
+    this.stripServerManagedFields(bean);
     bean.projectId = projectId;
     bean.userId = userId;
     const res = await super.add(bean);
@@ -135,11 +136,22 @@ export class CertInfoController extends CrudController<CertInfoService> {
   @Post("/update", { description: Constants.per.authOnly, summary: "更新证书" })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service, bean.id, "write");
+    this.stripServerManagedFields(bean);
     delete bean.userId;
     delete bean.projectId;
     const res = await super.update(bean);
     this.auditLog({ content: `修改了证书(ID:${bean.id})` });
     return res;
+  }
+
+  /**
+   * 证书与本地CA的关联、序列号、吊销状态只能由签发/吊销流程写入。
+   * 手动新增/编辑接口若允许这些字段直传，用户可伪造本地CA关联或把已吊销证书改回有效状态。
+   */
+  private stripServerManagedFields(bean: any) {
+    for (const field of ["localCaId", "serialNumber", "status", "revokeTime", "acmeAccountAccessId"]) {
+      delete bean[field];
+    }
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询证书详情" })
   async info(@Query("id") id: number) {

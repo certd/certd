@@ -1,4 +1,5 @@
 import { request } from "/src/api/service";
+import { getSecretAccessToken } from "/@/views/certd/access/api";
 import { ReadCertDetail } from "/@/views/certd/pipeline/api";
 
 const apiPrefix = "/cert/local-ca";
@@ -48,7 +49,7 @@ export const localCaApi = {
     return await request({
       url: apiPrefix + "/delete",
       method: "post",
-      params: { id },
+      data: { id, verifyToken: getSecretAccessToken() },
     });
   },
 
@@ -196,7 +197,7 @@ export const localCaApi = {
     return await request({
       url: apiPrefix + "/revokeCert",
       method: "post",
-      data: { id, certId },
+      data: { id, certId, verifyToken: getSecretAccessToken() },
     });
   },
 };

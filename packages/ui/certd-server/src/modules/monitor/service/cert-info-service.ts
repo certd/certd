@@ -57,6 +57,9 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   @InjectEntityModel(PipelineEntity)
   pipelineRepository: Repository<PipelineEntity>;
 
+  @InjectEntityModel(LocalCaEntity)
+  localCaRepository: Repository<LocalCaEntity>;
+
   @Inject()
   userSettingsService: UserSettingsService;
 
@@ -498,6 +501,19 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   }
 
   async applyLocalRevocation(req: { certInfoId: number; caId: number; userId: number; projectId?: number; serialNumber: string; expiresTime?: number; reason?: string }) {
+    // 证书上的 localCaId 可能来自历史数据或被篡改，写吊销记录前必须确认该CA属于当前用户/项目，
+    // 否则会向其他租户的CA写入吊销项（CRL 被污染）。
+    const owner = this.buildUserProjectQuery(req.userId, req.projectId);
+    const ownedCa = await this.localCaRepository.findOne({
+      where: { id: req.caId, ...owner, deleted: false },
+      select: { id: true },
+    });
+    if (!ownedCa) {
+      throw new CodeException({
+        ...Constants.res.openCertNotFound,
+        message: "本地CA不存在或无访问权限",
+      });
+    }
     const revokedTime = Date.now();
     const run = async (manager?: EntityManager) => {
       await this.certRevocationService.record(
@@ -516,7 +532,14 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       const repository = this.getCertRepository(manager);
       await repository.update({ id: req.certInfoId }, { status: CertStatus.revoked, revokeTime: revokedTime });
       const caRepository = manager ? manager.getRepository(LocalCaEntity) : this.repository.manager.getRepository(LocalCaEntity);
-      await caRepository.update({ id: req.caId }, { lastCrlTime: -1 } as any);
+      // 同时递增CRL序号并标记缓存失效。getCrl 只在“读取时的序号仍等于当前序号”时才写缓存，
+      // 因此吊销与CRL生成并发时，旧CRL不会覆盖新状态（RFC 5280允许序号跳跃）。
+      await caRepository
+        .createQueryBuilder()
+        .update()
+        .set({ lastCrlTime: -1, crlNumber: () => "crl_number + 1" } as any)
+        .where("id = :id", { id: req.caId })
+        .execute();
     };
     const manager = this.repository?.manager;
     if (!manager?.transaction) {

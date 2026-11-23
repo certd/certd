@@ -156,7 +156,7 @@ export class AcmeServerService {
         status: "valid",
         contact: JSON.stringify(payload.contact || []),
       });
-      await manager.transaction(async tx => {
+      await runTransaction(manager, async tx => {
         const consumed = await this.localCaService.consumeAcmeEab(eabId, tx);
         if (!consumed) {
           throw new AcmeProblem("unauthorized", "EAB凭证使用次数已耗尽", 401);
@@ -643,6 +643,9 @@ export class AcmeServerService {
     if (!Array.isArray(input) || input.length === 0) {
       throw new AcmeProblem("malformed", "identifiers不能为空");
     }
+    if (input.length > 100) {
+      throw new AcmeProblem("malformed", "单次订单最多支持100个域名");
+    }
     const result: { type: string; value: string }[] = [];
     const seen = new Set<string>();
     for (const item of input) {
@@ -732,6 +735,11 @@ export class AcmeServerService {
     if (!order) {
       return;
     }
+    // 终态订单不再根据授权状态回写，避免已签发(valid)订单被并发刷新成 ready，
+    // 否则客户端会重复 finalize 或看到状态倒退。
+    if (order.status === "valid" || order.status === "invalid") {
+      return;
+    }
     const authzIds = JSON.parse(order.authzIds);
     const authzs = await Promise.all(authzIds.map((id: string) => this.authzRepository.findOne({ where: { id } })));
     if (authzs.some(item => item?.status === "invalid")) {
@@ -763,7 +771,7 @@ export class AcmeServerService {
     const authzIds = JSON.parse(order.authzIds);
     return {
       status: order.status,
-      expires: new Date(order.expiresTime).toISOString(),
+      expires: new Date(Number(order.expiresTime)).toISOString(),
       identifiers: JSON.parse(order.identifiers),
       authorizations: authzIds.map((id: string) => `${base}/authz/${id}`),
       finalize: `${base}/finalize/${order.id}`,
@@ -779,7 +787,7 @@ export class AcmeServerService {
     const base = await this.baseUrl(authz.caId);
     return {
       status: authz.status,
-      expires: new Date(authz.expiresTime).toISOString(),
+      expires: new Date(Number(authz.expiresTime)).toISOString(),
       identifier: {
         type: authz.identifierType,
         value: authz.identifierValue,
@@ -795,7 +803,7 @@ export class AcmeServerService {
       url: `${base}/challenge/${challenge.id}`,
       status: challenge.status,
       token: challenge.token,
-      ...(challenge.validatedTime ? { validated: new Date(challenge.validatedTime).toISOString() } : {}),
+      ...(challenge.validatedTime ? { validated: new Date(Number(challenge.validatedTime)).toISOString() } : {}),
       ...(challenge.error ? { error: { type: "urn:ietf:params:acme:error:unauthorized", detail: challenge.error } } : {}),
     };
   }

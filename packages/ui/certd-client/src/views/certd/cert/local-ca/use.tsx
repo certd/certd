@@ -670,13 +670,44 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
+  async function openDeleteCa(row: any) {
+    await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      Modal.confirm({
+        title: t("certd.localCa.deleteCaTitle"),
+        content: t("certd.localCa.deleteCaDesc", { name: row.name }),
+        okText: t("certd.common.confirm"),
+        okType: "danger",
+        cancelText: t("certd.common.cancel"),
+        async onOk() {
+          await openStepUp(
+            t("certd.localCa.deleteCaStepUpTitle"),
+            t("certd.localCa.deleteCaDesc", { name: row.name }),
+            async () => {
+              settled = true;
+              resolve();
+            },
+            () => {
+              if (!settled) {
+                reject(new Error("cancel"));
+              }
+            }
+          );
+        },
+        onCancel() {
+          reject(new Error("cancel"));
+        },
+      });
+    });
+  }
+
   async function openIssuedCerts(row: any) {
     model.success({
       title: `${t("certd.localCa.issuedCertsTitle")} - ${row.name}`,
       maskClosable: true,
       okText: t("certd.common.confirm"),
       width: 1000,
-      content: () => <LocalCaIssuedCerts caId={row.id} />,
+      content: () => <LocalCaIssuedCerts caId={row.id} runStepUp={(action: () => Promise<void>) => openStepUp(t("certd.localCa.revokeCertStepUpTitle"), t("certd.localCa.revokeCertStepUpDesc"), action)} />,
     });
   }
 
@@ -691,5 +722,6 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openAcmeAccounts,
     openRevokeIntermediate,
     openEnableCa,
+    openDeleteCa,
   };
 }

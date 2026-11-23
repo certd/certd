@@ -1,4 +1,5 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { X509Certificate } from "node:crypto";
 import { getDnsPersistIssuer } from "@certd/acme-client";
 import { utils } from "@certd/basic";
 import { CustomAcmeProvider, NonRetryableException } from "@certd/lib-server";
@@ -752,6 +753,24 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         value: provider.sslProvider,
         label: provider.builtIn ? provider.title : `${provider.title}（自定义ACME）`,
       }));
+  }
+
+  /**
+   * 通过内置ACME签发的证书也要在证书仓库中关联本地CA，否则删除保护、CRL信息、吊销都会失效。
+   * 目录地址中带有本地CA id，签发结果的叶子证书首张即为本地CA签发。
+   */
+  async emitCertApplySuccess() {
+    const localCaId = getLocalCaIdFromAcmeDirectory(this.acmeProvider?.directoryUrl);
+    if (localCaId == null || !this.cert?.crt) {
+      return await super.emitCertApplySuccess();
+    }
+    let serialNumber: string | undefined;
+    try {
+      serialNumber = new X509Certificate(this.cert.crt).serialNumber.toUpperCase();
+    } catch (e) {
+      this.logger.warn(`解析本地CA证书序列号失败：${e.message}`);
+    }
+    return await super.emitCertApplySuccess({ localCaId, serialNumber });
   }
 
   async doCertApply() {

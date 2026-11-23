@@ -11,7 +11,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const { t } = useI18n();
   const projectStore = useProjectStore();
   const { hasActionPermission } = useCrudPermission(context);
-  const { openGenerate, openIntermediate, openCreateEab, openImport, openView, openExport, openIssuedCerts, openAcmeAccounts, openRevokeIntermediate, openEnableCa } = useLocalCaDialogs(crudExpose, context.caViewRef);
+  const { openGenerate, openIntermediate, openCreateEab, openImport, openView, openExport, openIssuedCerts, openAcmeAccounts, openRevokeIntermediate, openEnableCa, openDeleteCa } = useLocalCaDialogs(
+    crudExpose,
+    context.caViewRef
+  );
   if (context.caExportHandler) {
     context.caExportHandler.value = openExport;
   }
@@ -200,6 +203,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           remove: {
             order: 20,
             show: hasActionPermission("write"),
+            confirmFn: async ({ row }) => {
+              await openDeleteCa(row);
+            },
+            async afterRemove() {
+              notification.success({ message: t("certd.localCa.deleteSuccess") });
+            },
           },
         },
       },

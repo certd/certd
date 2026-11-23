@@ -207,10 +207,12 @@ export class LocalCaController extends CrudController<LocalCaService> {
   }
 
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除本地CA" })
-  async delete(@Query("id") id: number) {
-    const { userId, projectId } = await this.checkOwner(this.service, id, "write");
-    await this.service.deleteCa({ id, userId, projectId });
-    this.auditLog({ content: `删除了本地CA(ID:${id})` });
+  async delete(@Query("id") id: number, @Body(ALL) body?: { id: number; verifyToken: string }) {
+    const targetId = body?.id ?? id;
+    this.assertStepUp(body?.verifyToken, "删除本地CA");
+    const { userId, projectId } = await this.checkOwner(this.service, targetId, "write");
+    await this.service.deleteCa({ id: targetId, userId, projectId });
+    this.auditLog({ content: `删除了本地CA(ID:${targetId})` });
     return this.ok(true);
   }
 
@@ -336,6 +338,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/revokeCert", { description: Constants.per.authOnly, summary: "吊销本地CA签发的证书" })
   async revokeCert(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "吊销本地CA证书");
     const { userId, projectId } = await this.checkOwner(this.service, body.id, "write");
     await this.service.revokeIssuedCert({ id: body.id, userId, projectId, certId: body.certId });
     this.auditLog({ content: `吊销了本地CA签发的证书(ID:${body.certId})` });
@@ -361,7 +364,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
   @Post("/export", { description: Constants.per.authOnly, summary: "导出本地CA证书和私钥（需2FA/Passkey）" })
   async export(@Body(ALL) body: { id: number; verifyToken: string }) {
     this.assertStepUp(body.verifyToken, "导出CA私钥");
-    const { userId, projectId } = await this.checkOwner(this.service, body.id, "read");
+    const { userId, projectId } = await this.checkOwner(this.service, body.id, "write");
     const res = await this.service.exportCa({ id: body.id, userId, projectId });
     this.auditLog({ content: `导出了本地CA证书和私钥(ID:${body.id})` });
     return this.ok(res);

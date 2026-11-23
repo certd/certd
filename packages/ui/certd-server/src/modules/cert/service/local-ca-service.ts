@@ -556,8 +556,13 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const id = randomId(16);
     const kid = `eab_${randomId(12)}`;
     const hmacKey = randomEabHmacKey();
-    const maxUses = Math.max(0, Math.min(10000, Number(req.maxUses ?? 1)));
-    const expiresDays = Math.max(0, Math.min(3650, Number(req.expiresDays ?? 0)));
+    const toInt = (value: any, fallback: number) => {
+      const num = Number(value);
+      return Number.isFinite(num) ? Math.trunc(num) : fallback;
+    };
+    const maxUses = Math.max(0, Math.min(10000, toInt(req.maxUses, 1)));
+    const expiresDays = Math.max(0, Math.min(3650, toInt(req.expiresDays, 0)));
+    const allowedDomains = this.normalizeAllowedDomains(req.allowedDomains);
     const bean = this.acmeEabRepository.create({
       id,
       caId: ca.id,
@@ -565,7 +570,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       projectId: req.projectId,
       name: String(req.name || "").trim() || "ACME凭证",
       kid,
-      allowedDomains: req.allowedDomains?.length ? JSON.stringify(req.allowedDomains) : null,
+      allowedDomains: allowedDomains.length ? JSON.stringify(allowedDomains) : null,
       hmacKeyEncrypted: this.encryptService.encrypt(hmacKey),
       hmacKeyHash: sha256Hex(hmacKey),
       maxUses,
@@ -581,7 +586,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       kid,
       hmacKey,
       maxUses,
-      allowedDomains: req.allowedDomains || [],
+      allowedDomains,
       expiresTime: bean.expiresTime,
     };
   }
@@ -1010,6 +1015,14 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     // 先持久化不可逆吊销状态与吊销记录，再生成CRL；CRL失败也不能恢复签发能力
     await runTransaction(manager, async tx => {
       await tx.getRepository(LocalCaEntity).update({ id: ca.id }, { disabled: true, revoked: true });
+      // 递增Root的CRL序号，防止并发的旧Root CRL覆盖包含本次吊销的新CRL
+      await tx
+        .getRepository(LocalCaEntity)
+        .createQueryBuilder()
+        .update()
+        .set({ lastCrlTime: -1, crlNumber: () => "crl_number + 1" } as any)
+        .where("id = :id", { id: root.id })
+        .execute();
       await this.certRevocationService.record(
         {
           caId: root.id,
@@ -1041,8 +1054,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       });
       await this.storeCrlCache(root.id, crlNumber, crl.pem);
     } catch (e) {
-      root.lastCrlTime = -1;
-      await this.update(root);
+      // 只更新缓存标记，避免用事务前的旧实体覆盖已经递增的CRL序号
+      await this.repository.update({ id: root.id }, { lastCrlTime: -1 } as any);
       throw e;
     }
 
@@ -1135,7 +1148,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       throw new ValidateException("该CA下仍有中间CA，请先删除中间CA");
     }
     const issued = await this.certInfoService.find({
-      where: { localCaId: ca.id },
+      where: { localCaId: ca.id, ...owner },
       select: { id: true, status: true, expiresTime: true },
     });
     const now = Date.now();
