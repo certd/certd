@@ -58,17 +58,19 @@
 </template>
 <script setup lang="ts">
 import { CertInfo } from "/@/views/certd/pipeline/api";
-import { ref } from "vue";
+import { computed } from "vue";
 
 const props = defineProps<{
   cert: CertInfo;
 }>();
 
-const certFiles = ref([
-  { name: "证书", fileName: "fullchain.pem", key: "crt", content: props.cert.crt },
-  { name: "私钥", fileName: "private.pem", key: "key", content: props.cert.key },
-  { name: "中间证书", fileName: "chain.pem", key: "ic", content: props.cert.ic },
-]);
+const certFiles = computed(() => {
+  return [
+    { name: "证书", fileName: "fullchain.pem", key: "crt", content: props.cert.crt },
+    { name: "私钥", fileName: "private.pem", key: "key", content: props.cert.key },
+    { name: "中间证书", fileName: "chain.pem", key: "ic", content: props.cert.ic },
+  ].filter(item => item.content);
+});
 
 function formatDate(dateStr: string): string {
   if (!dateStr) return "-";

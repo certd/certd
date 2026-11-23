@@ -16,10 +16,30 @@ import { createGroupDictRef } from "../../basic/group/api";
 import { useProjectStore } from "/@/store/project";
 import { useDicts } from "../../dicts";
 import { useCrudPermission } from "/@/plugin/permission";
+import CertView from "/@/views/certd/pipeline/cert-view.vue";
+import { useModal } from "/@/use/use-modal";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const api = siteInfoApi;
   const { crudBinding } = crudExpose;
+  const model = useModal();
+
+  const viewCert = async (row: any) => {
+    const cert = await api.GetCert(row.id);
+    if (!cert) {
+      notification.error({ message: t("certd.monitor.certificateNotGenerated") });
+      return;
+    }
+    model.success({
+      title: t("certd.monitor.viewCertificateTitle"),
+      maskClosable: true,
+      okText: t("certd.monitor.modal.close"),
+      width: 800,
+      content: () => {
+        return <CertView cert={cert}></CertView>;
+      },
+    });
+  };
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -307,6 +327,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         fixed: "right",
         width: 280,
         buttons: {
+          viewCert: {
+            order: 5,
+            type: "link",
+            text: null,
+            tooltip: {
+              title: t("certd.monitor.viewCert.title"),
+            },
+            icon: "ph:certificate",
+            click: async ({ row }) => {
+              await viewCert(row);
+            },
+          },
           check: {
             order: 0,
             type: "link",
