@@ -7,6 +7,8 @@ export default {
   intermediateWarning: "根CA只用于签发中间CA",
   intermediateWarningDesc: "日常叶子证书由中间CA签发；中间CA的pathlen=0，不能再签发下级CA；客户端信任根CA，服务端证书链为叶子证书+中间证书。",
   intermediateSuccess: "中间CA创建成功",
+  intermediateStepUpTitle: "验证后创建中间CA",
+  intermediateStepUpDesc: "将使用根CA「{name}」的私钥签发中间CA，需要先验证动态码或Passkey。",
   caTypeRoot: "根CA",
   caTypeIntermediate: "中间CA",
   import: "导入证书",

@@ -52,6 +52,31 @@ function createService() {
         store.delete(itemId);
       }
     },
+    createQueryBuilder() {
+      let values: any;
+      let params: any;
+      return {
+        update() {
+          return this;
+        },
+        set(data: any) {
+          values = data;
+          return this;
+        },
+        where(_sql: string, data: any) {
+          params = data;
+          return this;
+        },
+        async execute() {
+          const item = store.get(params?.id);
+          if (item) {
+            Object.assign(item, values);
+            return { affected: 1 };
+          }
+          return { affected: 0 };
+        },
+      };
+    },
   } as any;
 
   const encryptService = new EncryptService();

@@ -23,6 +23,9 @@ function isPublicIpv4(address: string) {
   if (a === 192 && b === 168) {
     return false;
   }
+  if (a === 192 && b === 88 && parts[2] === 99) {
+    return false;
+  }
   if (a === 100 && b >= 64 && b <= 127) {
     return false;
   }
@@ -61,7 +64,14 @@ export function isPublicIp(address: string) {
     if (!/^2[0-9a-f]{3}:|^3[0-9a-f]{3}:/.test(lower)) {
       return false;
     }
-    if (lower.startsWith("2001:db8") || lower.startsWith("2001:2:") || lower.startsWith("2001:10:") || lower.startsWith("2001:20:") || lower.startsWith("2002:")) {
+    if (lower.startsWith("2001:")) {
+      const secondGroup = parseInt(lower.split(":")[1] || "0", 16);
+      // 2001::/23 包含 Teredo(2001::/32) 等特殊用途地址
+      if (secondGroup <= 0x1ff) {
+        return false;
+      }
+    }
+    if (lower.startsWith("2001:db8") || lower.startsWith("2002:")) {
       return false;
     }
     return true;

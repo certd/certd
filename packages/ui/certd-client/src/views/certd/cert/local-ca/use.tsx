@@ -303,25 +303,28 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         },
       },
       async onSubmit(form: any) {
-        await localCaApi.CreateIntermediate({
-          rootId: root.id,
-          name: form.name,
-          subject: {
-            CN: form.subjectCn,
-            O: form.subjectO,
-            OU: form.subjectOU,
-          },
-          keyType: form.keyType,
-          validityYears: form.validityYears,
-          usage: form.usage,
-          allowedDomains: parseAllowedDomains(form.allowedDomainsText),
-          maxValidityDays: form.maxValidityDays || 0,
-          baseUrl: form.baseUrl,
-          remark: form.remark,
-          exportDisabled: form.exportDisabled === true,
+        await openStepUp(t("certd.localCa.intermediateStepUpTitle"), t("certd.localCa.intermediateStepUpDesc", { name: root.name }), async () => {
+          await localCaApi.CreateIntermediate({
+            rootId: root.id,
+            name: form.name,
+            subject: {
+              CN: form.subjectCn,
+              O: form.subjectO,
+              OU: form.subjectOU,
+            },
+            keyType: form.keyType,
+            validityYears: form.validityYears,
+            usage: form.usage,
+            allowedDomains: parseAllowedDomains(form.allowedDomainsText),
+            maxValidityDays: form.maxValidityDays || 0,
+            baseUrl: form.baseUrl,
+            remark: form.remark,
+            exportDisabled: form.exportDisabled === true,
+            verifyToken: getSecretAccessToken(),
+          });
+          notification.success({ message: t("certd.localCa.intermediateSuccess") });
+          await crudExpose.doRefresh();
         });
-        notification.success({ message: t("certd.localCa.intermediateSuccess") });
-        await crudExpose.doRefresh();
       },
     });
   }

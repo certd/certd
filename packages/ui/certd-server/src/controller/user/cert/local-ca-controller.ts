@@ -111,6 +111,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/intermediate", { description: Constants.per.authOnly, summary: "由根CA签发中间CA" })
   async intermediate(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "创建中间CA");
     const { projectId, userId } = await this.getProjectUserIdWrite();
     await this.checkOwner(this.service, body.rootId, "write");
     const res = await this.service.generateIntermediateCa({
@@ -128,7 +129,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       remark: body.remark,
       exportDisabled: body.exportDisabled,
     });
-    this.auditLog({ content: `根CA(ID:${body.rootId})签发中间CA「${body.name}」(ID:${res.id})` });
+    this.auditLog({ content: `经step-up验证，根CA(ID:${body.rootId})签发中间CA「${body.name}」(ID:${res.id})` });
     return this.ok(res);
   }
 

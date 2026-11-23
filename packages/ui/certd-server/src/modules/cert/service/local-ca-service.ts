@@ -369,10 +369,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       caPrivateKeyPem: rootPrivateKey,
       entries: [],
       crlNumber: rootCrlNumber,
+      nextUpdateDays: 365,
     });
-    root.lastCrlPem = rootCrl.pem;
-    root.lastCrlTime = Date.now();
-    await this.update(root);
+    await this.storeCrlCache(root.id, rootCrlNumber, rootCrl.pem);
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -655,6 +654,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         throw new ValidateException("Root CRL尚未生成或已失效；请先创建中间CA或执行显式的Root CRL刷新");
       }
       const parsed = new x509.X509Crl(ca.lastCrlPem);
+      if (parsed.nextUpdate && parsed.nextUpdate.getTime() <= Date.now()) {
+        throw new ValidateException("Root CRL已过期，请通过管理接口执行显式刷新（需2FA/Passkey）");
+      }
       return {
         pem: ca.lastCrlPem,
         der: Buffer.from(parsed.rawData),
@@ -695,13 +697,16 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       entries,
       crlNumber,
     });
-    ca.lastCrlPem = crl.pem;
-    ca.lastCrlTime = Date.now();
-    await this.update(ca);
+    await this.storeCrlCache(ca.id, crlNumber, crl.pem);
     return {
       ...crl,
       filename: `local-ca-${ca.id}.crl`,
     };
+  }
+
+  private async storeCrlCache(caId: number, crlNumber: number, pem: string) {
+    // 只有当前 CRL Number 仍是本次生成值时才能覆盖，避免旧生成覆盖新CRL
+    await this.repository.createQueryBuilder().update().set({ lastCrlPem: pem, lastCrlTime: Date.now() }).where("id = :id AND crl_number = :crlNumber", { id: caId, crlNumber }).execute();
   }
 
   private async nextCrlNumber(caId: number) {
@@ -923,10 +928,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       caPrivateKeyPem: rootPrivateKey,
       entries,
       crlNumber,
+      nextUpdateDays: 365,
     });
-    root.lastCrlPem = crl.pem;
-    root.lastCrlTime = Date.now();
-    await this.update(root);
+    await this.storeCrlCache(root.id, crlNumber, crl.pem);
     return { crlNumber };
   }
 
@@ -974,10 +978,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         caPrivateKeyPem: rootPrivateKey,
         entries,
         crlNumber,
+        nextUpdateDays: 365,
       });
-      root.lastCrlPem = crl.pem;
-      root.lastCrlTime = Date.now();
-      await this.update(root);
+      await this.storeCrlCache(root.id, crlNumber, crl.pem);
     } catch (e) {
       root.lastCrlTime = -1;
       await this.update(root);
