@@ -288,11 +288,7 @@ describe("local-ca-crypto", () => {
 
   it("明确拒绝RSA-PSS CSR", async () => {
     const root = await createRootCa({ subject: { CN: "PSS Root" }, keyType: "rsa2048", validityYears: 2 });
-    const keys: any = await crypto.webcrypto.subtle.generateKey(
-      { name: "RSA-PSS", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
-      true,
-      ["sign", "verify"]
-    );
+    const keys: any = await crypto.webcrypto.subtle.generateKey({ name: "RSA-PSS", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]);
     const csr = await x509.Pkcs10CertificateRequestGenerator.create(
       {
         name: new x509.Name([{ CN: ["pss.example.com"] }] as any),
@@ -301,10 +297,7 @@ describe("local-ca-crypto", () => {
       },
       crypto.webcrypto as any
     );
-    await assert.rejects(
-      () => signCsr({ caCertPem: root.certPem, caPrivateKeyPem: root.privateKeyPem, csrPem: csr.toString("pem"), validityDays: 30 }),
-      /RSA-PSS/
-    );
+    await assert.rejects(() => signCsr({ caCertPem: root.certPem, caPrivateKeyPem: root.privateKeyPem, csrPem: csr.toString("pem"), validityDays: 30 }), /RSA-PSS/);
   });
 
   it("通配符允许项不包含apex，但允许通配符和子域", () => {
