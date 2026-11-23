@@ -26,13 +26,16 @@ type SiteCertChainItem = {
   ca?: boolean;
 };
 
-function parseCertChain(certInfo: string): SiteCertChainItem[] {
-  if (!certInfo) {
+function parseCertChain(certChain: string): SiteCertChainItem[] {
+  if (!certChain) {
     return [];
   }
   try {
-    const parsed = JSON.parse(certInfo);
-    return Array.isArray(parsed) ? parsed : [];
+    const parsed = JSON.parse(certChain);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter(item => item && typeof item.subject === "string" && typeof item.issuer === "string");
   } catch (e) {
     return [];
   }
@@ -78,7 +81,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const openSiteImportTaskManageDialog = useSiteImportTaskManage();
 
   function showCertChain(row: any) {
-    const chain = parseCertChain(row.certInfo);
+    const chain = parseCertChain(row.certChain);
     if (chain.length === 0) {
       notification.warning({ message: t("certd.monitor.certChainEmpty") });
       return;
@@ -119,7 +122,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     Modal.info({
       title: `${t("certd.monitor.certChainTitle")} - ${row.domain}`,
       width: 900,
-      content: () => <a-table columns={columns} dataSource={dataSource} pagination={false} size="small" scroll={{ x: 760 }} />,
+      content: () => (
+        <div>
+          <a-alert type="info" show-icon message={t("certd.monitor.certChainNotice")} class="mb-3" />
+          <a-table columns={columns} dataSource={dataSource} pagination={false} size="small" scroll={{ x: 760 }} />
+        </div>
+      ),
     });
   }
 
@@ -506,6 +514,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
             conditionalRender: false,
             cellRender({ value, row }) {
+              const chain = parseCertChain(row.certChain);
               const slots = {
                 content() {
                   return (
@@ -516,9 +525,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                       <div>
                         {t("certd.monitor.certDomains")}: {row.certDomains}
                       </div>
-                      {parseCertChain(row.certInfo).length > 1 && (
+                      {chain.length > 1 && (
                         <a-button type="link" size="small" class="px-0" onClick={() => showCertChain(row)}>
-                          {t("certd.monitor.certChainView")} ({parseCertChain(row.certInfo).length})
+                          {t("certd.monitor.certChainView")} ({chain.length})
                         </a-button>
                       )}
                     </div>

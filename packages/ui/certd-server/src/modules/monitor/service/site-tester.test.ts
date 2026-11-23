@@ -1,5 +1,31 @@
 import assert from "node:assert/strict";
-import { collectCertificateChain, summarizeCertificateChain } from "./site-tester.js";
+import https from "node:https";
+// @ts-ignore
+import forge from "node-forge";
+import { collectCertificateChain, siteTester, summarizeCertificateChain } from "./site-tester.js";
+
+function createTestCertificate() {
+  const keys = forge.pki.rsa.generateKeyPair(2048);
+  const cert = forge.pki.createCertificate();
+  cert.publicKey = keys.publicKey;
+  cert.serialNumber = "0A0B0C";
+  cert.validFrom = new Date(Date.now() - 86400000).toISOString();
+  cert.validTo = new Date(Date.now() + 86400000).toISOString();
+  const attrs = [
+    { name: "commonName", value: "chain.example.com" },
+    { name: "organizationName", value: "Chain Org" },
+    { name: "organizationalUnitName", value: "PKI" },
+    { name: "countryName", value: "CN" },
+  ];
+  cert.setSubject(attrs);
+  cert.setIssuer(attrs);
+  cert.sign(keys.privateKey, forge.md.sha256.create());
+  return {
+    certPem: forge.pki.certificateToPem(cert),
+    keyPem: forge.pki.privateKeyToPem(keys.privateKey),
+    der: Buffer.from(forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).getBytes(), "binary"),
+  };
+}
 
 function mockCert(cn: string, issuerCn: string, fingerprint: string) {
   return {
@@ -43,4 +69,38 @@ describe("site certificate chain", () => {
   it("没有证书时返回空链", () => {
     assert.deepEqual(collectCertificateChain(null), []);
   });
+
+  it("使用真实DER证书解析Subject、Issuer、序列号和SHA-256指纹", () => {
+    const { der } = createTestCertificate();
+    const summary = summarizeCertificateChain([{ subject: {}, issuer: {}, raw: der } as any])[0];
+    assert.match(summary.subject, /CN=chain\.example\.com/);
+    assert.match(summary.subject, /O=Chain Org/);
+    assert.match(summary.issuer, /CN=chain\.example\.com/);
+    assert.equal(String(summary.serialNumber).toUpperCase(), "0A0B0C");
+    assert.equal(summary.fingerprintSha256?.length, 64);
+    assert.equal(summary.ca, false);
+  });
+
+  it("无效DER数据回退到PeerCertificate字段", () => {
+    const summary = summarizeCertificateChain([{ subject: { CN: "Fallback", O: "Org", C: "CN" }, issuer: { CN: "Issuer" }, raw: Buffer.from("invalid") } as any])[0];
+    assert.equal(summary.subject, "CN=Fallback, O=Org, C=CN");
+    assert.equal(summary.issuer, "CN=Issuer");
+    assert.equal(summary.ca, undefined);
+  });
+
+  it("真实TLS握手可以取得服务器提供的证书链", async () => {
+    const { certPem, keyPem } = createTestCertificate();
+    const server = https.createServer({ key: keyPem, cert: certPem }, (req, res) => res.end("ok"));
+    await new Promise<void>(resolve => server.listen(0, "127.0.0.1", () => resolve()));
+    try {
+      const port = (server.address() as any).port;
+      const result = await siteTester.test({ host: "127.0.0.1", port, retryTimes: 0 });
+      assert.ok(result.chain?.length);
+      const summary = summarizeCertificateChain(result.chain!);
+      assert.match(summary[0].subject, /CN=chain\.example\.com/);
+    } finally {
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    }
+  });
+
 });

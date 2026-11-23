@@ -2,7 +2,7 @@ import { logger, safePromise, utils } from "@certd/basic";
 import { merge } from "lodash-es";
 import https from "https";
 import { PeerCertificate } from "tls";
-import { X509Certificate } from "node:crypto";
+import { createHash, X509Certificate } from "node:crypto";
 import { DnsCustom } from "./dns-custom.js";
 
 export type SiteTestReq = {
@@ -30,22 +30,41 @@ export type SiteCertChainItem = {
   ca?: boolean;
 };
 
-function formatCertificateName(name: any) {
+function formatCertificateName(name: Record<string, any> | null | undefined) {
   if (!name) {
     return "-";
   }
-  return [name.CN ? `CN=${name.CN}` : "", name.O ? `O=${name.O}` : ""].filter(Boolean).join(", ") || "-";
+  return Object.entries(name)
+    .filter(([, value]) => value != null && String(value).trim() !== "")
+    .map(([key, value]) => `${key}=${value}`)
+    .join(", ") || "-";
 }
 
 function certificateKey(cert: any) {
-  return cert?.fingerprint256 || cert?.fingerprint || (cert?.raw ? Buffer.from(cert.raw).toString("base64").slice(0, 32) : "");
+  if (cert?.fingerprint256) {
+    return cert.fingerprint256;
+  }
+  if (cert?.fingerprint) {
+    return cert.fingerprint;
+  }
+  if (cert?.raw) {
+    return createHash("sha256").update(Buffer.from(cert.raw)).digest("hex");
+  }
+  return "";
 }
 
 export function collectCertificateChain(cert?: PeerCertificate | null) {
   const chain: PeerCertificate[] = [];
   const seen = new Set<string>();
+  const seenObjects = new WeakSet<object>();
   let current: any = cert;
   while (current && chain.length < 10) {
+    if (typeof current === "object") {
+      if (seenObjects.has(current)) {
+        break;
+      }
+      seenObjects.add(current);
+    }
     const key = certificateKey(current);
     if (key && seen.has(key)) {
       break;

@@ -193,7 +193,6 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       const updateData = {
         id: site.id,
         certDomains: domains.join(","),
-        certInfo: JSON.stringify(certChain),
         certStatus: status,
         certProvider: issuer,
         certEffectiveTime: dayjs(effective).valueOf(),
@@ -207,6 +206,12 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         delete updateData.checkStatus;
       }
       await this.update(updateData);
+      // 证书链仅用于展示，写入失败不能影响原有证书有效期监控
+      try {
+        await this.update({ id: site.id, certChain: JSON.stringify(certChain) });
+      } catch (e: any) {
+        logger.warn(`站点证书链保存失败：site=${site.id}，${e?.message || e}`);
+      }
 
       const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId, site.projectId, UserSiteMonitorSetting);
 
