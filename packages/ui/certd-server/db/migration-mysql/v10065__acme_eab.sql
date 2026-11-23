@@ -11,6 +11,7 @@ CREATE TABLE `cd_acme_eab`
   `hmac_key_hash`      varchar(64)  NOT NULL,
   `max_uses`           bigint      NOT NULL DEFAULT 1,
   `used_count`         bigint      NOT NULL DEFAULT 0,
+  `allowed_domains`    longtext,
   `expires_time`       bigint,
   `disabled`           boolean      NOT NULL DEFAULT 0,
   `create_time`        timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -18,3 +19,6 @@ CREATE TABLE `cd_acme_eab`
 ) ENGINE = InnoDB ROW_FORMAT = DYNAMIC;
 CREATE UNIQUE INDEX `index_acme_eab_kid` ON `cd_acme_eab` (`kid`);
 CREATE INDEX `index_acme_eab_ca` ON `cd_acme_eab` (`ca_id`);
+
+ALTER TABLE cd_acme_account ADD COLUMN eab_id varchar(32);
+CREATE INDEX `index_acme_account_eab` ON `cd_acme_account` (`eab_id`);
