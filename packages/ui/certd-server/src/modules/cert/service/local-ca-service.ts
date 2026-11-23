@@ -891,7 +891,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async refreshAllCrls() {
-    const list = await this.find({ where: { deleted: false, caType: "intermediate" } });
+    const list = await this.find({ where: { caType: "intermediate" } });
     for (const ca of list) {
       try {
         await this.getCrl(ca.id);
