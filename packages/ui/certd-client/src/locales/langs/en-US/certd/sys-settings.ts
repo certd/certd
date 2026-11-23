@@ -78,6 +78,9 @@ export default {
   customAcmeDeleteConfirmContent: "Deleting '{title}' may affect pipelines using it to apply certificates. Are you sure?",
   customAcmeSaveCheck: "Name, sslProvider and Directory URL are required",
   customAcmeSslProviderUnique: "The sslProvider identifier must be unique",
+  customAcmeLocalCaHelpTitle: "How to quickly add the ACME service provided by a local CA?",
+  customAcmeLocalCaHelpContent:
+    "1. In Local CA Management, enable ACME for an intermediate CA and create an EAB credential (the root CA does not provide ACME).\n2. Open the CA's View dialog and copy its ACME Directory URL, e.g. https://your-certd-host/api/acme/<CA ID>/directory.\n3. Or use Quick add from Local CA below to fill the name, sslProvider and Directory URL automatically, with Need EAB enabled.\n4. Select this provider in the certificate apply task, then create an ACME account with the EAB KID and HMAC Key from step 1.",
   customAcmeLocalCaQuickAdd: "Quick add from Local CA",
   customAcmeLocalCaQuickAddTitle: "Select a local CA",
   customAcmeLocalCaQuickAddSelect: "Local CA",

@@ -44,7 +44,7 @@ function parseAccount(account?: string | AcmeAccountInfo): AcmeAccountInfo | nul
           title: "EAB KID",
           component: { placeholder: "Required when creating an account with a CA that requires EAB" },
           helper:
-            "EAB credentials are required by some CAs.\nZeroSSL: Generate EAB credentials in the [ZeroSSL Developer Center](https://app.zerossl.com/developer).\nGoogle: See the [Google EAB guide](https://certd.docmirror.cn/guide/use/google/).\nSSL.com: Open Account > API Credentials and view the Secret Key and HMAC Key.\nlitessl: Create an EAB on the [litessl EAB page](https://freessl.cn/automation/eab-manager).",
+            "EAB credentials are required by some CAs.\nZeroSSL: Generate EAB credentials in the [ZeroSSL Developer Center](https://app.zerossl.com/developer).\nGoogle: See the [Google EAB guide](https://certd.docmirror.cn/guide/use/google/).\nSSL.com: Open Account > API Credentials and view the Secret Key and HMAC Key.\nlitessl: Create an EAB on the [litessl EAB page](https://freessl.cn/automation/eab-manager).\nLocal CA: enable ACME for an intermediate CA and create an EAB credential in Local CA Management. Quick-add the custom ACME provider in System Settings > Pipeline Settings (copy the Directory URL from the CA details), then fill in this credential's KID and HMAC Key.",
         },
         eabHmacKey: { title: "EAB HMAC Key", component: { placeholder: "Required when creating an account with a CA that requires EAB" } },
         account: {
@@ -132,7 +132,8 @@ export class AcmeAccountAccess extends BaseAccess {
       "\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials'" +
       "\nGoogle:请查看[google获取eab帮助文档](https://certd.docmirror.cn/guide/use/google/),需要你去翻墙得到EAB填到这里" +
       "\nSSL.com:[SSL.com账号页面](https://secure.ssl.com/account),然后点击api credentials链接，然后点击编辑按钮，查看Secret key和HMAC key" +
-      "\nlitessl:[litesslEAB页面](https://freessl.cn/automation/eab-manager),然后点击新增EAB",
+      "\nlitessl:[litesslEAB页面](https://freessl.cn/automation/eab-manager),然后点击新增EAB" +
+      "\n本地CA：请先在「本地CA管理」中为中间CA开启ACME并创建EAB凭证；再到「系统设置-流水线设置」快速添加自定义ACME（Directory URL 从CA详情复制），最后把凭证的 KID 和 HMAC Key 填到这里生成账号。",
     required: true,
     encrypt: true,
     mergeScript: `

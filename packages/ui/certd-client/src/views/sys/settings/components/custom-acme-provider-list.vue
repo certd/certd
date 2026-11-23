@@ -119,6 +119,10 @@ async function openEditor(index?: number) {
   const isBuiltIn = editing?.builtIn === true;
   await openFormDialog({
     title: isBuiltIn ? `${t("certd.sys.settings.customAcmeEdit")} - ${editing.title}` : editing ? t("certd.sys.settings.customAcmeEdit") : t("certd.sys.settings.customAcmeAdd"),
+    // 自定义ACME常用于接入本地CA；把启用ACME、EAB和Directory URL获取步骤直接放在弹窗里
+    body: isBuiltIn
+      ? undefined
+      : () => <a-alert class="local-ca-acme-help mb-4" type="info" show-icon message={t("certd.sys.settings.customAcmeLocalCaHelpTitle")} description={t("certd.sys.settings.customAcmeLocalCaHelpContent")} />,
     columns: buildColumns(editing),
     initialForm: editing ? { ...editing, needEAB: editing.needEAB ?? false } : { needEAB: false },
     onSubmit: async (form: any) => {
@@ -278,5 +282,9 @@ function removeProvider(index: number) {
   .custom-acme-provider-quick-add {
     margin-top: 8px;
   }
+}
+
+.local-ca-acme-help .ant-alert-description {
+  white-space: pre-line;
 }
 </style>
