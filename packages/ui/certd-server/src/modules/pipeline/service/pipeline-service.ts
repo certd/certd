@@ -26,6 +26,7 @@ import { SecurityBanService, UserSuiteEntity, UserSuiteService } from "@certd/co
 import { ApplyTaskInfo, CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { TaskServiceBuilder } from "./getter/task-service-getter.js";
 import { nanoid } from "nanoid";
+import { replaceCronTime } from "./cron-random-time.js";
 import { cloneDeep, set } from "lodash-es";
 import { executorQueue } from "@certd/lib-server";
 import parser from "cron-parser";
@@ -1211,10 +1212,38 @@ export class PipelineService extends BaseService<PipelineEntity> {
           //随机时间
           const randomTime = Math.floor(Math.random() * (endTime - startTime)) + startTime;
           const time = dayjs(randomTime).format(" ss:mm:HH").replaceAll(":", " ").replaceAll(" 0", " ").trim();
+          if (trigger.preserveSchedule === true) {
+            let timerFound = false;
+            const triggers = (pipeline.triggers || []).map((item: any) => {
+              if (item?.type === "timer" && item?.props?.cron) {
+                timerFound = true;
+                return {
+                  ...item,
+                  props: {
+                    ...item.props,
+                    cron: replaceCronTime(item.props.cron, time),
+                  },
+                };
+              }
+              return item;
+            });
+            if (!timerFound) {
+              triggers.push({
+                id: nanoid(),
+                title: "定时触发",
+                type: "timer",
+                props: { cron: replaceCronTime("", time) },
+              });
+            }
+            pipeline.triggers = triggers;
+            await this.doUpdatePipelineJson(item, pipeline);
+            continue;
+          }
           set(triggerConf, "props.cron", `${time} * * *`);
         }
         delete triggerConf.random;
         delete triggerConf.randomRange;
+        delete triggerConf.preserveSchedule;
         pipeline.triggers = [
           {
             id: nanoid(),
