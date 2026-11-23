@@ -56,6 +56,36 @@ describe("CertInfoService", () => {
       assert.deepEqual(deleted, { id: 1, userId: 2, projectId: 3 });
     });
 
+    it("阻止删除本地CA未过期且未吊销证书", async () => {
+      const service = new CertInfoService();
+      service.repository = {
+        async findOne() {
+          return { id: 1, userId: 2, projectId: 3, certInfo: "{}", localCaId: 9, status: CertStatus.active, expiresTime: Date.now() + 86400000 };
+        },
+        async delete() {
+          throw new Error("不应删除");
+        },
+      } as any;
+
+      await assert.rejects(() => service.deleteCertificate(1, 2, 3), /本地CA签发的未过期证书不能删除/);
+    });
+
+    it("允许删除本地CA已吊销证书", async () => {
+      const service = new CertInfoService();
+      let deleted = false;
+      service.repository = {
+        async findOne() {
+          return { id: 1, userId: 2, projectId: 3, certInfo: "{}", localCaId: 9, status: CertStatus.revoked, expiresTime: Date.now() + 86400000 };
+        },
+        async delete() {
+          deleted = true;
+        },
+      } as any;
+
+      await service.deleteCertificate(1, 2, 3);
+      assert.equal(deleted, true);
+    });
+
     it("deletes a certificate owned by the current user and project", async () => {
       const service = new CertInfoService();
       let findWhere: any;
@@ -188,6 +218,9 @@ describe("CertInfoService", () => {
       assert.equal(updateWhere.status, CertStatus.active);
       assert.equal(updateWhere.id._value, 100);
       assert.equal(updateSet.status, CertStatus.inactive);
+      // 续期替换只标记未激活，不写吊销时间，也不会命中已吊销记录
+      assert.equal(updateSet.revokeTime, undefined);
+      assert.equal(updateWhere.status, CertStatus.active);
     });
 
     it("无已有记录且流水线类型无对应来源时，使用传入来源", async () => {

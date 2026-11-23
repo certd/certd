@@ -117,6 +117,8 @@ export class AcmeServerService {
     const payload = jws.payload || {};
     let account = await this.accountRepository.findOne({ where: { caId, thumbprint } });
     if (account) {
+      // 已有账户只校验账户状态，不重新校验EAB：停用/过期EAB不会自动停用已注册账户，
+      // 需要管理员在 CA 的 ACME 账户列表中主动停用账户
       if (account.status !== "valid") {
         throw new AcmeProblem("unauthorized", "账户不可用", 401);
       }

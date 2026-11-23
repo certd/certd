@@ -106,6 +106,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     if (!entity) {
       throw new CodeException(Constants.res.openCertNotFound);
     }
+    if (entity.localCaId && entity.status !== CertStatus.revoked && (!entity.expiresTime || entity.expiresTime > Date.now())) {
+      throw new CodeException({
+        ...Constants.res.openCertNotFound,
+        message: "本地CA签发的未过期证书不能删除，请先吊销或等待证书过期",
+      });
+    }
     await this.repository.delete({
       id,
       ...userProjectQuery,
@@ -125,6 +131,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     }
     await this.repository.delete({
       pipelineId: id,
+      localCaId: IsNull(),
     });
   }
 
@@ -295,6 +302,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         pipelineId,
         ...this.buildUserProjectQuery(userId, projectId),
         status: CertStatus.active,
+        localCaId: IsNull(),
       });
       return;
     }
@@ -338,11 +346,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       bean.wildcardDomainCount = this.countWildcardDomains(taskDomains);
       await this.addOrUpdate(bean);
     }
-    // 删除孤儿 active 记录：流水线中已不存在的申请任务（含历史遗留 taskId 为空的 active 记录）
+    // 删除孤儿 active 记录：本地CA证书保留，避免 CA 删除保护失去依据
     await this.repository.delete({
       pipelineId,
       ...userProjectQuery,
       status: CertStatus.active,
+      localCaId: IsNull(),
       taskId: Or(IsNull(), Not(In(taskIds))),
     });
   }
