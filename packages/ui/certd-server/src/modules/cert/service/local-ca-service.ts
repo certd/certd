@@ -378,15 +378,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.exportDisabled = req.exportDisabled === true;
     bean.deleted = false;
     bean.revoked = false;
-    const rootCrlNumber = await this.nextCrlNumber(root.id);
-    const rootCrl = await createCrl({
-      caCertPem: root.certPem,
-      caPrivateKeyPem: rootPrivateKey,
-      entries: await this.getRevocationEntries(root.id),
-      crlNumber: rootCrlNumber,
-      nextUpdateDays: 365,
-    });
-    await this.storeCrlCache(root.id, rootCrlNumber, rootCrl.pem);
+    await this.refreshRootCrlCache(root, rootPrivateKey);
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -997,6 +989,31 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       }));
   }
 
+  /**
+   * 生成并缓存Root CRL。
+   * Root条目只在创建中间CA、吊销中间CA、显式刷新时变化；条件写入失败说明有并发刷新/吊销，
+   * 必须重试，不能把未写入的序号当成成功结果返回。
+   */
+  private async refreshRootCrlCache(root: LocalCaEntity, rootPrivateKeyPem?: string) {
+    const privateKeyPem = rootPrivateKeyPem || this.decryptCaPrivateKey(root);
+    const maxAttempts = 3;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const crlNumber = await this.nextCrlNumber(root.id);
+      const entries = await this.getRevocationEntries(root.id);
+      const crl = await createCrl({
+        caCertPem: root.certPem,
+        caPrivateKeyPem: privateKeyPem,
+        entries,
+        crlNumber,
+        nextUpdateDays: 365,
+      });
+      if (await this.storeCrlCache(root.id, crlNumber, crl.pem)) {
+        return crlNumber;
+      }
+    }
+    throw new ValidateException("Root CRL刷新期间发生并发变更，请重试");
+  }
+
   async refreshAllCrls() {
     const list = await this.find({ where: { caType: "intermediate" } });
     for (const ca of list) {
@@ -1013,17 +1030,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (root.caType !== "root") {
       throw new ValidateException("只有Root CA可以执行Root CRL刷新");
     }
-    const crlNumber = await this.nextCrlNumber(root.id);
-    const rootPrivateKey = this.decryptCaPrivateKey(root);
-    const entries = await this.getRevocationEntries(root.id);
-    const crl = await createCrl({
-      caCertPem: root.certPem,
-      caPrivateKeyPem: rootPrivateKey,
-      entries,
-      crlNumber,
-      nextUpdateDays: 365,
-    });
-    await this.storeCrlCache(root.id, crlNumber, crl.pem);
+    const crlNumber = await this.refreshRootCrlCache(root);
     return { crlNumber };
   }
 
@@ -1075,17 +1082,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     // 这是显式的 Root 私钥使用操作：只在吊销中间CA时解密一次，生成并缓存Root CRL
     let crlNumber: number;
     try {
-      crlNumber = await this.nextCrlNumber(root.id);
-      const rootPrivateKey = this.decryptCaPrivateKey(root);
-      const entries = await this.getRevocationEntries(root.id);
-      const crl = await createCrl({
-        caCertPem: root.certPem,
-        caPrivateKeyPem: rootPrivateKey,
-        entries,
-        crlNumber,
-        nextUpdateDays: 365,
-      });
-      await this.storeCrlCache(root.id, crlNumber, crl.pem);
+      crlNumber = await this.refreshRootCrlCache(root);
     } catch (e) {
       // 只更新缓存标记，避免用事务前的旧实体覆盖已经递增的CRL序号
       await this.repository.update({ id: root.id }, { lastCrlTime: -1 } as any);

@@ -758,6 +758,40 @@ describe("LocalCaService", () => {
     assert.deepEqual(sequence, ["number", "entries"]);
   });
 
+  it("Root CRL条件写入冲突时重试，不误报刷新成功", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Retry Root",
+      subject: { CN: "Retry Root" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    const originalStore = (service as any).storeCrlCache.bind(service);
+    let storeCalls = 0;
+    (service as any).storeCrlCache = async (...args: any[]) => {
+      storeCalls++;
+      return storeCalls === 1 ? false : await originalStore(...args);
+    };
+    const result = await service.refreshRootCrl({ id: root.id, userId: 1 });
+    assert.ok(storeCalls >= 2, "条件写入失败后必须重试");
+    const info = await service.getCrlInfo({ id: root.id, userId: 1 });
+    assert.equal(Number(info.crlNumber), Number(result.crlNumber));
+  });
+
+  it("Root CRL持续写入冲突时返回错误而不是虚报成功", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Conflict Root",
+      subject: { CN: "Conflict Root" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    (service as any).storeCrlCache = async () => false;
+    await assert.rejects(() => service.refreshRootCrl({ id: root.id, userId: 1 }), /并发变更/);
+  });
+
   it("创建新中间CA不会丢掉Root CRL中已有的吊销项", async () => {
     const { service } = createService();
     const { rootId, id } = await createIssuingCa(service, { name: "First Intermediate" });
