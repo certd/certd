@@ -24,7 +24,7 @@ import { SiteIpEntity } from "../entity/site-ip.js";
 import { dnsContainer } from "./dns-custom.js";
 import { JobHistoryService } from "./job-history-service.js";
 import { SiteIpService } from "./site-ip-service.js";
-import { siteTester } from "./site-tester.js";
+import { collectCertificateChain, siteTester, summarizeCertificateChain } from "./site-tester.js";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -189,6 +189,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       const issuer = `${certi.issuer.O}<${certi.issuer.CN}>`;
       const isExpired = dayjs().valueOf() > dayjs(expires).valueOf();
       const status = isExpired ? "expired" : "ok";
+      const certChain = summarizeCertificateChain(res.chain?.length ? res.chain : collectCertificateChain(certi));
       const updateData = {
         id: site.id,
         certDomains: domains.join(","),
@@ -205,6 +206,12 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         delete updateData.checkStatus;
       }
       await this.update(updateData);
+      // 证书链仅用于展示，写入失败不能影响原有证书有效期监控
+      try {
+        await this.update({ id: site.id, certChain: JSON.stringify(certChain) });
+      } catch (e: any) {
+        logger.warn(`站点证书链保存失败：site=${site.id}，${e?.message || e}`);
+      }
 
       const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId, site.projectId, UserSiteMonitorSetting);
 
