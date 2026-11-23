@@ -190,73 +190,88 @@ export class AcmeServerService {
     }
 
     const acmeConfig = this.parseAcmeConfig(ca.acmeConfig);
-    const pendingCount = await this.orderRepository.count({
-      where: { caId, accountId: account.id, status: In(["pending", "ready", "processing"]) },
-    });
-    if (pendingCount >= acmeConfig.maxPendingOrders) {
-      throw new AcmeProblem("rateLimited", "该账户未完成订单过多，请稍后再试", 429);
-    }
-    const recentCount = await this.orderRepository.count({
-      where: { caId, accountId: account.id, createTime: MoreThan(new Date(Date.now() - 60 * 1000)) },
-    });
-    if (recentCount >= acmeConfig.maxOrdersPerMinute) {
-      throw new AcmeProblem("rateLimited", "订单创建过于频繁，请稍后再试", 429);
-    }
-
-    const orderId = randomId();
-    const now = Date.now();
-    const expiresTime = now + ORDER_TTL;
-    const authzIds: string[] = [];
     const base = await this.baseUrl(caId);
-    // EAB直签：仅对通过EAB认证的账户生效，跳过域名所有权校验
     const directIssue = ca.acmeDirectIssue === true && !!account.eabId;
+    const manager = this.accountRepository.manager;
+    if (!manager?.transaction) {
+      throw new AcmeProblem("serverInternal", "订单事务不可用", 500);
+    }
+    const order = await runTransaction(manager, async tx => {
+      const accountRepo = tx.getRepository(AcmeAccountEntity);
+      const orderRepo = tx.getRepository(AcmeOrderEntity);
+      const authzRepo = tx.getRepository(AcmeAuthzEntity);
+      const challengeRepo = tx.getRepository(AcmeChallengeEntity);
+      const driverType = String(tx.connection?.options?.type || "");
+      if (!driverType.includes("sqlite")) {
+        await accountRepo.findOne({ where: { id: account.id }, lock: { mode: "pessimistic_write" } });
+      }
 
-    for (const identifier of identifiers) {
-      const wildcard = identifier.type === "dns" && identifier.value.startsWith("*.");
-      const authzValue = wildcard ? identifier.value.slice(2) : identifier.value;
-      const authz = this.authzRepository.create({
-        id: randomId(),
-        caId,
-        orderId,
-        accountId: account.id,
-        identifierType: identifier.type,
-        identifierValue: authzValue,
-        wildcard,
-        status: directIssue ? "valid" : "pending",
-        expiresTime,
+      const pendingCount = await orderRepo.count({
+        where: { caId, accountId: account.id, status: In(["pending", "ready", "processing"]) },
       });
-      await this.authzRepository.save(authz);
-      authzIds.push(authz.id);
+      if (pendingCount >= acmeConfig.maxPendingOrders) {
+        throw new AcmeProblem("rateLimited", "该账户未完成订单过多，请稍后再试", 429);
+      }
+      const recentCount = await orderRepo.count({
+        where: { caId, accountId: account.id, createTime: MoreThan(new Date(Date.now() - 60 * 1000)) },
+      });
+      if (recentCount >= acmeConfig.maxOrdersPerMinute) {
+        throw new AcmeProblem("rateLimited", "订单创建过于频繁，请稍后再试", 429);
+      }
 
-      const challengeTypes = identifier.type === "ip" ? ["http-01"] : wildcard ? ["dns-01"] : ["dns-01", "http-01"];
-      for (const type of challengeTypes) {
-        const token = crypto.randomBytes(32).toString("base64url");
-        const challenge = this.challengeRepository.create({
+      const orderId = randomId();
+      const now = Date.now();
+      const expiresTime = now + ORDER_TTL;
+      const authzIds: string[] = [];
+
+      for (const identifier of identifiers) {
+        const wildcard = identifier.type === "dns" && identifier.value.startsWith("*.");
+        const authzValue = wildcard ? identifier.value.slice(2) : identifier.value;
+        const authz = authzRepo.create({
           id: randomId(),
           caId,
           orderId,
-          authzId: authz.id,
           accountId: account.id,
-          type,
-          token,
-          keyAuthorization: `${token}.${account.thumbprint}`,
+          identifierType: identifier.type,
+          identifierValue: authzValue,
+          wildcard,
           status: directIssue ? "valid" : "pending",
-          validatedTime: directIssue ? now : null,
+          expiresTime,
         });
-        await this.challengeRepository.save(challenge);
-      }
-    }
+        await authzRepo.save(authz);
+        authzIds.push(authz.id);
 
-    const order = this.orderRepository.create({
-      id: orderId,
-      caId,
-      accountId: account.id,
-      status: directIssue ? "ready" : "pending",
-      identifiers: JSON.stringify(identifiers),
-      authzIds: JSON.stringify(authzIds),
-      expiresTime,
+        const challengeTypes = identifier.type === "ip" ? ["http-01"] : wildcard ? ["dns-01"] : ["dns-01", "http-01"];
+        for (const type of challengeTypes) {
+          const token = crypto.randomBytes(32).toString("base64url");
+          const challenge = challengeRepo.create({
+            id: randomId(),
+            caId,
+            orderId,
+            authzId: authz.id,
+            accountId: account.id,
+            type,
+            token,
+            keyAuthorization: `${token}.${account.thumbprint}`,
+            status: directIssue ? "valid" : "pending",
+            validatedTime: directIssue ? now : null,
+          });
+          await challengeRepo.save(challenge);
+        }
+      }
+
+      return await orderRepo.save(
+        orderRepo.create({
+          id: orderId,
+          caId,
+          accountId: account.id,
+          status: directIssue ? "ready" : "pending",
+          identifiers: JSON.stringify(identifiers),
+          authzIds: JSON.stringify(authzIds),
+          expiresTime,
+        })
+      );
     });
-    await this.orderRepository.save(order);
     ctx.status = 201;
     ctx.set("Location", `${base}/order/${order.id}`);
     return await this.toOrder(order);
