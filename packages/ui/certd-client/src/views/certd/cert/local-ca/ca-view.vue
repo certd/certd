@@ -259,15 +259,23 @@ defineExpose({ open });
       overflow-wrap: anywhere;
     }
   }
-  .acme-code {
-    background: rgba(0, 0, 0, 0.04);
-    border-radius: 4px;
-    padding: 10px;
-    white-space: pre-wrap;
-    word-break: break-all;
-  }
-  .acme-help-text {
-    line-height: 1.8;
-  }
+}
+
+/* 弹窗会被 teleport 到 body，代码块样式不能嵌套在 .local-ca-view 下 */
+.acme-code {
+  max-width: 100%;
+  overflow-x: auto;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 4px;
+  padding: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.acme-help-text {
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 </style>
