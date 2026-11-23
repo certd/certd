@@ -6,6 +6,7 @@ import { BaseService, EncryptService, PageReq, SysInstallInfo, SysSettingsServic
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { AcmeEabEntity } from "../entity/acme-server.js";
 import { CertInfoService } from "../../monitor/service/cert-info-service.js";
+import { CertRevocationService } from "./cert-revocation-service.js";
 import { CertStatus } from "../../monitor/entity/cert-info.js";
 import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
 import { randomId } from "./acme-jws.js";
@@ -128,6 +129,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   @Inject()
   certInfoService: CertInfoService;
+
+  @Inject()
+  certRevocationService: CertRevocationService;
 
   @Inject()
   sysSettingsService: SysSettingsService;
@@ -598,20 +602,16 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       throw new ValidateException("本地CA不存在");
     }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
-    const revoked = await this.certInfoService.find({
-      where: {
-        localCaId: ca.id,
-        status: CertStatus.revoked,
-      },
-    });
+    const revoked = await this.certRevocationService.listByCa(ca.id);
     const now = Date.now();
     const entries = revoked
       .filter(item => item.serialNumber)
-      // 证书过期后不再需要出现在完整CRL中；否则CRL只会单调增长
+      // 证书过期后不再需要出现在完整CRL中；吊销记录本身永久保留
       .filter(item => !item.expiresTime || item.expiresTime > now)
       .map(item => ({
         serialNumber: item.serialNumber,
-        revokeTime: item.revokeTime,
+        revokeTime: item.revokedTime,
+        reason: item.reason,
       }));
     const crl = await createCrl({
       caCertPem: ca.certPem,
@@ -762,8 +762,21 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (cert.status === CertStatus.revoked) {
       throw new ValidateException("证书已吊销");
     }
+    if (!cert.serialNumber) {
+      throw new ValidateException("证书序列号缺失，无法写入吊销记录");
+    }
+    const revokedTime = Date.now();
+    await this.certRevocationService.record({
+      caId: ca.id,
+      userId: req.userId,
+      projectId: req.projectId ?? ca.projectId,
+      certInfoId: cert.id,
+      serialNumber: cert.serialNumber,
+      revokedTime,
+      expiresTime: cert.expiresTime,
+    });
     cert.status = CertStatus.revoked;
-    cert.revokeTime = Date.now();
+    cert.revokeTime = revokedTime;
     await this.certInfoService.update(cert);
   }
 

@@ -8,6 +8,7 @@ import { CertReader } from "@certd/plugin-lib";
 import { LocalCaService } from "./local-ca-service.js";
 import { getCsrDomains, matchAllowedDomains, normalizeDomains } from "./local-ca-crypto.js";
 import { CertInfoService } from "../../monitor/service/cert-info-service.js";
+import { CertRevocationService } from "./cert-revocation-service.js";
 import { CertInfoEntity, CertStatus } from "../../monitor/entity/cert-info.js";
 import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeOrderEntity } from "../entity/acme-server.js";
 import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "./acme-jws.js";
@@ -53,6 +54,9 @@ export class AcmeServerService {
 
   @Inject()
   certInfoService: CertInfoService;
+
+  @Inject()
+  certRevocationService: CertRevocationService;
 
   @InjectEntityModel(AcmeAccountEntity)
   accountRepository: Repository<AcmeAccountEntity>;
@@ -353,8 +357,18 @@ export class AcmeServerService {
     if (!certInfo) {
       throw new AcmeProblem("malformed", "证书不是由该本地CA签发");
     }
+    const revokedTime = Date.now();
+    await this.certRevocationService.record({
+      caId: ca.id,
+      userId: ca.userId,
+      projectId: ca.projectId,
+      certInfoId: certInfo.id,
+      serialNumber,
+      revokedTime,
+      expiresTime: certInfo.expiresTime,
+    });
     certInfo.status = CertStatus.revoked;
-    certInfo.revokeTime = Date.now();
+    certInfo.revokeTime = revokedTime;
     await this.certInfoService.update(certInfo);
     ctx.status = 200;
   }

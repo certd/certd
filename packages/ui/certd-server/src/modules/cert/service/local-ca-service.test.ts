@@ -67,7 +67,21 @@ function createService() {
     },
   } as any;
 
-  return { service, store, encryptService };
+  const revocations = new Map<string, any>();
+  service.certRevocationService = {
+    async record(req: any) {
+      const key = `${req.caId}:${String(req.serialNumber).toUpperCase()}`;
+      if (!revocations.has(key)) {
+        revocations.set(key, { ...req, serialNumber: String(req.serialNumber).toUpperCase() });
+      }
+      return revocations.get(key);
+    },
+    async listByCa(caId: number) {
+      return [...revocations.values()].filter(item => item.caId === caId);
+    },
+  } as any;
+
+  return { service, store, encryptService, revocations };
 }
 
 describe("LocalCaService", () => {
@@ -265,9 +279,9 @@ describe("LocalCaService", () => {
     const { id } = await createIssuingCa(service, { name: "CRL CA" });
     const { csrPem } = await createCsr({ domains: ["crl.example.com"], keyType: "rsa2048" });
     const signed = await service.signCsr({ id, userId: 1, csrPem });
-    service.certInfoService = {
-      async find() {
-        return [{ serialNumber: signed.serialNumber, revokeTime: Date.now() - 1000 }];
+    service.certRevocationService = {
+      async listByCa() {
+        return [{ serialNumber: signed.serialNumber, revokedTime: Date.now() - 1000, reason: "unspecified" }];
       },
     } as any;
 
@@ -289,11 +303,11 @@ describe("LocalCaService", () => {
       keyType: "rsa2048",
       validityYears: 1,
     });
-    service.certInfoService = {
-      async find() {
+    service.certRevocationService = {
+      async listByCa() {
         return [
-          { serialNumber: "0ABBCCDDEEFF00112233445566778899", revokeTime: Date.now(), expiresTime: Date.now() + 86400000 },
-          { serialNumber: "0BAABBCCDDEEFF00112233445566778899", revokeTime: Date.now(), expiresTime: Date.now() - 86400000 },
+          { serialNumber: "0ABBCCDDEEFF00112233445566778899", revokedTime: Date.now(), expiresTime: Date.now() + 86400000, reason: "unspecified" },
+          { serialNumber: "0BAABBCCDDEEFF00112233445566778899", revokedTime: Date.now(), expiresTime: Date.now() - 86400000, reason: "unspecified" },
         ];
       },
     } as any;
@@ -322,7 +336,7 @@ describe("LocalCaService", () => {
   });
 
   it("listIssuedCerts 与 revokeIssuedCert 只处理该CA的证书", async () => {
-    const { service } = createService();
+    const { service, revocations } = createService();
     const { id } = await service.generateCa({
       userId: 1,
       name: "Issued CA",
@@ -348,7 +362,7 @@ describe("LocalCaService", () => {
       },
       async findOne({ where }: any) {
         assert.equal(where.id, 9);
-        return { id: 9, localCaId: id, status: "active" };
+        return { id: 9, localCaId: id, status: "active", serialNumber: "ABC", expiresTime: 2 };
       },
       async update() {},
     } as any;
@@ -357,6 +371,7 @@ describe("LocalCaService", () => {
     assert.equal(list.length, 1);
     assert.equal(list[0].serialNumber, "ABC");
     await service.revokeIssuedCert({ id, userId: 1, certId: 9 });
+    assert.equal(revocations.get(`${id}:ABC`).caId, id);
   });
 
   it("根CA签发列表包含下级中间CA", async () => {

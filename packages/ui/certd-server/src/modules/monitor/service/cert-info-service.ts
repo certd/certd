@@ -1,4 +1,5 @@
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { X509Certificate } from "node:crypto";
 import { AccessService, BaseService, CodeException, Constants, PageReq } from "@certd/lib-server";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { Between, Equal, In, IsNull, LessThan, Not, Or, Repository } from "typeorm";
@@ -8,6 +9,7 @@ import { CertInfo, CertReader } from "@certd/plugin-cert";
 import { AcmeService } from "../../../plugins/plugin-cert/plugin/cert-plugin/acme.js";
 import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
 import { UserSettingsService } from "../../mine/service/user-settings-service.js";
+import { CertRevocationService } from "../../cert/service/cert-revocation-service.js";
 
 export type UploadCertReq = {
   id?: number;
@@ -55,6 +57,9 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
 
   @Inject()
   userSettingsService: UserSettingsService;
+
+  @Inject()
+  certRevocationService: CertRevocationService;
 
   //@ts-ignore
   getRepository() {
@@ -447,12 +452,23 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     const certInfo = JSON.parse(entity.certInfo) as CertInfo;
 
     if (entity.localCaId) {
-      // 本地CA签发的证书不经过ACME，直接记录吊销状态；CRL/OCSP后续版本再提供
+      // 本地CA签发的证书不经过ACME，先写入不可删除的吊销记录，再更新证书状态
+      const serialNumber = entity.serialNumber || new X509Certificate(certInfo.crt).serialNumber;
+      const revokedTime = Date.now();
+      await this.certRevocationService.record({
+        caId: entity.localCaId,
+        userId: entity.userId,
+        projectId: entity.projectId,
+        certInfoId: entity.id,
+        serialNumber,
+        revokedTime,
+        expiresTime: entity.expiresTime,
+      });
       await this.repository.update(
         { id },
         {
           status: CertStatus.revoked,
-          revokeTime: Date.now(),
+          revokeTime: revokedTime,
         }
       );
       return;

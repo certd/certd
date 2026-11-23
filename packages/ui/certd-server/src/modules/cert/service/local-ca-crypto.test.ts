@@ -211,13 +211,15 @@ describe("local-ca-crypto", () => {
     const crl = await createCrl({
       caCertPem: ca.certPem,
       caPrivateKeyPem: ca.privateKeyPem,
-      entries: [{ serialNumber: signed.serialNumber, revokeTime: Date.now() - 60_000 }],
+      entries: [{ serialNumber: signed.serialNumber, revokeTime: Date.now() - 60_000, reason: "keyCompromise" }],
     });
     assert.match(crl.pem, /BEGIN X509 CRL/);
     assert.ok(crl.der.length > 0);
 
     const parsed = new x509.X509Crl(crl.pem);
-    assert.ok(parsed.findRevoked(signed.serialNumber));
+    const revoked = parsed.findRevoked(signed.serialNumber);
+    assert.ok(revoked);
+    assert.equal(revoked.reason, x509.X509CrlReason.keyCompromise);
     const verified = await parsed.verify({ publicKey: new x509.X509Certificate(ca.certPem).publicKey }, crypto.webcrypto as any);
     assert.equal(verified, true);
   });

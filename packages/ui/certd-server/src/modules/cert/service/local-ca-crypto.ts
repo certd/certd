@@ -51,7 +51,33 @@ export type SignCsrResult = {
 export type CrlEntryInput = {
   serialNumber: string;
   revokeTime?: number;
+  reason?: string;
 };
+
+function toCrlReason(reason?: string) {
+  switch (String(reason || "").toLowerCase()) {
+    case "keycompromise":
+      return x509.X509CrlReason.keyCompromise;
+    case "cacompromise":
+      return x509.X509CrlReason.cACompromise;
+    case "affiliationchanged":
+      return x509.X509CrlReason.affiliationChanged;
+    case "superseded":
+      return x509.X509CrlReason.superseded;
+    case "cessationofoperation":
+      return x509.X509CrlReason.cessationOfOperation;
+    case "certificatehold":
+      return x509.X509CrlReason.certificateHold;
+    case "removefromcrl":
+      return x509.X509CrlReason.removeFromCRL;
+    case "privilegewithdrawn":
+      return x509.X509CrlReason.privilegeWithdrawn;
+    case "aacompromise":
+      return x509.X509CrlReason.aACompromise;
+    default:
+      return x509.X509CrlReason.unspecified;
+  }
+}
 
 export type CrlResult = {
   pem: string;
@@ -803,7 +829,7 @@ export async function createCrl(req: { caCertPem: string; caPrivateKeyPem: strin
       entries: (req.entries || []).map(entry => ({
         serialNumber: entry.serialNumber,
         revocationDate: new Date(entry.revokeTime || Date.now()),
-        reason: x509.X509CrlReason.unspecified,
+        reason: toCrlReason(entry.reason),
       })),
       extensions: [await x509.AuthorityKeyIdentifierExtension.create(caCert.publicKey, false, webcrypto), new x509.Extension("2.5.29.20", false, derInteger(Math.floor(thisUpdate.getTime() / 1000)))],
     },
