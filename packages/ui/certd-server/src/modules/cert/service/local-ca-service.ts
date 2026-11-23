@@ -242,6 +242,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       acmeEnabled: item.acmeEnabled,
       disabled: item.disabled,
       notAfter: item.notAfter,
+      baseUrl: item.baseUrl,
     }));
   }
 
@@ -267,6 +268,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       acmeEnabled: item.acmeEnabled,
       disabled: item.disabled,
       notAfter: item.notAfter,
+      baseUrl: item.baseUrl,
     }));
   }
 

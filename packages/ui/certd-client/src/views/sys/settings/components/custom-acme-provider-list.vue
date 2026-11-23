@@ -11,14 +11,17 @@
       </div>
     </div>
     <a-button class="custom-acme-provider-add" type="dashed" block @click="openEditor()">+ {{ t("certd.sys.settings.customAcmeAdd") }}</a-button>
+    <a-button class="custom-acme-provider-quick-add" type="dashed" block @click="openQuickAdd">+ {{ t("certd.sys.settings.customAcmeLocalCaQuickAdd") }}</a-button>
   </div>
 </template>
 
 <script setup lang="tsx">
 import { computed } from "vue";
+import { dict } from "@fast-crud/fast-crud";
 import { useFormDialog } from "/@/use/use-dialog";
 import { Modal, notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
+import { localCaApi } from "/@/views/certd/cert/local-ca/api";
 
 defineOptions({
   name: "CustomAcmeProviderList",
@@ -154,6 +157,66 @@ async function openEditor(index?: number) {
   });
 }
 
+/**
+ * 快速添加本地CA的ACME颁发机构：只列出已启用ACME的中间CA，自动填充名称、标识和Directory URL。
+ * 仅修改当前表单数据，仍需用户点击页面底部的「保存」才会写入系统设置。
+ */
+async function openQuickAdd() {
+  const options = await localCaApi.GetOptions();
+  const candidates = (options || []).filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !ca.disabled && (!ca.notAfter || Number(ca.notAfter) > Date.now()));
+  if (candidates.length === 0) {
+    notification.warning({ message: t("certd.sys.settings.customAcmeLocalCaQuickAddEmpty") });
+    return;
+  }
+  const caDict = dict({
+    data: candidates.map((ca: any) => ({
+      value: ca.id,
+      label: ca.subjectCn ? `${ca.name} (${ca.subjectCn})` : ca.name,
+    })),
+  });
+  await openFormDialog({
+    title: t("certd.sys.settings.customAcmeLocalCaQuickAddTitle"),
+    body: () => <a-alert class="mb-4" type="info" show-icon message={t("certd.sys.settings.customAcmeLocalCaQuickAddHelp")} />,
+    columns: {
+      caId: {
+        title: t("certd.sys.settings.customAcmeLocalCaQuickAddSelect"),
+        type: "dict-select",
+        dict: caDict,
+        form: {
+          required: true,
+          col: { span: 24 },
+        },
+      },
+    },
+    onSubmit: async (form: any) => {
+      const ca = candidates.find((item: any) => Number(item.id) === Number(form.caId));
+      if (!ca) {
+        throw new Error(t("certd.sys.settings.customAcmeLocalCaQuickAddEmpty"));
+      }
+      const baseUrl = String(ca.baseUrl || window.location.origin).replace(/\/+$/, "");
+      const directoryUrl = `${baseUrl}/api/acme/${ca.id}/directory`;
+      const sslProvider = `local-ca-${ca.id}`;
+      const duplicated = props.modelValue.some(item => item.sslProvider === sslProvider || item.directoryUrl === directoryUrl);
+      if (duplicated) {
+        notification.warning({ message: t("certd.sys.settings.customAcmeLocalCaQuickAddExists") });
+        throw new Error(t("certd.sys.settings.customAcmeLocalCaQuickAddExists"));
+      }
+      emit("update:modelValue", [
+        ...props.modelValue,
+        {
+          title: t("certd.sys.settings.customAcmeLocalCaQuickAddProviderName", { name: ca.name }),
+          sslProvider,
+          directoryUrl,
+          reverseProxy: "",
+          needEAB: true,
+          builtIn: false,
+        },
+      ]);
+      notification.success({ message: t("certd.sys.settings.customAcmeLocalCaQuickAddSuccess") });
+    },
+  });
+}
+
 function removeProvider(index: number) {
   const provider = props.modelValue[index];
   if (!provider) {
@@ -205,6 +268,10 @@ function removeProvider(index: number) {
 
   .custom-acme-provider-add {
     margin-top: 4px;
+  }
+
+  .custom-acme-provider-quick-add {
+    margin-top: 8px;
   }
 }
 </style>
