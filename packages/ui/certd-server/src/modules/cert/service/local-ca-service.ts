@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import * as x509 from "@peculiar/x509";
 import { logger } from "@certd/basic";
+import { runTransaction } from "./db-transaction.js";
 import fs from "node:fs";
 import path from "node:path";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
@@ -727,7 +728,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!manager?.transaction) {
       throw new ValidateException("数据库事务不可用，无法生成CRL序号");
     }
-    return await manager.transaction(async tx => {
+    return await runTransaction(manager, async tx => {
       const repository = tx.getRepository(LocalCaEntity);
       const metadata: any = repository.metadata;
       const column = metadata?.findColumnWithPropertyName?.("crlNumber")?.databaseName || "crl_number";
@@ -971,7 +972,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       throw new ValidateException("数据库事务不可用，无法安全吊销中间CA");
     }
     // 先持久化不可逆吊销状态与吊销记录，再生成CRL；CRL失败也不能恢复签发能力
-    await manager.transaction(async tx => {
+    await runTransaction(manager, async tx => {
       await tx.getRepository(LocalCaEntity).update({ id: ca.id }, { disabled: true, revoked: true });
       await this.certRevocationService.record(
         {

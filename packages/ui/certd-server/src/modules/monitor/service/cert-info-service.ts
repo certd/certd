@@ -11,6 +11,7 @@ import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
 import { UserSettingsService } from "../../mine/service/user-settings-service.js";
 import { CertRevocationService } from "../../cert/service/cert-revocation-service.js";
 import { LocalCaEntity } from "../../cert/entity/local-ca.js";
+import { runTransaction } from "../../cert/service/db-transaction.js";
 
 export type UploadCertReq = {
   id?: number;
@@ -521,7 +522,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     if (!manager?.transaction) {
       throw new Error("数据库事务不可用，无法安全吊销证书");
     }
-    await manager.transaction(async tx => run(tx));
+    await runTransaction(manager, async tx => run(tx));
     return revokedTime;
   }
 

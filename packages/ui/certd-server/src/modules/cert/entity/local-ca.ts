@@ -60,10 +60,10 @@ export class LocalCaEntity {
   @Column({ name: "fingerprint_sha256", comment: "CA证书SHA256指纹", length: 64 })
   fingerprintSha256: string;
 
-  @Column({ name: "not_before", comment: "生效时间(ms)" })
+  @Column({ name: "not_before", comment: "生效时间(ms)", type: "bigint" })
   notBefore: number;
 
-  @Column({ name: "not_after", comment: "过期时间(ms)" })
+  @Column({ name: "not_after", comment: "过期时间(ms)", type: "bigint" })
   notAfter: number;
 
   @Column({ comment: "用途:server/client/both", length: 20, default: "server" })
@@ -81,7 +81,7 @@ export class LocalCaEntity {
   @Column({ name: "acme_direct_issue", comment: "EAB直签：跳过域名校验", default: false })
   acmeDirectIssue: boolean;
 
-  @Column({ name: "crl_number", comment: "CRL单调递增序号", default: 0 })
+  @Column({ name: "crl_number", comment: "CRL单调递增序号", type: "bigint", default: 0 })
   crlNumber: number;
 
   @Column({ name: "export_disabled", comment: "禁止导出CA（含私钥）", default: false })
@@ -93,7 +93,7 @@ export class LocalCaEntity {
   @Column({ name: "last_crl_pem", comment: "最近一次成功生成的CRL", type: "text", nullable: true })
   lastCrlPem: string;
 
-  @Column({ name: "last_crl_time", comment: "最近一次CRL生成时间(ms)", nullable: true })
+  @Column({ name: "last_crl_time", comment: "最近一次CRL生成时间(ms)", type: "bigint", nullable: true })
   lastCrlTime: number;
 
   @Column({ name: "deleted", comment: "软删除/归档", default: false })

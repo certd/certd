@@ -24,13 +24,13 @@ export class CertRevocationEntity {
   @Column({ name: "serial_number", comment: "证书序列号", length: 100 })
   serialNumber: string;
 
-  @Column({ name: "revoked_time", comment: "吊销时间(ms)" })
+  @Column({ name: "revoked_time", comment: "吊销时间(ms)", type: "bigint" })
   revokedTime: number;
 
   @Column({ name: "reason", comment: "吊销原因", length: 50, default: "unspecified" })
   reason: string;
 
-  @Column({ name: "expires_time", comment: "证书过期时间(ms)", nullable: true })
+  @Column({ name: "expires_time", comment: "证书过期时间(ms)", type: "bigint", nullable: true })
   expiresTime: number;
 
   @Column({
