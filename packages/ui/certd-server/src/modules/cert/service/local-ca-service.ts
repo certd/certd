@@ -655,7 +655,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         filename: `local-ca-${ca.id}.crl`,
       };
     }
-    if (ca.lastCrlPem) {
+    if (ca.lastCrlPem && Number(ca.lastCrlTime || 0) > 0) {
       try {
         const cached = new x509.X509Crl(ca.lastCrlPem);
         const nextUpdate = cached.nextUpdate?.getTime() || 0;

@@ -223,7 +223,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       throw new Error("id is required");
     }
     const crl = await this.service.getCrl(id);
-    this.ctx.set("Cache-Control", "public, max-age=300, must-revalidate");
+    this.ctx.set("Cache-Control", "no-cache, must-revalidate");
     if (format === "pem") {
       this.ctx.set("Content-Disposition", `attachment; filename="${crl.filename}.pem"`);
       this.ctx.type = "application/x-pem-file";

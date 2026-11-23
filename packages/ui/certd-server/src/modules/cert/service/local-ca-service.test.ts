@@ -454,6 +454,17 @@ describe("LocalCaService", () => {
     assert.match(crl.pem, /BEGIN X509 CRL/);
   });
 
+  it("吊销后缓存失效，CRL立即包含新序列号", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Dirty CRL CA" });
+    await service.getCrl(id);
+    await service.certRevocationService.record({ caId: id, userId: 1, serialNumber: "0A99", expiresTime: Date.now() + 86400000 });
+    store.get(id).lastCrlTime = -1;
+    const crl = await service.getCrl(id);
+    const parsed = new x509.X509Crl(crl.pem);
+    assert.ok(parsed.findRevoked("0A99"));
+  });
+
   it("CRL Number 持久化单调递增，同一秒也不同", async () => {
     const { service, store } = createService();
     const { id } = await createIssuingCa(service, { name: "CRL Number CA" });
