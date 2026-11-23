@@ -117,16 +117,10 @@ export class AcmeServerService {
     const payload = jws.payload || {};
     let account = await this.accountRepository.findOne({ where: { caId, thumbprint } });
     if (account) {
+      // 旧账户已由迁移删除；运行时不再提供回绑，已有 eab_id 永久不可变
       if (!account.eabId) {
-        // EAB强制前创建的旧账户：允许同一 JWK 携带EAB重新绑定，否则拒绝
-        if (!payload.externalAccountBinding) {
-          throw new AcmeProblem("unauthorized", "该账户创建于EAB强制之前，请使用EAB重新注册", 401);
-        }
-        account.eabId = await this.verifyExternalAccountBinding(caId, payload.externalAccountBinding, thumbprint);
-        account.updateTime = new Date();
-        await this.accountRepository.save(account);
+        throw new AcmeProblem("unauthorized", "该账户创建于EAB强制之前，已失效，请使用EAB重新注册", 401);
       }
-      // 已有 eab_id 为永久绑定，后续 new-account 不允许切换 EAB
       if (account.status !== "valid") {
         throw new AcmeProblem("unauthorized", "账户不可用", 401);
       }
@@ -528,13 +522,17 @@ export class AcmeServerService {
     if (typeof url !== "string") {
       throw new AcmeProblem("malformed", "JWS缺少url");
     }
-    let pathname: string;
+    let target: URL;
     try {
-      pathname = new URL(url).pathname;
+      target = new URL(url);
     } catch (e) {
       throw new AcmeProblem("malformed", "JWS url格式错误");
     }
-    if (pathname !== ctx.path) {
+    const expectedOrigin = ctx.origin || `${ctx.protocol}://${ctx.host}`;
+    if (target.origin !== expectedOrigin) {
+      throw new AcmeProblem("unauthorized", "JWS url origin与请求地址不匹配", 401);
+    }
+    if (target.pathname !== ctx.path) {
       throw new AcmeProblem("unauthorized", "JWS url与请求地址不匹配", 401);
     }
     if (!jws.header?.nonce) {

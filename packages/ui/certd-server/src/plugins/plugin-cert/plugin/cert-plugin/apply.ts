@@ -982,6 +982,17 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       domain = domain.replaceAll("*.", "");
       domainList.add(domain);
     }
+    // 本地CA直签开启时忽略域名管理中的校验方式，所有域名走直签
+    try {
+      const directCaId = await this.getDirectIssueLocalCaId(acmeAccount);
+      if (directCaId != null) {
+        this.logger.info(`本地CA【${directCaId}】开启EAB直签，自动匹配忽略域名校验计划`);
+        return {};
+      }
+    } catch (e) {
+      // 未开启直签/账号无 EAB 时继续按域名管理计划校验
+    }
+
     const domainVerifierGetter: IDomainVerifierGetter = await this.ctx.serviceGetter.get("domainVerifierGetter");
 
     const verifiers: DomainVerifiers = await domainVerifierGetter.getVerifiers([...domainList]);

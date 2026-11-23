@@ -87,7 +87,20 @@ function assertColumnsEqual(dialect: string, file: string, expected: TableColumn
   }
 }
 
+function migrationFiles(dir: string) {
+  return fs
+    .readdirSync(dir)
+    .filter(file => /^v1006[1-8]__.*\.sql$/.test(file))
+    .sort();
+}
+
 describe("local CA migration consistency", () => {
+  it("三种数据库的迁移文件集合完全一致", () => {
+    for (const dialect of ["pg", "mysql"]) {
+      assert.deepEqual(migrationFiles(dialectDirs[dialect]), files, `${dialect} 迁移文件集合不一致`);
+    }
+  });
+
   it("SQLite/PostgreSQL/MySQL 表、字段、ALTER 字段和索引一致", () => {
     for (const file of files) {
       const sqlite = parseMigration("sqlite", file);

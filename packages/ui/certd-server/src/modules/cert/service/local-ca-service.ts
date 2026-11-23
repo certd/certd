@@ -582,12 +582,15 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async consumeAcmeEab(id: string) {
+    const metadata: any = this.acmeEabRepository.metadata;
+    const usedCountColumn = metadata?.findColumnWithPropertyName?.("usedCount")?.databaseName || "used_count";
+    const maxUsesColumn = metadata?.findColumnWithPropertyName?.("maxUses")?.databaseName || "max_uses";
     const result = await this.acmeEabRepository
       .createQueryBuilder()
       .update()
-      .set({ usedCount: () => "used_count + 1", updateTime: new Date() })
+      .set({ usedCount: () => `${usedCountColumn} + 1`, updateTime: new Date() })
       .where("id = :id", { id })
-      .andWhere("(max_uses = 0 OR used_count < max_uses)")
+      .andWhere(`(${maxUsesColumn} = 0 OR ${usedCountColumn} < ${maxUsesColumn})`)
       .execute();
     return (result.affected || 0) > 0;
   }

@@ -81,23 +81,19 @@ describe("CertInfoService local revocation transaction", () => {
       return this.skip();
     }
     try {
-      class FailingService extends CertInfoService {
-        protected getCertRepository() {
-          return {
-            async update() {
-              throw new Error("模拟证书状态更新失败");
-            },
-          } as any;
-        }
-      }
-      const service = new FailingService();
+      const service = new CertInfoService();
       const revocation = new CertRevocationService();
       service.repository = ds.getRepository(CertInfoEntity);
       revocation.repository = ds.getRepository(CertRevocationEntity);
       service.certRevocationService = revocation;
 
       const cert = await addCert(service.repository, "0A22");
-
+      await ds.query(`CREATE TRIGGER fail_local_cert_revoke
+        BEFORE UPDATE ON cd_cert_info
+        WHEN NEW.status = 'revoked'
+        BEGIN
+          SELECT RAISE(ABORT, '模拟证书状态更新失败');
+        END`);
       await assert.rejects(
         () =>
           service.applyLocalRevocation({

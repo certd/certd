@@ -342,6 +342,44 @@ describe("LocalCaService", () => {
     assert.equal((await service.certRevocationService.listByCa(id)).length, 2);
   });
 
+  it("consumeAcmeEab 使用实体列名并带原子次数条件", async () => {
+    const { service } = createService();
+    let expression = "";
+    let condition = "";
+    service.acmeEabRepository = {
+      metadata: {
+        findColumnWithPropertyName(name: string) {
+          return { usedCount: { databaseName: "used_count" }, maxUses: { databaseName: "max_uses" } }[name];
+        },
+      },
+      createQueryBuilder() {
+        return {
+          update() {
+            return this;
+          },
+          set(values: any) {
+            expression = values.usedCount();
+            return this;
+          },
+          where() {
+            return this;
+          },
+          andWhere(value: string) {
+            condition = value;
+            return this;
+          },
+          async execute() {
+            return { affected: 1 };
+          },
+        };
+      },
+    } as any;
+
+    assert.equal(await service.consumeAcmeEab("eab-1"), true);
+    assert.equal(expression, "used_count + 1");
+    assert.match(condition, /max_uses = 0 OR used_count < max_uses/);
+  });
+
   it("exportCa 返回证书和私钥", async () => {
     const { service } = createService();
     const { id } = await service.generateCa({

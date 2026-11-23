@@ -380,6 +380,18 @@ describe("CertApplyPlugin 自动匹配本地CA", () => {
     assert.deepEqual(plan, {});
   });
 
+  it("直签开启时忽略已有的域名校验计划", async () => {
+    const plugin = createPlugin({
+      directoryUrl: "https://certd.example.com/api/acme/12/directory",
+      verifiers: { "foo.example.com": { type: "http" } },
+      ca: { id: 12, name: "内部中间CA", caType: "intermediate", acmeEnabled: true, acmeDirectIssue: true, disabled: false, notAfter: Date.now() + 86400000 },
+    });
+
+    const plan = await plugin.createDomainsVerifyPlanByAuto(["foo.example.com"], { eab: { kid: "k", hmacKey: "h" } });
+
+    assert.deepEqual(plan, {});
+  });
+
   it("本地CA未启用ACME时不允许跳过域名校验", async () => {
     const plugin = createPlugin({
       directoryUrl: "https://certd.example.com/api/acme/12/directory",
