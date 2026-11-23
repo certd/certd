@@ -10,6 +10,7 @@ import { AcmeService } from "../../../plugins/plugin-cert/plugin/cert-plugin/acm
 import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
 import { UserSettingsService } from "../../mine/service/user-settings-service.js";
 import { CertRevocationService } from "../../cert/service/cert-revocation-service.js";
+import { LocalCaEntity } from "../../cert/entity/local-ca.js";
 
 export type UploadCertReq = {
   id?: number;
@@ -513,6 +514,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       );
       const repository = this.getCertRepository(manager);
       await repository.update({ id: req.certInfoId }, { status: CertStatus.revoked, revokeTime: revokedTime });
+      const caRepository = manager ? manager.getRepository(LocalCaEntity) : this.repository.manager.getRepository(LocalCaEntity);
+      await caRepository.update({ id: req.caId }, { lastCrlPem: null, lastCrlTime: null } as any);
     };
     const manager = this.repository?.manager;
     if (!manager?.transaction) {

@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import * as x509 from "@peculiar/x509";
 import fs from "node:fs";
 import path from "node:path";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
@@ -162,6 +163,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (pageReq.buildQuery) {
       pageReq.buildQuery(qb);
     }
+    qb.andWhere("main.deleted = :deleted", { deleted: false });
     // 根CA按根分组；根在前，中间CA紧跟其父级
     qb.addOrderBy("CASE WHEN main.parent_id IS NULL THEN main.id ELSE main.parent_id END", "DESC");
     qb.addOrderBy("CASE WHEN main.parent_id IS NULL THEN 0 ELSE 1 END", "ASC");
@@ -186,7 +188,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   async listSafe(req: { userId: number; projectId?: number; searchKey?: string }) {
     const owner = this.buildUserProjectQuery(req.userId, req.projectId);
     const list = await this.find({
-      where: owner,
+      where: { ...owner, deleted: false },
       order: { id: "DESC" },
     });
     const searchKey = String(req.searchKey || "")
@@ -250,6 +252,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       where: {
         id: In(ids),
         ...owner,
+        deleted: false,
       },
     });
     return list.map(item => ({
@@ -303,7 +306,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.disabled = false;
     bean.remark = req.remark || "";
     bean.exportDisabled = req.exportDisabled === true;
-    bean.rootKeyOnlineEnabled = false;
+    bean.deleted = false;
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -316,9 +319,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     if (root.disabled) {
       throw new ValidateException("根CA已禁用，不能签发中间CA");
-    }
-    if (!root.rootKeyOnlineEnabled) {
-      throw new ValidateException("Root CA默认禁止在线解密私钥，请先在Root CA设置中允许在线使用私钥");
     }
     const rootPrivateKey = this.decryptCaPrivateKey(root);
     const material = await createIntermediateCa({
@@ -360,7 +360,17 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.disabled = false;
     bean.remark = req.remark || "";
     bean.exportDisabled = req.exportDisabled === true;
-    bean.rootKeyOnlineEnabled = false;
+    bean.deleted = false;
+    const rootCrlNumber = await this.nextCrlNumber(root.id);
+    const rootCrl = await createCrl({
+      caCertPem: root.certPem,
+      caPrivateKeyPem: rootPrivateKey,
+      entries: [],
+      crlNumber: rootCrlNumber,
+    });
+    root.lastCrlPem = rootCrl.pem;
+    root.lastCrlTime = Date.now();
+    await this.update(root);
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -429,6 +439,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.disabled = false;
     bean.remark = req.remark || "";
     bean.exportDisabled = req.exportDisabled === true;
+    bean.deleted = false;
     const res = await this.add(bean);
     return { id: res.id };
   }
@@ -480,7 +491,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async getAcmeCa(id: number) {
-    const ca = await this.repository.findOne({ where: { id } });
+    const ca = await this.repository.findOne({ where: { id, deleted: false } });
     if (!ca || ca.caType !== "intermediate" || !ca.acmeEnabled) {
       throw new ValidateException("该本地CA未启用ACME服务（仅中间CA支持ACME）");
     }
@@ -633,8 +644,31 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!ca) {
       throw new ValidateException("本地CA不存在");
     }
-    if (ca.caType === "root" && !ca.rootKeyOnlineEnabled) {
-      throw new ValidateException("Root CA默认禁止在线解密私钥，请先开启在线私钥后才能生成Root CRL");
+    if (ca.caType === "root") {
+      if (!ca.lastCrlPem) {
+        throw new ValidateException("Root CRL尚未生成；请先创建中间CA以生成Root CRL，或离线生成后导入");
+      }
+      const parsed = new x509.X509Crl(ca.lastCrlPem);
+      return {
+        pem: ca.lastCrlPem,
+        der: Buffer.from(parsed.rawData),
+        filename: `local-ca-${ca.id}.crl`,
+      };
+    }
+    if (ca.lastCrlPem) {
+      try {
+        const cached = new x509.X509Crl(ca.lastCrlPem);
+        const nextUpdate = cached.nextUpdate?.getTime() || 0;
+        if (nextUpdate > Date.now() + 60 * 60 * 1000) {
+          return {
+            pem: ca.lastCrlPem,
+            der: Buffer.from(cached.rawData),
+            filename: `local-ca-${ca.id}.crl`,
+          };
+        }
+      } catch (e) {
+        // 缓存损坏则重新生成
+      }
     }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     const revoked = await this.certRevocationService.listByCa(ca.id);
@@ -655,6 +689,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       entries,
       crlNumber,
     });
+    ca.lastCrlPem = crl.pem;
+    ca.lastCrlTime = Date.now();
+    await this.update(ca);
     return {
       ...crl,
       filename: `local-ca-${ca.id}.crl`,
@@ -714,7 +751,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       baseUrl?: string;
       acmeDirectIssue?: boolean;
       exportDisabled?: boolean;
-      rootKeyOnlineEnabled?: boolean;
     }
   ) {
     const ca = await this.getOwnedCa(req);
@@ -769,12 +805,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     if (req.exportDisabled != null) {
       ca.exportDisabled = req.exportDisabled === true;
-    }
-    if (req.rootKeyOnlineEnabled != null) {
-      if (ca.caType !== "root") {
-        throw new ValidateException("只有Root CA可以设置在线私钥策略");
-      }
-      ca.rootKeyOnlineEnabled = req.rootKeyOnlineEnabled === true;
     }
     await this.update(ca);
   }
@@ -875,9 +905,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.exportDisabled) {
       throw new ValidateException("该CA已禁止导出");
     }
-    if (ca.caType === "root" && !ca.rootKeyOnlineEnabled) {
-      throw new ValidateException("Root CA默认禁止在线解密私钥，请先在Root CA设置中允许在线使用私钥");
-    }
     const privateKeyPem = this.decryptCaPrivateKey(ca);
     const lines = [
       "# Certd Local CA export",
@@ -942,7 +969,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (blocking.length > 0) {
       throw new ValidateException("该本地CA仍有未吊销且未过期的证书，不能删除，请先吊销这些证书");
     }
-    await this.delete([ca.id], this.buildUserProjectQuery(req.userId, req.projectId));
+    ca.deleted = true;
+    ca.disabled = true;
+    await this.update(ca);
   }
 
   private pipelineUsesCa(content: string, caId: number) {
@@ -984,6 +1013,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       where: {
         id: req.id,
         ...owner,
+        deleted: false,
       },
     });
     if (!ca) {

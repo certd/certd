@@ -673,9 +673,10 @@ describe("CertInfoService", () => {
           return {} as any;
         },
       } as any;
+      const caRepo = { async update() {} };
       (service.repository as any).manager = {
         async transaction(fn: any) {
-          return await fn({ getRepository: () => service.repository });
+          return await fn({ getRepository: (entity: any) => (entity?.name === "LocalCaEntity" ? caRepo : service.repository) });
         },
       };
       let recorded: any = null;

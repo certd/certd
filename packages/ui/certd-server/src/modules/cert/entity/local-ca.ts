@@ -87,8 +87,17 @@ export class LocalCaEntity {
   @Column({ name: "export_disabled", comment: "禁止导出CA（含私钥）", default: false })
   exportDisabled: boolean;
 
-  @Column({ name: "root_key_online_enabled", comment: "Root私钥允许在线解密（签中间CA/导出）", default: false })
+  @Column({ name: "root_key_online_enabled", comment: "已废弃：Root不再提供持续在线解密开关", default: false })
   rootKeyOnlineEnabled: boolean;
+
+  @Column({ name: "last_crl_pem", comment: "最近一次成功生成的CRL", type: "text", nullable: true })
+  lastCrlPem: string;
+
+  @Column({ name: "last_crl_time", comment: "最近一次CRL生成时间(ms)", nullable: true })
+  lastCrlTime: number;
+
+  @Column({ name: "deleted", comment: "软删除/归档", default: false })
+  deleted: boolean;
 
   @Column({ name: "acme_config", comment: "未来ACME配置JSON", type: "text", nullable: true })
   acmeConfig: string;

@@ -104,7 +104,6 @@ describe("LocalCaService", () => {
       validityYears: 2,
       allowedDomains: opts.allowedDomains,
     });
-    await service.updateMeta({ id: root.id, userId: 1, rootKeyOnlineEnabled: true });
     const intermediate = await service.generateIntermediateCa({
       rootId: root.id,
       userId: 1,
@@ -150,7 +149,6 @@ describe("LocalCaService", () => {
       keyType: "rsa2048",
       validityYears: 2,
     });
-    await service.updateMeta({ id: root.id, userId: 1, rootKeyOnlineEnabled: true });
     const intermediate = await service.generateIntermediateCa({
       rootId: root.id,
       userId: 1,
@@ -211,7 +209,6 @@ describe("LocalCaService", () => {
       validityYears: 2,
       baseUrl: "https://ca.example.com/",
     });
-    await service.updateMeta({ id: root.id, userId: 1, rootKeyOnlineEnabled: true });
     const rootInfo: any = await service.infoSafe({ id: root.id, userId: 1 });
     assert.equal(rootInfo.baseUrl, "https://ca.example.com");
     assert.equal(await service.getCaBaseUrl(root.id), "https://ca.example.com");
@@ -261,7 +258,6 @@ describe("LocalCaService", () => {
       validityYears: 2,
       allowedDomains: ["example.com"],
     });
-    await service.updateMeta({ id: root.id, userId: 1, rootKeyOnlineEnabled: true });
 
     await assert.rejects(
       () =>
@@ -364,14 +360,7 @@ describe("LocalCaService", () => {
 
   it("getCrl 会清理已过期的吊销条目", async () => {
     const { service } = createService();
-    const { id } = await service.generateCa({
-      userId: 1,
-      name: "Expired CRL CA",
-      subject: { CN: "Expired CRL CA" },
-      keyType: "rsa2048",
-      validityYears: 1,
-    });
-    await service.updateMeta({ id, userId: 1, rootKeyOnlineEnabled: true });
+    const { id } = await createIssuingCa(service, { name: "Expired CRL CA" });
     service.certRevocationService = {
       async listByCa() {
         return [
@@ -389,14 +378,7 @@ describe("LocalCaService", () => {
 
   it("过期吊销记录不再进入 CRL，但吊销表记录仍保留", async () => {
     const { service, revocations } = createService();
-    const { id } = await service.generateCa({
-      userId: 1,
-      name: "Expired Revocation CA",
-      subject: { CN: "Expired Revocation CA" },
-      keyType: "rsa2048",
-      validityYears: 1,
-    });
-    await service.updateMeta({ id, userId: 1, rootKeyOnlineEnabled: true });
+    const { id } = await createIssuingCa(service, { name: "Expired Revocation CA" });
     const now = Date.now();
     await service.certRevocationService.record({ caId: id, userId: 1, serialNumber: "0A01", expiresTime: now + 86400000 });
     await service.certRevocationService.record({ caId: id, userId: 1, serialNumber: "0A02", expiresTime: now - 86400000 });
@@ -473,21 +455,15 @@ describe("LocalCaService", () => {
   });
 
   it("CRL Number 持久化单调递增，同一秒也不同", async () => {
-    const { service } = createService();
-    const { id } = await service.generateCa({
-      userId: 1,
-      name: "CRL Number CA",
-      subject: { CN: "CRL Number CA" },
-      keyType: "rsa2048",
-      validityYears: 1,
-    });
-    await service.updateMeta({ id, userId: 1, rootKeyOnlineEnabled: true });
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "CRL Number CA" });
     const first = await service.getCrlInfo({ id, userId: 1 });
+    store.get(id).lastCrlPem = null;
     const second = await service.getCrlInfo({ id, userId: 1 });
     assert.ok(Number(second.crlNumber) > Number(first.crlNumber));
   });
 
-  it("Root私钥默认禁止在线使用，显式开启后才允许", async () => {
+  it("Root私钥仅用于签中间CA和导出，不参与在线CRL签名", async () => {
     const { service } = createService();
     const root = await service.generateCa({
       userId: 1,
@@ -496,24 +472,8 @@ describe("LocalCaService", () => {
       keyType: "rsa2048",
       validityYears: 2,
     });
-    await assert.rejects(
-      () =>
-        service.generateIntermediateCa({
-          rootId: root.id,
-          userId: 1,
-          name: "Blocked Intermediate",
-          subject: { CN: "Blocked Intermediate" },
-          keyType: "rsa2048",
-          validityYears: 1,
-        }),
-      /默认禁止在线解密私钥/
-    );
-    await assert.rejects(() => service.exportCa({ id: root.id, userId: 1 }), /默认禁止在线解密私钥/);
-    await assert.rejects(() => service.getCrl(root.id), /Root CA默认禁止在线解密私钥/);
+    await assert.rejects(() => service.getCrl(root.id), /Root CRL尚未生成/);
 
-    await service.updateMeta({ id: root.id, userId: 1, rootKeyOnlineEnabled: true });
-    const rootCrl = await service.getCrl(root.id);
-    assert.match(rootCrl.pem, /BEGIN X509 CRL/);
     const child = await service.generateIntermediateCa({
       rootId: root.id,
       userId: 1,
@@ -523,6 +483,9 @@ describe("LocalCaService", () => {
       validityYears: 1,
     });
     assert.ok(child.id);
+    const rootCrl = await service.getCrl(root.id);
+    assert.match(rootCrl.pem, /BEGIN X509 CRL/);
+
     const exported = await service.exportCa({ id: root.id, userId: 1 });
     const exportedContent = await fs.promises.readFile(exported.path, "utf8");
     const mode = (await fs.promises.stat(exported.path)).mode & 0o777;
@@ -540,7 +503,6 @@ describe("LocalCaService", () => {
       keyType: "rsa2048",
       validityYears: 1,
     });
-    await service.updateMeta({ id, userId: 1, rootKeyOnlineEnabled: true });
     const res = await service.exportCa({ id, userId: 1 });
     assert.match(res.filename, /local-ca-/);
     const content = await fs.promises.readFile(res.path, "utf8");
@@ -670,6 +632,6 @@ describe("LocalCaService", () => {
       },
     } as any;
     await service.deleteCa({ id, userId: 1 });
-    assert.equal(store.has(id), false);
+    assert.equal(store.get(id).deleted, true);
   });
 });

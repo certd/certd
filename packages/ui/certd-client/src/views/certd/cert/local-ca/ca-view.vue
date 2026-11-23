@@ -42,9 +42,6 @@
             <a-descriptions-item :label="t('certd.localCa.fields.exportDisabled')">
               {{ row.exportDisabled ? t("certd.localCa.exportDisabledYes") : t("certd.localCa.exportDisabledNo") }}
             </a-descriptions-item>
-            <a-descriptions-item v-if="row.caType === 'root'" :label="t('certd.localCa.fields.rootKeyOnlineEnabled')">
-              {{ row.rootKeyOnlineEnabled ? t("certd.localCa.rootKeyOnlineYes") : t("certd.localCa.rootKeyOnlineNo") }}
-            </a-descriptions-item>
             <a-descriptions-item :label="t('certd.localCa.fields.remark')">{{ row.remark || "-" }}</a-descriptions-item>
           </a-descriptions>
         </a-tab-pane>

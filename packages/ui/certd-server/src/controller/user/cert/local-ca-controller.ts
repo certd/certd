@@ -153,7 +153,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
       baseUrl: body.baseUrl,
       acmeDirectIssue: body.acmeDirectIssue,
       exportDisabled: body.exportDisabled,
-      rootKeyOnlineEnabled: body.rootKeyOnlineEnabled,
     });
     this.auditLog({ content: `修改了本地CA「${body.name}」(ID:${body.id})` });
     return this.ok(true);

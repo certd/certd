@@ -262,6 +262,33 @@ export function matchAllowedDomains(domains: string[], allowedDomains: string[] 
   }
 }
 
+function assertCaKeyUsage(certPem: string, label: string) {
+  const cert = new x509.X509Certificate(certPem);
+  const kuExt = cert.extensions.find(ext => ext.type === "2.5.29.15");
+  if (!kuExt) {
+    throw new Error(`${label}缺少KeyUsage扩展（必须包含keyCertSign和cRLSign）`);
+  }
+  const keyUsage = getX509Summary(certPem).keyUsage;
+  if (!keyUsage.includes("keyCertSign") || !keyUsage.includes("cRLSign")) {
+    throw new Error(`${label}的KeyUsage必须包含keyCertSign和cRLSign`);
+  }
+}
+
+function assertIssuerMatches(certPem: string, parentCertPem: string) {
+  const cert = new X509Certificate(certPem);
+  const parent = new X509Certificate(parentCertPem);
+  if (!cert.checkIssued(parent)) {
+    throw new Error("中间CA证书的Issuer与所选上级CA的Subject不一致");
+  }
+  const childX = new x509.X509Certificate(certPem);
+  const parentX = new x509.X509Certificate(parentCertPem);
+  const aki: any = childX.extensions.find(ext => ext.type === "2.5.29.35");
+  const ski: any = parentX.extensions.find(ext => ext.type === "2.5.29.14");
+  if (aki?.keyId && ski?.keyId && aki.keyId.toUpperCase() !== ski.keyId.toUpperCase()) {
+    throw new Error("中间CA的AKI与上级CA的SKI不匹配");
+  }
+}
+
 function toPem(der: ArrayBuffer | Buffer, label = "PRIVATE KEY") {
   const base64 = Buffer.from(der as any)
     .toString("base64")
@@ -569,6 +596,7 @@ export async function validateImportedRootCa(req: { certPem: string; privateKeyP
   if (!cert.ca) {
     throw new Error("导入的证书不是CA证书");
   }
+  assertCaKeyUsage(certPem, "导入的根CA");
   const constraints = getBasicConstraints(certPem);
   if (constraints.pathLength === 0) {
     throw new Error("导入的根CA pathlen=0，不能签发中间CA，请使用pathlen>=1的根CA");
@@ -636,6 +664,8 @@ export async function validateImportedIntermediateCa(req: { certPem: string; pri
   if (!cert.ca) {
     throw new Error("导入的证书不是CA证书");
   }
+  assertCaKeyUsage(certPem, "导入的中间CA");
+  assertCaKeyUsage(parentCertPem, "上级CA");
   if (cert.verify(cert.publicKey)) {
     throw new Error("该证书是自签名根CA，请使用导入根CA");
   }
@@ -656,6 +686,7 @@ export async function validateImportedIntermediateCa(req: { certPem: string; pri
   if (new Date(cert.validFrom).getTime() > now + 5 * 60 * 1000) {
     throw new Error("导入的CA证书尚未生效");
   }
+  assertIssuerMatches(certPem, parentCertPem);
   if (!cert.verify(parentCert.publicKey)) {
     throw new Error("中间CA证书与所选上级根CA不匹配");
   }
