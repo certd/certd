@@ -197,6 +197,7 @@ export default {
     domainSearchPlaceholder: "Search domains here (from Settings -> Domain Management), or type directly in the input above",
     importDomain: "Import Domains",
     manageDomain: "Manage Domains",
+    domainNotAllowed: "These domains are outside the selected CA scope and will be skipped: {domains}",
     refreshMyDomains: "Refresh my domain list",
     upload: "Upload",
     uploadCert: "Upload Certificate",

@@ -4,7 +4,6 @@ import net from "node:net";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { Repository } from "typeorm";
-import { SysInstallInfo, SysSettingsService } from "@certd/lib-server";
 import { CertReader } from "@certd/plugin-lib";
 import { LocalCaService } from "./local-ca-service.js";
 import { getCsrDomains, matchAllowedDomains, normalizeDomains } from "./local-ca-crypto.js";
@@ -54,9 +53,6 @@ export class AcmeServerService {
 
   @Inject()
   certInfoService: CertInfoService;
-
-  @Inject()
-  sysSettingsService: SysSettingsService;
 
   @InjectEntityModel(AcmeAccountEntity)
   accountRepository: Repository<AcmeAccountEntity>;
@@ -636,8 +632,7 @@ export class AcmeServerService {
   }
 
   private async baseUrl(caId: number) {
-    const info = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
-    const base = (info?.bindUrl || "http://127.0.0.1:7001").replace(/\/+$/, "");
+    const base = await this.localCaService.getCaBaseUrl(caId);
     return `${base}/api/acme/${caId}`;
   }
 }

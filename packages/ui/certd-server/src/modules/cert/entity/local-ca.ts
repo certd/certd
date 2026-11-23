@@ -81,6 +81,9 @@ export class LocalCaEntity {
   @Column({ name: "acme_config", comment: "未来ACME配置JSON", type: "text", nullable: true })
   acmeConfig: string;
 
+  @Column({ name: "base_url", comment: "CA对外访问基址，用于CRL/ACME链接；为空使用站点bindUrl", length: 500, nullable: true })
+  baseUrl: string;
+
   @Column({ name: "path_length", comment: "未来中间CA的pathLength", nullable: true })
   pathLength: number;
 

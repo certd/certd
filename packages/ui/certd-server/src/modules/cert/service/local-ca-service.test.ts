@@ -175,6 +175,40 @@ describe("LocalCaService", () => {
     assert.equal(info.pathLength, 0);
   });
 
+  it("CA 级 Base URL 可保存、继承和修改", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Base URL Root",
+      subject: { CN: "Base URL Root" },
+      keyType: "ecdsa256",
+      validityYears: 2,
+      baseUrl: "https://ca.example.com/",
+    });
+    const rootInfo: any = await service.infoSafe({ id: root.id, userId: 1 });
+    assert.equal(rootInfo.baseUrl, "https://ca.example.com");
+    assert.equal(await service.getCaBaseUrl(root.id), "https://ca.example.com");
+
+    const intermediate = await service.generateIntermediateCa({
+      rootId: root.id,
+      userId: 1,
+      name: "Base URL Intermediate",
+      subject: { CN: "Base URL Intermediate" },
+      keyType: "ecdsa256",
+      validityYears: 1,
+    });
+    const intermediateInfo: any = await service.infoSafe({ id: intermediate.id, userId: 1 });
+    assert.equal(intermediateInfo.baseUrl, "https://ca.example.com");
+
+    await service.updateMeta({ id: intermediate.id, userId: 1, baseUrl: "https://pki.example.com/" });
+    assert.equal(await service.getCaBaseUrl(intermediate.id), "https://pki.example.com");
+
+    const { csrPem } = await createCsr({ domains: ["baseurl.example.com"], keyType: "rsa2048" });
+    const signed = await service.signCsr({ id: intermediate.id, userId: 1, csrPem });
+    const certText = new x509.X509Certificate(signed.certPem).toString("text");
+    assert.match(certText, /https:\/\/pki\.example\.com\/api\/cert\/local-ca\/crl\?id=/);
+  });
+
   it("signCsr 按CA策略签发并拒绝越界域名", async () => {
     const { service } = createService();
     service.sysSettingsService = {

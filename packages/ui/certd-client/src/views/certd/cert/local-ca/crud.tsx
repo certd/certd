@@ -196,7 +196,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             required: true,
             rules: [{ required: true, message: t("certd.common.required") }],
           },
-          column: { width: 180, ellipsis: true },
+          column: {
+            width: 200,
+            ellipsis: true,
+            cellRender({ value, row }) {
+              return (
+                <span style={{ paddingLeft: row.level ? "18px" : "0" }}>
+                  {row.level ? "↳ " : ""}
+                  {value}
+                </span>
+              );
+            },
+          },
         },
         subjectCn: {
           title: t("certd.localCa.fields.subjectCn"),
@@ -232,6 +243,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.localCa.fields.caPath"),
           type: "text",
           form: { show: false },
+          search: { show: false },
+          column: { width: 220, ellipsis: true },
+        },
+        baseUrl: {
+          title: t("certd.localCa.fields.baseUrl"),
+          type: "text",
+          form: {
+            col: { span: 24 },
+            component: { placeholder: window.location.origin },
+            helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
+          },
           search: { show: false },
           column: { width: 220, ellipsis: true },
         },

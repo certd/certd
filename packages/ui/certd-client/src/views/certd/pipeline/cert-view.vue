@@ -112,6 +112,7 @@ const extKeyUsageText = computed(() => {
 });
 const chainCount = computed(() => (String(props.cert.crt || "").match(/BEGIN CERTIFICATE/g) || []).length);
 const crlUrl = computed(() => {
+  if (props.cert.crlUrl) return props.cert.crlUrl;
   if (!props.cert.localCaId) return "";
   return `${env.API}/cert/local-ca/crl?id=${props.cert.localCaId}`;
 });

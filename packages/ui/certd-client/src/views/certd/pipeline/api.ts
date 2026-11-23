@@ -164,6 +164,7 @@ export type CertInfo = {
   pfx: string;
   detail: any;
   localCaId?: number;
+  crlUrl?: string;
   serialNumber?: string;
   status?: string;
   revokeTime?: number;

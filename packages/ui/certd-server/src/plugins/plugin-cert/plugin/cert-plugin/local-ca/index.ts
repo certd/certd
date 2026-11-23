@@ -2,7 +2,7 @@ import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipel
 import { CertReader } from "@certd/plugin-lib";
 import { CertApplyBaseConvertPlugin } from "../base-convert.js";
 import type { LocalCaGetter } from "../../../../../modules/cert/service/local-ca-getter.js";
-import type { LocalCaKeyType } from "../../../../../modules/cert/service/local-ca-crypto.js";
+import { filterAllowedDomains, type LocalCaKeyType } from "../../../../../modules/cert/service/local-ca-crypto.js";
 
 @IsTaskPlugin({
   name: "CertApplyLocalCa",
@@ -29,6 +29,37 @@ import type { LocalCaKeyType } from "../../../../../modules/cert/service/local-c
   },
 })
 export class CertApplyLocalCa extends CertApplyBaseConvertPlugin {
+  @TaskInput({
+    title: "证书域名",
+    component: {
+      name: "domain-selector",
+      vModel: "value",
+      mode: "tags",
+      placeholder: "请输入证书域名/IP，比如：foo.com , *.foo.com , *.sub.foo.com , *.bar.com , 123.123.123.123",
+      tokenSeparators: [",", " ", "，", "、", "|"],
+      search: true,
+      pager: true,
+    },
+    mergeScript: `return {
+      component: {
+        caId: ctx.compute(({ form }) => form.caId)
+      }
+    }`,
+    rules: [{ type: "domains" }],
+    required: true,
+    col: {
+      span: 24,
+    },
+    order: -999,
+    helper:
+      "1、支持多个域名打到一个证书上，例如： foo.com，*.foo.com，*.bar.com\n" +
+      "2、子域名被通配符包含的不要填写，例如：www.foo.com已经被*.foo.com包含，不要填写www.foo.com\n" +
+      "3、泛域名只能通配*号那一级（*.foo.com的证书不能用于foo.com且不能用于xxx.yyy.foo.com）\n" +
+      "4、输入一个，空格之后，再输入下一个 \n" +
+      "5、如果设置了子域托管解析（比如免费的二级域名托管在CF或者阿里云），请先[设置托管子域名](#/certd/pipeline/subDomain)",
+  })
+  domains: string[] = [];
+
   @TaskInput({
     title: "中间CA",
     helper: "选择中间CA；叶子证书由该CA签发，客户端需要信任其根CA",
@@ -112,11 +143,27 @@ export class CertApplyLocalCa extends CertApplyBaseConvertPlugin {
       throw new Error("本地CA已禁用");
     }
 
+    let allowedDomains: string[] = [];
+    try {
+      allowedDomains = ca.allowedDomains ? JSON.parse(ca.allowedDomains) : [];
+    } catch (e) {
+      allowedDomains = [];
+    }
+    const allowedList = filterAllowedDomains(domains, allowedDomains);
+    const skipped = domains.filter(item => !allowedList.includes(item));
+    if (allowedList.length === 0) {
+      throw new Error(`所有域名都不在CA允许签发范围内：${domains.join(",")}`);
+    }
+    if (skipped.length > 0) {
+      this.logger.warn(`以下域名不在CA允许范围内，已跳过：${skipped.join(",")}`);
+    }
+    this.domains = allowedList;
+
     const renewDays = Math.max(1, Number(this.renewDays || 20));
     const validityDays = Math.max(1, Number(this.validityDays || 365));
     const old = await this.readLastCert();
     const willExpire = old != null && old.expires - Date.now() <= renewDays * 24 * 3600 * 1000;
-    if (old && !willExpire && !this.ctx.inputChanged) {
+    if (old && !willExpire && !this.ctx.inputChanged && skipped.length === 0) {
       await this.output(old, false);
       this.logger.info("证书未到期且参数未变化，跳过申请");
       return "skip";
@@ -125,7 +172,7 @@ export class CertApplyLocalCa extends CertApplyBaseConvertPlugin {
     this.checkSignal();
     const result = await getter.issueLeaf({
       caId: this.caId,
-      domains,
+      domains: allowedList,
       keyType: this.keyType,
       validityDays,
     });

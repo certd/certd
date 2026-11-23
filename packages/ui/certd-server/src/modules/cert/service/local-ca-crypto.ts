@@ -65,6 +65,20 @@ export type IssueLeafResult = SignCsrResult & {
   key: string;
 };
 
+export function filterAllowedDomains(domains: string[], allowedDomains: string[] = []) {
+  if (!allowedDomains || allowedDomains.length === 0) {
+    return domains;
+  }
+  return domains.filter(domain => {
+    try {
+      matchAllowedDomains([domain], allowedDomains);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  });
+}
+
 export function getX509Summary(certPem: string) {
   const firstCert = String(certPem || "").match(/-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/)?.[0] || certPem;
   const cert = new x509.X509Certificate(firstCert);
@@ -387,16 +401,37 @@ export function getPublicKeyPem(certPem: string) {
 
 export function getCrlInfo(crlPem: string) {
   const crl = new x509.X509Crl(crlPem);
+  const crlNumberExt: any = crl.extensions.find((ext: any) => ext.type === "2.5.29.20");
   return {
     issuer: crl.issuer,
     thisUpdate: crl.thisUpdate.getTime(),
     nextUpdate: crl.nextUpdate?.getTime(),
+    crlNumber: crlNumberExt ? derIntegerToString(Buffer.from(crlNumberExt.value)) : undefined,
     entries: crl.entries.map(entry => ({
       serialNumber: entry.serialNumber,
       revocationDate: entry.revocationDate?.getTime(),
       reason: entry.reason,
     })),
   };
+}
+
+function derIntegerToString(value: Buffer) {
+  try {
+    let offset = 0;
+    if (value[offset++] !== 0x02) return undefined;
+    let length = value[offset++];
+    if (length & 0x80) {
+      const count = length & 0x7f;
+      length = 0;
+      for (let i = 0; i < count; i++) {
+        length = (length << 8) | value[offset++];
+      }
+    }
+    const bytes = value.subarray(offset, offset + length);
+    return BigInt(`0x${bytes.toString("hex") || "0"}`).toString();
+  } catch (e) {
+    return undefined;
+  }
 }
 
 export function getCertSerialNumber(certPem: string) {
@@ -577,6 +612,10 @@ export async function validateImportedIntermediateCa(req: { certPem: string; pri
   }
   if (!cert.verify(parentCert.publicKey)) {
     throw new Error("中间CA证书与所选上级根CA不匹配");
+  }
+  const importedConstraints = getBasicConstraints(certPem);
+  if (importedConstraints.pathLength !== 0) {
+    throw new Error("仅支持 pathlen=0 的中间CA，避免继续签发下级CA");
   }
   if (new Date(cert.validTo).getTime() > new Date(parentCert.validTo).getTime()) {
     throw new Error("中间CA有效期不能超过上级根CA");

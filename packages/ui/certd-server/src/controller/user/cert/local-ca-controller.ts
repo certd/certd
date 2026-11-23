@@ -76,6 +76,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       usage: body.usage,
       allowedDomains: body.allowedDomains,
       maxValidityDays: body.maxValidityDays,
+      baseUrl: body.baseUrl,
       remark: body.remark,
     });
     this.auditLog({ content: `生成根CA「${body.name}」(ID:${res.id})` });
@@ -95,6 +96,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       usage: body.usage,
       allowedDomains: body.allowedDomains,
       maxValidityDays: body.maxValidityDays,
+      baseUrl: body.baseUrl,
       remark: body.remark,
     });
     this.auditLog({ content: `导入根CA「${body.name}」(ID:${res.id})` });
@@ -116,6 +118,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       usage: body.usage,
       allowedDomains: body.allowedDomains,
       maxValidityDays: body.maxValidityDays,
+      baseUrl: body.baseUrl,
       remark: body.remark,
     });
     this.auditLog({ content: `根CA(ID:${body.rootId})签发中间CA「${body.name}」(ID:${res.id})` });
@@ -140,6 +143,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       usage: body.usage,
       maxValidityDays: body.maxValidityDays,
       allowedDomains: body.allowedDomains,
+      baseUrl: body.baseUrl,
     });
     this.auditLog({ content: `修改了本地CA「${body.name}」(ID:${body.id})` });
     return this.ok(true);

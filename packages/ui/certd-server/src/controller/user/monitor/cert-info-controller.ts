@@ -10,6 +10,7 @@ import { ApiTags } from "@midwayjs/swagger";
 import { CertReader } from "@certd/plugin-lib";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 import { getX509Summary } from "../../../modules/cert/service/local-ca-crypto.js";
+import { LocalCaService } from "../../../modules/cert/service/local-ca-service.js";
 
 /**
  */
@@ -23,6 +24,9 @@ export class CertInfoController extends CrudController<CertInfoService> {
   authService: AuthService;
   @Inject()
   pipelineService: PipelineService;
+
+  @Inject()
+  localCaService: LocalCaService;
 
   @Inject()
   sysSettingService: SysSettingsService;
@@ -185,6 +189,8 @@ export class CertInfoController extends CrudController<CertInfoService> {
       certInfo.detail = certReader.detail;
       if (certInfoEntity.localCaId) {
         certInfo.x509 = getX509Summary(certInfo.crt);
+        const baseUrl = await this.localCaService.getCaBaseUrl(certInfoEntity.localCaId);
+        certInfo.crlUrl = `${baseUrl}/api/cert/local-ca/crl?id=${certInfoEntity.localCaId}`;
       }
     }
     return this.ok(certInfo);

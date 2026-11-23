@@ -125,6 +125,15 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             helper: t("certd.localCa.fields.allowedDomainsHelper"),
           },
         },
+        baseUrl: {
+          title: t("certd.localCa.fields.baseUrl"),
+          type: "text",
+          form: {
+            col: { span: 24 },
+            component: { placeholder: window.location.origin },
+            helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
+          },
+        },
         remark: {
           title: t("certd.localCa.fields.remark"),
           type: "textarea",
@@ -147,6 +156,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           usage: form.usage,
           allowedDomains: parseAllowedDomains(form.allowedDomains),
           maxValidityDays: form.maxValidityDays || 0,
+          baseUrl: form.baseUrl,
           remark: form.remark,
         });
         notification.success({ message: t("certd.localCa.generateSuccess") });
@@ -168,6 +178,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         usage: root.usage || "server",
         maxValidityDays: root.maxValidityDays || 0,
         allowedDomainsText: "",
+        baseUrl: root.baseUrl || "",
       },
       columns: {
         name: {
@@ -243,6 +254,15 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             helper: t("certd.localCa.fields.allowedDomainsHelper"),
           },
         },
+        baseUrl: {
+          title: t("certd.localCa.fields.baseUrl"),
+          type: "text",
+          form: {
+            col: { span: 24 },
+            component: { placeholder: window.location.origin },
+            helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
+          },
+        },
         remark: {
           title: t("certd.localCa.fields.remark"),
           type: "textarea",
@@ -263,6 +283,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           usage: form.usage,
           allowedDomains: parseAllowedDomains(form.allowedDomainsText),
           maxValidityDays: form.maxValidityDays || 0,
+          baseUrl: form.baseUrl,
           remark: form.remark,
         });
         notification.success({ message: t("certd.localCa.intermediateSuccess") });
@@ -347,6 +368,15 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             helper: t("certd.localCa.fields.allowedDomainsHelper"),
           },
         },
+        baseUrl: {
+          title: t("certd.localCa.fields.baseUrl"),
+          type: "text",
+          form: {
+            col: { span: 24 },
+            component: { placeholder: window.location.origin },
+            helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
+          },
+        },
         remark: {
           title: t("certd.localCa.fields.remark"),
           type: "textarea",
@@ -362,6 +392,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           usage: form.usage,
           allowedDomains: parseAllowedDomains(form.allowedDomains),
           maxValidityDays: form.maxValidityDays || 0,
+          baseUrl: form.baseUrl,
           remark: form.remark,
         });
         notification.success({ message: t("certd.localCa.importSuccess") });

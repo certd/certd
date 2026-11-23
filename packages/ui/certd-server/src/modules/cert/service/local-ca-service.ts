@@ -25,6 +25,17 @@ import {
   validateImportedRootCa,
 } from "./local-ca-crypto.js";
 
+function normalizeBaseUrl(value?: string) {
+  const text = String(value || "").trim();
+  if (!text) {
+    return "";
+  }
+  if (!/^https?:\/\//i.test(text)) {
+    throw new ValidateException("Base URL 必须以 http:// 或 https:// 开头");
+  }
+  return text.replace(/\/+$/, "");
+}
+
 export type LocalCaScope = {
   id: number;
   userId: number;
@@ -41,6 +52,7 @@ export type LocalCaGenerateReq = {
   usage?: LocalCaUsage;
   allowedDomains?: string[];
   maxValidityDays?: number;
+  baseUrl?: string;
   remark?: string;
 };
 
@@ -53,6 +65,7 @@ export type LocalCaIntermediateReq = Omit<LocalCaScope, "id"> & {
   usage?: LocalCaUsage;
   allowedDomains?: string[];
   maxValidityDays?: number;
+  baseUrl?: string;
   remark?: string;
 };
 
@@ -66,6 +79,7 @@ export type LocalCaImportReq = {
   usage?: LocalCaUsage;
   allowedDomains?: string[];
   maxValidityDays?: number;
+  baseUrl?: string;
   remark?: string;
 };
 
@@ -229,6 +243,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.maxValidityDays = req.maxValidityDays || 0;
     bean.acmeEnabled = false;
     bean.acmeConfig = null;
+    bean.baseUrl = normalizeBaseUrl(req.baseUrl);
     bean.pathLength = 1;
     bean.disabled = false;
     bean.remark = req.remark || "";
@@ -277,6 +292,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.maxValidityDays = req.maxValidityDays ?? root.maxValidityDays;
     bean.acmeEnabled = false;
     bean.acmeConfig = null;
+    bean.baseUrl = normalizeBaseUrl(req.baseUrl) || root.baseUrl || null;
     bean.pathLength = 0;
     bean.disabled = false;
     bean.remark = req.remark || "";
@@ -364,7 +380,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       maxValidityDays: ca.maxValidityDays,
       allowedDomains: this.parseAllowedDomains(ca.allowedDomains),
       usage: (req.usage || ca.usage) as LocalCaUsage,
-      crlDistributionPoint: await this.getCrlUrl(ca.id),
+      crlDistributionPoint: await this.getCrlUrl(ca),
     });
   }
 
@@ -386,7 +402,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       maxValidityDays: ca.maxValidityDays,
       allowedDomains: this.parseAllowedDomains(ca.allowedDomains),
       usage: (req.usage || ca.usage) as LocalCaUsage,
-      crlDistributionPoint: await this.getCrlUrl(ca.id),
+      crlDistributionPoint: await this.getCrlUrl(ca),
     });
   }
 
@@ -453,13 +469,25 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     };
   }
 
-  private async getCrlUrl(caId: number) {
+  async getCaBaseUrl(caId: number) {
+    const ca = await this.findOne({ where: { id: caId } });
+    return await this.resolveBaseUrl(ca);
+  }
+
+  private async resolveBaseUrl(ca?: LocalCaEntity | null) {
+    if (ca?.baseUrl) {
+      return normalizeBaseUrl(ca.baseUrl);
+    }
     if (!this.sysSettingsService) {
-      return undefined;
+      return "http://127.0.0.1:7001";
     }
     const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
-    const baseUrl = (installInfo?.bindUrl || "http://127.0.0.1:7001").replace(/\/+$/, "");
-    return `${baseUrl}/api/cert/local-ca/crl?id=${caId}`;
+    return normalizeBaseUrl(installInfo?.bindUrl || "http://127.0.0.1:7001");
+  }
+
+  private async getCrlUrl(ca: LocalCaEntity) {
+    const baseUrl = await this.resolveBaseUrl(ca);
+    return `${baseUrl}/api/cert/local-ca/crl?id=${ca.id}`;
   }
 
   async updateMeta(
@@ -469,6 +497,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       usage?: LocalCaUsage;
       maxValidityDays?: number;
       allowedDomains?: string[];
+      baseUrl?: string;
     }
   ) {
     const ca = await this.getOwnedCa(req);
@@ -499,6 +528,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (req.allowedDomains != null) {
       const list = req.allowedDomains.map(item => String(item || "").trim()).filter(Boolean);
       ca.allowedDomains = list.length ? JSON.stringify(list) : null;
+    }
+    if (req.baseUrl != null) {
+      ca.baseUrl = normalizeBaseUrl(req.baseUrl) || null;
     }
     await this.update(ca);
   }

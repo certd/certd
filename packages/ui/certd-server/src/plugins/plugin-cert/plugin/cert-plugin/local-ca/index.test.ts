@@ -19,7 +19,7 @@ async function createLeaf() {
   return leaf;
 }
 
-function createPlugin(leaf: any, opts: { caDisabled?: boolean; caType?: string; old?: any; inputChanged?: boolean } = {}) {
+function createPlugin(leaf: any, opts: { caDisabled?: boolean; caType?: string; old?: any; inputChanged?: boolean; allowedDomains?: string[] } = {}) {
   const plugin = new CertApplyLocalCa();
   plugin.caId = 1;
   plugin.domains = ["plugin.example.com"];
@@ -34,7 +34,12 @@ function createPlugin(leaf: any, opts: { caDisabled?: boolean; caType?: string; 
   };
   const getter = {
     async getCa() {
-      return { id: 1, caType: opts.caType || "intermediate", disabled: opts.caDisabled === true };
+      return {
+        id: 1,
+        caType: opts.caType || "intermediate",
+        disabled: opts.caDisabled === true,
+        allowedDomains: opts.allowedDomains ? JSON.stringify(opts.allowedDomains) : null,
+      };
     },
     async issueLeaf(req: any) {
       calls.issue = req;
@@ -91,6 +96,14 @@ describe("CertApplyLocalCa", () => {
     assert.equal(calls.emit, null);
     assert.equal(calls.output.isNew, false);
     assert.ok(calls.output.cert.crt);
+  });
+
+  it("混合域名时只签发CA允许的域名", async () => {
+    const leaf = await createLeaf();
+    const { plugin, calls } = createPlugin(leaf, { inputChanged: true, allowedDomains: ["example.com"] });
+    plugin.domains = ["foo.example.com", "evil.example.net"];
+    await plugin.execute();
+    assert.deepEqual(calls.issue.domains, ["foo.example.com"]);
   });
 
   it("CA禁用时拒绝执行", async () => {
