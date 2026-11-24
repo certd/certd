@@ -184,7 +184,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     if (opts.expectedUserId != null && challengeData.userId !== opts.expectedUserId) {
       throw new AuthException("Passkey验证用户不匹配");
     }
-    // 一次性使用，无论校验是否成功都需要重新生成 challenge
+    // 一次性使用：同步get/delete之间无await，单进程内原子消费；多实例需共享原子存储（Redis GETDEL）
     cache.delete(challengeKey);
 
     const passkey = await this.repository.findOne({

@@ -6,6 +6,7 @@ import { EntityManager, In, Repository } from "typeorm";
 import { EncryptService, ValidateException } from "@certd/lib-server";
 import { runTransaction } from "../../db/db-transaction.js";
 import { LocalCaEntity } from "../entity/local-ca.js";
+import { LocalCaGrantEntity } from "../entity/local-ca-grant.js";
 import { AcmeEabEntity, AcmeOrderEntity } from "../../acme-server/entity/acme-server.js";
 import { randomId } from "../../acme-server/protocol/acme-jws.js";
 import { LocalCaAccessService, LocalCaScope } from "./local-ca-access-service.js";
@@ -179,22 +180,12 @@ export class LocalCaAcmeService {
     const maxUses = Math.max(0, Math.min(10000, toInt(req.maxUses, 1)));
     const expiresDays = Math.max(0, Math.min(3650, toInt(req.expiresDays, 0)));
     const allowedDomains = normalizeAllowedDomains(req.allowedDomains);
-    let grantUserId = 0;
-    let grantProjectId: number | undefined = undefined;
-    if (req.grantId != null) {
-      const grant = await this.accessService.findActiveGrant(ca.id, req.grantId);
-      if (!grant) {
-        throw new ValidateException("EAB绑定的用户授权不存在或已禁用");
-      }
-      grantUserId = grant.userId;
-      grantProjectId = grant.projectId > 0 ? grant.projectId : undefined;
-    }
     const bean = this.acmeEabRepository.create({
       id,
       caId: ca.id,
       grantId: req.grantId ?? null,
-      userId: grantUserId,
-      projectId: grantProjectId,
+      userId: 0,
+      projectId: undefined,
       name: String(req.name || "").trim() || "ACME凭证",
       kid,
       allowedDomains: allowedDomains.length ? JSON.stringify(allowedDomains) : null,
@@ -205,7 +196,27 @@ export class LocalCaAcmeService {
       expiresTime: expiresDays > 0 ? Date.now() + expiresDays * 24 * 3600 * 1000 : null,
       disabled: false,
     });
-    await this.acmeEabRepository.save(bean);
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法创建ACME凭证");
+    }
+    // 授权校验与EAB保存同事务，并对Grant加锁，避免与撤销授权并发产生失效EAB
+    await runTransaction(manager, async tx => {
+      if (req.grantId != null) {
+        const driverType = String(tx.connection?.options?.type || "");
+        const useLock = !driverType.includes("sqlite");
+        const grant = await tx.getRepository(LocalCaGrantEntity).findOne({
+          where: { id: req.grantId, caId: ca.id },
+          ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+        });
+        if (!grant || grant.disabled) {
+          throw new ValidateException("EAB绑定的用户授权不存在或已禁用");
+        }
+        bean.userId = grant.userId;
+        bean.projectId = grant.projectId > 0 ? grant.projectId : undefined;
+      }
+      await tx.getRepository(AcmeEabEntity).save(bean);
+    });
     logger.info(`[local-ca] eab created ca=${ca.id} eab=${bean.id} kid=${kid} maxUses=${maxUses} allowedDomains=${allowedDomains.length}`);
     return {
       id,
@@ -244,6 +255,12 @@ export class LocalCaAcmeService {
       });
       if (!bean) {
         throw new ValidateException("ACME凭证不存在或无访问权限");
+      }
+      if (req.disabled === false && bean.grantId) {
+        const grant = await tx.getRepository(LocalCaGrantEntity).findOne({ where: { id: bean.grantId, caId: ca.id } });
+        if (!grant || grant.disabled) {
+          throw new ValidateException("关联用户授权已撤销，不能重新启用该EAB凭证");
+        }
       }
       bean.disabled = req.disabled;
       bean.updateTime = new Date();
@@ -300,6 +317,13 @@ export class LocalCaAcmeService {
     });
     if (!bean || bean.disabled || (bean.expiresTime && bean.expiresTime <= Date.now())) {
       return null;
+    }
+    if (bean.grantId) {
+      const grantRepository = manager ? manager.getRepository(LocalCaGrantEntity) : this.repository.manager.getRepository(LocalCaGrantEntity);
+      const grant = await grantRepository.findOne({ where: { id: bean.grantId, caId: bean.caId } });
+      if (!grant || grant.disabled) {
+        return null;
+      }
     }
     let allowedDomains: string[] = [];
     if (bean.allowedDomains) {

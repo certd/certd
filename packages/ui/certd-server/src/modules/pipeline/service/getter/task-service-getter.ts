@@ -91,11 +91,17 @@ export class TaskServiceGetter implements IServiceGetter {
   }
 
   async getLocalCaGetter(): Promise<LocalCaGetter> {
+    if (!this.hasLocalCaCapability("localCaGetter")) {
+      throw new Error(`插件 ${this.pluginType || "unknown"} 无权获取本地CA读取能力`);
+    }
     const localCaService: LocalCaService = await this.appCtx.getAsync("localCaService");
     return new LocalCaGetter(this.userId, this.projectId, localCaService);
   }
 
   async getLocalCaSignerGetter(): Promise<LocalCaSignerGetter> {
+    if (!this.hasLocalCaCapability("localCaSignerGetter")) {
+      throw new Error(`插件 ${this.pluginType || "unknown"} 无权获取本地CA签发能力`);
+    }
     const localCaService: LocalCaService = await this.appCtx.getAsync("localCaService");
     return new LocalCaSignerGetter(this.userId, this.projectId, localCaService);
   }

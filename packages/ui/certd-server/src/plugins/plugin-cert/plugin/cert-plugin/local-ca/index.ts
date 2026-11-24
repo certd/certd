@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import net from "node:net";
+import dns from "node:dns/promises";
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import { CertReader } from "@certd/plugin-lib";
 import type { CustomAcmeProvider } from "@certd/lib-server";
@@ -28,6 +29,33 @@ type LocalCaSubscribeInfo = {
   effectiveBaseUrl?: string;
   certPem?: string;
 };
+
+
+function isBlockedAddress(address: string): boolean {
+  const host = address.toLowerCase().replace(/^\[|\]$/g, "");
+  const version = net.isIP(host);
+  if (version === 4) {
+    const parts = host.split(".").map(Number);
+    const [a, b] = parts;
+    if (a === 0 || a === 10 || a === 127) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+    if (a === 169 && b === 254) return true; // link-local/metadata
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && (b === 168 || b === 0)) return true;
+    if (a === 198 && (b === 18 || b === 19)) return true; // benchmark
+    if (a >= 224) return true; // multicast/reserved
+    return false;
+  }
+  if (version === 6) {
+    if (host === "::1" || host === "::") return true;
+    if (host.startsWith("::ffff:")) return isBlockedAddress(host.slice(7));
+    if (host.startsWith("fe80:") || host.startsWith("fe8") || host.startsWith("fe9") || host.startsWith("fea") || host.startsWith("feb")) return true;
+    if (host.startsWith("fc") || host.startsWith("fd")) return true; // ULA fc00::/7
+    if (host.startsWith("ff")) return true; // multicast
+    return false;
+  }
+  return false;
+}
 
 const ACME_MODES: LocalCaApplyMode[] = ["local-acme", "remote-acme"];
 
@@ -221,7 +249,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       this.mode = "local-direct";
     }
     if (this.mode === "remote-acme") {
-      this.assertRemoteUrlAllowed();
+      await this.assertRemoteUrlAllowed();
     }
     if (this.mode === "local-acme") {
       await this.prepareLocalCa(true);
@@ -255,7 +283,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       return await this.doLocalDirect();
     }
     if (this.mode === "remote-acme") {
-      this.assertRemoteUrlAllowed();
+      await this.assertRemoteUrlAllowed();
     }
     const directoryUrl = await this.getResolvedDirectoryUrl();
     this.sslProvider = this.buildSslProvider(directoryUrl) as any;
@@ -365,7 +393,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   /**
    * 远程Directory URL由任务配置直接指定，仅允许系统管理员使用，避免普通用户借ACME客户端发起内网请求。
    */
-  private assertRemoteUrlAllowed() {
+  private async assertRemoteUrlAllowed() {
     const text = String(this.directoryUrl || "").trim();
     if (!text) {
       return;
@@ -383,11 +411,21 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       return;
     }
     const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
-    const blocked = host === "localhost" || host.endsWith(".localhost") || host === "metadata.google.internal" || host === "100.100.100.200" || host === "169.254.169.254";
-    const ipVersion = net.isIP(host);
-    const loopbackOrLinkLocal = ipVersion === 4 ? host.startsWith("127.") || host.startsWith("169.254.") : ipVersion === 6 ? host === "::1" || host.startsWith("fe80:") : false;
-    if (blocked || loopbackOrLinkLocal) {
-      throw new Error("普通用户不能使用本机或链路本地地址作为远程ACME Directory URL，请改用ACME账号授权或联系管理员");
+    const blockedHost = host === "localhost" || host.endsWith(".localhost") || host === "metadata.google.internal" || host === "100.100.100.200" || host === "169.254.169.254";
+    if (blockedHost || isBlockedAddress(host)) {
+      throw new Error("普通用户不能使用本机/私网/链路本地/保留地址作为远程ACME Directory URL");
+    }
+    // 域名解析后的所有A/AAAA地址也必须通过检查，避免解析到内网
+    if (!net.isIP(host)) {
+      let addresses: { address: string }[] = [];
+      try {
+        addresses = await dns.lookup(host, { all: true, verbatim: true });
+      } catch {
+        throw new Error("远程ACME Directory URL域名解析失败");
+      }
+      if (!addresses.length || addresses.some(item => isBlockedAddress(item.address))) {
+        throw new Error("远程ACME Directory URL解析到受限地址，普通用户禁止访问");
+      }
     }
   }
 
@@ -478,7 +516,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
 
   private async getResolvedDirectoryUrl(): Promise<string> {
     if (this.mode === "remote-acme") {
-      this.assertRemoteUrlAllowed();
+      await this.assertRemoteUrlAllowed();
     }
     if (this.resolvedDirectoryUrl) {
       return this.resolvedDirectoryUrl;
@@ -510,7 +548,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       return false;
     }
     if (this.mode === "remote-acme") {
-      this.assertRemoteUrlAllowed();
+      await this.assertRemoteUrlAllowed();
     }
     if (this.mode === "local-acme") {
       const ca = await this.prepareLocalCa(true);

@@ -895,8 +895,23 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async removeGrant(req: { id: number; userId: number; grantId: number }) {
-    const grantIds = await this.accessService.removeGrant(req);
-    await this.acmeService.disableEabsByGrantIds(grantIds);
+    const ca = await this.accessService.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法撤销授权");
+    }
+    // 撤销授权与禁用EAB同事务，避免并发窗口残留可用EAB
+    await runTransaction(manager, async tx => {
+      const grantRepository = tx.getRepository(LocalCaGrantEntity);
+      const grant = await grantRepository.findOne({ where: { id: req.grantId, caId: ca.id } });
+      if (!grant) {
+        throw new ValidateException("授权不存在");
+      }
+      const duplicates = await grantRepository.find({ where: { caId: ca.id, userId: grant.userId, projectId: grant.projectId } });
+      const grantIds = duplicates.map(item => item.id);
+      await tx.getRepository(AcmeEabEntity).update({ grantId: In(grantIds) }, { disabled: true, updateTime: new Date() } as any);
+      await grantRepository.delete({ id: In(grantIds) } as any);
+    });
   }
 
   async listAdmins(req: LocalCaScope) {
@@ -1249,6 +1264,36 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     };
   }
 
+
+  private getExportDir() {
+    return path.join(process.cwd(), "data", "local-ca-export");
+  }
+
+  /** 清理超过24小时的CA导出明文文件。 */
+  async cleanupExpiredExports() {
+    const dir = this.getExportDir();
+    let entries: string[] = [];
+    try {
+      entries = await fs.promises.readdir(dir);
+    } catch {
+      return;
+    }
+    const cutoff = Date.now() - 24 * 3600 * 1000;
+    for (const name of entries) {
+      if (!name.endsWith(".pem")) continue;
+      const file = path.join(dir, name);
+      try {
+        const stat = await fs.promises.stat(file);
+        if (stat.mtimeMs < cutoff) {
+          await fs.promises.unlink(file);
+          logger.info(`[local-ca] expired export removed file=${name}`);
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+
   async exportCa(req: LocalCaScope) {
     const ca = await this.accessService.getOwnedCa(req, true);
     if (ca.exportDisabled) {
@@ -1269,10 +1314,15 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       "",
     ];
     const filename = `local-ca-${ca.id}-${ca.subjectCn.replace(/[^a-zA-Z0-9._-]/g, "_")}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}.pem`;
-    // 按用户要求写在 Certd 进程运行目录，不写入持久化数据目录；权限仅当前用户可读
-    const filePath = path.join(process.cwd(), filename);
+    // 导出到专用临时目录，0600权限，最多保留24小时，由定时任务清理
+    const exportDir = this.getExportDir();
+    await fs.promises.mkdir(exportDir, { recursive: true, mode: 0o700 });
+    await this.cleanupExpiredExports();
+    const filePath = path.join(exportDir, filename);
     await fs.promises.writeFile(filePath, lines.join("\n"), { encoding: "utf8", mode: 0o600, flag: "wx" });
     await fs.promises.chmod(filePath, 0o600);
+    logger.info(`[local-ca] private key exported ca=${ca.id} admin=${req.userId} ttl=24h`);
+    return { filename, path: filePath, expiresAt: Date.now() + 24 * 3600 * 1000 };
     logger.info(`[local-ca] private key exported ca=${ca.id} admin=${req.userId}`);
     return {
       filename,

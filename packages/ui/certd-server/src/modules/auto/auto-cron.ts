@@ -77,6 +77,7 @@ export class AutoCron {
 
     this.registerLocalCaCrlRefreshCron();
     this.registerAcmeCleanupCron();
+    this.registerLocalCaExportCleanupCron();
 
     // await this.registerAuditCleanCron();
   }
@@ -89,6 +90,16 @@ export class AutoCron {
         logger.info("开始清理过期的本地ACME订单");
         await this.acmeServerService.cleanupExpired();
         logger.info("本地ACME订单清理完成");
+      },
+    });
+  }
+
+  registerLocalCaExportCleanupCron() {
+    this.cron.register({
+      name: "localCaExportCleanup",
+      cron: "0 17 * * * *",
+      job: async () => {
+        await this.localCaService.cleanupExpiredExports();
       },
     });
   }

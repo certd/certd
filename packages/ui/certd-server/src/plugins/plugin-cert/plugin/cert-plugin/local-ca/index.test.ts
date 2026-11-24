@@ -194,7 +194,7 @@ describe("CertApplyLocalCa", () => {
     plugin.mode = "remote-acme";
     plugin.directoryUrl = "http://127.0.0.1:7001/api/acme/9/directory";
     (plugin.ctx.user as any).role = "user";
-    await assert.rejects(() => (plugin as any).getResolvedDirectoryUrl(), /本机或链路本地/);
+    await assert.rejects(() => (plugin as any).getResolvedDirectoryUrl(), /本机\/私网\/链路本地/);
   });
 
   it("真实续期判断不会因域名过滤而每次重签", async () => {
