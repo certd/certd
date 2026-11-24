@@ -558,7 +558,8 @@ export class CertApplyLocalCa extends CertApplyPlugin {
 new CertApplyLocalCa();
 
 // 根据签发方式收起无关字段，避免直接签发用户被ACME必填项阻塞
-const localCaInput = (CertApplyLocalCa as any).define.input;
+const localCaInput = (CertApplyLocalCa as any).define?.input;
+if (localCaInput) {
 localCaInput.mode.order = -10000;
 localCaInput.caId.mergeScript = `return {
   show: ctx.compute(({ form }) => form.mode !== 'remote-acme'),
@@ -636,3 +637,4 @@ localCaInput.preferredChain.show = false;
 localCaInput.eabAccessId.show = false;
 localCaInput.googleAccessId.show = false;
 localCaInput.certApplyRetryCount.mergeScript = `return { show: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode)) }`;
+}

@@ -457,7 +457,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.acmeEnabled = false;
     bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
-    bean.baseUrl = normalizeBaseUrl(req.baseUrl) || root.baseUrl || null;
+    bean.baseUrl = normalizeBaseUrl(req.baseUrl) || root.baseUrl || (await this.resolveBaseUrl(root));
     bean.pathLength = 0;
     bean.disabled = false;
     bean.remark = req.remark || "";

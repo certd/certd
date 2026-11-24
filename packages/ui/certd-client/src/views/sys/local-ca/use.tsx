@@ -133,6 +133,8 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           title: t("certd.localCa.fields.baseUrl"),
           type: "text",
           form: {
+            required: true,
+            rules: [{ required: true, message: t("certd.common.required") }],
             col: { span: 24 },
             component: { placeholder: window.location.origin },
             helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
@@ -202,7 +204,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         usage: root.usage || "server",
         maxValidityDays: root.maxValidityDays > 0 ? root.maxValidityDays : 365,
         allowedDomainsText: "",
-        baseUrl: root.baseUrl || "",
+        baseUrl: root.baseUrl || window.location.origin,
       },
       columns: {
         name: {
@@ -282,6 +284,8 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           title: t("certd.localCa.fields.baseUrl"),
           type: "text",
           form: {
+            required: true,
+            rules: [{ required: true, message: t("certd.common.required") }],
             col: { span: 24 },
             component: { placeholder: window.location.origin },
             helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
@@ -524,6 +528,8 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           title: t("certd.localCa.fields.baseUrl"),
           type: "text",
           form: {
+            required: true,
+            rules: [{ required: true, message: t("certd.common.required") }],
             col: { span: 24 },
             component: { placeholder: window.location.origin },
             helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
