@@ -2,6 +2,7 @@ import crypto, { X509Certificate } from "node:crypto";
 import net from "node:net";
 // @ts-ignore
 import * as x509 from "@peculiar/x509";
+import { ValidateException } from "@certd/lib-server";
 import { normalizeDomains, matchAllowedDomains, readCsrDomains } from "../../cert/service/cert-utils.js";
 export { normalizeDomains, matchAllowedDomains, getCsrDomains, verifyCertIssuedBy } from "../../cert/service/cert-utils.js";
 
@@ -206,6 +207,42 @@ export function sha256Hex(text: string) {
 
 export function normalizePem(pem: string) {
   return String(pem || "").trim() + "\n";
+}
+
+/**
+ * 解密CA私钥并校验完整性。签发、导出与CRL生成共用；
+ * decrypt 由调用方的 EncryptService 提供，保持本模块不依赖业务服务。
+ */
+export function decryptCaPrivateKey(ca: { privateKeyEncrypted: string; privateKeyHash?: string }, decrypt: (encrypted: string) => string) {
+  let plain: string;
+  try {
+    plain = decrypt(ca.privateKeyEncrypted);
+  } catch (e: any) {
+    throw new Error(`CA私钥解密失败，系统加密密钥可能已变更：${e.message}`);
+  }
+  if (ca.privateKeyHash && sha256Hex(plain) !== ca.privateKeyHash) {
+    throw new Error("CA私钥解密校验失败，私钥可能已损坏或被篡改");
+  }
+  return plain;
+}
+
+export function normalizeAllowedDomains(list?: string[]) {
+  return (list || []).map(item => String(item || "").trim()).filter(Boolean);
+}
+
+export function parseAllowedDomains(value: string) {
+  if (!value) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) {
+      throw new Error("not an array");
+    }
+    return parsed;
+  } catch (e) {
+    throw new ValidateException("allowedDomains配置损坏，已拒绝签发");
+  }
 }
 
 function assertCaKeyUsage(certPem: string, label: string) {

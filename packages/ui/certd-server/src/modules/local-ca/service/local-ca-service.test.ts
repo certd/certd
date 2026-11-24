@@ -3,6 +3,9 @@ import fs from "node:fs";
 import crypto, { X509Certificate } from "node:crypto";
 import { Encryptor, EncryptService } from "@certd/lib-server";
 import { LocalCaService } from "./local-ca-service.js";
+import { LocalCaAccessService } from "./local-ca-access-service.js";
+import { LocalCaCrlService } from "./local-ca-crl-service.js";
+import { LocalCaAcmeService } from "./local-ca-acme-service.js";
 import { createCsr, createIntermediateCa, getCertSerialNumber } from "./local-ca-crypto.js";
 // @ts-ignore
 import * as x509 from "@peculiar/x509";
@@ -206,6 +209,28 @@ function createService() {
       return revocations.get(key) || null;
     },
   } as any;
+
+  // 子服务与facade共享同一套mock依赖：测试中对service.xxx的重新赋值会立即对子服务生效
+  const accessService = new LocalCaAccessService();
+  const crlService = new LocalCaCrlService();
+  const acmeService = new LocalCaAcmeService();
+  const sharedKeys = ["repository", "pipelineRepository", "adminRepository", "grantRepository", "acmeEabRepository", "acmeOrderRepository", "encryptService", "certInfoService", "certRevocationService", "sysSettingsService"];
+  for (const sub of [accessService, crlService, acmeService]) {
+    for (const key of sharedKeys) {
+      Object.defineProperty(sub, key, {
+        configurable: true,
+        get: () => (service as any)[key],
+        set: value => {
+          (service as any)[key] = value;
+        },
+      });
+    }
+  }
+  crlService.accessService = accessService;
+  acmeService.accessService = accessService;
+  service.accessService = accessService;
+  service.crlService = crlService;
+  service.acmeService = acmeService;
 
   return { service, store, encryptService, revocations };
 }
@@ -814,9 +839,9 @@ describe("LocalCaService", () => {
     entity.lastCrlPem = "newer-crl";
     entity.lastCrlTime = 1;
 
-    await (service as any).storeCrlCache(id, 10, "older-crl");
+    await (service.crlService as any).storeCrlCache(id, 10, "older-crl");
     assert.equal(entity.lastCrlPem, "newer-crl");
-    await (service as any).storeCrlCache(id, 11, "current-crl");
+    await (service.crlService as any).storeCrlCache(id, 11, "current-crl");
     assert.equal(entity.lastCrlPem, "current-crl");
   });
 
@@ -937,8 +962,8 @@ describe("LocalCaService", () => {
   it("吊销时Root CRL生成失败也保持CA不可签发，并可重试", async () => {
     const { service, store } = createService();
     const { rootId, id } = await createIssuingCa(service, { name: "Fail Closed Intermediate" });
-    const originalStore = (service as any).storeCrlCache;
-    (service as any).storeCrlCache = async () => {
+    const originalStore = (service.crlService as any).storeCrlCache;
+    (service.crlService as any).storeCrlCache = async () => {
       throw new Error("模拟CRL写入失败");
     };
     await assert.rejects(() => service.revokeIntermediate({ id, userId: 1 }), /模拟CRL写入失败/);
@@ -946,7 +971,7 @@ describe("LocalCaService", () => {
     assert.equal(store.get(id).disabled, true);
     await assert.rejects(() => service.issueLeaf({ id, userId: 1, domains: ["x.example.com"], keyType: "rsa2048" }), /已被父CA吊销|已禁用/);
 
-    (service as any).storeCrlCache = originalStore;
+    (service.crlService as any).storeCrlCache = originalStore;
     const retried = await service.revokeIntermediate({ id, userId: 1 });
     assert.ok(retried.crlNumber > 0);
     const rootCrl = await service.getCrlInfo({ id: rootId, userId: 1 });
@@ -956,7 +981,7 @@ describe("LocalCaService", () => {
   it("吊销中间CA时Root CRL持续写入冲突，保持吊销状态并标记缓存失效", async () => {
     const { service, store } = createService();
     const { rootId, id } = await createIssuingCa(service, { name: "Conflict Intermediate" });
-    (service as any).storeCrlCache = async () => false;
+    (service.crlService as any).storeCrlCache = async () => false;
 
     await assert.rejects(() => service.revokeIntermediate({ id, userId: 1 }), /并发变更/);
 
@@ -975,15 +1000,16 @@ describe("LocalCaService", () => {
       validityYears: 2,
     });
     const sequence: string[] = [];
-    const originalNext = (service as any).nextCrlNumber;
-    const originalEntries = (service as any).getRevocationEntries;
-    (service as any).nextCrlNumber = async function (caId: number) {
+    const crlService = service.crlService as any;
+    const originalNext = crlService.nextCrlNumber;
+    const originalEntries = crlService.getRevocationEntries;
+    crlService.nextCrlNumber = async function (caId: number) {
       sequence.push("number");
-      return await originalNext.call(service, caId);
+      return await originalNext.call(crlService, caId);
     };
-    (service as any).getRevocationEntries = async function (caId: number) {
+    crlService.getRevocationEntries = async function (caId: number) {
       sequence.push("entries");
-      return await originalEntries.call(service, caId);
+      return await originalEntries.call(crlService, caId);
     };
 
     await service.refreshRootCrl({ id: root.id, userId: 1 });
@@ -999,9 +1025,9 @@ describe("LocalCaService", () => {
       keyType: "rsa2048",
       validityYears: 2,
     });
-    const originalStore = (service as any).storeCrlCache.bind(service);
+    const originalStore = (service.crlService as any).storeCrlCache.bind(service.crlService);
     let storeCalls = 0;
-    (service as any).storeCrlCache = async (...args: any[]) => {
+    (service.crlService as any).storeCrlCache = async (...args: any[]) => {
       storeCalls++;
       return storeCalls === 1 ? false : await originalStore(...args);
     };
@@ -1020,7 +1046,7 @@ describe("LocalCaService", () => {
       keyType: "rsa2048",
       validityYears: 2,
     });
-    (service as any).storeCrlCache = async () => false;
+    (service.crlService as any).storeCrlCache = async () => false;
     await assert.rejects(() => service.refreshRootCrl({ id: root.id, userId: 1 }), /并发变更/);
   });
 
@@ -1255,7 +1281,7 @@ describe("LocalCaService", () => {
       .replace(/BEGIN CRL/g, "BEGIN X509 CRL")
       .replace(/END CRL/g, "END X509 CRL");
     caEntity.lastCrlTime = Date.now();
-    (service as any).storeCrlCache = async () => false;
+    (service.crlService as any).storeCrlCache = async () => false;
 
     await assert.rejects(() => service.getCrl(id), /没有可用缓存/);
   });
