@@ -279,7 +279,7 @@ export default {
   passkeyNotAllowed: "Passkey verification timed out or was not allowed, please retry",
   passkeyPending: "A Passkey request is already pending; finish or cancel it first",
   forceArchiveTitle: "Force archive local CA",
-  forceArchiveContent: "This CA is still referenced by pipelines (possibly owned by other users). After force archiving, those pipelines will fail on next run. Notify affected users first. Force archive "{name}"?",
+  forceArchiveContent: 'This CA is still referenced by pipelines (possibly owned by other users). After force archiving, those pipelines will fail on next run. Notify affected users first. Force archive "{name}"?',
   forceArchiveOk: "Force archive",
   archivedValidity: "Validity",
   viewCertInfo: "View certificate",
