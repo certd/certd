@@ -357,7 +357,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       return [];
     }
     const list = await this.find({ where: { id: In(allowedIds), caType: "intermediate", deleted: false }, order: { id: "DESC" } });
-    const filtered = list.filter(item => !req.searchKey || item.name.toLowerCase().includes(req.searchKey.toLowerCase()) || item.subjectCn.toLowerCase().includes(req.searchKey.toLowerCase()));
+    // 选择器仅展示可用中间CA：排除已轮换退役/禁用/归档的CA
+    const usable = list.filter(item => !item.disabled && !item.rotatedToId);
+    const filtered = usable.filter(item => !req.searchKey || item.name.toLowerCase().includes(req.searchKey.toLowerCase()) || item.subjectCn.toLowerCase().includes(req.searchKey.toLowerCase()));
     const safeList = filtered.map(item => this.toSafe(item));
     for (const item of safeList) {
       (item as any).effectiveBaseUrl = await this.crlService.resolveBaseUrl(item as any);
@@ -367,7 +369,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   async listAdminOptions(req: { adminUserId: number; searchKey?: string }) {
     const list = await this.listSafe({ adminUserId: req.adminUserId, searchKey: req.searchKey });
-    return this.toOptionList(list as any);
+    const usable = list.filter((item: any) => item.caType === "intermediate" && !item.disabled && !item.rotatedToId);
+    return this.toOptionList(usable as any);
   }
 
   async getOptionsByIds(req: { ids: number[]; userId: number; projectId?: number }) {
