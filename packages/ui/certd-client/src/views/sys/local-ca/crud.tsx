@@ -332,13 +332,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           search: { show: true },
           column: { width: 110, component: { color: "auto" } },
         },
-        parentName: {
-          title: t("certd.localCa.fields.parentCa"),
-          type: "text",
-          form: { show: false },
-          search: { show: false },
-          column: { width: 140, ellipsis: true },
-        },
         caPath: {
           title: t("certd.localCa.fields.caPath"),
           type: "text",
@@ -381,7 +374,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "number",
           form: { col: { span: 12 }, component: { min: 0 } },
           search: { show: false },
-          column: { width: 110 },
+          column: { width: 110, render: ({ value }: any) => (Number(value) > 0 ? value : t("certd.localCa.unlimited")) },
         },
         allowedDomainsText: {
           title: t("certd.localCa.fields.allowedDomains"),
