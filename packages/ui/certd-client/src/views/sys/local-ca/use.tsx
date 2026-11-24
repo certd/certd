@@ -728,6 +728,10 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   }
 
   function openRevokeIntermediate(row: any) {
+    if (row?.caType !== "intermediate") {
+      notification.warning({ message: t("certd.localCa.onlyIntermediate") });
+      return;
+    }
     Modal.confirm({
       title: t("certd.localCa.revokeIntermediateTitle"),
       content: t("certd.localCa.revokeIntermediateDesc", { name: row.name }),

@@ -182,9 +182,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           revokeIntermediate: {
             order: 1,
             type: "link",
-            text: t("certd.localCa.revokeIntermediate"),
+            text: null,
+            tooltip: { title: t("certd.localCa.revokeIntermediate") },
             icon: "ph:prohibit",
-            show: ({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled,
+            show: ({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled && !row.revoked,
             click: async ({ row }) => {
               openRevokeIntermediate(row);
             },
