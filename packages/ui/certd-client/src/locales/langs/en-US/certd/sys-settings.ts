@@ -83,6 +83,7 @@ export default {
     "1. In Local CA Management, enable ACME for an intermediate CA and create an EAB credential (the root CA does not provide ACME).\n2. Open the CA's View dialog and copy its ACME Directory URL, e.g. https://your-certd-host/api/acme/<CA ID>/directory.\n3. Or use Quick add from Local CA below to fill the name, sslProvider and Directory URL automatically, with Need EAB enabled.\n4. Select this provider in the certificate apply task, then create an ACME account with the EAB KID and HMAC Key from step 1.",
   customAcmeLocalCaQuickAdd: "Quick add from Local CA",
   customAcmeLocalCaQuickAddTitle: "Select a local CA",
+  customAcmeLocalCaQuickAddDetail: "CA details",
   customAcmeLocalCaQuickAddSelect: "Local CA",
   customAcmeLocalCaQuickAddHelp: "Only intermediate CAs with ACME enabled are listed. Click Save at the bottom of the page after adding.",
   customAcmeLocalCaQuickAddEmpty: "No local CA is available. Enable ACME for an intermediate CA in Local CA Management first.",

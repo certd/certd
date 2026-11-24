@@ -17,7 +17,7 @@
 
 <script setup lang="tsx">
 import { computed, onMounted, ref } from "vue";
-import { dict } from "@fast-crud/fast-crud";
+import { compute, dict } from "@fast-crud/fast-crud";
 import { useFormDialog } from "/@/use/use-dialog";
 import { Modal, notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
@@ -199,6 +199,30 @@ async function openQuickAdd() {
           required: true,
           col: { span: 24 },
         },
+      },
+      caDetail: {
+        title: t("certd.sys.settings.customAcmeLocalCaQuickAddDetail"),
+        form: {
+          col: { span: 24 },
+          value: compute(({ form }: any) => {
+            const ca = candidates.find((item: any) => Number(item.id) === Number(form.caId));
+            if (!ca) {
+              return "";
+            }
+            const baseUrl = String(ca.baseUrl || "").replace(/\/+$/, "");
+            const fmt = (v: any) => (v ? new Date(Number(v)).toLocaleString() : "-");
+            return [
+              `${t("certd.localCa.fields.name")}：${ca.name}`,
+              `Common Name：${ca.subjectCn || "-"}`,
+              `${t("certd.localCa.fields.keyType")}：${ca.keyType || "-"}`,
+              `${t("certd.localCa.fields.notAfter")}：${fmt(ca.notAfter)}`,
+              `ACME Directory：${baseUrl ? `${baseUrl}/api/acme/${ca.id}/directory` : "-"}`,
+              `${t("certd.localCa.fields.acmeDirectIssue")}：${ca.acmeDirectIssue ? t("certd.localCa.acmeDirectIssueYes") : t("certd.localCa.acmeDirectIssueNo")}`,
+            ].join("\n");
+          }),
+          component: { name: "a-textarea", disabled: true, autoSize: { minRows: 5, maxRows: 8 } },
+        },
+        column: { show: false },
       },
     },
     onSubmit: async (form: any) => {

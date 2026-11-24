@@ -160,12 +160,12 @@ export class CertApplyLocalCa extends CertApplyPlugin {
 
   @TaskInput({
     title: "中间CA",
-    helper: "本地CA直接签发和本地ACME模式需要选择中间CA；客户端需要信任其根CA",
+    helper: "本地直签必选中间CA；本地ACME可留空（自动使用ACME账号绑定的CA）；客户端需要信任其根CA",
     component: {
       name: "local-ca-selector",
       vModel: "modelValue",
     },
-    required: true,
+    required: false,
     order: -9990,
   })
   caId!: number;
@@ -220,6 +220,22 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   private directCertMeta?: { localCaId: number; serialNumber: string };
   private directIssueCache?: boolean;
 
+  /** 本地ACME模式：ACME账号已绑定中间CA，未选caId时自动从账号Directory URL推导，避免重复选择。 */
+  private async ensureLocalAcmeCaId() {
+    if (this.mode === "local-acme" && !this.caId && this.acmeAccountAccessId) {
+      try {
+        const access: any = await this.getAccess(this.acmeAccountAccessId);
+        const account = this.parseAcmeAccount(access.account);
+        const caId = parseLocalCaDirectory(account.directoryUrl)?.caId;
+        if (caId) {
+          this.caId = caId;
+        }
+      } catch {
+        // 忽略，后续prepareLocalCa会给出明确错误
+      }
+    }
+  }
+
   async onInit() {
     if (!this.mode) {
       this.mode = "local-direct";
@@ -228,6 +244,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       await this.assertRemoteUrlAllowed();
     }
     if (this.mode === "local-acme") {
+      await this.ensureLocalAcmeCaId();
       await this.prepareLocalCa(true);
     }
   }
@@ -266,6 +283,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     if (this.mode === "remote-acme") {
       await this.assertRemoteUrlAllowed();
     }
+    await this.ensureLocalAcmeCaId();
     const directoryUrl = await this.getResolvedDirectoryUrl();
     this.sslProvider = this.buildSslProvider(directoryUrl) as any;
     if (!this.challengeType) {
