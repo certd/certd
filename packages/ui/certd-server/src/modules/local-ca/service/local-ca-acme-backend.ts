@@ -14,6 +14,9 @@ export class LocalCaAcmeBackend implements AcmeIssuerBackend {
   getAcmeCa(caId: number) {
     return this.localCaService.getAcmeCa(caId);
   }
+  getAcmeAccessView(caId: number) {
+    return this.localCaService.getAcmeAccessView(caId);
+  }
   getAcmeCaForUpdate(caId: number, manager: EntityManager) {
     return this.localCaService.getAcmeCaForUpdate(caId, manager);
   }

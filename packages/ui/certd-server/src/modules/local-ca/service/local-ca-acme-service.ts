@@ -8,6 +8,8 @@ import { runTransaction } from "../../db/db-transaction.js";
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { LocalCaGrantEntity } from "../entity/local-ca-grant.js";
 import { AcmeAccountEntity, AcmeEabEntity, AcmeOrderEntity } from "../../acme-server/entity/acme-server.js";
+import { normalizeIpAllowlist, normalizeRequiredHeaders } from "../../acme-server/protocol/acme-access.js";
+import bcrypt from "bcryptjs";
 import { randomId } from "../../acme-server/protocol/acme-jws.js";
 import { LocalCaAccessService, LocalCaScope } from "./local-ca-access-service.js";
 import { LocalCaCrlService } from "./local-ca-crl-service.js";
@@ -82,6 +84,11 @@ export class LocalCaAcmeService {
     return ca;
   }
 
+  /** 访问控制原始视图（不做usable断言），供ACME访问门禁判断总开关/白名单。 */
+  async getAcmeAccessView(id: number) {
+    return await this.resolveEffectiveAcmeCa(id);
+  }
+
   /**
    * 吊销接口允许CA已禁用：否则CA关闭后其历史证书将无法撤销，也无法安全归档删除。
    */
@@ -133,7 +140,9 @@ export class LocalCaAcmeService {
     }
     ca.acmeEnabled = true;
     if (req.validityDays) {
-      ca.acmeConfig = JSON.stringify({ validityDays: Math.max(1, Math.min(3650, req.validityDays)) });
+      const config = this.readAcmeConfigObject(ca.acmeConfig);
+      config.validityDays = Math.max(1, Math.min(3650, req.validityDays));
+      ca.acmeConfig = JSON.stringify(config);
     }
     ca.updateTime = new Date();
     await this.repository.save(ca);
@@ -143,6 +152,67 @@ export class LocalCaAcmeService {
   /**
    * 关闭EAB直签（或整个ACME服务）时在同一事务内失效尚未完成的直签订单。
    */
+  private readAcmeConfigObject(value?: string): any {
+    if (!value) {
+      return {};
+    }
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  /** 读取脱敏ACME访问控制配置（不回显密码哈希）。 */
+  async getAcmeAccess(req: LocalCaScope & { caId: number }) {
+    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+    const config = this.readAcmeConfigObject(ca.acmeConfig);
+    return {
+      acmeEnabled: ca.acmeEnabled,
+      ipAllowlist: Array.isArray(config.ipAllowlist) ? config.ipAllowlist : [],
+      basicAuth: { enabled: config.basicAuth?.enabled === true, username: config.basicAuth?.username || "" },
+      requiredHeaders: Array.isArray(config.requiredHeaders) ? config.requiredHeaders : [],
+    };
+  }
+
+  /** 设置ACME访问控制（IP白名单/Basic认证/自定义头），合并写入acmeConfig。 */
+  async setAcmeAccess(req: LocalCaScope & { caId: number; ipAllowlist?: any; basicAuth?: { enabled?: boolean; username?: string; password?: string }; requiredHeaders?: any }) {
+    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("只有中间CA可以配置ACME访问控制");
+    }
+    const config = this.readAcmeConfigObject(ca.acmeConfig);
+    if (req.ipAllowlist !== undefined) {
+      config.ipAllowlist = normalizeIpAllowlist(req.ipAllowlist);
+    }
+    if (req.requiredHeaders !== undefined) {
+      config.requiredHeaders = normalizeRequiredHeaders(req.requiredHeaders);
+    }
+    if (req.basicAuth !== undefined) {
+      const enabled = req.basicAuth.enabled === true;
+      const username = String(req.basicAuth.username || "").trim();
+      const prev = config.basicAuth || {};
+      let passwordHash = String(prev.passwordHash || "");
+      if (enabled) {
+        if (!username) {
+          throw new ValidateException("启用Basic认证必须设置用户名");
+        }
+        if (req.basicAuth.password) {
+          passwordHash = bcrypt.hashSync(String(req.basicAuth.password), 10);
+        } else if (!passwordHash) {
+          throw new ValidateException("启用Basic认证必须设置密码");
+        }
+      }
+      config.basicAuth = { enabled, username: enabled ? username : "", passwordHash: enabled ? passwordHash : "" };
+    }
+    ca.acmeConfig = JSON.stringify(config);
+    ca.updateTime = new Date();
+    await this.repository.save(ca);
+    logger.info(`[local-ca] acme access updated ca=${ca.id} user=${req.userId}`);
+    return await this.getAcmeAccess({ id: req.caId, userId: req.userId, projectId: req.projectId, caId: req.caId });
+  }
+
   async invalidateAllDirectOrders(ca: LocalCaEntity, disableAcme = false) {
     const manager = this.repository.manager;
     if (!manager?.transaction) {

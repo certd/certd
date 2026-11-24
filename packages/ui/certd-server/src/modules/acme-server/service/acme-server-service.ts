@@ -11,6 +11,8 @@ import type { AcmeIssuedCertificateStore } from "../acme-issued-certificate-stor
 import { getCsrDomains, matchAllowedDomains, normalizeDomains, verifyCertIssuedBy } from "../../cert/service/cert-utils.js";
 import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeOrderEntity } from "../entity/acme-server.js";
 import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "../protocol/acme-jws.js";
+import { matchIpAllowlist } from "../protocol/acme-access.js";
+import bcrypt from "bcryptjs";
 import { fetchHttpChallenge } from "../protocol/acme-network.js";
 import { isSameAcmeUrl } from "../protocol/acme-url.js";
 import { acmeNonceStore } from "../protocol/acme-nonce.js";
@@ -913,8 +915,9 @@ export class AcmeServerService {
   }
 
   private parseAcmeConfig(value?: string) {
+    const defaults = { validityDays: 90, maxPendingOrders: 20, maxOrdersPerMinute: 10, ipAllowlist: [] as string[], basicAuth: { enabled: false, username: "", passwordHash: "" }, requiredHeaders: [] as { name: string; value: string }[] };
     if (!value) {
-      return { validityDays: 90, maxPendingOrders: 20, maxOrdersPerMinute: 10 };
+      return defaults;
     }
     try {
       const parsed = JSON.parse(value);
@@ -922,9 +925,62 @@ export class AcmeServerService {
         validityDays: parsed.validityDays || 90,
         maxPendingOrders: Math.max(1, Number(parsed.maxPendingOrders) || 20),
         maxOrdersPerMinute: Math.max(1, Number(parsed.maxOrdersPerMinute) || 10),
+        ipAllowlist: Array.isArray(parsed.ipAllowlist) ? parsed.ipAllowlist : [],
+        basicAuth: parsed.basicAuth && typeof parsed.basicAuth === "object" ? { enabled: parsed.basicAuth.enabled === true, username: String(parsed.basicAuth.username || ""), passwordHash: String(parsed.basicAuth.passwordHash || "") } : defaults.basicAuth,
+        requiredHeaders: Array.isArray(parsed.requiredHeaders) ? parsed.requiredHeaders : [],
       };
     } catch (e) {
-      return { validityDays: 90, maxPendingOrders: 20, maxOrdersPerMinute: 10 };
+      return defaults;
+    }
+  }
+
+  /** ACME端点访问门禁：总开关→IP白名单→Basic认证→自定义头。任一不满足抛AcmeProblem。 */
+  async assertAccess(ctx: any, caId: number) {
+    const ca = await this.issuer.getAcmeAccessView(caId);
+    if (!ca || ca.caType !== "intermediate" || !ca.acmeEnabled) {
+      throw new AcmeProblem("unauthorized", "ACME服务未启用", 403);
+    }
+    if (ca.revoked || ca.disabled || (ca.notAfter && Number(ca.notAfter) <= Date.now())) {
+      throw new AcmeProblem("unauthorized", "CA不可用", 403);
+    }
+    // 配置损坏fail-closed：有acmeConfig但解析失败时拒绝，避免门禁静默放行
+    if (ca.acmeConfig) {
+      try {
+        JSON.parse(ca.acmeConfig);
+      } catch {
+        throw new AcmeProblem("serverInternal", "ACME访问配置损坏，已拒绝请求", 500);
+      }
+    }
+    const config = this.parseAcmeConfig(ca.acmeConfig);
+    if (config.ipAllowlist.length && !matchIpAllowlist(ctx.ip || "", config.ipAllowlist)) {
+      throw new AcmeProblem("unauthorized", "来源IP不在白名单内", 403);
+    }
+    if (config.basicAuth.enabled) {
+      const header = String(ctx.get("Authorization") || "");
+      const fail = () => {
+        ctx.set("WWW-Authenticate", 'Basic realm="acme"');
+        throw new AcmeProblem("unauthorized", "需要有效的HTTP Basic认证", 401);
+      };
+      if (!header.startsWith("Basic ")) {
+        fail();
+      }
+      let decoded = "";
+      try {
+        decoded = Buffer.from(header.slice(6).trim(), "base64").toString("utf8");
+      } catch {
+        fail();
+      }
+      const idx = decoded.indexOf(":");
+      const user = idx >= 0 ? decoded.slice(0, idx) : "";
+      const pass = idx >= 0 ? decoded.slice(idx + 1) : "";
+      if (user !== config.basicAuth.username || !config.basicAuth.passwordHash || !bcrypt.compareSync(pass, config.basicAuth.passwordHash)) {
+        fail();
+      }
+    }
+    for (const h of config.requiredHeaders) {
+      if (String(ctx.get(h.name) || "") !== h.value) {
+        throw new AcmeProblem("unauthorized", `缺少必需的请求头或值不匹配：${h.name}`, 403);
+      }
     }
   }
 

@@ -848,6 +848,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   /**
    * finalize 时在事务内重新读取并锁定CA行，确保关闭直签/收紧域名范围与签发不会交错。
    */
+  async getAcmeAccessView(id: number) {
+    return await this.acmeService.getAcmeAccessView(id);
+  }
+
   async getAcmeCaForUpdate(id: number, manager: EntityManager) {
     return await this.acmeService.getAcmeCaForUpdate(id, manager);
   }
@@ -873,6 +877,14 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   async setAcmeEnabled(req: LocalCaScope & { enabled: boolean; validityDays?: number }) {
     return await this.acmeService.setAcmeEnabled(req);
+  }
+
+  async getAcmeAccess(req: LocalCaScope & { caId: number }) {
+    return await this.acmeService.getAcmeAccess(req);
+  }
+
+  async setAcmeAccess(req: LocalCaScope & { caId: number; ipAllowlist?: any; basicAuth?: any; requiredHeaders?: any }) {
+    return await this.acmeService.setAcmeAccess(req);
   }
 
   async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number; remark?: string; privileged?: boolean }) {

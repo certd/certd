@@ -20,6 +20,7 @@ export interface AcmeCaView {
 
 export interface AcmeIssuerBackend {
   getAcmeCa(caId: number): Promise<AcmeCaView>;
+  getAcmeAccessView(caId: number): Promise<AcmeCaView | null>;
   getAcmeCaForUpdate(caId: number, manager: EntityManager): Promise<AcmeCaView>;
   getCaForAcmeRevocation(caId: number): Promise<AcmeCaView>;
   getCaBaseUrl(caId: number): Promise<string>;

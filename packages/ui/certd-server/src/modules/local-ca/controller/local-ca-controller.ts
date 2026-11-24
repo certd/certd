@@ -234,6 +234,29 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(true);
   }
 
+  @Post("/acme/access/get", { description: Constants.per.authOnly, summary: "查询本地CA的ACME访问控制配置" })
+  async getAcmeAccess(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.checkCaAccess(body.id, "read");
+    return this.ok(await this.service.getAcmeAccess({ id: body.id, caId: body.id, userId, projectId }));
+  }
+
+  @Post("/acme/access", { description: Constants.per.authOnly, summary: "设置本地CA的ACME访问控制（IP白名单/Basic/自定义头，需2FA/Passkey）" })
+  async setAcmeAccess(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "设置ACME访问控制");
+    const { userId, projectId } = await this.checkCaAccess(body.id, "write");
+    const res = await this.service.setAcmeAccess({
+      id: body.id,
+      caId: body.id,
+      userId,
+      projectId,
+      ipAllowlist: body.ipAllowlist,
+      basicAuth: body.basicAuth,
+      requiredHeaders: body.requiredHeaders,
+    });
+    this.auditLog({ content: `更新了本地CA的ACME访问控制(ID:${body.id})` });
+    return this.ok(res);
+  }
+
   @Post("/intermediate/revoke", { description: Constants.per.authOnly, summary: "吊销中间CA并刷新Root CRL" })
   async revokeIntermediate(@Body(ALL) body: any) {
     this.assertStepUp(body.verifyToken, "吊销中间CA");
