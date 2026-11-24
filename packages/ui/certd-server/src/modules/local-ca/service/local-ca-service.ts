@@ -430,7 +430,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     bean.maxValidityDays = rootMaxDays;
     bean.acmeEnabled = false;
-    bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
     bean.baseUrl = normalizeBaseUrl(req.baseUrl);
     bean.pathLength = 1;
@@ -490,7 +489,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     bean.maxValidityDays = childMaxDays;
     bean.acmeEnabled = false;
-    bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
     bean.baseUrl = normalizeBaseUrl(req.baseUrl) || root.baseUrl || (await this.crlService.resolveBaseUrl(root));
     bean.dnsServer = normalizeDnsServerInput(req.dnsServer);
@@ -564,7 +562,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.allowedDomains = old.allowedDomains;
     bean.maxValidityDays = old.maxValidityDays;
     bean.acmeEnabled = old.acmeEnabled;
-    bean.acmeDirectIssue = old.acmeDirectIssue;
     bean.acmeConfig = old.acmeConfig;
     bean.baseUrl = old.baseUrl || root.baseUrl || null;
     bean.dnsServer = old.dnsServer;
@@ -718,7 +715,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       bean.maxValidityDays = await this.resolveChildMaxValidity(req.maxValidityDays, parent);
     }
     bean.acmeEnabled = false;
-    bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
     bean.baseUrl = normalizeBaseUrl(req.baseUrl) || parent?.baseUrl || null;
     bean.dnsServer = normalizeDnsServerInput(req.dnsServer);
@@ -879,8 +875,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.acmeService.setAcmeEnabled(req);
   }
 
-  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number; remark?: string }) {
+  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number; remark?: string; privileged?: boolean }) {
     return await this.acmeService.createAcmeEab(req);
+  }
+
+  async setAcmeEabPrivileged(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; privileged: boolean }) {
+    return await this.acmeService.setAcmeEabPrivileged(req);
   }
 
   async setAcmeEabDisabled(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; disabled: boolean }) {
@@ -930,11 +930,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.crlService.refreshArchivedRootCrl(req);
   }
 
-  async requiresStepUpForUpdate(req: LocalCaScope & { usage?: string; maxValidityDays?: number; allowedDomains?: string[]; baseUrl?: string; acmeDirectIssue?: boolean; exportDisabled?: boolean; dnsServer?: string }) {
+  async requiresStepUpForUpdate(req: LocalCaScope & { usage?: string; maxValidityDays?: number; allowedDomains?: string[]; baseUrl?: string; exportDisabled?: boolean; dnsServer?: string }) {
     const ca = await this.accessService.getOwnedCa(req);
-    if (req.acmeDirectIssue === true && !ca.acmeDirectIssue) {
-      return true;
-    }
     if (req.allowedDomains != null) {
       try {
         if (JSON.stringify(normalizeAllowedDomains(req.allowedDomains)) !== JSON.stringify(parseAllowedDomains(ca.allowedDomains))) {
@@ -985,7 +982,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       }
       const duplicates = await grantRepository.find({ where: { caId: ca.id, userId: grant.userId, projectId: grant.projectId } });
       const grantIds = duplicates.map(item => item.id);
+      const eabs = await tx.getRepository(AcmeEabEntity).find({ where: { grantId: In(grantIds) }, select: { id: true } });
       await tx.getRepository(AcmeEabEntity).update({ grantId: In(grantIds) }, { disabled: true, updateTime: new Date() } as any);
+      await this.acmeService.invalidateDirectOrdersByEabIds(tx, eabs.map(item => item.id), "用户授权已撤销，EAB凭证已禁用，请重新创建订单");
       await grantRepository.delete({ id: In(grantIds) } as any);
     });
   }
@@ -1010,7 +1009,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       maxValidityDays?: number;
       allowedDomains?: string[];
       baseUrl?: string;
-      acmeDirectIssue?: boolean;
       exportDisabled?: boolean;
       dnsServer?: string;
     }
@@ -1074,31 +1072,11 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       }
       ca.baseUrl = nextBaseUrl;
     }
-    let disableDirectIssue = false;
-    if (req.acmeDirectIssue != null) {
-      if (req.acmeDirectIssue && ca.caType !== "intermediate") {
-        throw new ValidateException("只有中间CA可以开启EAB直签");
-      }
-      if (req.acmeDirectIssue && !ca.acmeEnabled) {
-        throw new ValidateException("请先启用该中间CA的ACME服务");
-      }
-      if (!req.acmeDirectIssue && ca.acmeDirectIssue) {
-        // 保留当前值交给 this.update 写入，随后用事务关闭并失效未完成订单
-        disableDirectIssue = true;
-      } else {
-        ca.acmeDirectIssue = req.acmeDirectIssue === true;
-      }
-    }
     if (req.dnsServer != null) {
       ca.dnsServer = normalizeDnsServerInput(req.dnsServer);
     }
     if (req.exportDisabled != null) {
       ca.exportDisabled = req.exportDisabled === true;
-    }
-    if (disableDirectIssue) {
-      // 先在同一事务关闭直签并失效未完成订单，再保存其他配置，避免窗口内旧订单继续签发
-      ca.acmeDirectIssue = false;
-      await this.acmeService.disableAcmeDirectIssue(ca);
     }
     await this.update(ca);
   }

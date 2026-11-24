@@ -194,7 +194,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
       maxValidityDays: body.maxValidityDays,
       allowedDomains: body.allowedDomains,
       baseUrl: body.baseUrl,
-      acmeDirectIssue: body.acmeDirectIssue,
       exportDisabled: body.exportDisabled,
       dnsServer: body.dnsServer,
     });
@@ -211,7 +210,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
       maxValidityDays: body.maxValidityDays,
       allowedDomains: body.allowedDomains,
       baseUrl: body.baseUrl,
-      acmeDirectIssue: body.acmeDirectIssue,
       exportDisabled: body.exportDisabled,
       dnsServer: body.dnsServer,
     });
@@ -372,8 +370,9 @@ export class LocalCaController extends CrudController<LocalCaService> {
       allowedDomains: body.allowedDomains,
       grantId: body.grantId,
       remark: body.remark,
+      privileged: body.privileged === true,
     });
-    this.auditLog({ content: `创建本地ACME EAB凭证「${res.name}」(KID:${res.kid})` });
+    this.auditLog({ content: `创建本地ACME EAB凭证「${res.name}」(KID:${res.kid}, 类型:${body.privileged ? "特权" : "普通"})` });
     return this.ok(res);
   }
 
@@ -392,6 +391,24 @@ export class LocalCaController extends CrudController<LocalCaService> {
       disabled: body.disabled === true,
     });
     this.auditLog({ content: `${body.disabled ? "禁用" : "启用"}了本地CA的ACME EAB凭证(ID:${body.eabId})` });
+    return this.ok(res);
+  }
+
+  @Post("/eab/privileged", { description: Constants.per.authOnly, summary: "变更EAB特权（升级需CA所有者，需2FA/Passkey）" })
+  async setEabPrivileged(@Body(ALL) body: any) {
+    if (typeof body.privileged !== "boolean") {
+      throw new ValidateException("privileged必须是布尔值");
+    }
+    this.assertStepUp(body.verifyToken, "变更EAB特权");
+    const userId = this.getUserId();
+    await this.checkCaAccess(body.caId, "write", body.privileged === true);
+    const res = await this.service.setAcmeEabPrivileged({
+      caId: body.caId,
+      eabId: body.eabId,
+      userId,
+      privileged: body.privileged === true,
+    });
+    this.auditLog({ content: `${body.privileged ? "升级为特权" : "降级为普通"}EAB凭证(ID:${body.eabId})` });
     return this.ok(res);
   }
 

@@ -126,9 +126,8 @@ export class LocalCaAcmeService {
     }
     if (!req.enabled) {
       // 关闭ACME时原子关闭直签并失效未完成直签订单，避免重新启用后旧订单复活
-      await this.disableAcmeDirectIssue(ca, true);
+      await this.invalidateAllDirectOrders(ca, true);
       ca.acmeEnabled = false;
-      ca.acmeDirectIssue = false;
       logger.info(`[local-ca] acme disabled ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
       return;
     }
@@ -144,10 +143,10 @@ export class LocalCaAcmeService {
   /**
    * 关闭EAB直签（或整个ACME服务）时在同一事务内失效尚未完成的直签订单。
    */
-  async disableAcmeDirectIssue(ca: LocalCaEntity, disableAcme = false) {
+  async invalidateAllDirectOrders(ca: LocalCaEntity, disableAcme = false) {
     const manager = this.repository.manager;
     if (!manager?.transaction) {
-      throw new ValidateException("数据库事务不可用，无法关闭ACME直签");
+      throw new ValidateException("数据库事务不可用，无法失效直签订单");
     }
     await runTransaction(manager, async tx => {
       const caRepository = tx.getRepository(LocalCaEntity);
@@ -155,15 +154,17 @@ export class LocalCaAcmeService {
       if (!driverType.includes("sqlite")) {
         await caRepository.findOne({ where: { id: ca.id }, lock: { mode: "pessimistic_write" as const } });
       }
-      await caRepository.update({ id: ca.id }, { acmeDirectIssue: false, ...(disableAcme ? { acmeEnabled: false } : {}) } as any);
+      if (disableAcme) {
+        await caRepository.update({ id: ca.id }, { acmeEnabled: false } as any);
+      }
       const errorMessage = disableAcme ? "ACME服务已关闭，请重新创建订单" : "EAB直签已关闭，请重新创建订单";
       await tx.getRepository(AcmeOrderEntity).update({ caId: ca.id, directIssue: true, status: In(["pending", "ready"]) }, { status: "invalid", error: errorMessage, updateTime: new Date() } as any);
     });
-    logger.info(`[local-ca] ${disableAcme ? "acme disabled" : "direct issue disabled"} ca=${ca.id}; unfinished direct orders invalidated`);
+    logger.info(`[local-ca] ${disableAcme ? "acme disabled" : "direct orders invalidated"} ca=${ca.id}; unfinished direct orders invalidated`);
   }
 
-  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number; remark?: string }) {
-    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number; remark?: string; privileged?: boolean }) {
+    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, req.privileged === true);
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以创建ACME凭证");
     }
@@ -195,6 +196,7 @@ export class LocalCaAcmeService {
       usedCount: 0,
       expiresTime: expiresDays > 0 ? Date.now() + expiresDays * 24 * 3600 * 1000 : null,
       disabled: false,
+      privileged: req.privileged === true,
       remark: String(req.remark || "").trim() || null,
     });
     const manager = this.repository.manager;
@@ -218,7 +220,7 @@ export class LocalCaAcmeService {
       }
       await tx.getRepository(AcmeEabEntity).save(bean);
     });
-    logger.info(`[local-ca] eab created ca=${ca.id} eab=${bean.id} kid=${kid} maxUses=${maxUses} allowedDomains=${allowedDomains.length}`);
+    logger.info(`[local-ca] eab created ca=${ca.id} eab=${bean.id} kid=${kid} privileged=${bean.privileged} maxUses=${maxUses} allowedDomains=${allowedDomains.length}`);
     return {
       id,
       caId: ca.id,
@@ -231,6 +233,7 @@ export class LocalCaAcmeService {
       userId: bean.userId,
       projectId: bean.projectId,
       expiresTime: bean.expiresTime,
+      privileged: bean.privileged,
     };
   }
 
@@ -266,6 +269,9 @@ export class LocalCaAcmeService {
       bean.disabled = req.disabled;
       bean.updateTime = new Date();
       await repository.save(bean);
+      if (req.disabled === true && bean.privileged) {
+        await this.invalidateDirectOrdersByEabIds(tx, [bean.id], "EAB凭证已禁用，请重新创建订单");
+      }
       return { id: bean.id, disabled: bean.disabled };
     });
     logger.info(`[local-ca] eab ${result.disabled ? "disabled" : "enabled"} ca=${ca.id} eab=${result.id} user=${req.userId}`);
@@ -291,6 +297,7 @@ export class LocalCaAcmeService {
       usedCount: item.usedCount,
       expiresTime: item.expiresTime,
       disabled: item.disabled,
+      privileged: item.privileged === true,
       grantId: item.grantId,
       userId: item.userId,
       projectId: item.projectId,
@@ -347,7 +354,7 @@ export class LocalCaAcmeService {
         throw new ValidateException("EAB allowedDomains配置损坏，已拒绝操作");
       }
     }
-    return { id: bean.id, allowedDomains };
+    return { id: bean.id, allowedDomains, privileged: bean.privileged === true };
   }
 
   async consumeAcmeEab(id: string, manager?: EntityManager) {
@@ -371,7 +378,78 @@ export class LocalCaAcmeService {
   /** 授权撤销时联动禁用绑定EAB，属于ACME集成职责。 */
   async disableEabsByGrantIds(grantIds: number[]) {
     if (!grantIds?.length) return;
-    await this.acmeEabRepository.update({ grantId: In(grantIds) }, { disabled: true, updateTime: new Date() } as any);
+    const eabs = await this.acmeEabRepository.find({ where: { grantId: In(grantIds) }, select: { id: true } });
+    const eabIds = eabs.map(item => item.id);
+    const manager = this.repository.manager;
+    await runTransaction(manager, async tx => {
+      await tx.getRepository(AcmeEabEntity).update({ grantId: In(grantIds) }, { disabled: true, updateTime: new Date() } as any);
+      if (eabIds.length) {
+        await this.invalidateDirectOrdersByEabIds(tx, eabIds, "用户授权已撤销，EAB凭证已禁用，请重新创建订单");
+      }
+    });
+  }
+
+  /** 变更EAB特权：升级需CA所有者；降级时失效该EAB未完成的直签订单。 */
+  async setAcmeEabPrivileged(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; privileged: boolean }) {
+    if (typeof req.privileged !== "boolean") {
+      throw new ValidateException("privileged必须是布尔值");
+    }
+    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, req.privileged === true);
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("只有中间CA可以管理ACME凭证");
+    }
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法变更EAB特权");
+    }
+    const result = await runTransaction(manager, async tx => {
+      const repository = tx.getRepository(AcmeEabEntity);
+      const driverType = String(tx.connection?.options?.type || "");
+      const useLock = !driverType.includes("sqlite");
+      const bean = await repository.findOne({ where: { id: req.eabId, caId: ca.id }, ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}) });
+      if (!bean) {
+        throw new ValidateException("ACME凭证不存在或无访问权限");
+      }
+      if (req.privileged === true && bean.grantId) {
+        const grant = await tx.getRepository(LocalCaGrantEntity).findOne({ where: { id: bean.grantId, caId: ca.id } });
+        if (!grant || grant.disabled) {
+          throw new ValidateException("关联用户授权已撤销，不能升级为特权EAB");
+        }
+      }
+      const downgraded = bean.privileged === true && req.privileged === false;
+      bean.privileged = req.privileged;
+      bean.updateTime = new Date();
+      await repository.save(bean);
+      if (downgraded) {
+        await this.invalidateDirectOrdersByEabIds(tx, [bean.id], "EAB特权已关闭，请重新创建订单");
+      }
+      return { id: bean.id, privileged: bean.privileged };
+    });
+    logger.info(`[local-ca] eab privileged=${result.privileged} ca=${ca.id} eab=${result.id} user=${req.userId}`);
+    return result;
+  }
+
+  /** 失效指定EAB关联账户的未完成直签订单（经account.eab_id子查询，订单不冗余存eabId）。 */
+  async invalidateDirectOrdersByEabIds(tx: EntityManager, eabIds: string[], message: string) {
+    if (!eabIds.length) return;
+    const orderRepository = tx.getRepository(AcmeOrderEntity);
+    const metadata: any = orderRepository.metadata;
+    const accountIdColumn = metadata?.findColumnWithPropertyName?.("accountId")?.databaseName || "account_id";
+    const directIssueColumn = metadata?.findColumnWithPropertyName?.("directIssue")?.databaseName || "direct_issue";
+    const statusColumn = metadata?.findColumnWithPropertyName?.("status")?.databaseName || "status";
+    const accountRepository = tx.getRepository(AcmeAccountEntity);
+    const accountMeta: any = accountRepository.metadata;
+    const accountEabColumn = accountMeta?.findColumnWithPropertyName?.("eabId")?.databaseName || "eab_id";
+    const accountIdPk = accountMeta?.findColumnWithPropertyName?.("id")?.databaseName || "id";
+    const accountTable = accountMeta?.tablePath || "cd_acme_account";
+    await orderRepository
+      .createQueryBuilder()
+      .update()
+      .set({ status: "invalid", error: message, updateTime: new Date() } as any)
+      .where(`${accountIdColumn} IN (SELECT ${accountIdPk} FROM ${accountTable} WHERE ${accountEabColumn} IN (:...eabIds))`, { eabIds })
+      .andWhere(`${directIssueColumn} = :di`, { di: true })
+      .andWhere(`${statusColumn} IN (:...statuses)`, { statuses: ["pending", "ready"] })
+      .execute();
   }
 
 }

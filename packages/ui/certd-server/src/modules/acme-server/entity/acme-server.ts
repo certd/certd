@@ -203,6 +203,9 @@ export class AcmeEabEntity {
   @Column({ default: false })
   disabled: boolean;
 
+  @Column({ comment: "特权EAB：跳过域名校验直接签发", default: false })
+  privileged: boolean;
+
   @Column({ length: 255, nullable: true })
   remark: string;
 

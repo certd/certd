@@ -9,6 +9,11 @@
       <a-table-column title="KID" :width="200">
         <template #default="{ record }"><fs-copyable :model-value="record.kid" /></template>
       </a-table-column>
+      <a-table-column :title="t('certd.localCa.eabType')" :width="90" align="center">
+        <template #default="{ record }">
+          <a-tag :color="record.privileged ? 'orange' : 'default'">{{ record.privileged ? t("certd.localCa.eabTypePrivileged") : t("certd.localCa.eabTypeNormal") }}</a-tag>
+        </template>
+      </a-table-column>
       <a-table-column :title="t('certd.localCa.eabGrant')" :width="160">
         <template #default="{ record }">{{ grantLabel(record) }}</template>
       </a-table-column>
@@ -35,6 +40,13 @@
       <a-table-column :title="t('certd.localCa.fields.remark')" data-index="remark" :width="150" ellipsis />
       <a-table-column :title="t('certd.common.createTime')" :width="170">
         <template #default="{ record }">{{ formatTime(record.createTime) }}</template>
+      </a-table-column>
+      <a-table-column :title="t('certd.localCa.accessActions')" :width="120" align="center">
+        <template #default="{ record }">
+          <a-button type="link" size="small" :loading="privilegingId === record.id" @click="setPrivileged(record, !record.privileged)">
+            {{ record.privileged ? t("certd.localCa.eabDowngrade") : t("certd.localCa.eabUpgrade") }}
+          </a-button>
+        </template>
       </a-table-column>
     </a-table>
   </div>
@@ -64,6 +76,7 @@ const users = ref<any[]>([]);
 const projects = ref<any[]>([]);
 const loading = ref(false);
 const togglingId = ref<string | null>(null);
+const privilegingId = ref<string | null>(null);
 
 function formatTime(value?: number) {
   return value ? dayjs(Number(value)).format("YYYY-MM-DD HH:mm:ss") : "-";
@@ -127,7 +140,7 @@ async function toggle(record: any, enabled: boolean) {
   const action = async () => {
     togglingId.value = record.id;
     try {
-      await localCaApi.SetEabStatus(props.caId, record.kid, !enabled, getSecretAccessToken());
+      await localCaApi.SetEabStatus(props.caId, record.id, !enabled, getSecretAccessToken());
       notification.success({ message: t("certd.localCa.eabStatusChanged") });
       await load();
     } finally {
@@ -135,6 +148,24 @@ async function toggle(record: any, enabled: boolean) {
     }
   };
   if (!enabled && props.runStepUp) {
+    await props.runStepUp(action);
+  } else {
+    await action();
+  }
+}
+
+async function setPrivileged(record: any, privileged: boolean) {
+  const action = async () => {
+    privilegingId.value = record.id;
+    try {
+      await localCaApi.SetEabPrivileged(props.caId, record.id, privileged, getSecretAccessToken());
+      notification.success({ message: t("certd.localCa.eabPrivilegedChanged") });
+      await load();
+    } finally {
+      privilegingId.value = null;
+    }
+  };
+  if (props.runStepUp) {
     await props.runStepUp(action);
   } else {
     await action();

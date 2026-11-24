@@ -110,7 +110,6 @@ export class AcmeServerService {
         certdLocalCa: {
           caId: ca.id,
           eabRequired: true,
-          directIssue: ca.acmeDirectIssue === true,
         },
       },
     };
@@ -176,12 +175,12 @@ export class AcmeServerService {
       ctx.status = 201;
       ctx.set("Location", `${await this.baseUrl(caId)}/account/${account.id}`);
     }
-    return this.toAccount(account);
+    return await this.toAccount(account);
   }
 
   async getAccount(ctx: any, caId: number, body: any) {
     const { account } = await this.verifyAccount(ctx, caId, body);
-    return this.toAccount(account);
+    return await this.toAccount(account);
   }
 
   async newOrder(ctx: any, caId: number, body: any) {
@@ -191,17 +190,13 @@ export class AcmeServerService {
     const identifiers = this.normalizeIdentifiers(payload.identifiers);
     const identifierValues = identifiers.map(item => item.value);
     matchAllowedDomains(identifierValues, this.parseAllowedDomains(ca.allowedDomains));
-    if (account.eabId) {
-      const profile = await this.issuer.getAcmeEabProfile(account.eabId);
-      if (!profile) {
-        throw new AcmeProblem("unauthorized", "EAB凭证已禁用或过期", 401);
-      }
-      matchAllowedDomains(identifierValues, profile.allowedDomains);
-    }
+    // EAB强制：账户必绑定EAB；直签由EAB特权决定（普通EAB需域名校验）
+    const profile = await this.assertAccountEabActive(account);
+    matchAllowedDomains(identifierValues, profile.allowedDomains);
 
     const acmeConfig = this.parseAcmeConfig(ca.acmeConfig);
     const base = await this.baseUrl(caId);
-    const directIssue = ca.acmeDirectIssue === true && !!account.eabId;
+    const directIssue = profile.privileged === true;
     const manager = this.accountRepository.manager;
     if (!manager?.transaction) {
       throw new AcmeProblem("serverInternal", "订单事务不可用", 500);
@@ -380,8 +375,9 @@ export class AcmeServerService {
       checkCsrDomains(order);
       // 在事务内锁定并重新读取CA策略，确保关闭直签/收紧域名范围与签发串行化
       const freshCa = await this.issuer.getAcmeCaForUpdate(caId, tx);
-      this.assertDirectIssueAllowed(order, freshCa);
-      await this.assertOrderStillAuthorized(freshCa, account, order, tx);
+      const profile = await this.assertAccountEabActive(account, tx);
+      this.assertDirectIssueAllowed(order, profile);
+      await this.assertOrderStillAuthorized(freshCa, account, order, tx, profile);
       // 事务内读取最新ACME配置，避免订单创建后管理员调整有效期仍用旧值签发
       const freshConfig = this.parseAcmeConfig(freshCa.acmeConfig);
 
@@ -640,17 +636,17 @@ export class AcmeServerService {
     return profile;
   }
 
-  private assertDirectIssueAllowed(order: AcmeOrderEntity, ca: any) {
-    if (order.directIssue && ca.acmeDirectIssue !== true) {
-      throw new AcmeProblem("unauthorized", "该订单依赖EAB直签，当前已关闭直签，无法签发", 403);
+  private assertDirectIssueAllowed(order: AcmeOrderEntity, profile: { privileged: boolean }) {
+    if (order.directIssue && profile.privileged !== true) {
+      throw new AcmeProblem("unauthorized", "该订单依赖EAB直签，该EAB的特权已关闭或凭证已失效，无法签发", 403);
     }
   }
 
-  private async assertOrderStillAuthorized(ca: any, account: AcmeAccountEntity, order: AcmeOrderEntity, manager?: any) {
+  private async assertOrderStillAuthorized(ca: any, account: AcmeAccountEntity, order: AcmeOrderEntity, manager?: any, profile?: { allowedDomains: string[]; privileged: boolean }) {
     const domains = JSON.parse(order.identifiers).map((item: any) => item.value);
     matchAllowedDomains(domains, this.parseAllowedDomains(ca.allowedDomains));
-    const profile = await this.assertAccountEabActive(account, manager);
-    matchAllowedDomains(domains, profile.allowedDomains);
+    const eabProfile = profile ?? (await this.assertAccountEabActive(account, manager));
+    matchAllowedDomains(domains, eabProfile.allowedDomains);
   }
 
   private async resolveAccount(jws: any, caId: number, options?: { allowInactiveEab?: boolean; allowDeactivated?: boolean }) {
@@ -875,10 +871,13 @@ export class AcmeServerService {
     };
   }
 
-  private toAccount(account: AcmeAccountEntity) {
+  private async toAccount(account: AcmeAccountEntity) {
+    const profile = account.eabId ? await this.issuer.getAcmeEabProfile(account.eabId) : null;
     return {
       status: account.status,
       contact: account.contact ? JSON.parse(account.contact) : [],
+      // Certd扩展：供客户端规划是否跳过域名校验；仅暴露boolean，服务端仍独立裁决
+      certdEab: { privileged: profile?.privileged === true },
     };
   }
 

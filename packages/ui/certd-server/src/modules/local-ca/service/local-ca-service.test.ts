@@ -548,37 +548,25 @@ describe("LocalCaService", () => {
     await assert.rejects(() => service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: "true" as any }), /disabled必须是布尔值/);
   });
 
-  it("EAB直签只能为已启用ACME的中间CA开启", async () => {
+  it("CA不再提供直签开关，直签由EAB特权控制", async () => {
     const { service } = createService();
-    const { rootId, id } = await createIssuingCa(service, { name: "Direct Issue CA" });
-
-    await assert.rejects(() => service.updateMeta({ id, userId: 1, acmeDirectIssue: true }), /请先启用该中间CA的ACME服务/);
-    await assert.rejects(() => service.updateMeta({ id: rootId, userId: 1, acmeDirectIssue: true }), /只有中间CA可以开启EAB直签/);
-
+    const { id } = await createIssuingCa(service, { name: "No CA Toggle" });
     await service.setAcmeEnabled({ id, userId: 1, enabled: true });
-    await service.updateMeta({ id, userId: 1, acmeDirectIssue: true });
     const info: any = await service.infoSafe({ id, userId: 1 });
-    assert.equal(info.acmeDirectIssue, true);
-
-    await service.updateMeta({ id, userId: 1, acmeDirectIssue: false });
-    const updated: any = await service.infoSafe({ id, userId: 1 });
-    assert.equal(updated.acmeDirectIssue, false);
+    assert.equal(info.acmeDirectIssue, undefined);
   });
 
-  it("关闭EAB直签会失效未完成的直签订单", async () => {
+  it("关闭ACME会失效未完成的直签订单（EAB级控制）", async () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "Disable Direct Issue CA" });
     await service.setAcmeEnabled({ id, userId: 1, enabled: true });
-    await service.updateMeta({ id, userId: 1, acmeDirectIssue: true });
-    await service.updateMeta({ id, userId: 1, acmeDirectIssue: false });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: false });
 
     const last = (service as any).acmeOrderRepository.getLastUpdate();
     assert.equal(last.where.caId, id);
     assert.equal(last.where.directIssue, true);
     assert.equal(last.set.status, "invalid");
-    assert.match(last.set.error, /直签已关闭/);
-    const info: any = await service.infoSafe({ id, userId: 1 });
-    assert.equal(info.acmeDirectIssue, false);
+    assert.match(last.set.error, /ACME服务已关闭/);
   });
 
   it("finalize读取CA时在非SQLite数据库加行锁", async () => {
@@ -1180,7 +1168,6 @@ describe("LocalCaService", () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "Disable Acme CA" });
     await service.setAcmeEnabled({ id, userId: 1, enabled: true });
-    await service.updateMeta({ id, userId: 1, acmeDirectIssue: true });
     await service.setAcmeEnabled({ id, userId: 1, enabled: false });
 
     const last = (service as any).acmeOrderRepository.getLastUpdate();
@@ -1190,7 +1177,6 @@ describe("LocalCaService", () => {
     assert.match(last.set.error, /ACME服务已关闭/);
     const info: any = await service.infoSafe({ id, userId: 1 });
     assert.equal(info.acmeEnabled, false);
-    assert.equal(info.acmeDirectIssue, false);
   });
 
   it("Base URL 拒绝账号密码、查询参数和片段", async () => {
@@ -1261,7 +1247,6 @@ describe("LocalCaService", () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "StepUp CA" });
     assert.equal(await service.requiresStepUpForUpdate({ id, userId: 1, remark: "x" } as any), false);
-    assert.equal(await service.requiresStepUpForUpdate({ id, userId: 1, acmeDirectIssue: true }), true);
     assert.equal(await service.requiresStepUpForUpdate({ id, userId: 1, allowedDomains: ["example.com"] }), true);
     assert.equal(await service.requiresStepUpForUpdate({ id, userId: 1, maxValidityDays: 30 }), true);
   });
@@ -1406,7 +1391,6 @@ describe("LocalCaService", () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "Rotate CA" });
     await service.setAcmeEnabled({ id, userId: 1, enabled: true });
-    await service.updateMeta({ id, userId: 1, acmeDirectIssue: true });
     const old: any = await service.infoSafe({ id, userId: 1 });
     const res = await service.rotateIntermediateCa({ id, userId: 1 });
     const updatedOld: any = await service.infoSafe({ id, userId: 1 });
@@ -1414,7 +1398,6 @@ describe("LocalCaService", () => {
     assert.equal(updatedOld.disabled, true);
     assert.equal(updatedOld.rotatedToId, res.id);
     assert.equal(newCa.acmeEnabled, true);
-    assert.equal(newCa.acmeDirectIssue, true);
     const oldYears = Math.round((Number(old.notAfter) - Number(old.notBefore)) / (365 * 86400000));
     const newYears = Math.round((Number(newCa.notAfter) - Number(newCa.notBefore)) / (365 * 86400000));
     assert.equal(newYears, oldYears);

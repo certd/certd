@@ -78,9 +78,6 @@ export class LocalCaEntity {
   @Column({ name: "acme_enabled", comment: "未来ACME服务端开关", default: false })
   acmeEnabled: boolean;
 
-  @Column({ name: "acme_direct_issue", comment: "EAB直签：跳过域名校验", default: false })
-  acmeDirectIssue: boolean;
-
   @Column({ name: "crl_number", comment: "CRL单调递增序号", type: "bigint", default: 0 })
   crlNumber: number;
 

@@ -1,4 +1,3 @@
-jest.mock("@certd/lib-server", () => ({ ValidateException: class ValidateException extends Error {} }));
 import assert from "node:assert/strict";
 import crypto, { X509Certificate } from "node:crypto";
 import {

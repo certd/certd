@@ -33,9 +33,6 @@
             <a-descriptions-item v-if="row.caType === 'intermediate' && !row.deleted" :label="t('certd.localCa.fields.acmeEnabled')">
               {{ row.acmeEnabled ? t("certd.localCa.acmeEnabledYes") : t("certd.localCa.acmeEnabledNo") }}
             </a-descriptions-item>
-            <a-descriptions-item v-if="row.caType === 'intermediate' && row.acmeEnabled && !row.deleted" :label="t('certd.localCa.fields.acmeDirectIssue')">
-              {{ row.acmeDirectIssue ? t("certd.localCa.acmeDirectIssueYes") : t("certd.localCa.acmeDirectIssueNo") }}
-            </a-descriptions-item>
             <a-descriptions-item v-if="row.acmeEnabled && !row.deleted" :label="t('certd.localCa.acmeDirectory')" :span="2">
               <fs-copyable :model-value="acmeDirectoryUrl">{{ acmeDirectoryUrl }}</fs-copyable>
             </a-descriptions-item>

@@ -11,6 +11,7 @@ import type { LocalCaSignerGetter } from "../../../../../modules/local-ca/servic
 import { filterAllowedDomains, verifyCertIssuedBy, type LocalCaKeyType } from "../../../../../modules/local-ca/service/local-ca-crypto.js";
 import { parseLocalCaDirectory } from "../../../../../modules/local-ca/service/local-ca-directory.js";
 import { isSameAcmeUrl } from "../../../../../modules/acme-server/protocol/acme-url.js";
+import * as acme from "@certd/acme-client";
 import net from "node:net";
 import dns from "node:dns/promises";
 import { isBlockedAddress } from "./ssrf.js";
@@ -25,7 +26,6 @@ type LocalCaSubscribeInfo = {
   revoked?: boolean;
   notAfter?: number;
   acmeEnabled?: boolean;
-  acmeDirectIssue?: boolean;
   allowedDomains?: string | null;
   effectiveBaseUrl?: string;
   certPem?: string;
@@ -583,61 +583,37 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     if (this.directIssueCache != null) {
       return this.directIssueCache;
     }
-    const hasAccountCredential = acmeAccount != null || this.acmeAccountAccessId != null;
-    if (!hasAccountCredential) {
-      return false;
-    }
-    if (this.mode === "remote-acme") {
-      await this.assertRemoteUrlAllowed();
-    }
-    if (this.mode === "local-acme") {
-      const ca = await this.prepareLocalCa(true);
-      this.directIssueCache = ca.acmeDirectIssue === true;
-      return this.directIssueCache;
-    }
-    const directoryUrl = await this.getResolvedDirectoryUrl();
-    const candidate = parseLocalCaDirectory(directoryUrl);
-    if (!candidate) {
-      this.directIssueCache = false;
-      return false;
-    }
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    this.directIssueCache = false;
     try {
-      const response = await (globalThis as any).fetch(directoryUrl, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        signal: controller.signal,
-        redirect: "manual",
-      });
-      if (response.status >= 300 && response.status < 400) {
-        throw new Error("ACME Directory不允许重定向");
+      const account =
+        acmeAccount ??
+        (this.acmeAccountAccessId ? this.parseAcmeAccount((await this.getAccess(this.acmeAccountAccessId)).account) : null);
+      if (!account?.accountKey || !account?.accountUri) {
+        return false;
       }
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data = await response.json();
-      const meta = data?.meta?.certdLocalCa;
-      // 轮换无感：目录meta.caId为生效新CA，URL可能指向旧CA，沿rotatedToId解析后比较
-      let effectiveCaId = candidate.caId;
-      try {
-        const getter: any = await this.ctx.serviceGetter.get("localCaGetter");
-        const effective = await getter?.getCa?.(candidate.caId);
-        if (effective?.id) {
-          effectiveCaId = Number(effective.id);
+      if (this.mode === "remote-acme") {
+        await this.assertRemoteUrlAllowed();
+        // 仅Certd本地CA形目录可能携带特权EAB；纯第三方ACME走标准校验
+        if (!parseLocalCaDirectory(await this.getResolvedDirectoryUrl())) {
+          return false;
         }
-      } catch {
-        // 忽略，按URL caId比较
       }
-      this.directIssueCache = (Number(meta?.caId) === candidate.caId || Number(meta?.caId) === effectiveCaId) && meta?.directIssue === true && meta?.eabRequired === true;
-      return this.directIssueCache;
+      // 签名POST-as-GET读取账户资源上的新鲜EAB特权状态（服务端裁决，客户端仅规划）
+      const client = new acme.Client({
+        sslProvider: account.caType,
+        directoryUrl: account.directoryUrl,
+        accountKey: account.accountKey,
+        accountUrl: account.accountUri,
+        logger: this.logger,
+        signal: this.ctx.signal,
+      } as any);
+      const resp = await client.updateAccount({});
+      this.directIssueCache = resp?.certdEab?.privileged === true;
     } catch (e: any) {
+      this.logger.warn(`读取EAB特权状态失败，按真实域名验证处理：${e?.message || e}`);
       this.directIssueCache = false;
-      this.logger.warn(`读取远程ACME直签配置失败，按真实验证处理：${e?.message || e}`);
-      return false;
-    } finally {
-      clearTimeout(timer);
     }
+    return this.directIssueCache;
   }
 }
 

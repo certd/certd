@@ -28,14 +28,14 @@ it("Directory 暴露远程可识别的直签元数据", async () => {
   const service: any = new AcmeServerService();
   service.issuer = {
     async getAcmeCa() {
-      return { id: 2, acmeDirectIssue: true };
+      return { id: 2 };
     },
     async getCaBaseUrl() {
       return "https://certd.example.com";
     },
   };
   const dir = await service.directory(2);
-  assert.deepEqual(dir.meta.certdLocalCa, { caId: 2, eabRequired: true, directIssue: true });
+  assert.deepEqual(dir.meta.certdLocalCa, { caId: 2, eabRequired: true });
 });
 
 describe("AcmeServerService CA isolation", () => {
@@ -163,11 +163,11 @@ describe("AcmeServerService CA isolation", () => {
 });
 
 describe("AcmeServerService finalize authorization", () => {
-  it("关闭直签后未完成的直签订单不能签发", () => {
+  it("EAB特权关闭后未完成的直签订单不能签发", () => {
     const service: any = new AcmeServerService();
-    assert.doesNotThrow(() => service.assertDirectIssueAllowed({ directIssue: true }, { acmeDirectIssue: true }));
-    assert.doesNotThrow(() => service.assertDirectIssueAllowed({ directIssue: false }, { acmeDirectIssue: false }));
-    assert.throws(() => service.assertDirectIssueAllowed({ directIssue: true }, { acmeDirectIssue: false }), /当前已关闭直签/);
+    assert.doesNotThrow(() => service.assertDirectIssueAllowed({ directIssue: true }, { privileged: true }));
+    assert.doesNotThrow(() => service.assertDirectIssueAllowed({ directIssue: false }, { privileged: false }));
+    assert.throws(() => service.assertDirectIssueAllowed({ directIssue: true }, { privileged: false }), /特权已关闭/);
   });
 
   it("EAB 禁用后已有订单不能 finalize", async () => {

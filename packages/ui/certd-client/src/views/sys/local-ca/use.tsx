@@ -391,7 +391,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       title: t("certd.localCa.eabCreateTitle"),
       wrapper: { width: 600 },
       body: () => <a-alert type="warning" show-icon message={t("certd.localCa.eabCreateWarning")} description={t("certd.localCa.eabCreateWarningDesc")} class="mb-4" />,
-      initialForm: { maxUses: 1, expiresDays: 3650 },
+      initialForm: { maxUses: 1, expiresDays: 3650, privileged: false },
       columns: {
         caId: {
           title: t("certd.localCa.eabCa"),
@@ -403,6 +403,17 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           title: t("certd.localCa.eabName"),
           type: "text",
           form: { required: true, col: { span: 24 }, rules: [{ required: true, message: t("certd.common.required") }] },
+        },
+        privileged: {
+          title: t("certd.localCa.eabType"),
+          type: "dict-select",
+          dict: dict({
+            data: [
+              { label: t("certd.localCa.eabTypeNormal"), value: false, color: "default" },
+              { label: t("certd.localCa.eabTypePrivileged"), value: true, color: "orange" },
+            ],
+          }),
+          form: { col: { span: 24 }, helper: t("certd.localCa.eabPrivilegedHelper") },
         },
         grantId: {
           title: t("certd.localCa.eabGrant"),
@@ -452,6 +463,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             allowedDomains: parseAllowedDomains(form.allowedDomains),
             grantId: form.grantId || undefined,
             remark: form.remark,
+            privileged: form.privileged === true,
           });
         });
         if (!verified) {

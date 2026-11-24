@@ -217,7 +217,6 @@ async function openQuickAdd() {
               `${t("certd.localCa.fields.keyType")}：${ca.keyType || "-"}`,
               `${t("certd.localCa.fields.notAfter")}：${fmt(ca.notAfter)}`,
               `ACME Directory：${baseUrl ? `${baseUrl}/api/acme/${ca.id}/directory` : "-"}`,
-              `${t("certd.localCa.fields.acmeDirectIssue")}：${ca.acmeDirectIssue ? t("certd.localCa.acmeDirectIssueYes") : t("certd.localCa.acmeDirectIssueNo")}`,
             ].join("\n");
           }),
           component: { name: "a-textarea", disabled: true, autoSize: { minRows: 5, maxRows: 8 } },

@@ -40,7 +40,6 @@ function createPlugin(leaf: any, opts: { caDisabled?: boolean; caType?: string; 
         disabled: opts.caDisabled === true,
         allowedDomains: opts.allowedDomains ? JSON.stringify(opts.allowedDomains) : null,
         acmeEnabled: true,
-        acmeDirectIssue: (opts as any).acmeDirectIssue === true,
         effectiveBaseUrl: "https://certd.example.com",
       };
     },
@@ -139,12 +138,13 @@ describe("CertApplyLocalCa", () => {
     const { plugin } = createPlugin(leaf, { caDisabled: true, inputChanged: true });
     await assert.rejects(() => plugin.execute(), /本地CA已禁用/);
   });
-  it("本地ACME模式在CA开启EAB直签时跳过域名验证计划", async () => {
+  it("本地ACME模式账号绑定特权EAB时跳过域名验证计划", async () => {
     const leaf = await createLeaf();
-    const { plugin } = createPlugin(leaf, { inputChanged: true, acmeDirectIssue: true } as any);
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
     plugin.mode = "local-acme";
     plugin.acmeAccountAccessId = 1;
     (plugin as any).localCa = undefined;
+    (plugin as any).isDirectIssueMode = async () => true;
 
     const plan = await (plugin as any).createDomainsVerifyPlanByAuto(["plugin.example.com"], null);
     assert.deepEqual(plan, {});
@@ -154,7 +154,7 @@ describe("CertApplyLocalCa", () => {
 
   it("本地ACME模式未开启直签时继续走域名验证计划", async () => {
     const leaf = await createLeaf();
-    const { plugin } = createPlugin(leaf, { inputChanged: true, acmeDirectIssue: false } as any);
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
     plugin.mode = "local-acme";
     plugin.acmeAccountAccessId = 1;
     (plugin as any).localCa = undefined;
@@ -169,25 +169,15 @@ describe("CertApplyLocalCa", () => {
     assert.equal(called, false);
   });
 
-  it("远程ACME目录声明EAB直签时自动匹配返回空计划", async () => {
+  it("远程ACME账号绑定特权EAB时自动匹配返回空计划", async () => {
     const leaf = await createLeaf();
     const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
     plugin.mode = "remote-acme";
     plugin.directoryUrl = "https://remote.example.com/api/acme/9/directory";
     plugin.acmeAccountAccessId = 1;
-    const originalFetch = (globalThis as any).fetch;
-    (globalThis as any).fetch = async () => ({
-      ok: true,
-      async json() {
-        return { meta: { certdLocalCa: { caId: 9, directIssue: true, eabRequired: true } } };
-      },
-    });
-    try {
-      const plan = await (plugin as any).createDomainsVerifyPlanByAuto(["remote.example.com"], null);
-      assert.deepEqual(plan, {});
-    } finally {
-      (globalThis as any).fetch = originalFetch;
-    }
+    (plugin as any).isDirectIssueMode = async () => true;
+    const plan = await (plugin as any).createDomainsVerifyPlanByAuto(["remote.example.com"], null);
+    assert.deepEqual(plan, {});
   });
 
   it("即使旧证书未到期，直接签发模式也会先拒绝已禁用的CA", async () => {
@@ -266,7 +256,7 @@ describe("CertApplyLocalCa", () => {
     assert.equal(await (plugin as any).getResolvedDirectoryUrl(), "http://127.0.0.1:7001/api/acme/9/directory");
   });
 
-  it("远程ACME Directory返回重定向时不判定为直签", async () => {
+  it("缺少有效账户凭证时不判定为直签", async () => {
     const leaf = await createLeaf();
     const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
     plugin.mode = "remote-acme";

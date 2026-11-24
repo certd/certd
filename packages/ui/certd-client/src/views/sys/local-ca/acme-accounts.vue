@@ -56,9 +56,9 @@
         <template #default="{ record }">{{ (record.identifiers || []).map((item: any) => item.value).join(", ") }}</template>
       </a-table-column>
       <a-table-column :title="t('certd.localCa.certSerial')" data-index="serialNumber" :width="260" />
-      <a-table-column :title="t('certd.localCa.eabDirectIssue')" :width="100" align="center">
+      <a-table-column :title="t('certd.localCa.eabOrderType')" :width="100" align="center">
         <template #default="{ record }">
-          <a-tag :color="record.directIssue ? 'green' : 'default'">{{ record.directIssue ? t("certd.localCa.acmeDirectIssueYes") : t("certd.localCa.acmeDirectIssueNo") }}</a-tag>
+          <a-tag :color="record.directIssue ? 'green' : 'default'">{{ record.directIssue ? t("certd.localCa.orderDirectIssueYes") : t("certd.localCa.orderDirectIssueNo") }}</a-tag>
         </template>
       </a-table-column>
       <a-table-column :title="t('certd.common.createTime')" :width="170">

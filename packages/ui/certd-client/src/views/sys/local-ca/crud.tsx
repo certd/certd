@@ -531,23 +531,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         },
-        acmeDirectIssue: {
-          title: t("certd.localCa.fields.acmeDirectIssue"),
-          type: "dict-switch",
-          dict: dict({
-            data: [
-              { label: t("certd.localCa.acmeDirectIssueYes"), value: true, color: "green" },
-              { label: t("certd.localCa.acmeDirectIssueNo"), value: false, color: "default" },
-            ],
-          }),
-          form: {
-            show: compute(({ form }) => form.caType === "intermediate" && form.acmeEnabled),
-            col: { span: 24 },
-            helper: t("certd.localCa.fields.acmeDirectIssueHelper"),
-          },
-          search: { show: false },
-          column: { show: false },
-        },
         permissions: {
           title: t("certd.localCa.permissions"),
           form: {
