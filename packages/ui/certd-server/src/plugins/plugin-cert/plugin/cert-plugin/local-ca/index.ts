@@ -595,7 +595,18 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       }
       const data = await response.json();
       const meta = data?.meta?.certdLocalCa;
-      this.directIssueCache = Number(meta?.caId) === candidate.caId && meta?.directIssue === true && meta?.eabRequired === true;
+      // 轮换无感：目录meta.caId为生效新CA，URL可能指向旧CA，沿rotatedToId解析后比较
+      let effectiveCaId = candidate.caId;
+      try {
+        const getter: any = await this.ctx.serviceGetter.get("localCaGetter");
+        const effective = await getter?.getCa?.(candidate.caId);
+        if (effective?.id) {
+          effectiveCaId = Number(effective.id);
+        }
+      } catch {
+        // 忽略，按URL caId比较
+      }
+      this.directIssueCache = (Number(meta?.caId) === candidate.caId || Number(meta?.caId) === effectiveCaId) && meta?.directIssue === true && meta?.eabRequired === true;
       return this.directIssueCache;
     } catch (e: any) {
       this.directIssueCache = false;
