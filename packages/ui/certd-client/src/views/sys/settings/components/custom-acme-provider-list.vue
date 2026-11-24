@@ -11,12 +11,12 @@
       </div>
     </div>
     <a-button class="custom-acme-provider-add" type="dashed" block @click="openEditor()">+ {{ t("certd.sys.settings.customAcmeAdd") }}</a-button>
-    <a-button class="custom-acme-provider-quick-add" type="dashed" block @click="openQuickAdd">+ {{ t("certd.sys.settings.customAcmeLocalCaQuickAdd") }}</a-button>
+    <a-button v-if="hasLocalAcme" class="custom-acme-provider-quick-add" type="dashed" block @click="openQuickAdd">+ {{ t("certd.sys.settings.customAcmeLocalCaQuickAdd") }}</a-button>
   </div>
 </template>
 
 <script setup lang="tsx">
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { dict } from "@fast-crud/fast-crud";
 import { useFormDialog } from "/@/use/use-dialog";
 import { Modal, notification } from "ant-design-vue";
@@ -45,6 +45,15 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const hasLocalAcme = ref(false);
+onMounted(async () => {
+  try {
+    const options = await localCaApi.GetAdminOptions();
+    hasLocalAcme.value = (options || []).some((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !ca.disabled);
+  } catch (e) {
+    hasLocalAcme.value = false;
+  }
+});
 const { openFormDialog } = useFormDialog();
 
 /**

@@ -238,19 +238,10 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     const certProjectId = pipeline?.projectId;
 
     // 查找该流水线的空证书记录（占位记录，certInfo 为空）：存在则直接更新它，不新建记录
-    let placeholderRecord = await this.repository.findOne({
-      where: {
-        pipelineId,
-        taskId: taskId,
-        certInfo: IsNull(),
-        ...this.buildUserProjectQuery(certUserId, certProjectId),
-      },
-      order: { id: "DESC" },
-    });
-    // 本地CA的ACME finalize会先写入一条不带私钥的证书记录；流水线拿到证书后应复用该记录，
-    // 否则同一证书会在仓库中出现两条active记录。外部队列无流水线时仍保留ACME记录。
-    if (!placeholderRecord && localCaId && serialNumber) {
-      // 企业项目流水线的userId固定为-1，ACME记录仍保存真实授权用户，按项目复用同一条证书
+    // 本地CA的ACME finalize会先写入一条不带私钥的证书记录；流水线拿到证书后优先复用该记录，
+    // 否则同一证书会在仓库中出现两条active记录。
+    let placeholderRecord: any = null;
+    if (localCaId && serialNumber) {
       const acmeScope = certUserId > 0 ? this.buildUserProjectQuery(certUserId, certProjectId) : certProjectId ? { projectId: certProjectId } : { userId: certUserId };
       placeholderRecord = await this.repository.findOne({
         where: {
@@ -258,6 +249,17 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
           serialNumber: String(serialNumber).toUpperCase(),
           pipelineId: IsNull(),
           ...acmeScope,
+        },
+        order: { id: "DESC" },
+      });
+    }
+    if (!placeholderRecord) {
+      placeholderRecord = await this.repository.findOne({
+        where: {
+          pipelineId,
+          taskId: taskId,
+          certInfo: IsNull(),
+          ...this.buildUserProjectQuery(certUserId, certProjectId),
         },
         order: { id: "DESC" },
       });

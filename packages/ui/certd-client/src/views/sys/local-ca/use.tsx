@@ -728,7 +728,9 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         cancelText: t("certd.common.cancel"),
         content: h("div", [
           h(Alert, { type: "warning", showIcon: true, message: warning, class: "mb-4" }),
+          h("div", { class: "mb-2" }, t("certd.localCa.dynamicCode")),
           h(Input, {
+            size: "large",
             placeholder: t("certd.localCa.dynamicCodePlaceholder"),
             onChange: (e: any) => {
               code.value = e?.target?.value || "";
@@ -736,10 +738,12 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           }),
           passkeySupported
             ? h(
+                "div",
+                { class: "mt-3 text-center" },
+                h(
                 Button,
                 {
                   type: "link",
-                  block: true,
                   onClick: async () => {
                     try {
                       await verifyPasskey();
@@ -749,6 +753,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
                   },
                 },
                 () => t("certd.localCa.passkeyVerify")
+                )
               )
             : null,
         ]),
