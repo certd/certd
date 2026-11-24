@@ -270,7 +270,18 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       const access: any = await this.getAccess(this.acmeAccountAccessId);
       const account = this.parseAcmeAccount(access.account);
       if (!isSameAcmeUrl(account.directoryUrl, directoryUrl)) {
-        throw new Error(`ACME账号绑定的Directory URL与当前CA不一致，请重新生成ACME账号（账号：${account.directoryUrl || "-"}，当前：${directoryUrl}）`);
+        // 轮换无感：账号绑定旧CA目录，当前CA为其轮换后继时视为一致（服务端ACME自动重定向）
+        const accountCaId = parseLocalCaDirectory(account.directoryUrl)?.caId;
+        const currentCaId = parseLocalCaDirectory(directoryUrl)?.caId;
+        let rotatedMatch = false;
+        if (accountCaId && currentCaId && this.mode === "local-acme") {
+          const getter: any = await this.ctx.serviceGetter.get("localCaGetter");
+          const effective = await getter?.getCa?.(accountCaId);
+          rotatedMatch = Number(effective?.id) === Number(currentCaId);
+        }
+        if (!rotatedMatch) {
+          throw new Error(`ACME账号绑定的Directory URL与当前CA不一致，请重新生成ACME账号（账号：${account.directoryUrl || "-"}，当前：${directoryUrl}）`);
+        }
       }
     }
     if (this.mode === "local-acme") {
