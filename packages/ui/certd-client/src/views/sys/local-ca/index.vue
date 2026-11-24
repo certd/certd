@@ -48,6 +48,14 @@ useMounted(async () => {
     font-size: 12px;
     color: rgba(0, 0, 0, 0.45);
   }
+  .ant-switch-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #d9d9d9;
+    &.ant-switch-checked {
+      background: #bfbfbf;
+    }
+  }
 }
 .dark .page-local-ca {
   .sub {
