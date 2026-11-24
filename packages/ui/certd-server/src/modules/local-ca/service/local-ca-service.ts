@@ -460,7 +460,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (root.caType !== "root" || root.disabled) {
       throw new ValidateException("上级根CA不可用，不能轮换");
     }
-    const name = (req.name || `${old.name}-rotated`).trim();
+    const name = (req.name || `${old.name} G2`).trim();
     await this.assertNameAvailable({ userId: req.userId, name });
     const rootPrivateKey = this.decryptCaPrivateKey(root);
     const subject = req.subject || (JSON.parse(old.subject) as LocalCaSubject);
@@ -469,7 +469,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       rootPrivateKeyPem: rootPrivateKey,
       subject,
       keyType: req.keyType || (old.keyType as LocalCaKeyType),
-      validityYears: req.validityYears || 5,
+      validityYears: req.validityYears || Math.max(1, Math.round((Number(old.notAfter) - Number(old.notBefore)) / (365 * 24 * 3600 * 1000))),
       crlDistributionPoint: await this.crlService.getCrlUrl(root),
     });
     const bean = new LocalCaEntity();
@@ -492,9 +492,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.usage = old.usage;
     bean.allowedDomains = old.allowedDomains;
     bean.maxValidityDays = old.maxValidityDays;
-    bean.acmeEnabled = false;
-    bean.acmeDirectIssue = false;
-    bean.acmeConfig = null;
+    bean.acmeEnabled = old.acmeEnabled;
+    bean.acmeDirectIssue = old.acmeDirectIssue;
+    bean.acmeConfig = old.acmeConfig;
     bean.baseUrl = old.baseUrl || root.baseUrl || null;
     bean.pathLength = 0;
     bean.disabled = false;
@@ -507,7 +507,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     await this.accessService.copyAdminsAndGrants(old.id, res.id, req.userId);
     await this.crlService.markBaseUrlLocked(root.id);
     old.disabled = true;
-    old.remark = `已轮换到新CA(ID:${res.id})，停止签发新证书`;
+    old.rotatedToId = res.id;
+    old.remark = `已轮换到新CA(ID:${res.id})，ACME自动指向新CA`;
     await this.update(old);
     logger.info(`[local-ca] intermediate rotated old=${old.id} new=${res.id} root=${root.id} admin=${req.userId}`);
     return { id: res.id, oldId: old.id };

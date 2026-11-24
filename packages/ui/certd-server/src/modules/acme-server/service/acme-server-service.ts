@@ -433,7 +433,7 @@ export class AcmeServerService {
   }
 
   async revokeCertificate(ctx: any, caId: number, body: any) {
-    const ca = await this.issuer.getCaForAcmeRevocation(caId);
+    let ca = await this.issuer.getCaForAcmeRevocation(caId);
     const jws = decodeJws(body);
     this.assertUrl(jws, ctx);
     let account: AcmeAccountEntity | null = null;
@@ -462,7 +462,13 @@ export class AcmeServerService {
       this.assertJwkMatchesCertificate(jws.header.jwk, cert);
     }
     if (!verifyCertIssuedBy(cert.toString(), ca.certPem)) {
-      throw new AcmeProblem("unauthorized", "证书不是由该本地CA签发", 401);
+      // 轮换后新CA签发的证书仍可通过旧ACME端点吊销
+      const effective = await this.issuer.getAcmeCa(caId).catch(() => null);
+      if (effective?.certPem && verifyCertIssuedBy(cert.toString(), effective.certPem)) {
+        ca = effective;
+      } else {
+        throw new AcmeProblem("unauthorized", "证书不是由该本地CA签发", 401);
+      }
     }
     const serialNumber = cert.serialNumber.toUpperCase();
     if (account) {

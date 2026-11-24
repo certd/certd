@@ -1396,4 +1396,24 @@ describe("LocalCaService", () => {
     const signed = await service.signCsr({ id, userId: -1, projectId: 10, csrPem });
     assert.ok(signed.certPem.includes("BEGIN CERTIFICATE"));
   });
+  it("轮换保留原CA有效期/ACME配置，旧CA自动禁用并指向新CA", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Rotate CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    await service.updateMeta({ id, userId: 1, acmeDirectIssue: true });
+    const old: any = await service.infoSafe({ id, userId: 1 });
+    const res = await service.rotateIntermediateCa({ id, userId: 1 });
+    const updatedOld: any = await service.infoSafe({ id, userId: 1 });
+    const newCa: any = await service.infoSafe({ id: res.id, userId: 1 });
+    assert.equal(updatedOld.disabled, true);
+    assert.equal(updatedOld.rotatedToId, res.id);
+    assert.equal(newCa.acmeEnabled, true);
+    assert.equal(newCa.acmeDirectIssue, true);
+    const oldYears = Math.round((Number(old.notAfter) - Number(old.notBefore)) / (365 * 86400000));
+    const newYears = Math.round((Number(newCa.notAfter) - Number(newCa.notBefore)) / (365 * 86400000));
+    assert.equal(newYears, oldYears);
+    const effective: any = await service.getAcmeCa(id);
+    assert.equal(effective.id, res.id);
+  });
+
 });

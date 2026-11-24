@@ -58,9 +58,26 @@ export class LocalCaAcmeService {
   }
 
   async getAcmeCa(id: number) {
-    const ca = await this.repository.findOne({ where: { id, deleted: false } });
+    const ca = await this.resolveEffectiveAcmeCa(id);
     this.assertAcmeCaUsable(ca);
     await this.crlService.assertCaNotRevokedByParent(ca);
+    return ca;
+  }
+
+  /**
+   * 轮换无感：旧中间CA的ACME账户/EAB/订单命名空间保持不变，
+   * 签发与策略自动指向轮换后的新CA。遵循AWS/IBM替换CA最佳实践。
+   */
+  private async resolveEffectiveAcmeCa(id: number, manager?: EntityManager): Promise<LocalCaEntity> {
+    const repository = manager ? manager.getRepository(LocalCaEntity) : this.repository;
+    let ca = await repository.findOne({ where: { id, deleted: false } });
+    let hops = 0;
+    while (ca?.rotatedToId && hops < 5) {
+      const next = await repository.findOne({ where: { id: ca.rotatedToId, deleted: false } });
+      if (!next) break;
+      ca = next;
+      hops++;
+    }
     return ca;
   }
 
@@ -82,10 +99,20 @@ export class LocalCaAcmeService {
     const repository = manager.getRepository(LocalCaEntity);
     const driverType = String(manager.connection?.options?.type || "");
     const useLock = !driverType.includes("sqlite");
-    const ca = await repository.findOne({
+    let ca = await repository.findOne({
       where: { id, deleted: false },
       ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
     });
+    let hops = 0;
+    while (ca?.rotatedToId && hops < 5) {
+      const next = await repository.findOne({
+        where: { id: ca.rotatedToId, deleted: false },
+        ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+      });
+      if (!next) break;
+      ca = next;
+      hops++;
+    }
     this.assertAcmeCaUsable(ca);
     await this.crlService.assertCaNotRevokedByParent(ca);
     return ca;
