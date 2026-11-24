@@ -196,7 +196,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             type: "link",
             text: t("certd.localCa.intermediate"),
             icon: "ph:git-branch",
-            show: ({ row }) => hasActionPermission("write") && row.caType === "root",
+            show: compute(({ row }) => hasActionPermission("write") && row.caType === "root"),
             click: async ({ row }) => {
               await openIntermediate(row);
             },
@@ -207,7 +207,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             text: null,
             tooltip: { title: t("certd.localCa.rotateIntermediate") },
             icon: "ph:arrows-clockwise",
-            show: ({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled && !row.revoked,
+            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled && !row.revoked),
             click: async ({ row }) => {
               openRotateIntermediate(row);
             },
@@ -218,7 +218,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             text: null,
             tooltip: { title: t("certd.localCa.revokeIntermediate") },
             icon: "ph:prohibit",
-            show: ({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled && !row.revoked,
+            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled && !row.revoked),
             click: async ({ row }) => {
               openRevokeIntermediate(row);
             },

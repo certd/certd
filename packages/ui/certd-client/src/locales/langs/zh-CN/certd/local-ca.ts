@@ -263,5 +263,6 @@ export default {
   rotateIntermediateOk: "确认轮换",
   rotateIntermediateStepUp: "轮换中间CA需要验证动态码或Passkey。",
   rotateIntermediateSuccess: "轮换成功，新中间CA ID：{id}",
+  onlyRootCanIssueIntermediate: "只有根CA可以签发中间CA",
 
 };

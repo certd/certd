@@ -263,5 +263,6 @@ export default {
   rotateIntermediateOk: "Rotate",
   rotateIntermediateStepUp: "Rotating an intermediate CA requires 2FA or Passkey verification.",
   rotateIntermediateSuccess: "Rotated successfully. New intermediate CA ID: {id}",
+  onlyRootCanIssueIntermediate: "Only a root CA can issue an intermediate CA",
 
 };

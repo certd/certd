@@ -185,6 +185,10 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   }
 
   async function openIntermediate(root: any) {
+    if (root?.caType !== "root") {
+      notification.warning({ message: t("certd.localCa.onlyRootCanIssueIntermediate") });
+      return;
+    }
     await openFormDialog({
       title: t("certd.localCa.intermediateTitle"),
       wrapper: { width: 680 },
