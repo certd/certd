@@ -688,7 +688,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.disabled) {
       throw new ValidateException("该本地CA已禁用");
     }
-    await this.accessService.assertCaNotRevokedByParent(ca);
+    await this.crlService.assertCaNotRevokedByParent(ca);
     const maxValidityDays = await this.resolveEffectiveMaxValidityDays(ca);
     if (maxValidityDays <= 0) {
       throw new ValidateException("中间CA必须设置有限的最大签发天数");
@@ -724,7 +724,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.disabled) {
       throw new ValidateException("该本地CA已禁用");
     }
-    await this.accessService.assertCaNotRevokedByParent(ca);
+    await this.crlService.assertCaNotRevokedByParent(ca);
     const maxValidityDays = await this.resolveEffectiveMaxValidityDays(ca);
     if (maxValidityDays <= 0) {
       throw new ValidateException("中间CA必须设置有限的最大签发天数");
@@ -761,7 +761,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.notAfter && ca.notAfter < Date.now()) {
       throw new ValidateException("本地CA已过期，本次签发已取消");
     }
-    await this.accessService.assertCaNotRevokedByParent(ca);
+    await this.crlService.assertCaNotRevokedByParent(ca);
   }
 
   async getAcmeCa(id: number) {
@@ -894,7 +894,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async removeGrant(req: { id: number; userId: number; grantId: number }) {
-    return await this.accessService.removeGrant(req);
+    const grantIds = await this.accessService.removeGrant(req);
+    await this.acmeService.disableEabsByGrantIds(grantIds);
   }
 
   async listAdmins(req: LocalCaScope) {

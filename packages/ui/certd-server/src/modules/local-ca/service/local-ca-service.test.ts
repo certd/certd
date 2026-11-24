@@ -228,6 +228,7 @@ function createService() {
   }
   crlService.accessService = accessService;
   acmeService.accessService = accessService;
+  acmeService.crlService = crlService;
   service.accessService = accessService;
   service.crlService = crlService;
   service.acmeService = acmeService;

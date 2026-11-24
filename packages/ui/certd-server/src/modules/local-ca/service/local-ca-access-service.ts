@@ -1,13 +1,10 @@
-import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { In, Repository } from "typeorm";
 import { ValidateException } from "@certd/lib-server";
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { LocalCaAdminEntity } from "../entity/local-ca-admin.js";
 import { LocalCaGrantEntity } from "../entity/local-ca-grant.js";
-import { AcmeEabEntity } from "../../acme-server/entity/acme-server.js";
-import { CertRevocationService } from "./cert-revocation-service.js";
-import { getCertSerialNumber } from "./local-ca-crypto.js";
 
 export type LocalCaScope = {
   id: number;
@@ -32,11 +29,7 @@ export class LocalCaAccessService {
   grantRepository: Repository<LocalCaGrantEntity>;
 
   // 移除授权时同步禁用绑定该授权的EAB，避免残留凭证继续可用
-  @InjectEntityModel(AcmeEabEntity)
-  acmeEabRepository: Repository<AcmeEabEntity>;
 
-  @Inject()
-  certRevocationService: CertRevocationService;
 
   async findAdminAccess(caId: number, adminUserId: number) {
     return await this.adminRepository.findOne({ where: { caId, adminUserId } });
@@ -166,8 +159,8 @@ export class LocalCaAccessService {
       where: { caId: ca.id, userId: grant.userId, projectId: grant.projectId },
     });
     const grantIds = duplicates.map(item => item.id);
-    await this.acmeEabRepository.update({ grantId: In(grantIds) }, { disabled: true, updateTime: new Date() } as any);
     await this.grantRepository.delete({ id: In(grantIds) } as any);
+    return grantIds;
   }
 
   async listAdmins(req: LocalCaScope) {
@@ -227,18 +220,4 @@ export class LocalCaAccessService {
     }
   }
 
-  /**
-   * 中间CA的吊销状态以父CA的吊销记录为准，防止历史数据或重新导入记录绕过 revoked 字段。
-   * 签发与ACME视图共用该校验，统一收敛在访问控制层。
-   */
-  async assertCaNotRevokedByParent(ca: LocalCaEntity | null) {
-    if (!ca || ca.caType !== "intermediate" || !ca.parentId) {
-      return;
-    }
-    const serialNumber = getCertSerialNumber(ca.certPem);
-    const revoked = await this.certRevocationService.findBySerial(ca.parentId, serialNumber);
-    if (revoked) {
-      throw new ValidateException("该本地CA已被上级根CA吊销，不能签发");
-    }
-  }
 }

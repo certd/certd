@@ -8,7 +8,7 @@ import { runTransaction } from "../../db/db-transaction.js";
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { CertRevocationService } from "./cert-revocation-service.js";
 import { LocalCaAccessService, LocalCaScope } from "./local-ca-access-service.js";
-import { createCrl, decryptCaPrivateKey, getCrlInfo as parseCrlInfo } from "./local-ca-crypto.js";
+import { createCrl, decryptCaPrivateKey, getCrlInfo as parseCrlInfo, getCertSerialNumber } from "./local-ca-crypto.js";
 
 export function normalizeBaseUrl(value?: string) {
   const text = String(value || "").trim();
@@ -288,4 +288,18 @@ export class LocalCaCrlService {
   private decryptCaPrivateKey(ca: LocalCaEntity) {
     return decryptCaPrivateKey(ca, value => this.encryptService.decrypt(value));
   }
+  /**
+   * CA 状态校验：中间CA是否已被上级根CA吊销。属于签发/ACME策略守卫，不属于ACL。
+   */
+  async assertCaNotRevokedByParent(ca: LocalCaEntity | null) {
+    if (!ca || ca.caType !== "intermediate" || !ca.parentId) {
+      return;
+    }
+    const serialNumber = getCertSerialNumber(ca.certPem);
+    const revoked = await this.certRevocationService.findBySerial(ca.parentId, serialNumber);
+    if (revoked) {
+      throw new ValidateException("该本地CA已被上级根CA吊销，不能签发");
+    }
+  }
+
 }

@@ -5,11 +5,9 @@ import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { logger } from "@certd/basic";
 import { In, LessThan, MoreThan, Not, Repository } from "typeorm";
-import { CertReader } from "@certd/plugin-lib";
 import type { AcmeIssuerBackend } from "../acme-issuer-backend.js";
+import type { AcmeIssuedCertificateStore } from "../acme-issued-certificate-store.js";
 import { getCsrDomains, matchAllowedDomains, normalizeDomains, verifyCertIssuedBy } from "../../cert/service/cert-utils.js";
-import { CertInfoService } from "../../monitor/service/cert-info-service.js";
-import { CertInfoEntity, CertStatus } from "../../monitor/entity/cert-info.js";
 import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeOrderEntity } from "../entity/acme-server.js";
 import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "../protocol/acme-jws.js";
 import { fetchHttpChallenge } from "../protocol/acme-network.js";
@@ -61,8 +59,8 @@ export class AcmeServerService {
   @Inject("acmeIssuerBackend")
   issuer: AcmeIssuerBackend;
 
-  @Inject()
-  certInfoService: CertInfoService;
+  @Inject("acmeIssuedCertificateStore")
+  certificateStore: AcmeIssuedCertificateStore;
 
   @InjectEntityModel(AcmeAccountEntity)
   accountRepository: Repository<AcmeAccountEntity>;
@@ -368,7 +366,6 @@ export class AcmeServerService {
     const config = this.parseAcmeConfig(ca.acmeConfig);
     return await runTransaction(manager, async tx => {
       const orderRepository = tx.getRepository(AcmeOrderEntity);
-      const certRepository = tx.getRepository(CertInfoEntity);
       const order = await orderRepository.findOne({ where: { id: orderId, caId } });
       if (!order || order.accountId !== account.id) {
         throw new AcmeProblem("unauthorized", "订单不存在", 401);
@@ -409,7 +406,17 @@ export class AcmeServerService {
       order.serialNumber = signed.serialNumber;
       order.updateTime = new Date();
       await orderRepository.save(order);
-      await this.saveCertRecord(ca, order, signed, account, certRepository);
+      await this.certificateStore.saveIssuedCertificate(
+        {
+          caId: ca.id,
+          serialNumber: signed.serialNumber,
+          fullchainPem: signed.fullchainPem,
+          userId: account.userId,
+          projectId: account.projectId,
+          domainsFallback: JSON.parse(order.identifiers).map((item: any) => item.value),
+        },
+        tx
+      );
       logger.info(`[acme] certificate issued ca=${ca.id} order=${order.id} account=${account.id} serial=${signed.serialNumber}`);
       return await this.toOrder(order);
     });
@@ -466,11 +473,9 @@ export class AcmeServerService {
         throw new AcmeProblem("unauthorized", "无权吊销该证书", 401);
       }
     }
-    const certInfo = await this.certInfoService.findOne({
-      where: { localCaId: ca.id, serialNumber },
-    });
+    const certInfo = await this.certificateStore.findIssuedCertificate(ca.id, serialNumber);
     if (certInfo) {
-      await this.certInfoService.applyLocalRevocation({
+      await this.certificateStore.revokeIssuedCertificate({
         certInfoId: certInfo.id,
         caId: ca.id,
         userId: certInfo.userId,
@@ -866,32 +871,6 @@ export class AcmeServerService {
     };
   }
 
-  private async saveCertRecord(ca: any, order: AcmeOrderEntity, signed: any, account: AcmeAccountEntity, repository = this.certInfoService.repository) {
-    if (!account.userId || account.userId <= 0) {
-      logger.info(`[acme] system-level certificate not saved to user repo ca=${ca.id} order=${order.id}`);
-      return;
-    }
-    const reader = new CertReader({ crt: signed.fullchainPem, key: "" });
-    const orderDomains = JSON.parse(order.identifiers).map((item: any) => item.value);
-    const domains = reader.detail.domains.altNames?.length ? reader.detail.domains.altNames : orderDomains;
-    const bean = new CertInfoEntity();
-    bean.userId = account.userId;
-    bean.projectId = account.projectId;
-    bean.domain = domains[0] || "";
-    bean.domains = domains.join(",");
-    bean.domainCount = domains.length;
-    bean.wildcardDomainCount = domains.filter(item => item.startsWith("*.")).length;
-    bean.applyTime = Date.now();
-    bean.fromType = "acme";
-    bean.certProvider = reader.detail.issuer.commonName;
-    bean.effectiveTime = reader.effective;
-    bean.expiresTime = reader.expires;
-    bean.certInfo = JSON.stringify({ crt: signed.fullchainPem, key: "" });
-    bean.localCaId = ca.id;
-    bean.serialNumber = signed.serialNumber;
-    bean.status = CertStatus.active;
-    await repository.save(bean);
-  }
 
   private assertJwkMatchesCertificate(jwk: any, cert: X509Certificate) {
     const publicJwk = cert.publicKey.export({ format: "jwk" }) as any;

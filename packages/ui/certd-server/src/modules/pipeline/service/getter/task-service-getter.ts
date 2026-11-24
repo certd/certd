@@ -35,6 +35,7 @@ export class TaskServiceGetter implements IServiceGetter {
     return new TaskServiceGetter(this.userId, this.projectId, this.appCtx, pluginType, capabilities);
   }
   private hasLocalCaCapability(name: string): boolean {
+    // 能力清单由服务端可信插件注册提供，不能作为不可信插件自授权凭证；空数组表示显式无能力
     if (this.capabilities) {
       return this.capabilities.includes(name);
     }

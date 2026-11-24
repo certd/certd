@@ -9,6 +9,7 @@ import { LocalCaEntity } from "../entity/local-ca.js";
 import { AcmeEabEntity, AcmeOrderEntity } from "../../acme-server/entity/acme-server.js";
 import { randomId } from "../../acme-server/protocol/acme-jws.js";
 import { LocalCaAccessService, LocalCaScope } from "./local-ca-access-service.js";
+import { LocalCaCrlService } from "./local-ca-crl-service.js";
 import { normalizeAllowedDomains, sha256Hex } from "./local-ca-crypto.js";
 
 function randomEabHmacKey() {
@@ -38,6 +39,9 @@ export class LocalCaAcmeService {
   @Inject()
   accessService: LocalCaAccessService;
 
+  @Inject()
+  crlService: LocalCaCrlService;
+
   private assertAcmeCaUsable(ca: LocalCaEntity | null) {
     if (!ca || ca.caType !== "intermediate" || !ca.acmeEnabled) {
       throw new ValidateException("该本地CA未启用ACME服务（仅中间CA支持ACME）");
@@ -56,7 +60,7 @@ export class LocalCaAcmeService {
   async getAcmeCa(id: number) {
     const ca = await this.repository.findOne({ where: { id, deleted: false } });
     this.assertAcmeCaUsable(ca);
-    await this.accessService.assertCaNotRevokedByParent(ca);
+    await this.crlService.assertCaNotRevokedByParent(ca);
     return ca;
   }
 
@@ -83,7 +87,7 @@ export class LocalCaAcmeService {
       ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
     });
     this.assertAcmeCaUsable(ca);
-    await this.accessService.assertCaNotRevokedByParent(ca);
+    await this.crlService.assertCaNotRevokedByParent(ca);
     return ca;
   }
 
@@ -303,4 +307,10 @@ export class LocalCaAcmeService {
       .execute();
     return (result.affected || 0) > 0;
   }
+  /** 授权撤销时联动禁用绑定EAB，属于ACME集成职责。 */
+  async disableEabsByGrantIds(grantIds: number[]) {
+    if (!grantIds?.length) return;
+    await this.acmeEabRepository.update({ grantId: In(grantIds) }, { disabled: true, updateTime: new Date() } as any);
+  }
+
 }
