@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { AcmeServerService, sanitizePublicJwk } from "./acme-server-service.js";
-import { base64urlEncode, jwkThumbprint } from "./acme-jws.js";
+import { base64urlEncode, jwkThumbprint } from "../protocol/acme-jws.js";
 
 function createJwsBody(header: any, payload: any = null) {
   return {
@@ -26,7 +26,7 @@ describe("AcmeServerService account JWK", () => {
 
 it("Directory 暴露远程可识别的直签元数据", async () => {
   const service: any = new AcmeServerService();
-  service.localCaService = {
+  service.issuer = {
     async getAcmeCa() {
       return { id: 2, acmeDirectIssue: true };
     },
@@ -41,7 +41,7 @@ it("Directory 暴露远程可识别的直签元数据", async () => {
 describe("AcmeServerService CA isolation", () => {
   it("每个中间CA拥有独立的Directory和端点URL", async () => {
     const service: any = new AcmeServerService();
-    service.localCaService = {
+    service.issuer = {
       async getAcmeCa(id: number) {
         return { id };
       },
@@ -58,7 +58,7 @@ describe("AcmeServerService CA isolation", () => {
 
   it("CA B 的接口拒绝 CA A 的账号kid", async () => {
     const service: any = new AcmeServerService();
-    service.localCaService = { async getAcmeCa() {} };
+    service.issuer = { async getAcmeCa() {} };
     let lookupCalled = false;
     service.accountRepository = {
       async findOne() {
@@ -74,7 +74,7 @@ describe("AcmeServerService CA isolation", () => {
 
   it("kid路径必须符合 /api/acme/{caId}/account/{id} 格式", async () => {
     const service: any = new AcmeServerService();
-    service.localCaService = { async getAcmeCa() {} };
+    service.issuer = { async getAcmeCa() {} };
     let lookupCalled = false;
     service.accountRepository = {
       async findOne() {
@@ -90,7 +90,7 @@ describe("AcmeServerService CA isolation", () => {
 
   it("kid中的CA ID必须是正十进制数字", async () => {
     const service: any = new AcmeServerService();
-    service.localCaService = { async getAcmeCa() {} };
+    service.issuer = { async getAcmeCa() {} };
     let lookupCalled = false;
     service.accountRepository = {
       async findOne() {
@@ -106,7 +106,7 @@ describe("AcmeServerService CA isolation", () => {
 
   it("账号kid中的CA路径匹配时，查询仍带URL中的CA id", async () => {
     const service: any = new AcmeServerService();
-    service.localCaService = { async getAcmeCa() {} };
+    service.issuer = { async getAcmeCa() {} };
     let lookupWhere: any = null;
     service.accountRepository = {
       async findOne(args: any) {
@@ -136,7 +136,7 @@ describe("AcmeServerService CA isolation", () => {
   it("EAB凭证按URL中的CA id查找，不能跨CA复用", async () => {
     const service: any = new AcmeServerService();
     const calls: any[] = [];
-    service.localCaService = {
+    service.issuer = {
       async getCaBaseUrl() {
         return "https://certd.example.com";
       },
@@ -172,7 +172,7 @@ describe("AcmeServerService finalize authorization", () => {
 
   it("EAB 禁用后已有订单不能 finalize", async () => {
     const service: any = new AcmeServerService();
-    service.localCaService = { getAcmeEabProfile: async () => null };
+    service.issuer = { getAcmeEabProfile: async () => null };
     const account: any = { eabId: "eab-1" };
     const order: any = { identifiers: JSON.stringify([{ type: "dns", value: "old.example.com" }]) };
     await assert.rejects(() => service.assertOrderStillAuthorized({ allowedDomains: null }, account, order), /EAB凭证已禁用或过期/);
@@ -180,7 +180,7 @@ describe("AcmeServerService finalize authorization", () => {
 
   it("EAB 域名范围收紧后已有订单不能 finalize", async () => {
     const service: any = new AcmeServerService();
-    service.localCaService = {
+    service.issuer = {
       async getAcmeEabProfile() {
         return { id: "eab-1", allowedDomains: ["new.example.com"] };
       },

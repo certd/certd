@@ -6,15 +6,15 @@ import { InjectEntityModel } from "@midwayjs/typeorm";
 import { logger } from "@certd/basic";
 import { In, LessThan, MoreThan, Not, Repository } from "typeorm";
 import { CertReader } from "@certd/plugin-lib";
-import { LocalCaService } from "../../local-ca/service/local-ca-service.js";
-import { getCsrDomains, matchAllowedDomains, normalizeDomains, verifyCertIssuedBy } from "../../local-ca/service/local-ca-crypto.js";
+import type { AcmeIssuerBackend } from "../acme-issuer-backend.js";
+import { getCsrDomains, matchAllowedDomains, normalizeDomains, verifyCertIssuedBy } from "../../cert/service/cert-utils.js";
 import { CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { CertInfoEntity, CertStatus } from "../../monitor/entity/cert-info.js";
 import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeOrderEntity } from "../entity/acme-server.js";
-import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "./acme-jws.js";
-import { fetchHttpChallenge } from "./acme-network.js";
-import { isSameAcmeUrl } from "./acme-url.js";
-import { acmeNonceStore } from "./acme-nonce.js";
+import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "../protocol/acme-jws.js";
+import { fetchHttpChallenge } from "../protocol/acme-network.js";
+import { isSameAcmeUrl } from "../protocol/acme-url.js";
+import { acmeNonceStore } from "../protocol/acme-nonce.js";
 import { runTransaction } from "../../db/db-transaction.js";
 
 const ORDER_TTL = 7 * 24 * 3600 * 1000;
@@ -58,8 +58,8 @@ function toPemCsr(der: Buffer) {
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class AcmeServerService {
-  @Inject()
-  localCaService: LocalCaService;
+  @Inject("acmeIssuerBackend")
+  issuer: AcmeIssuerBackend;
 
   @Inject()
   certInfoService: CertInfoService;
@@ -94,7 +94,7 @@ export class AcmeServerService {
   }
 
   async directory(caId: number) {
-    const ca = await this.localCaService.getAcmeCa(caId);
+    const ca = await this.issuer.getAcmeCa(caId);
     const base = await this.baseUrl(caId);
     return {
       newNonce: `${base}/new-nonce`,
@@ -118,7 +118,7 @@ export class AcmeServerService {
   }
 
   async newAccount(ctx: any, caId: number, body: any) {
-    await this.localCaService.getAcmeCa(caId);
+    await this.issuer.getAcmeCa(caId);
     const jws = decodeJws(body);
     this.assertUrl(jws, ctx);
     if (!jws.header.jwk) {
@@ -141,7 +141,7 @@ export class AcmeServerService {
         throw new AcmeProblem("unauthorized", "账户不可用", 401);
       }
       await this.assertAccountEabActive(account);
-      await this.localCaService.markBaseUrlLocked(caId);
+      await this.issuer.markBaseUrlLocked(caId);
       logger.info(`[acme] account reused ca=${caId} account=${account.id}`);
       ctx.status = 200;
       ctx.set("Location", `${await this.baseUrl(caId)}/account/${account.id}`);
@@ -166,13 +166,13 @@ export class AcmeServerService {
         contact: JSON.stringify(payload.contact || []),
       });
       await runTransaction(manager, async tx => {
-        const consumed = await this.localCaService.consumeAcmeEab(eab.id, tx);
+        const consumed = await this.issuer.consumeAcmeEab(eab.id, tx);
         if (!consumed) {
           throw new AcmeProblem("unauthorized", "EAB凭证使用次数已耗尽", 401);
         }
         await tx.getRepository(AcmeAccountEntity).save(account);
       });
-      await this.localCaService.markBaseUrlLocked(caId);
+      await this.issuer.markBaseUrlLocked(caId);
       logger.info(`[acme] account created ca=${caId} account=${account.id} eab=${eab.id}`);
       ctx.status = 201;
       ctx.set("Location", `${await this.baseUrl(caId)}/account/${account.id}`);
@@ -186,14 +186,14 @@ export class AcmeServerService {
   }
 
   async newOrder(ctx: any, caId: number, body: any) {
-    const ca = await this.localCaService.getAcmeCa(caId);
+    const ca = await this.issuer.getAcmeCa(caId);
     const { jws, account } = await this.verifyAccount(ctx, caId, body);
     const payload = jws.payload || {};
     const identifiers = this.normalizeIdentifiers(payload.identifiers);
     const identifierValues = identifiers.map(item => item.value);
     matchAllowedDomains(identifierValues, this.parseAllowedDomains(ca.allowedDomains));
     if (account.eabId) {
-      const profile = await this.localCaService.getAcmeEabProfile(account.eabId);
+      const profile = await this.issuer.getAcmeEabProfile(account.eabId);
       if (!profile) {
         throw new AcmeProblem("unauthorized", "EAB凭证已禁用或过期", 401);
       }
@@ -328,7 +328,7 @@ export class AcmeServerService {
   }
 
   async finalizeOrder(ctx: any, caId: number, orderId: string, body: any) {
-    const ca = await this.localCaService.getAcmeCa(caId);
+    const ca = await this.issuer.getAcmeCa(caId);
     const { account } = await this.verifyAccount(ctx, caId, body);
     const current = await this.getOrderForAccount(caId, orderId, account.id);
     this.assertNotExpired(current, "订单已过期");
@@ -382,7 +382,7 @@ export class AcmeServerService {
       }
       checkCsrDomains(order);
       // 在事务内锁定并重新读取CA策略，确保关闭直签/收紧域名范围与签发串行化
-      const freshCa = await this.localCaService.getAcmeCaForUpdate(caId, tx);
+      const freshCa = await this.issuer.getAcmeCaForUpdate(caId, tx);
       this.assertDirectIssueAllowed(order, freshCa);
       await this.assertOrderStillAuthorized(freshCa, account, order, tx);
 
@@ -398,7 +398,7 @@ export class AcmeServerService {
 
       let signed;
       try {
-        signed = await this.localCaService.signCsrForAcme(ca.id, csrPem, config.validityDays);
+        signed = await this.issuer.signCsrForAcme(ca.id, csrPem, config.validityDays);
       } catch (e: any) {
         logger.warn(`[acme] finalize signing failed ca=${ca.id} order=${order.id} account=${account.id}: ${e?.message || e}`);
         throw new AcmeProblem("serverInternal", `证书签发失败：${e.message}`, 500);
@@ -426,7 +426,7 @@ export class AcmeServerService {
   }
 
   async revokeCertificate(ctx: any, caId: number, body: any) {
-    const ca = await this.localCaService.getCaForAcmeRevocation(caId);
+    const ca = await this.issuer.getCaForAcmeRevocation(caId);
     const jws = decodeJws(body);
     this.assertUrl(jws, ctx);
     let account: AcmeAccountEntity | null = null;
@@ -480,7 +480,7 @@ export class AcmeServerService {
       });
     } else {
       // 未绑定用户仓库的系统级证书只有ACME订单，没有cd_cert_info记录；仍需写入CRL
-      await this.localCaService.recordSystemCertRevocation({
+      await this.issuer.recordSystemCertRevocation({
         caId: ca.id,
         serialNumber,
         expiresTime: new Date(cert.validTo).getTime(),
@@ -519,7 +519,7 @@ export class AcmeServerService {
     if (jwkThumbprint(jwk) !== accountThumbprint) {
       throw new AcmeProblem("malformed", "EAB绑定的账号公钥不匹配");
     }
-    const info = await this.localCaService.getAcmeEabSecret(caId, header.kid);
+    const info = await this.issuer.getAcmeEabSecret(caId, header.kid);
     if (!info || info.disabled) {
       throw new AcmeProblem("unauthorized", "EAB凭证不存在或已禁用", 401);
     }
@@ -538,7 +538,7 @@ export class AcmeServerService {
   }
 
   async listAccounts(caId: number, userId: number, projectId?: number) {
-    await this.localCaService.assertCaOwner({ id: caId, userId, projectId });
+    await this.issuer.assertCaOwner({ id: caId, userId, projectId });
     const accounts = await this.accountRepository.find({ where: { caId }, order: { createTime: "DESC" } });
     const result = [];
     for (const account of accounts) {
@@ -561,7 +561,7 @@ export class AcmeServerService {
   }
 
   async listAccountOrders(caId: number, accountId: string, userId: number, projectId?: number) {
-    await this.localCaService.assertCaOwner({ id: caId, userId, projectId });
+    await this.issuer.assertCaOwner({ id: caId, userId, projectId });
     const account = await this.accountRepository.findOne({ where: { id: accountId, caId } });
     if (!account) {
       throw new AcmeProblem("unauthorized", "ACME账户不存在", 404);
@@ -583,7 +583,7 @@ export class AcmeServerService {
   }
 
   async setAccountStatus(caId: number, accountId: string, status: string, userId: number, projectId?: number) {
-    await this.localCaService.assertCaOwner({ id: caId, userId, projectId });
+    await this.issuer.assertCaOwner({ id: caId, userId, projectId });
     if (!["valid", "deactivated"].includes(status)) {
       throw new AcmeProblem("malformed", "账户状态不合法");
     }
@@ -601,7 +601,7 @@ export class AcmeServerService {
   }
 
   private async verifyAccount(ctx: any, caId: number, body: any, consume = true) {
-    await this.localCaService.getAcmeCa(caId);
+    await this.issuer.getAcmeCa(caId);
     const jws = decodeJws(body);
     this.assertUrl(jws, ctx);
     const account = await this.resolveAccount(jws, caId);
@@ -618,7 +618,7 @@ export class AcmeServerService {
     if (!account.eabId) {
       throw new AcmeProblem("unauthorized", "账户未通过EAB认证，请重新注册", 401);
     }
-    const profile = await this.localCaService.getAcmeEabProfile(account.eabId, manager);
+    const profile = await this.issuer.getAcmeEabProfile(account.eabId, manager);
     if (!profile) {
       throw new AcmeProblem("unauthorized", "EAB凭证已禁用或过期", 401);
     }
@@ -732,7 +732,7 @@ export class AcmeServerService {
 
   private async triggerChallenge(caId: number, authz: AcmeAuthzEntity, challenge: AcmeChallengeEntity, payload: any) {
     this.assertNotExpired(authz, "授权已过期");
-    const ca = await this.localCaService.getAcmeCa(caId);
+    const ca = await this.issuer.getAcmeCa(caId);
     if (challenge.status === "valid") {
       return;
     }
@@ -955,7 +955,7 @@ export class AcmeServerService {
   }
 
   private async baseUrl(caId: number) {
-    const base = await this.localCaService.getCaBaseUrl(caId);
+    const base = await this.issuer.getCaBaseUrl(caId);
     return `${base}/api/acme/${caId}`;
   }
 }

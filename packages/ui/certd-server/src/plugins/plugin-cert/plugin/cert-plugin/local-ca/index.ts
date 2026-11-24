@@ -11,7 +11,7 @@ import type { LocalCaGetter } from "../../../../../modules/local-ca/service/loca
 import type { LocalCaSignerGetter } from "../../../../../modules/local-ca/service/local-ca-signer-getter.js";
 import { filterAllowedDomains, verifyCertIssuedBy, type LocalCaKeyType } from "../../../../../modules/local-ca/service/local-ca-crypto.js";
 import { parseLocalCaDirectory } from "../../../../../modules/local-ca/service/local-ca-directory.js";
-import { isSameAcmeUrl } from "../../../../../modules/acme-server/service/acme-url.js";
+import { isSameAcmeUrl } from "../../../../../modules/acme-server/protocol/acme-url.js";
 
 export type LocalCaApplyMode = "local-direct" | "local-acme" | "remote-acme";
 
@@ -36,6 +36,7 @@ const ACME_MODES: LocalCaApplyMode[] = ["local-acme", "remote-acme"];
   icon: "ph:seal-check",
   title: "本地CA证书申请",
   group: pluginGroups.cert.key,
+  serviceCapabilities: ["localCaGetter", "localCaSignerGetter"],
   desc: "支持本地CA直接签发、本地ACME与远程ACME三种模式；客户端需信任对应根CA，建议用于内部/测试环境",
   default: {
     strategy: {

@@ -23,14 +23,23 @@ export class TaskServiceGetter implements IServiceGetter {
   private projectId: number;
   private appCtx: IMidwayContainer;
   private pluginType?: string;
-  constructor(userId: number, projectId: number, appCtx: IMidwayContainer, pluginType?: string) {
+  private capabilities?: string[];
+  constructor(userId: number, projectId: number, appCtx: IMidwayContainer, pluginType?: string, capabilities?: string[]) {
     this.userId = userId;
     this.projectId = projectId;
     this.appCtx = appCtx;
     this.pluginType = pluginType;
+    this.capabilities = capabilities;
   }
-  forPlugin(pluginType: string): IServiceGetter {
-    return new TaskServiceGetter(this.userId, this.projectId, this.appCtx, pluginType);
+  forPlugin(pluginType: string, capabilities?: string[]): IServiceGetter {
+    return new TaskServiceGetter(this.userId, this.projectId, this.appCtx, pluginType, capabilities);
+  }
+  private hasLocalCaCapability(name: string): boolean {
+    if (this.capabilities) {
+      return this.capabilities.includes(name);
+    }
+    // 兼容未声明能力的旧插件：仅本地CA插件默认拥有CA能力
+    return this.pluginType === "CertApplyLocalCa";
   }
   async get<T>(serviceName: string): Promise<T> {
     if (serviceName === "subDomainsGetter") {
@@ -47,9 +56,12 @@ export class TaskServiceGetter implements IServiceGetter {
     } else if (serviceName === "certInfoGetter") {
       return (await this.getCertInfoGetter()) as T;
     } else if (serviceName === "localCaGetter") {
+      if (!this.hasLocalCaCapability("localCaGetter")) {
+        throw new Error(`插件 ${this.pluginType || "unknown"} 无权获取本地CA读取能力`);
+      }
       return (await this.getLocalCaGetter()) as T;
     } else if (serviceName === "localCaSignerGetter") {
-      if (this.pluginType !== "CertApplyLocalCa") {
+      if (!this.hasLocalCaCapability("localCaSignerGetter")) {
         throw new Error(`插件 ${this.pluginType || "unknown"} 无权获取本地CA签发能力`);
       }
       return (await this.getLocalCaSignerGetter()) as T;

@@ -16,7 +16,7 @@ import { CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { CertRevocationService } from "./cert-revocation-service.js";
 import { CertStatus } from "../../monitor/entity/cert-info.js";
 import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
-import { randomId } from "../../acme-server/service/acme-jws.js";
+import { randomId } from "../../acme-server/protocol/acme-jws.js";
 import {
   createCrl,
   createIntermediateCa,
