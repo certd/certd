@@ -26,6 +26,7 @@ export function createChallengeFn(opts = {}) {
     const log = function (...args) {
         logger.info(...args)
     }
+
     /**
  * Verify ACME HTTP challenge
  *
@@ -140,8 +141,9 @@ export function createChallengeFn(opts = {}) {
         const txtRecords = []
         try {
             /* Default DNS resolver first */
+            const localResolver = opts.dnsServers?.length ? ((await util.createCustomResolver(opts.dnsServers, log)) || dns) : dns;
             log('从本地DNS服务器获取TXT解析记录');
-            const res = await walkDnsChallengeRecord(recordName, dns, deep);
+            const res = await walkDnsChallengeRecord(recordName, localResolver, deep);
             if (res && res.length > 0) {
                 for (const item of res) {
                     txtRecords.push(item)
@@ -156,7 +158,7 @@ export function createChallengeFn(opts = {}) {
             try {
                 /* Authoritative DNS resolver */
                 log(`从域名权威服务器获取TXT解析记录`);
-                const authoritativeResolver = await util.getAuthoritativeDnsResolver(recordName, log);
+                const authoritativeResolver = await util.getAuthoritativeDnsResolver(recordName, log, opts.dnsServers);
                 const res = await walkDnsChallengeRecord(recordName, authoritativeResolver, deep);
                 if (res && res.length > 0) {
                     for (const item of res) {

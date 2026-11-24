@@ -63,6 +63,7 @@ export type LocalCaGenerateReq = {
   baseUrl?: string;
   remark?: string;
   exportDisabled?: boolean;
+  dnsServer?: string;
 };
 
 export type LocalCaIntermediateReq = Omit<LocalCaScope, "id"> & {
@@ -77,6 +78,7 @@ export type LocalCaIntermediateReq = Omit<LocalCaScope, "id"> & {
   baseUrl?: string;
   remark?: string;
   exportDisabled?: boolean;
+  dnsServer?: string;
 };
 
 export type LocalCaImportReq = {
@@ -94,6 +96,7 @@ export type LocalCaImportReq = {
   exportDisabled?: boolean;
   allowDuplicate?: boolean;
   allowExternalCrl?: boolean;
+  dnsServer?: string;
 };
 
 export type LocalCaIssueReq = LocalCaScope & {
@@ -430,6 +433,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
     bean.baseUrl = normalizeBaseUrl(req.baseUrl) || root.baseUrl || (await this.crlService.resolveBaseUrl(root));
+    bean.dnsServer = String(req.dnsServer || "").trim() || null;
     bean.pathLength = 0;
     bean.disabled = false;
     bean.remark = req.remark || "";
@@ -496,6 +500,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.acmeDirectIssue = old.acmeDirectIssue;
     bean.acmeConfig = old.acmeConfig;
     bean.baseUrl = old.baseUrl || root.baseUrl || null;
+    bean.dnsServer = old.dnsServer;
     bean.pathLength = 0;
     bean.disabled = false;
     bean.remark = `轮换自CA(ID:${old.id})`;
@@ -649,6 +654,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
     bean.baseUrl = normalizeBaseUrl(req.baseUrl) || parent?.baseUrl || null;
+    bean.dnsServer = String(req.dnsServer || "").trim() || null;
     bean.pathLength = material.pathLength ?? (selfSigned ? getBasicConstraints(material.certPem).pathLength ?? 1 : 0);
     bean.disabled = false;
     bean.remark = req.remark || "";
@@ -857,7 +863,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.crlService.refreshArchivedRootCrl(req);
   }
 
-  async requiresStepUpForUpdate(req: LocalCaScope & { usage?: string; maxValidityDays?: number; allowedDomains?: string[]; baseUrl?: string; acmeDirectIssue?: boolean; exportDisabled?: boolean }) {
+  async requiresStepUpForUpdate(req: LocalCaScope & { usage?: string; maxValidityDays?: number; allowedDomains?: string[]; baseUrl?: string; acmeDirectIssue?: boolean; exportDisabled?: boolean; dnsServer?: string }) {
     const ca = await this.accessService.getOwnedCa(req);
     if (req.acmeDirectIssue === true && !ca.acmeDirectIssue) {
       return true;
@@ -881,6 +887,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       return true;
     }
     if (req.exportDisabled === false && ca.exportDisabled === true) {
+      return true;
+    }
+    if (req.dnsServer != null && (String(req.dnsServer || "").trim() || null) !== (ca.dnsServer || null)) {
       return true;
     }
     return false;
@@ -936,6 +945,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       baseUrl?: string;
       acmeDirectIssue?: boolean;
       exportDisabled?: boolean;
+      dnsServer?: string;
     }
   ) {
     const ca = await this.accessService.getOwnedCa(req);
@@ -1011,6 +1021,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       } else {
         ca.acmeDirectIssue = req.acmeDirectIssue === true;
       }
+    }
+    if (req.dnsServer != null) {
+      ca.dnsServer = String(req.dnsServer || "").trim() || null;
     }
     if (req.exportDisabled != null) {
       ca.exportDisabled = req.exportDisabled === true;

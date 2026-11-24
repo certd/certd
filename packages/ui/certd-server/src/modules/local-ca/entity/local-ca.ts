@@ -24,6 +24,9 @@ export class LocalCaEntity {
   @Column({ name: "rotated_to_id", nullable: true })
   rotatedToId: number;
 
+  @Column({ name: "dns_server", nullable: true })
+  dnsServer: string;
+
   @Column({ name: "key_type", comment: "密钥类型:rsa2048/rsa4096", length: 20, default: "rsa2048" })
   keyType: string;
 

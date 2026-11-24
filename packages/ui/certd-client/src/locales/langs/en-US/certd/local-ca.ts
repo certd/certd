@@ -128,6 +128,8 @@ export default {
     both: "Server + Client",
   },
   fields: {
+    dnsServer: "DNS Servers",
+    dnsServerHelper: "Optional, empty follows system DNS. Supports ip:port / host:port, comma-separated. Used for internal DNS-01 validation.",
     name: "Name",
     subjectCn: "Common Name",
     organization: "Organization (O)",
@@ -264,5 +266,8 @@ export default {
   rotateIntermediateStepUp: "Rotating an intermediate CA requires 2FA or Passkey verification.",
   rotateIntermediateSuccess: "Rotated successfully. New intermediate CA ID: {id}",
   onlyRootCanIssueIntermediate: "Only a root CA can issue an intermediate CA",
+
+  dnsStepUpTitle: "Verify to set CA DNS",
+  dnsStepUpDesc: "Setting a CA-specific DNS server affects domain validation. Verify with 2FA or Passkey first.",
 
 };

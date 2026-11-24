@@ -354,6 +354,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           search: { show: false },
           column: { width: 220, ellipsis: true },
         },
+        dnsServer: {
+          title: t("certd.localCa.fields.dnsServer"),
+          type: "text",
+          form: {
+            col: { span: 24 },
+            component: { placeholder: "10.0.0.53:5353, 10.0.0.54" },
+            helper: t("certd.localCa.fields.dnsServerHelper"),
+          },
+          search: { show: false },
+          column: { show: false },
+        },
         keyType: {
           title: t("certd.localCa.fields.keyType"),
           type: "dict-select",

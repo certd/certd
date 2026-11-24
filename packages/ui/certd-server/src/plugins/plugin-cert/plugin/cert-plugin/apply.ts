@@ -711,6 +711,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       domainParser,
       subDomainsGetter: subDomainsGetter,
       waitDnsDiffuseTime: this.waitDnsDiffuseTime,
+      dnsServers: await this.resolveDnsServers(),
     });
     return this.acme;
   }
@@ -718,6 +719,10 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   /**
    * 子类可返回自定义EAB（本地CA插件内联凭证），返回undefined表示沿用内置逻辑。
    */
+  protected async resolveDnsServers(): Promise<string[] | undefined> {
+    return undefined;
+  }
+
   protected async resolveCustomAcmeEab(): Promise<EabAccess | null | undefined> {
     return undefined;
   }

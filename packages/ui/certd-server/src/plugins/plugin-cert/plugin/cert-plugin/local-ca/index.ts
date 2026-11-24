@@ -28,6 +28,7 @@ type LocalCaSubscribeInfo = {
   allowedDomains?: string | null;
   effectiveBaseUrl?: string;
   certPem?: string;
+  dnsServer?: string | null;
 };
 
 
@@ -319,6 +320,22 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     return await CertApplyBaseConvertPlugin.prototype.emitCertApplySuccess.call(this, issuer ? { extensions: { issuer } } : undefined);
   }
 
+  private async isTrustedAcmeProvider(url: URL): Promise<boolean> {
+    try {
+      const service: any = await this.ctx.serviceGetter.get("customAcmeProviderService");
+      const providers = (await service?.getAll?.()) || [];
+      return providers.some((provider: any) => {
+        try {
+          return provider?.directoryUrl && new URL(provider.directoryUrl).origin === url.origin;
+        } catch {
+          return false;
+        }
+      });
+    } catch {
+      return false;
+    }
+  }
+
   private async resolveIssuer(): Promise<{ type: string; id: string; serialNumber?: string } | null> {
     if (!this.cert?.crt) {
       return null;
@@ -368,6 +385,13 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     } as any;
   }
 
+  protected async resolveDnsServers(): Promise<string[] | undefined> {
+    if (this.mode !== "local-acme") return undefined;
+    const ca = await this.prepareLocalCa(true);
+    const servers = String(ca.dnsServer || "").split(/[,，\s]+/).map(item => item.trim()).filter(Boolean);
+    return servers.length ? servers : undefined;
+  }
+
   protected async resolveCustomAcmeEab(): Promise<EabAccess | null | undefined> {
     // EAB凭证统一复用ACME账号授权，不在任务内明文填写
     return undefined;
@@ -413,7 +437,10 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
     const blockedHost = host === "localhost" || host.endsWith(".localhost") || host === "metadata.google.internal" || host === "100.100.100.200" || host === "169.254.169.254";
     if (blockedHost || isBlockedAddress(host)) {
-      throw new Error("普通用户不能使用本机/私网/链路本地/保留地址作为远程ACME Directory URL");
+      if (await this.isTrustedAcmeProvider(url)) {
+        return;
+      }
+      throw new Error("普通用户不能使用本机/私网/链路本地/保留地址作为远程ACME Directory URL；如需内部ACME，请由管理员在系统设置中配置自定义ACME颁发机构");
     }
     // 域名解析后的所有A/AAAA地址也必须通过检查，避免解析到内网
     if (!net.isIP(host)) {
@@ -424,6 +451,9 @@ export class CertApplyLocalCa extends CertApplyPlugin {
         throw new Error("远程ACME Directory URL域名解析失败");
       }
       if (!addresses.length || addresses.some(item => isBlockedAddress(item.address))) {
+        if (await this.isTrustedAcmeProvider(url)) {
+          return;
+        }
         throw new Error("远程ACME Directory URL解析到受限地址，普通用户禁止访问");
       }
     }

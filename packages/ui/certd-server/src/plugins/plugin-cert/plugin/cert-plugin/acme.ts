@@ -90,6 +90,7 @@ type AcmeServiceOptions = {
   domainParser: IDomainParser;
   subDomainsGetter?: ISubDomainsGetter;
   waitDnsDiffuseTime?: number;
+  dnsServers?: string[];
   /**
    * 自定义ACME Directory URL（sslProvider=custom 时必填，其他颁发机构缺省使用内置端点）
    */
@@ -590,6 +591,7 @@ export class AcmeService {
         profile,
         preferredChain,
         waitDnsDiffuseTime: this.options.waitDnsDiffuseTime,
+        dnsServers: this.options.dnsServers,
       });
 
       const crtString = crt.toString();

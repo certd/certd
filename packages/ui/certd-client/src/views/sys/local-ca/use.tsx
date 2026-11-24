@@ -140,6 +140,11 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
           },
         },
+        dnsServer: {
+          title: t("certd.localCa.fields.dnsServer"),
+          type: "text",
+          form: { col: { span: 24 }, component: { placeholder: "10.0.0.53:5353" }, helper: t("certd.localCa.fields.dnsServerHelper") },
+        },
         exportDisabled: {
           title: t("certd.localCa.fields.exportDisabled"),
           type: "dict-switch",
@@ -154,6 +159,11 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             helper: t("certd.localCa.fields.exportDisabledHelper"),
           },
         },
+        dnsServer: {
+          title: t("certd.localCa.fields.dnsServer"),
+          type: "text",
+          form: { col: { span: 24 }, component: { placeholder: "10.0.0.53:5353" }, helper: t("certd.localCa.fields.dnsServerHelper") },
+        },
         remark: {
           title: t("certd.localCa.fields.remark"),
           type: "textarea",
@@ -161,6 +171,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         },
       },
       async onSubmit(form: any) {
+        const doGenerate = async () => {
         await localCaApi.Generate({
           name: form.name,
           subject: {
@@ -179,9 +190,16 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           baseUrl: form.baseUrl,
           remark: form.remark,
           exportDisabled: form.exportDisabled === true,
+          dnsServer: form.dnsServer,
         });
         notification.success({ message: t("certd.localCa.generateSuccess") });
         await crudExpose.doRefresh();
+        };
+        if (String(form.dnsServer || "").trim()) {
+          await openStepUp(t("certd.localCa.dnsStepUpTitle"), t("certd.localCa.dnsStepUpDesc"), doGenerate);
+        } else {
+          await doGenerate();
+        }
       },
     });
   }
@@ -291,6 +309,11 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
           },
         },
+        dnsServer: {
+          title: t("certd.localCa.fields.dnsServer"),
+          type: "text",
+          form: { col: { span: 24 }, component: { placeholder: "10.0.0.53:5353" }, helper: t("certd.localCa.fields.dnsServerHelper") },
+        },
         exportDisabled: {
           title: t("certd.localCa.fields.exportDisabled"),
           type: "dict-switch",
@@ -329,6 +352,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             baseUrl: form.baseUrl,
             remark: form.remark,
             exportDisabled: form.exportDisabled === true,
+            dnsServer: form.dnsServer,
             verifyToken: getSecretAccessToken(),
           });
           notification.success({ message: t("certd.localCa.intermediateSuccess") });
@@ -534,6 +558,11 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             component: { placeholder: window.location.origin },
             helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
           },
+        },
+        dnsServer: {
+          title: t("certd.localCa.fields.dnsServer"),
+          type: "text",
+          form: { col: { span: 24 }, component: { placeholder: "10.0.0.53:5353" }, helper: t("certd.localCa.fields.dnsServerHelper") },
         },
         exportDisabled: {
           title: t("certd.localCa.fields.exportDisabled"),

@@ -7,6 +7,7 @@ CREATE TABLE "cd_local_ca"
   "ca_type"               varchar(20)  NOT NULL DEFAULT 'root',
   "parent_id"             integer,
   "rotated_to_id"         integer,
+  "dns_server"              varchar(255),
   "key_type"              varchar(20)  NOT NULL DEFAULT 'rsa2048',
   "key_size"              integer      NOT NULL DEFAULT 2048,
   "curve"                 varchar(50),

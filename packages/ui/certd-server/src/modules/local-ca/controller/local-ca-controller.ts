@@ -70,6 +70,9 @@ export class LocalCaController extends CrudController<LocalCaService> {
   @Post("/generate", { description: Constants.per.authOnly, summary: "生成根CA" })
   async generate(@Body(ALL) body: any) {
     this.assertSystemAdmin();
+    if (String(body.dnsServer || "").trim()) {
+      this.assertStepUp(body.verifyToken, "设置CA DNS服务器");
+    }
     const userId = this.getUserId();
     const res = await this.service.generateCa({
       userId,
@@ -83,6 +86,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       baseUrl: body.baseUrl,
       remark: body.remark,
       exportDisabled: body.exportDisabled,
+      dnsServer: body.dnsServer,
     });
     this.auditLog({ content: `生成根CA「${body.name}」(ID:${res.id})` });
     return this.ok(res);
@@ -107,6 +111,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       exportDisabled: body.exportDisabled,
       allowDuplicate: body.allowDuplicate === true,
       allowExternalCrl: body.allowExternalCrl === true,
+      dnsServer: body.dnsServer,
     });
     this.auditLog({ content: `经step-up验证，导入CA「${body.name}」(ID:${res.id})` });
     return this.ok(res);
@@ -137,6 +142,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       baseUrl: body.baseUrl,
       remark: body.remark,
       exportDisabled: body.exportDisabled,
+      dnsServer: body.dnsServer,
     });
     this.auditLog({ content: `经step-up验证，根CA(ID:${body.rootId})签发中间CA「${body.name}」(ID:${res.id})` });
     return this.ok(res);
