@@ -1,3 +1,4 @@
+jest.mock("@certd/lib-server", () => ({ ValidateException: class ValidateException extends Error {} }));
 import assert from "node:assert/strict";
 import crypto, { X509Certificate } from "node:crypto";
 import {
@@ -526,5 +527,57 @@ describe("local-ca-crypto", () => {
       () => validateImportedIntermediateCa({ certPem: mismatched.certPem, privateKeyPem: mismatched.privateKeyPem, parentCertPem: root.certPem, expectedCrlUrl }),
       /CRL Distribution Point与本系统Root CRL地址不一致/
     );
+  });
+});
+
+describe("imported intermediate mixed CRL confirmation", () => {
+  const expectedCrlUrl = "https://certd.example.com/api/sys/local-ca/crl?id=1";
+  async function makeIntermediate(root: any, urls: string[]) {
+    const der = Buffer.from(root.privateKeyPem.replace(/-----[^-]+-----/g, "").replace(/\s/g, ""), "base64");
+    const rootKey = await crypto.subtle.importKey("pkcs8", der, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+    const rootCert = new x509.X509Certificate(root.certPem);
+    const keys = await crypto.subtle.generateKey({ name: "RSASSA-PKCS1-v1_5", hash: "SHA-256", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]) }, true, ["sign", "verify"]);
+    const cert = await x509.X509CertificateGenerator.create({
+      serialNumber: "02",
+      subject: "CN=Mixed CRL Intermediate",
+      issuer: rootCert.subjectName,
+      notBefore: new Date(),
+      notAfter: new Date(Date.now() + 365 * 86400000),
+      signingKey: rootKey,
+      publicKey: keys.publicKey,
+      extensions: [new x509.BasicConstraintsExtension(true, 0, true), new x509.KeyUsagesExtension(x509.KeyUsageFlags.keyCertSign | x509.KeyUsageFlags.cRLSign | x509.KeyUsageFlags.digitalSignature, true), new x509.CRLDistributionPointsExtension(urls)],
+    });
+    const pkcs8 = await crypto.subtle.exportKey("pkcs8", keys.privateKey);
+    const b64 = Buffer.from(pkcs8).toString("base64").match(/.{1,64}/g)!.join("\n");
+    return { certPem: cert.toString("pem"), privateKeyPem: `-----BEGIN PRIVATE KEY-----\n${b64}\n-----END PRIVATE KEY-----` };
+  }
+
+  it("只有本地CRL：允许导入", async () => {
+    const root = await createRootCa({ subject: { CN: "Local CRL Root" }, keyType: "rsa2048", validityYears: 2 });
+    const int = await makeIntermediate(root, [expectedCrlUrl]);
+    const res = await validateImportedIntermediateCa({ certPem: int.certPem, privateKeyPem: int.privateKeyPem, parentCertPem: root.certPem, expectedCrlUrl });
+    assert.equal(res.hasExternalCrl, false);
+  });
+
+  it("只有外部CRL：需要确认", async () => {
+    const root = await createRootCa({ subject: { CN: "External CRL Root" }, keyType: "rsa2048", validityYears: 2 });
+    const int = await makeIntermediate(root, ["https://external.example.com/crl.pem"]);
+    await assert.rejects(
+      () => validateImportedIntermediateCa({ certPem: int.certPem, privateKeyPem: int.privateKeyPem, parentCertPem: root.certPem, expectedCrlUrl }),
+      /外部CRL地址/
+    );
+    const ok = await validateImportedIntermediateCa({ certPem: int.certPem, privateKeyPem: int.privateKeyPem, parentCertPem: root.certPem, expectedCrlUrl, allowExternalCrl: true });
+    assert.equal(ok.hasExternalCrl, true);
+  });
+
+  it("本地和外部CRL同时存在：仍然需要确认", async () => {
+    const root = await createRootCa({ subject: { CN: "Mixed CRL Root" }, keyType: "rsa2048", validityYears: 2 });
+    const int = await makeIntermediate(root, [expectedCrlUrl, "https://external.example.com/crl.pem"]);
+    await assert.rejects(
+      () => validateImportedIntermediateCa({ certPem: int.certPem, privateKeyPem: int.privateKeyPem, parentCertPem: root.certPem, expectedCrlUrl }),
+      /外部CRL地址/
+    );
+    const ok = await validateImportedIntermediateCa({ certPem: int.certPem, privateKeyPem: int.privateKeyPem, parentCertPem: root.certPem, expectedCrlUrl, allowExternalCrl: true });
+    assert.equal(ok.hasExternalCrl, true);
   });
 });

@@ -18,6 +18,8 @@ import { LocalCaSignerGetter } from "../../../local-ca/service/local-ca-signer-g
 import { LocalCaService } from "../../../local-ca/service/local-ca-service.js";
 
 const serviceNames = ["ocrService", "certInfoService", "customAcmeProviderService"];
+// 服务端可信插件类型白名单：仅这些插件类型可获取本地CA签发能力（不信任插件自声明）
+const TRUSTED_LOCAL_CA_PLUGINS = new Set(["CertApplyLocalCa"]);
 export class TaskServiceGetter implements IServiceGetter {
   private userId: number;
   private projectId: number;
@@ -35,12 +37,16 @@ export class TaskServiceGetter implements IServiceGetter {
     return new TaskServiceGetter(this.userId, this.projectId, this.appCtx, pluginType, capabilities);
   }
   private hasLocalCaCapability(name: string): boolean {
-    // 能力清单由服务端可信插件注册提供，不能作为不可信插件自授权凭证；空数组表示显式无能力
+    // 服务端可信插件类型白名单：本地CA签发能力仅授予可信插件类型，
+    // 第三方插件即使自行声明 serviceCapabilities 也不能获取CA签发能力。
+    if (!TRUSTED_LOCAL_CA_PLUGINS.has(this.pluginType || "")) {
+      return false;
+    }
+    // 可信插件内部再按能力清单细分；空数组表示显式无能力
     if (this.capabilities) {
       return this.capabilities.includes(name);
     }
-    // 兼容未声明能力的旧插件：仅本地CA插件默认拥有CA能力
-    return this.pluginType === "CertApplyLocalCa";
+    return true;
   }
   async get<T>(serviceName: string): Promise<T> {
     if (serviceName === "subDomainsGetter") {

@@ -3,7 +3,7 @@
     <div v-if="row" class="local-ca-view">
       <a-tabs v-model:active-key="activeTab">
         <a-tab-pane key="settings" :tab="t('certd.localCa.tabSettings')">
-          <a-alert v-if="row.caType === 'intermediate' && !row.acmeEnabled" type="warning" show-icon class="mb-3" :message="t('certd.localCa.acmeDisabledTitle')" :description="t('certd.localCa.acmeDisabledDesc')">
+          <a-alert v-if="row.caType === 'intermediate' && !row.acmeEnabled && !row.deleted" type="warning" show-icon class="mb-3" :message="t('certd.localCa.acmeDisabledTitle')" :description="t('certd.localCa.acmeDisabledDesc')">
             <template #action>
               <a-button size="small" type="primary" :loading="acmeEnabling" @click="enableAcme">{{ t("certd.localCa.enableAcme") }}</a-button>
             </template>
@@ -30,13 +30,13 @@
             <a-descriptions-item :label="t('certd.localCa.fields.baseUrl')" :span="2">{{ baseUrl }}</a-descriptions-item>
             <a-descriptions-item :label="t('certd.localCa.fields.notAfter')">{{ formatTime(row.notAfter) }}</a-descriptions-item>
             <a-descriptions-item :label="t('certd.localCa.fields.fingerprint')">{{ row.fingerprintSha256 }}</a-descriptions-item>
-            <a-descriptions-item v-if="row.caType === 'intermediate'" :label="t('certd.localCa.fields.acmeEnabled')">
+            <a-descriptions-item v-if="row.caType === 'intermediate' && !row.deleted" :label="t('certd.localCa.fields.acmeEnabled')">
               {{ row.acmeEnabled ? t("certd.localCa.acmeEnabledYes") : t("certd.localCa.acmeEnabledNo") }}
             </a-descriptions-item>
-            <a-descriptions-item v-if="row.caType === 'intermediate' && row.acmeEnabled" :label="t('certd.localCa.fields.acmeDirectIssue')">
+            <a-descriptions-item v-if="row.caType === 'intermediate' && row.acmeEnabled && !row.deleted" :label="t('certd.localCa.fields.acmeDirectIssue')">
               {{ row.acmeDirectIssue ? t("certd.localCa.acmeDirectIssueYes") : t("certd.localCa.acmeDirectIssueNo") }}
             </a-descriptions-item>
-            <a-descriptions-item v-if="row.acmeEnabled" :label="t('certd.localCa.acmeDirectory')" :span="2">
+            <a-descriptions-item v-if="row.acmeEnabled && !row.deleted" :label="t('certd.localCa.acmeDirectory')" :span="2">
               <fs-copyable :model-value="acmeDirectoryUrl">{{ acmeDirectoryUrl }}</fs-copyable>
             </a-descriptions-item>
             <a-descriptions-item :label="t('certd.localCa.fields.exportDisabled')">
@@ -54,7 +54,7 @@
       <a-button :loading="publicKeyLoading" @click="downloadPublicKey">{{ t("certd.localCa.downloadPublicKey") }}</a-button>
       <a-button :disabled="row?.exportDisabled" @click="props.onExport?.(row)">{{ t("certd.localCa.export") }}</a-button>
       <a-button @click="openCrl">{{ t("certd.localCa.viewCrl") }}</a-button>
-      <a-button v-if="row?.caType === 'intermediate' && row?.acmeEnabled" @click="acmeHelpVisible = true">{{ t("certd.localCa.acmeAccess") }}</a-button>
+      <a-button v-if="row?.caType === 'intermediate' && row?.acmeEnabled && !row?.deleted" @click="acmeHelpVisible = true">{{ t("certd.localCa.acmeAccess") }}</a-button>
       <a-button type="primary" @click="visible = false">{{ t("certd.common.close") }}</a-button>
     </template>
   </a-modal>

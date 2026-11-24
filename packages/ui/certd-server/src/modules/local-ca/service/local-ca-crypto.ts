@@ -695,7 +695,6 @@ export async function validateImportedIntermediateCa(req: { certPem: string; pri
   if (crlDistributionUrls.length === 0) {
     throw new Error("中间CA证书缺少有效的CRL Distribution Point，吊销链将不可用");
   }
-  let matchedLocalCrl = false;
   let hasExternalCrl = false;
   if (req.expectedCrlUrl) {
     const expected = normalizeCrlUrl(req.expectedCrlUrl);
@@ -707,12 +706,12 @@ export async function validateImportedIntermediateCa(req: { certPem: string; pri
         if (normalizeCrlUrl(value) !== expected) {
           throw new Error("中间CA证书的CRL Distribution Point与本系统Root CRL地址不一致");
         }
-        matchedLocalCrl = true;
       } else {
         hasExternalCrl = true;
       }
     }
-    if (!matchedLocalCrl && hasExternalCrl && req.allowExternalCrl !== true) {
+    // 只要存在任一外部CRL地址就需明确确认，不因同时含本地CDP而免除（混合配置同样需确认）
+    if (hasExternalCrl && req.allowExternalCrl !== true) {
       throw new Error("中间CA使用了外部CRL地址，无法校验其可用性；如确认继续，请确认后重试");
     }
   }
@@ -735,7 +734,7 @@ export async function validateImportedIntermediateCa(req: { certPem: string; pri
     notAfter: new Date(cert.validTo).getTime(),
     pathLength: getBasicConstraints(certPem).pathLength ?? 0,
     crlDistributionUrls,
-    hasExternalCrl: hasExternalCrl && !matchedLocalCrl,
+    hasExternalCrl,
   };
 }
 

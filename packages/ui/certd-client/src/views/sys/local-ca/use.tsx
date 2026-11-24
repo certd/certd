@@ -943,7 +943,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       title: t("certd.localCa.archivedRootsTitle"),
       maskClosable: true,
       okText: t("certd.common.close"),
-      width: 760,
+      width: 1100,
       content: () => <LocalCaArchivedRoots runStepUp={(action: () => Promise<void>) => openStepUp(t("certd.localCa.archivedRootsTitle"), t("certd.localCa.archivedRootsRefreshStepUp"), action)} />,
     });
   }
