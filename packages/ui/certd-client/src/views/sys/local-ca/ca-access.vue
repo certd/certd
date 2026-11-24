@@ -1,39 +1,46 @@
 <template>
   <div class="ca-access">
-    <a-alert v-if="mode === 'grants'" type="info" show-icon class="mb-3" :message="t('certd.localCa.grantHint')" />
-    <a-alert v-else type="info" show-icon class="mb-3" :message="t('certd.localCa.adminHint')" />
+    <a-tabs v-model:activeKey="activeKey">
+      <a-tab-pane key="admins" :tab="t('certd.localCa.admins')">
+        <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.adminHint')" />
+        <div class="ca-access-add">
+          <a-select v-model:value="adminUserId" class="ca-access-user" show-search option-filter-prop="label" :placeholder="t('certd.localCa.selectUser')" :options="userOptions" />
+          <a-button type="primary" :loading="saving" @click="addAdmin">{{ t("certd.localCa.addAccess") }}</a-button>
+        </div>
+        <a-table :data-source="admins" :columns="adminColumns" :loading="loading" size="small" row-key="id" :pagination="false">
+          <template #bodyCell="{ column, record }">
+            <template v-if="column.key === 'adminUserId'">{{ userLabel(record.adminUserId) }}</template>
+            <template v-else-if="column.key === 'role'">
+              <a-tag :color="record.role === 'owner' ? 'gold' : 'blue'">{{ record.role === "owner" ? t("certd.localCa.roleOwner") : t("certd.localCa.roleOperator") }}</a-tag>
+            </template>
+            <template v-else-if="column.key === 'actions'">
+              <a-button v-if="record.role !== 'owner'" type="link" danger size="small" @click="removeAdmin(record)">{{ t("certd.localCa.removeAccess") }}</a-button>
+            </template>
+          </template>
+        </a-table>
+      </a-tab-pane>
 
-    <div class="ca-access-add">
-      <a-select v-if="mode === 'grants'" v-model:value="userIds" class="ca-access-user" show-search option-filter-prop="label" :placeholder="t('certd.localCa.selectUser')" :options="userOptions" />
-      <a-select v-if="mode === 'grants'" v-model:value="projectId" class="ca-access-project" :placeholder="t('certd.localCa.allProjects')">
-        <a-select-option :value="null">{{ t("certd.localCa.allProjects") }}</a-select-option>
-        <a-select-option v-for="item in projectOptions" :key="item.value" :value="item.value">{{ item.label }}</a-select-option>
-      </a-select>
-      <a-select v-if="mode === 'admins'" v-model:value="singleUserId" class="ca-access-user" show-search option-filter-prop="label" :placeholder="t('certd.localCa.selectUser')" :options="userOptions" />
-      <a-button type="primary" :loading="saving" @click="add">{{ t("certd.localCa.addAccess") }}</a-button>
-    </div>
-
-    <a-table v-if="mode === 'grants'" :data-source="grants" :columns="grantColumns" :loading="loading" size="small" row-key="id" :pagination="false">
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'userId'">{{ userLabel(record.userId) }}</template>
-        <template v-else-if="column.key === 'projectId'">{{ record.projectId ? projectLabel(record.projectId) : t("certd.localCa.allProjects") }}</template>
-        <template v-else-if="column.key === 'actions'">
-          <a-button type="link" danger size="small" @click="removeGrant(record)">{{ t("certd.localCa.removeAccess") }}</a-button>
-        </template>
-      </template>
-    </a-table>
-
-    <a-table v-else :data-source="admins" :columns="adminColumns" :loading="loading" size="small" row-key="id" :pagination="false">
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'adminUserId'">{{ userLabel(record.adminUserId) }}</template>
-        <template v-else-if="column.key === 'role'">
-          <a-tag :color="record.role === 'owner' ? 'gold' : 'blue'">{{ record.role === "owner" ? t("certd.localCa.roleOwner") : t("certd.localCa.roleOperator") }}</a-tag>
-        </template>
-        <template v-else-if="column.key === 'actions'">
-          <a-button v-if="record.role !== 'owner'" type="link" danger size="small" @click="removeAdmin(record)">{{ t("certd.localCa.removeAccess") }}</a-button>
-        </template>
-      </template>
-    </a-table>
+      <a-tab-pane v-if="caType === 'intermediate'" key="grants" :tab="t('certd.localCa.grants')">
+        <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.grantHint')" />
+        <div class="ca-access-add">
+          <a-select v-model:value="grantUserId" class="ca-access-user" show-search option-filter-prop="label" :placeholder="t('certd.localCa.selectUser')" :options="userOptions" />
+          <a-select v-model:value="projectId" class="ca-access-project" :placeholder="t('certd.localCa.allProjects')">
+            <a-select-option :value="null">{{ t("certd.localCa.allProjects") }}</a-select-option>
+            <a-select-option v-for="item in projectOptions" :key="item.value" :value="item.value">{{ item.label }}</a-select-option>
+          </a-select>
+          <a-button type="primary" :loading="saving" @click="addGrant">{{ t("certd.localCa.addAccess") }}</a-button>
+        </div>
+        <a-table :data-source="grants" :columns="grantColumns" :loading="loading" size="small" row-key="id" :pagination="false">
+          <template #bodyCell="{ column, record }">
+            <template v-if="column.key === 'userId'">{{ userLabel(record.userId) }}</template>
+            <template v-else-if="column.key === 'projectId'">{{ record.projectId ? projectLabel(record.projectId) : t("certd.localCa.allProjects") }}</template>
+            <template v-else-if="column.key === 'actions'">
+              <a-button type="link" danger size="small" @click="removeGrant(record)">{{ t("certd.localCa.removeAccess") }}</a-button>
+            </template>
+          </template>
+        </a-table>
+      </a-tab-pane>
+    </a-tabs>
   </div>
 </template>
 
@@ -50,17 +57,18 @@ defineOptions({
 
 const props = defineProps<{
   caId: number;
-  mode: "grants" | "admins";
+  caType?: string;
   runStepUp: (title: string, desc: string, action: () => Promise<void>) => Promise<boolean>;
 }>();
 
 const { t } = useI18n();
+const activeKey = ref("admins");
 const loading = ref(false);
 const saving = ref(false);
 const grants = ref<any[]>([]);
 const admins = ref<any[]>([]);
-const userIds = ref<number | undefined>();
-const singleUserId = ref<number | undefined>();
+const adminUserId = ref<number | undefined>();
+const grantUserId = ref<number | undefined>();
 const projectId = ref<number | null>(null);
 const userOptions = ref<{ label: string; value: number }[]>([]);
 const projectOptions = ref<{ label: string; value: number }[]>([]);
@@ -86,11 +94,12 @@ function projectLabel(id: number) {
 async function load() {
   loading.value = true;
   try {
-    if (props.mode === "grants") {
-      grants.value = await localCaApi.ListGrants(props.caId);
-    } else {
-      admins.value = await localCaApi.ListAdmins(props.caId);
-    }
+    const [adminList, grantList] = await Promise.all([
+      localCaApi.ListAdmins(props.caId),
+      props.caType === "intermediate" ? localCaApi.ListGrants(props.caId) : Promise.resolve([]),
+    ]);
+    admins.value = adminList || [];
+    grants.value = grantList || [];
   } finally {
     loading.value = false;
   }
@@ -117,30 +126,37 @@ async function loadProjects() {
   }
 }
 
-async function add() {
-  const userId = props.mode === "grants" ? userIds.value : singleUserId.value;
-  if (!userId) {
+async function addAdmin() {
+  if (!adminUserId.value) {
     notification.warning({ message: t("certd.localCa.selectUser") });
     return;
   }
   saving.value = true;
   try {
-    const action = async () => {
-      if (props.mode === "grants") {
-        await localCaApi.AddGrant({ id: props.caId, grantUserId: userId, grantProjectId: projectId.value ?? undefined });
-      } else {
-        await localCaApi.AddAdmin({ id: props.caId, adminUserId: userId, role: "operator" });
-      }
+    await props.runStepUp(t("certd.localCa.adminStepUpTitle"), t("certd.localCa.adminStepUpDesc"), async () => {
+      await localCaApi.AddAdmin({ id: props.caId, adminUserId: adminUserId.value, role: "operator" });
       notification.success({ message: t("certd.localCa.accessSaved") });
       await load();
-    };
-    if (props.mode === "grants") {
-      await props.runStepUp(t("certd.localCa.grantStepUpTitle"), t("certd.localCa.grantStepUpDesc"), action);
-    } else {
-      await props.runStepUp(t("certd.localCa.adminStepUpTitle"), t("certd.localCa.adminStepUpDesc"), action);
-    }
-    userIds.value = undefined;
-    singleUserId.value = undefined;
+    });
+    adminUserId.value = undefined;
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function addGrant() {
+  if (!grantUserId.value) {
+    notification.warning({ message: t("certd.localCa.selectUser") });
+    return;
+  }
+  saving.value = true;
+  try {
+    await props.runStepUp(t("certd.localCa.grantStepUpTitle"), t("certd.localCa.grantStepUpDesc"), async () => {
+      await localCaApi.AddGrant({ id: props.caId, grantUserId: grantUserId.value, grantProjectId: projectId.value ?? undefined });
+      notification.success({ message: t("certd.localCa.accessSaved") });
+      await load();
+    });
+    grantUserId.value = undefined;
     projectId.value = null;
   } finally {
     saving.value = false;
@@ -176,7 +192,7 @@ function removeAdmin(record: any) {
 }
 
 onMounted(async () => {
-  await Promise.all([loadUsers(), props.mode === "grants" ? loadProjects() : Promise.resolve(), load()]);
+  await Promise.all([loadUsers(), loadProjects(), load()]);
 });
 </script>
 

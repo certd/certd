@@ -6,6 +6,7 @@ import { useLocalCaDialogs } from "./use";
 import { useI18n } from "/src/locales";
 import { useCrudPermission } from "/@/plugin/permission";
 import { getSecretAccessToken } from "/@/views/certd/access/api";
+import LocalCaAccess from "./ca-access.vue";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -24,7 +25,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     openDeleteCa,
     openArchivedRoots,
     openStepUp,
-    openAccess,
   } = useLocalCaDialogs(crudExpose, context.caViewRef);
   if (context.caExportHandler) {
     context.caExportHandler.value = openExport;
@@ -166,8 +166,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       rowHandle: {
-        width: 420,
+        width: 360,
         buttons: {
+          copy: { show: false },
           intermediate: {
             order: 0,
             type: "link",
@@ -228,28 +229,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: ({ row }) => row.caType === "intermediate" && row.acmeEnabled,
             click: async ({ row }) => {
               await openAcmeAccounts(row);
-            },
-          },
-          grants: {
-            order: 8,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.grants") },
-            icon: "ph:users-three",
-            show: ({ row }) => hasActionPermission("write") && row.caType === "intermediate",
-            click: async ({ row }) => {
-              await openAccess(row, "grants");
-            },
-          },
-          admins: {
-            order: 9,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.admins") },
-            icon: "ph:user-gear",
-            show: ({ row }) => hasActionPermission("write"),
-            click: async ({ row }) => {
-              await openAccess(row, "admins");
             },
           },
           edit: {
@@ -349,8 +328,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "text",
           form: {
             col: { span: 24 },
-            component: { placeholder: window.location.origin },
-            helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
+            component: {
+              placeholder: window.location.origin,
+              disabled: compute(({ form }) => form.caType === "intermediate"),
+            },
+            helper: compute(({ form }) =>
+              form.caType === "intermediate"
+                ? t("certd.localCa.fields.baseUrlImmutableHelper")
+                : t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin })
+            ),
           },
           search: { show: false },
           column: { width: 220, ellipsis: true },
@@ -507,6 +493,21 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: compute(({ form }) => form.caType === "intermediate" && form.acmeEnabled),
             col: { span: 24 },
             helper: t("certd.localCa.fields.acmeDirectIssueHelper"),
+          },
+          search: { show: false },
+          column: { show: false },
+        },
+        permissions: {
+          title: t("certd.localCa.permissions"),
+          form: {
+            show: compute(({ form }) => !!form.id),
+            col: { span: 24 },
+            component: {
+              name: LocalCaAccess,
+              caId: compute(({ form }) => form.id),
+              caType: compute(({ form }) => form.caType),
+              runStepUp: (title: string, desc: string, action: () => Promise<void>) => openStepUp(title, desc, action),
+            },
           },
           search: { show: false },
           column: { show: false },

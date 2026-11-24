@@ -252,5 +252,9 @@ export default {
   addAccess: "添加",
   removeAccess: "移除",
   accessActions: "操作",
+  permissions: "权限管理",
+  baseUrlImmutableHelper: "中间CA的Base URL不可修改；证书内CRL/ACME地址已固定。根CA已配置Base URL时，中间CA自动继承。",
+  stepUpCancelled: "已取消验证",
+  verifyAndContinue: "验证并继续",
 
 };

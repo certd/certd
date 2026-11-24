@@ -388,7 +388,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.usage = req.usage || "server";
     const list = this.normalizeAllowedDomains(req.allowedDomains);
     bean.allowedDomains = list.length ? JSON.stringify(list) : null;
-    bean.maxValidityDays = req.maxValidityDays || 0;
+    const rootMaxDays = req.maxValidityDays || 0;
+    const rootCertLimit = Math.max(1, Math.floor((req.validityYears || 10) * 365));
+    if (rootMaxDays > rootCertLimit) {
+      throw new ValidateException(`根CA的最大签发天数不能超过根CA证书有效期(${rootCertLimit}天)`);
+    }
+    bean.maxValidityDays = rootMaxDays;
     bean.acmeEnabled = false;
     bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
@@ -443,7 +448,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.usage = req.usage || root.usage;
     const childAllowedDomains = await this.resolveChildAllowedDomains(req.allowedDomains, root);
     bean.allowedDomains = childAllowedDomains.length ? JSON.stringify(childAllowedDomains) : null;
-    bean.maxValidityDays = await this.resolveChildMaxValidity(req.maxValidityDays, root);
+    const childMaxDays = await this.resolveChildMaxValidity(req.maxValidityDays, root);
+    const childCertLimit = Math.max(1, Math.floor((req.validityYears || 5) * 365));
+    if (childMaxDays > childCertLimit) {
+      throw new ValidateException(`中间CA的最大签发天数不能超过中间CA证书有效期(${childCertLimit}天)`);
+    }
+    bean.maxValidityDays = childMaxDays;
     bean.acmeEnabled = false;
     bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
@@ -1287,6 +1297,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         const parentLimit = await this.resolveParentMaxValidityDays(parent);
         this.assertChildMaxValidity(days, parentLimit);
       }
+      const remainingDays = Math.max(0, Math.floor((Number(ca.notAfter) - Date.now()) / 86400000));
+      if (days > remainingDays) {
+        throw new ValidateException(`最大签发天数不能超过该CA证书剩余有效期(${remainingDays}天)`);
+      }
       ca.maxValidityDays = days;
     }
     if (req.allowedDomains != null) {
@@ -1306,6 +1320,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       const nextBaseUrl = normalizeBaseUrl(req.baseUrl) || null;
       const currentBaseUrl = normalizeBaseUrl(ca.baseUrl) || null;
       if (nextBaseUrl !== currentBaseUrl) {
+        if (ca.caType === "intermediate") {
+          throw new ValidateException("中间CA的Base URL不可修改，证书内CRL/ACME地址已固定；如需变更请新建中间CA");
+        }
         if (ca.baseUrlLocked) {
           throw new ValidateException("该CA的访问地址已用于签发证书或创建ACME账户，修改会导致历史CRL/ACME地址失效，已禁止变更");
         }

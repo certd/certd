@@ -252,5 +252,9 @@ export default {
   addAccess: "Add",
   removeAccess: "Remove",
   accessActions: "Actions",
+  permissions: "Permissions",
+  baseUrlImmutableHelper: "Intermediate CA Base URL is immutable; CRL/ACME URLs are fixed in issued certificates. It inherits the root CA Base URL when set.",
+  stepUpCancelled: "Verification cancelled",
+  verifyAndContinue: "Verify and continue",
 
 };

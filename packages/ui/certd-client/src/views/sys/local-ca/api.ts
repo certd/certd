@@ -4,9 +4,12 @@ import { ReadCertDetail } from "/@/views/certd/pipeline/api";
 
 const apiPrefix = "/sys/local-ca";
 
+// 本地CA错误由对话框/组件统一提示，避免全局拦截器重复弹窗
+const req = (config: any) => request({ ...config, showErrorNotify: false });
+
 export const localCaApi = {
   async GetList(query: any) {
-    return await request({
+    return await req({
       url: apiPrefix + "/page",
       method: "post",
       data: query,
@@ -14,7 +17,7 @@ export const localCaApi = {
   },
 
   async Generate(data: any) {
-    return await request({
+    return await req({
       url: apiPrefix + "/generate",
       method: "post",
       data,
@@ -22,7 +25,7 @@ export const localCaApi = {
   },
 
   async Import(data: any) {
-    return await request({
+    return await req({
       url: apiPrefix + "/import",
       method: "post",
       data: { ...data, verifyToken: getSecretAccessToken() },
@@ -30,7 +33,7 @@ export const localCaApi = {
   },
 
   async CheckImportDuplicate(data: { certPem: string; parentId?: number }) {
-    return await request({
+    return await req({
       url: apiPrefix + "/import/check",
       method: "post",
       data,
@@ -38,7 +41,7 @@ export const localCaApi = {
   },
 
   async CreateIntermediate(data: any) {
-    return await request({
+    return await req({
       url: apiPrefix + "/intermediate",
       method: "post",
       data,
@@ -46,7 +49,7 @@ export const localCaApi = {
   },
 
   async UpdateObj(data: any) {
-    return await request({
+    return await req({
       url: apiPrefix + "/update",
       method: "post",
       data: { ...data, verifyToken: getSecretAccessToken() },
@@ -54,7 +57,7 @@ export const localCaApi = {
   },
 
   async DelObj(id: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/delete",
       method: "post",
       data: { id, verifyToken: getSecretAccessToken() },
@@ -62,7 +65,7 @@ export const localCaApi = {
   },
 
   async GetObj(id: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/info",
       method: "post",
       params: { id },
@@ -70,7 +73,7 @@ export const localCaApi = {
   },
 
   async Disable(id: number, disabled: boolean, verifyToken?: string) {
-    return await request({
+    return await req({
       url: apiPrefix + "/disable",
       method: "post",
       data: { id, disabled, verifyToken },
@@ -78,7 +81,7 @@ export const localCaApi = {
   },
 
   async EnableAcme(id: number, enabled: boolean, verifyToken?: string) {
-    return await request({
+    return await req({
       url: apiPrefix + "/acme",
       method: "post",
       data: { id, enabled, verifyToken },
@@ -86,7 +89,7 @@ export const localCaApi = {
   },
 
   async GetOptions(searchKey?: string) {
-    return await request({
+    return await req({
       url: apiPrefix + "/options",
       method: "post",
       data: { searchKey },
@@ -94,7 +97,7 @@ export const localCaApi = {
   },
 
   async GetAdminOptions(searchKey?: string) {
-    return await request({
+    return await req({
       url: apiPrefix + "/adminOptions",
       method: "post",
       data: { searchKey },
@@ -102,7 +105,7 @@ export const localCaApi = {
   },
 
   async GetOptionsByIds(ids: number[]) {
-    return await request({
+    return await req({
       url: apiPrefix + "/getOptionsByIds",
       method: "post",
       data: { ids },
@@ -114,7 +117,7 @@ export const localCaApi = {
   },
 
   async ListAcmeAccounts(id: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/acme/accounts",
       method: "post",
       data: { id },
@@ -122,7 +125,7 @@ export const localCaApi = {
   },
 
   async ListAcmeOrders(id: number, accountId: string) {
-    return await request({
+    return await req({
       url: apiPrefix + "/acme/accountOrders",
       method: "post",
       data: { id, accountId },
@@ -130,7 +133,7 @@ export const localCaApi = {
   },
 
   async SetAcmeAccountStatus(id: number, accountId: string, status: string) {
-    return await request({
+    return await req({
       url: apiPrefix + "/acme/accountStatus",
       method: "post",
       data: { id, accountId, status },
@@ -138,7 +141,7 @@ export const localCaApi = {
   },
 
   async CreateEab(data: any) {
-    return await request({
+    return await req({
       url: apiPrefix + "/eab/create",
       method: "post",
       data: { ...data, verifyToken: getSecretAccessToken() },
@@ -146,7 +149,7 @@ export const localCaApi = {
   },
 
   async ListEab(id: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/eab/list",
       method: "post",
       data: { caId: id },
@@ -154,7 +157,7 @@ export const localCaApi = {
   },
 
   async GetPublicKey(id: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/publicKey",
       method: "post",
       data: { id },
@@ -162,7 +165,7 @@ export const localCaApi = {
   },
 
   async GetCrlInfo(id: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/crlInfo",
       method: "get",
       params: { id },
@@ -170,7 +173,7 @@ export const localCaApi = {
   },
 
   async Export(id: number, verifyToken: string) {
-    return await request({
+    return await req({
       url: apiPrefix + "/export",
       method: "post",
       data: { id, verifyToken },
@@ -178,7 +181,7 @@ export const localCaApi = {
   },
 
   async SetEabStatus(caId: number, eabId: string, disabled: boolean, verifyToken: string) {
-    return await request({
+    return await req({
       url: apiPrefix + "/eab/status",
       method: "post",
       data: { caId, eabId, disabled, verifyToken },
@@ -186,7 +189,7 @@ export const localCaApi = {
   },
 
   async RevokeIntermediate(id: number, verifyToken: string) {
-    return await request({
+    return await req({
       url: apiPrefix + "/intermediate/revoke",
       method: "post",
       data: { id, verifyToken },
@@ -194,7 +197,7 @@ export const localCaApi = {
   },
 
   async RefreshRootCrl(id: number, verifyToken: string) {
-    return await request({
+    return await req({
       url: apiPrefix + "/crl/refresh",
       method: "post",
       data: { id, verifyToken },
@@ -202,7 +205,7 @@ export const localCaApi = {
   },
 
   async ListArchivedRoots() {
-    return await request({
+    return await req({
       url: apiPrefix + "/archived/roots",
       method: "post",
       data: {},
@@ -210,7 +213,7 @@ export const localCaApi = {
   },
 
   async RefreshArchivedRootCrl(id: number, verifyToken: string) {
-    return await request({
+    return await req({
       url: apiPrefix + "/crl/refreshArchived",
       method: "post",
       data: { id, verifyToken },
@@ -218,7 +221,7 @@ export const localCaApi = {
   },
 
   async ListCerts(id: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/certs",
       method: "post",
       data: { id },
@@ -226,14 +229,14 @@ export const localCaApi = {
   },
 
   async RevokeCert(id: number, certId: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/revokeCert",
       method: "post",
       data: { id, certId, verifyToken: getSecretAccessToken() },
     });
   },
   async ListGrants(id: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/grants/list",
       method: "post",
       data: { id },
@@ -241,7 +244,7 @@ export const localCaApi = {
   },
 
   async AddGrant(data: any) {
-    return await request({
+    return await req({
       url: apiPrefix + "/grants/add",
       method: "post",
       data: { ...data, verifyToken: getSecretAccessToken() },
@@ -249,7 +252,7 @@ export const localCaApi = {
   },
 
   async RemoveGrant(id: number, grantId: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/grants/remove",
       method: "post",
       data: { id, grantId, verifyToken: getSecretAccessToken() },
@@ -257,7 +260,7 @@ export const localCaApi = {
   },
 
   async ListAdmins(id: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/admins/list",
       method: "post",
       data: { id },
@@ -265,7 +268,7 @@ export const localCaApi = {
   },
 
   async AddAdmin(data: any) {
-    return await request({
+    return await req({
       url: apiPrefix + "/admins/add",
       method: "post",
       data: { ...data, verifyToken: getSecretAccessToken() },
@@ -273,7 +276,7 @@ export const localCaApi = {
   },
 
   async RemoveAdmin(id: number, adminUserId: number) {
-    return await request({
+    return await req({
       url: apiPrefix + "/admins/remove",
       method: "post",
       data: { id, adminUserId, verifyToken: getSecretAccessToken() },

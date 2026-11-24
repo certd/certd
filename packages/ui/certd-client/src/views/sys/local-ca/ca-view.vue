@@ -54,7 +54,7 @@
       <a-button :loading="publicKeyLoading" @click="downloadPublicKey">{{ t("certd.localCa.downloadPublicKey") }}</a-button>
       <a-button :disabled="row?.exportDisabled" @click="props.onExport?.(row)">{{ t("certd.localCa.export") }}</a-button>
       <a-button @click="openCrl">{{ t("certd.localCa.viewCrl") }}</a-button>
-      <a-button v-if="row?.acmeEnabled" @click="acmeHelpVisible = true">{{ t("certd.localCa.acmeAccess") }}</a-button>
+      <a-button v-if="row?.caType === 'intermediate' && row?.acmeEnabled" @click="acmeHelpVisible = true">{{ t("certd.localCa.acmeAccess") }}</a-button>
       <a-button type="primary" @click="visible = false">{{ t("certd.common.close") }}</a-button>
     </template>
   </a-modal>

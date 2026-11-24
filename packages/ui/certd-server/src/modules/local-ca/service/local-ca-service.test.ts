@@ -428,13 +428,13 @@ describe("LocalCaService", () => {
     const intermediateInfo: any = await service.infoSafe({ id: intermediate.id, userId: 1 });
     assert.equal(intermediateInfo.baseUrl, "https://ca.example.com");
 
-    await service.updateMeta({ id: intermediate.id, userId: 1, baseUrl: "https://pki.example.com/" });
-    assert.equal(await service.getCaBaseUrl(intermediate.id), "https://pki.example.com");
+    await assert.rejects(() => service.updateMeta({ id: intermediate.id, userId: 1, baseUrl: "https://pki.example.com/" }), /不可修改/);
+    assert.equal(await service.getCaBaseUrl(intermediate.id), "https://ca.example.com");
 
     const { csrPem } = await createCsr({ domains: ["baseurl.example.com"], keyType: "rsa2048" });
     const signed = await service.signCsr({ id: intermediate.id, userId: 1, csrPem });
     const certText = new x509.X509Certificate(signed.certPem).toString("text");
-    assert.match(certText, /https:\/\/pki\.example\.com\/api\/sys\/local-ca\/crl\?id=/);
+    assert.match(certText, /https:\/\/ca\.example\.com\/api\/sys\/local-ca\/crl\?id=/);
   });
 
   it("CA 禁用后 ACME 入口统一拒绝", async () => {
@@ -576,12 +576,11 @@ describe("LocalCaService", () => {
       },
     } as any;
     const { rootId, id } = await createIssuingCa(service, { name: "Locked Base Url CA" });
-    await service.updateMeta({ id, userId: 1, baseUrl: "https://ca.example.com" });
 
     const { csrPem } = await createCsr({ domains: ["lock.example.com"], keyType: "rsa2048" });
     await service.signCsr({ id, userId: 1, csrPem, validityDays: 30 });
 
-    await assert.rejects(() => service.updateMeta({ id, userId: 1, baseUrl: "https://new.example.com" }), /已用于签发/);
+    await assert.rejects(() => service.updateMeta({ id, userId: 1, baseUrl: "https://new.example.com" }), /不可修改/);
     await assert.rejects(() => service.updateMeta({ id: rootId, userId: 1, baseUrl: "https://new-root.example.com" }), /已用于签发/);
   });
 

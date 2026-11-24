@@ -1,6 +1,6 @@
 import { dict } from "@fast-crud/fast-crud";
 import { Modal, notification } from "ant-design-vue";
-import { ref } from "vue";
+import { createVNode, ref, render } from "vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useModal } from "/@/use/use-modal";
 import { useI18n } from "/src/locales";
@@ -8,8 +8,8 @@ import { createAccessApi, getSecretAccessToken } from "/@/views/certd/access/api
 import LocalCaIssuedCerts from "./issued-certs.vue";
 import LocalCaAcmeAccounts from "./acme-accounts.vue";
 import LocalCaArchivedRoots from "./archived-roots.vue";
-import LocalCaAccess from "./ca-access.vue";
 import { localCaApi } from "./api";
+import StepUpVerify from "./step-up-verify.vue";
 
 function parseAllowedDomains(text: string) {
   return String(text || "")
@@ -197,7 +197,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         validityYears: 5,
         exportDisabled: false,
         usage: root.usage || "server",
-        maxValidityDays: root.maxValidityDays || 0,
+        maxValidityDays: root.maxValidityDays > 0 ? root.maxValidityDays : 365,
         allowedDomainsText: "",
         baseUrl: root.baseUrl || "",
       },
@@ -305,7 +305,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         },
       },
       async onSubmit(form: any) {
-        await openStepUp(t("certd.localCa.intermediateStepUpTitle"), t("certd.localCa.intermediateStepUpDesc", { name: root.name }), async () => {
+        const verified = await openStepUp(t("certd.localCa.intermediateStepUpTitle"), t("certd.localCa.intermediateStepUpDesc", { name: root.name }), async () => {
           await localCaApi.CreateIntermediate({
             rootId: root.id,
             name: form.name,
@@ -327,6 +327,9 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           notification.success({ message: t("certd.localCa.intermediateSuccess") });
           await crudExpose.doRefresh();
         });
+        if (!verified) {
+          throw new Error(t("certd.localCa.stepUpCancelled"));
+        }
       },
     });
   }
@@ -674,54 +677,25 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       await action();
       return true;
     }
-    let completed = false;
-    const wrappedAction = async () => {
-      await action();
-      completed = true;
-    };
-    pendingStepUpAction = wrappedAction;
-    verifyDialogRef.value = await openFormDialog({
-      title,
-      wrapper: {
-        width: 440,
-        onClosed: () => {
-          pendingStepUpAction = null;
-          onClosed?.();
-        },
-        slots: {
-          "form-body-bottom": () => {
-            if (!passkeySupported) {
-              return null;
-            }
-            return (
-              <div class="mt-2 text-center">
-                <a-button type="link" loading={passkeyLoading.value} onClick={() => handlePasskeyVerify()}>
-                  {t("certd.localCa.passkeyVerify")}
-                </a-button>
-              </div>
-            );
-          },
-        },
-      },
-      body: () => <a-alert type="warning" show-icon message={warning} class="mb-4" />,
-      initialForm: { verifyCode: "" },
-      columns: {
-        verifyCode: {
-          title: t("certd.localCa.dynamicCode"),
-          type: "text",
-          form: {
-            component: { placeholder: t("certd.localCa.dynamicCodePlaceholder") },
-            rules: [{ required: true, message: t("certd.localCa.dynamicCodeRequired") }],
-            col: { span: 24 },
-          },
-        },
-      },
-      async onSubmit(form: any) {
-        await secretAccessApi.VerifySecretAccess(form.verifyCode);
-        await wrappedAction();
-      },
+    // 独立叠加弹窗，不替换原表单对话框，取消后可继续编辑原表单
+    return await new Promise<boolean>(resolve => {
+      const container = document.createElement("div");
+      document.body.appendChild(container);
+      const finish = (ok: boolean) => {
+        render(null, container);
+        container.remove();
+        onClosed?.();
+        resolve(ok);
+      };
+      const vnode = createVNode(StepUpVerify, {
+        title,
+        warning,
+        action,
+        onDone: () => finish(true),
+        onCancel: () => finish(false),
+      });
+      render(vnode, container);
     });
-    return completed;
   }
 
   async function openExport(row: any) {
@@ -810,15 +784,6 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
-  async function openAccess(row: any, mode: "grants" | "admins") {
-    model.success({
-      title: mode === "grants" ? `${t("certd.localCa.grantsTitle")} - ${row.name}` : `${t("certd.localCa.adminsTitle")} - ${row.name}`,
-      maskClosable: true,
-      okText: t("certd.common.confirm"),
-      width: 900,
-      content: () => <LocalCaAccess caId={row.id} mode={mode} runStepUp={(title: string, desc: string, action: () => Promise<void>) => openStepUp(title, desc, action)} />,
-    });
-  }
 
   async function openIssuedCerts(row: any) {
     model.success({
@@ -844,6 +809,5 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openDeleteCa,
     openStepUp,
     openArchivedRoots,
-    openAccess,
   };
 }
