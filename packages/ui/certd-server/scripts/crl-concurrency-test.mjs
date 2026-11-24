@@ -1,11 +1,12 @@
 import { DataSource } from "typeorm";
 import { Encryptor, EncryptService } from "@certd/lib-server";
 import * as x509 from "@peculiar/x509";
-import { LocalCaEntity } from "../dist/modules/cert/entity/local-ca.js";
-import { CertRevocationEntity } from "../dist/modules/cert/entity/cert-revocation.js";
-import { LocalCaService } from "../dist/modules/cert/service/local-ca-service.js";
-import { CertRevocationService } from "../dist/modules/cert/service/cert-revocation-service.js";
-import { createIntermediateCa, createRootCa, sha256Hex } from "../dist/modules/cert/service/local-ca-crypto.js";
+import { LocalCaEntity } from "../dist/modules/local-ca/entity/local-ca.js";
+import { LocalCaAdminEntity } from "../dist/modules/local-ca/entity/local-ca-admin.js";
+import { CertRevocationEntity } from "../dist/modules/local-ca/entity/cert-revocation.js";
+import { LocalCaService } from "../dist/modules/local-ca/service/local-ca-service.js";
+import { CertRevocationService } from "../dist/modules/local-ca/service/cert-revocation-service.js";
+import { createIntermediateCa, createRootCa, sha256Hex } from "../dist/modules/local-ca/service/local-ca-crypto.js";
 
 const dialect = process.env.CRL_TEST_DB || "sqlite";
 
@@ -24,7 +25,7 @@ function dataSourceOptions() {
       username: process.env.MYSQL_USER || "certd_test",
       password: process.env.MYSQL_PASSWORD || "certd_test",
       database: process.env.MYSQL_DATABASE || "certd_crl_test",
-      entities: [LocalCaEntity, CertRevocationEntity],
+      entities: [LocalCaEntity, LocalCaAdminEntity, CertRevocationEntity],
       synchronize: true,
     };
   }
@@ -36,14 +37,14 @@ function dataSourceOptions() {
       username: process.env.PG_USER || "postgres",
       password: process.env.PG_PASSWORD || "postgres",
       database: process.env.PG_DATABASE || "certd_crl_test",
-      entities: [LocalCaEntity, CertRevocationEntity],
+      entities: [LocalCaEntity, LocalCaAdminEntity, CertRevocationEntity],
       synchronize: true,
     };
   }
   return {
     type: "better-sqlite3",
     database: ":memory:",
-    entities: [LocalCaEntity, CertRevocationEntity],
+    entities: [LocalCaEntity, LocalCaAdminEntity, CertRevocationEntity],
     synchronize: true,
   };
 }
@@ -51,8 +52,6 @@ function dataSourceOptions() {
 function caEntity({ id, type, name, certPem, privateKeyPem, parentId, notBefore, notAfter, pathLength }) {
   const entity = new LocalCaEntity();
   entity.id = id;
-  entity.userId = 1;
-  entity.projectId = null;
   entity.name = name;
   entity.source = "generated";
   entity.caType = type;
@@ -92,9 +91,11 @@ async function main() {
   await ds.initialize();
   // 只清理脚本自己的表，绝不 dropSchema
   await ds.query("DELETE FROM cd_cert_revocation");
+  await ds.query("DELETE FROM cd_local_ca_admin");
   await ds.query("DELETE FROM cd_local_ca");
   const caRepo = ds.getRepository(LocalCaEntity);
   const revocationRepo = ds.getRepository(CertRevocationEntity);
+  const adminRepo = ds.getRepository(LocalCaAdminEntity);
   const encryptor = new Encryptor(Buffer.alloc(32, 7).toString("base64"));
   const encryptService = new EncryptService();
   encryptService.encryptor = encryptor;
@@ -103,6 +104,7 @@ async function main() {
   const service = new LocalCaService();
   service.repository = caRepo;
   service.certRevocationService = revocationService;
+  service.adminRepository = adminRepo;
   service.encryptService = encryptService;
 
   try {
@@ -122,6 +124,7 @@ async function main() {
       }
     );
     await caRepo.save(rootEntity);
+    await adminRepo.save(adminRepo.create({ caId: 1, adminUserId: 1, role: "owner" }));
 
     const children = [];
     for (let i = 0; i < 2; i++) {
@@ -147,6 +150,7 @@ async function main() {
         }
       );
       await caRepo.save(entity);
+      await adminRepo.save(adminRepo.create({ caId: entity.id, adminUserId: 1, role: "owner" }));
       children.push({ entity, serialNumber: intermediate.serialNumber });
     }
 

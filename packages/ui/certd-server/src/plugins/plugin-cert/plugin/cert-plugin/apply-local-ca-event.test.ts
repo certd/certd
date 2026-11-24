@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { X509Certificate } from "node:crypto";
 import { EVENT_CERT_APPLY_SUCCESS } from "@certd/plugin-cert";
-import { createCsr, createRootCa, signCsr } from "../../../../modules/cert/service/local-ca-crypto.js";
+import { createCsr, createRootCa, signCsr } from "../../../../modules/local-ca/service/local-ca-crypto.js";
 import { CertApplyPlugin } from "./apply.js";
 
 function createPlugin(directoryUrl?: string, caCertPem?: string) {
@@ -16,7 +16,11 @@ function createPlugin(directoryUrl?: string, caCertPem?: string) {
     },
     serviceGetter: {
       async get() {
-        return { async getCa() { return caCertPem ? { certPem: caCertPem } : null; } };
+        return {
+          async getCa() {
+            return caCertPem ? { certPem: caCertPem } : null;
+          },
+        };
       },
     },
     pipeline: { id: 1 },

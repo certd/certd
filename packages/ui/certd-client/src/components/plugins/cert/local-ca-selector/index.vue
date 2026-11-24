@@ -12,15 +12,15 @@
       @search="onSearch"
       @dropdown-visible-change="onOpen"
     />
-    <a-button type="link" class="local-ca-selector-manage" @click="openManage">管理本地CA</a-button>
-    <LocalCaManage ref="manageRef" @select="onManageSelect" />
+    <a-button v-if="isAdmin" type="link" class="local-ca-selector-manage" @click="openManage">管理本地CA</a-button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import { request } from "/@/api/service";
-import LocalCaManage from "./manage.vue";
+import { useUserStore } from "/@/store/user";
 
 defineOptions({
   name: "LocalCaSelector",
@@ -35,6 +35,9 @@ const emit = defineEmits<{
   "update:modelValue": (value: number) => void;
 }>();
 
+const router = useRouter();
+const userStore = useUserStore();
+const isAdmin = computed(() => userStore.isAdmin());
 const options = ref<any[]>([]);
 const loading = ref(false);
 
@@ -51,7 +54,7 @@ async function load(searchKey?: string) {
   loading.value = true;
   try {
     const list: any[] = await request({
-      url: "/cert/local-ca/options",
+      url: "/sys/local-ca/options",
       method: "post",
       data: { searchKey },
     });
@@ -66,7 +69,7 @@ async function loadByIds(ids: number[]) {
     return;
   }
   const list: any[] = await request({
-    url: "/cert/local-ca/getOptionsByIds",
+    url: "/sys/local-ca/getOptionsByIds",
     method: "post",
     data: { ids },
   });
@@ -92,18 +95,9 @@ function onChange(value: any) {
   emit("update:modelValue", value);
 }
 
-const manageRef = ref<any>();
-
 function openManage(event: MouseEvent) {
   event.preventDefault();
-  manageRef.value?.open();
-}
-
-function onManageSelect(row: any) {
-  if (!options.value.some(item => item.value === row.id)) {
-    options.value.push(toOption(row));
-  }
-  emit("update:modelValue", row.id);
+  router.push("/sys/local-ca");
 }
 
 onMounted(async () => {

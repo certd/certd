@@ -248,8 +248,8 @@ function isAllowedDomain(domain: string) {
 }
 
 const invalidDomains = computed(() => {
-  validationTick.value;
-  return normalizeDomains(props.value || []).filter(domain => !isAllowedDomain(domain));
+  const tick = validationTick.value;
+  return normalizeDomains(props.value || []).filter(domain => tick >= 0 && !isAllowedDomain(domain));
 });
 
 async function loadAllowedDomains(caId?: number) {
@@ -260,7 +260,7 @@ async function loadAllowedDomains(caId?: number) {
   }
   try {
     const info: any = await request({
-      url: "/cert/local-ca/info",
+      url: "/sys/local-ca/info",
       method: "post",
       params: { id: caId },
     });

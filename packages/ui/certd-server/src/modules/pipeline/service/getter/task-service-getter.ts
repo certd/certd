@@ -13,9 +13,9 @@ import { CertInfoGetter } from "./cert-info-getter.js";
 import { CertInfoService } from "../../../monitor/index.js";
 import { ICertInfoGetter } from "@certd/plugin-lib";
 import { CnameProviderService } from "../../../cname/service/cname-provider-service.js";
-import { LocalCaGetter } from "../../../cert/service/local-ca-getter.js";
-import { LocalCaSignerGetter } from "../../../cert/service/local-ca-signer-getter.js";
-import { LocalCaService } from "../../../cert/service/local-ca-service.js";
+import { LocalCaGetter } from "../../../local-ca/service/local-ca-getter.js";
+import { LocalCaSignerGetter } from "../../../local-ca/service/local-ca-signer-getter.js";
+import { LocalCaService } from "../../../local-ca/service/local-ca-service.js";
 
 const serviceNames = ["ocrService", "certInfoService", "customAcmeProviderService"];
 export class TaskServiceGetter implements IServiceGetter {

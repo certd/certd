@@ -14,39 +14,8 @@ import { EabAccess } from "../../access/index.js";
 import { DomainParser } from "@certd/plugin-lib";
 import { ossClientFactory } from "../../../plugin-lib/oss/factory.js";
 import { merge } from "lodash-es";
-import { verifyCertIssuedBy } from "../../../../modules/cert/service/local-ca-crypto.js";
-
-function parseLocalCaDirectory(directoryUrl?: string): { caId: number; url: URL } | null {
-  if (!directoryUrl) {
-    return null;
-  }
-  let url: URL;
-  try {
-    url = new URL(directoryUrl);
-  } catch {
-    return null;
-  }
-  const matched = url.pathname.match(/\/api\/acme\/(\d+)\/directory\/?$/i);
-  return matched ? { caId: Number(matched[1]), url } : null;
-}
-
-function getLocalCaIdFromAcmeDirectory(directoryUrl?: string): number | null {
-  return parseLocalCaDirectory(directoryUrl)?.caId ?? null;
-}
-
-function isLocalCaDirectory(directoryUrl: string | undefined, ca: any, caId: number) {
-  const parsed = parseLocalCaDirectory(directoryUrl);
-  if (!parsed || parsed.caId !== caId || !ca?.effectiveBaseUrl) {
-    return false;
-  }
-  try {
-    const base = new URL(ca.effectiveBaseUrl);
-    const expectedPath = `${base.pathname.replace(/\/+$/, "")}/api/acme/${caId}/directory`;
-    return parsed.url.origin === base.origin && parsed.url.pathname.replace(/\/+$/, "") === expectedPath;
-  } catch {
-    return false;
-  }
-}
+import { verifyCertIssuedBy } from "../../../../modules/local-ca/service/local-ca-crypto.js";
+import { getLocalCaIdFromAcmeDirectory, isLocalCaDirectory, parseLocalCaDirectory } from "../../../../modules/local-ca/service/local-ca-directory.js";
 
 export type CnameRecordInput = {
   id: number;
@@ -695,11 +664,11 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   eab!: EabAccess;
 
   // 当前颁发机构在系统「流水线设置」中的配置（内置 + 自定义），onInit 时解析
-  private acmeProvider?: CustomAcmeProvider;
+  protected acmeProvider?: CustomAcmeProvider;
 
   async onInit() {}
 
-  private async getAcmeClient() {
+  protected async getAcmeClient() {
     if (this.acme) {
       return this.acme;
     }
@@ -734,6 +703,10 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         await getEab(this.sslProvider);
       }
     }
+    const customEab = await this.resolveCustomAcmeEab();
+    if (customEab !== undefined) {
+      eab = customEab;
+    }
     this.eab = eab;
     const subDomainsGetter = await this.ctx.serviceGetter.get<ISubDomainsGetter>("subDomainsGetter");
     const domainParser = new DomainParser(subDomainsGetter, this.logger);
@@ -761,9 +734,24 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   }
 
   /**
+   * 子类可返回自定义EAB（本地CA插件内联凭证），返回undefined表示沿用内置逻辑。
+   */
+  protected async resolveCustomAcmeEab(): Promise<EabAccess | null | undefined> {
+    return undefined;
+  }
+
+  /**
+   * 自定义ACME通常必须复用已注册账号；子类使用内联EAB时允许临时创建账号。
+   */
+  protected requiresAcmeAccount(): boolean {
+    const isCustomSslProvider = this.acmeProvider != null && this.acmeProvider.builtIn !== true;
+    return this.version === 2 || isCustomSslProvider;
+  }
+
+  /**
    * 获取当前颁发机构在系统「流水线设置」中的配置（内置 + 自定义）；未找到时给出明确报错
    */
-  private async getAcmeProvider(): Promise<CustomAcmeProvider> {
+  protected async getAcmeProvider(): Promise<CustomAcmeProvider> {
     if (!this.sslProvider) {
       throw new Error("请先选择证书颁发机构");
     }
@@ -872,7 +860,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       acmeAccount = await this.getCommonAcmeAccount();
     }
     const isCustomSslProvider = this.acmeProvider != null && this.acmeProvider.builtIn !== true;
-    if ((this.version === 2 || isCustomSslProvider) && !acmeAccount) {
+    if (this.requiresAcmeAccount() && !acmeAccount) {
       // 自定义ACME必须复用ACME账号（账号绑定Directory URL），不允许临时建账号
       throw new Error(isCustomSslProvider ? "自定义ACME必须选择对应的ACME账号" : "请选择颁发机构对应的ACME账号");
     }
@@ -909,7 +897,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     return new CertReader(certInfo);
   }
 
-  private async orderWithRetry(orderOptions: Parameters<AcmeService["order"]>[0]) {
+  protected async orderWithRetry(orderOptions: Parameters<AcmeService["order"]>[0]) {
     const maxRetryCount = this.getCertApplyRetryCount();
     let retryCount = 0;
 
@@ -1058,7 +1046,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     return plan;
   }
 
-  private async createDomainsVerifyPlanByAuto(domains: string[], acmeAccount?: AcmeAccountInfo) {
+  protected async createDomainsVerifyPlanByAuto(domains: string[], acmeAccount?: AcmeAccountInfo) {
     //从数据库里面自动选择校验方式
     // domain list
     const domainList = new Set<string>();
@@ -1123,7 +1111,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
    * 自动匹配缺少校验方式时，探测远程Certd ACME目录是否声明EAB直签。
    * 该元数据只用于规划，实际授权仍由远端服务器执行；失败则回退真实验证。
    */
-  private async isRemoteCertdDirectIssue(acmeAccount?: AcmeAccountInfo): Promise<boolean> {
+  protected async isRemoteCertdDirectIssue(acmeAccount?: AcmeAccountInfo): Promise<boolean> {
     if (this.remoteDirectIssueCache != null) {
       return this.remoteDirectIssueCache;
     }
@@ -1160,7 +1148,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     }
   }
 
-  private async getDirectIssueLocalCaId(acmeAccount?: AcmeAccountInfo): Promise<number | null> {
+  protected async getDirectIssueLocalCaId(acmeAccount?: AcmeAccountInfo): Promise<number | null> {
     const caId = getLocalCaIdFromAcmeDirectory(this.acmeProvider?.directoryUrl);
     if (caId == null) {
       return null;

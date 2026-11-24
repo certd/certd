@@ -1,8 +1,9 @@
 import { DataSource } from "typeorm";
-import { LocalCaEntity } from "../dist/modules/cert/entity/local-ca.js";
-import { AcmeEabEntity } from "../dist/modules/cert/entity/acme-server.js";
-import { LocalCaService } from "../dist/modules/cert/service/local-ca-service.js";
-import { runTransaction } from "../dist/modules/cert/service/db-transaction.js";
+import { LocalCaEntity } from "../dist/modules/local-ca/entity/local-ca.js";
+import { LocalCaAdminEntity } from "../dist/modules/local-ca/entity/local-ca-admin.js";
+import { AcmeEabEntity } from "../dist/modules/acme-server/entity/acme-server.js";
+import { LocalCaService } from "../dist/modules/local-ca/service/local-ca-service.js";
+import { runTransaction } from "../dist/modules/db/db-transaction.js";
 
 const dialect = process.env.EAB_TEST_DB || "sqlite";
 
@@ -22,7 +23,7 @@ function dataSourceOptions() {
       username: process.env.MYSQL_USER || "certd_test",
       password: process.env.MYSQL_PASSWORD || "certd_test",
       database: process.env.MYSQL_DATABASE || "certd_eab_test",
-      entities: [LocalCaEntity, AcmeEabEntity],
+      entities: [LocalCaEntity, LocalCaAdminEntity, AcmeEabEntity],
       synchronize: true,
     };
   }
@@ -34,14 +35,14 @@ function dataSourceOptions() {
       username: process.env.PG_USER || "postgres",
       password: process.env.PG_PASSWORD || "postgres",
       database: process.env.PG_DATABASE || "certd_eab_test",
-      entities: [LocalCaEntity, AcmeEabEntity],
+      entities: [LocalCaEntity, LocalCaAdminEntity, AcmeEabEntity],
       synchronize: true,
     };
   }
   return {
     type: "better-sqlite3",
     database: ":memory:",
-    entities: [LocalCaEntity, AcmeEabEntity],
+    entities: [LocalCaEntity, LocalCaAdminEntity, AcmeEabEntity],
     synchronize: true,
   };
 }
@@ -49,8 +50,6 @@ function dataSourceOptions() {
 function caEntity() {
   const entity = new LocalCaEntity();
   entity.id = 1;
-  entity.userId = 1;
-  entity.projectId = null;
   entity.name = "EAB Lock CA";
   entity.source = "generated";
   entity.caType = "intermediate";
@@ -106,11 +105,15 @@ async function main() {
   await ds.initialize();
   try {
     await ds.query("DELETE FROM cd_acme_eab");
+    await ds.query("DELETE FROM cd_local_ca_admin");
     await ds.query("DELETE FROM cd_local_ca");
     await ds.getRepository(LocalCaEntity).save(caEntity());
+    const adminRepo = ds.getRepository(LocalCaAdminEntity);
+    await adminRepo.save(adminRepo.create({ caId: 1, adminUserId: 1, role: "owner" }));
     await ds.getRepository(AcmeEabEntity).save(eabEntity());
     const service = new LocalCaService();
     service.repository = ds.getRepository(LocalCaEntity);
+    service.adminRepository = adminRepo;
     service.acmeEabRepository = ds.getRepository(AcmeEabEntity);
 
     let release;

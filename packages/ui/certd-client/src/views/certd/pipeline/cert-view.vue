@@ -114,7 +114,7 @@ const chainCount = computed(() => (String(props.cert.crt || "").match(/BEGIN CER
 const crlUrl = computed(() => {
   if (props.cert.crlUrl) return props.cert.crlUrl;
   if (!props.cert.localCaId) return "";
-  return `${env.API}/cert/local-ca/crl?id=${props.cert.localCaId}`;
+  return `${env.API}/sys/local-ca/crl?id=${props.cert.localCaId}`;
 });
 
 const certFiles = computed(() => {

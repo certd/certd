@@ -21,7 +21,7 @@ import { dict } from "@fast-crud/fast-crud";
 import { useFormDialog } from "/@/use/use-dialog";
 import { Modal, notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
-import { localCaApi } from "/@/views/certd/cert/local-ca/api";
+import { localCaApi } from "/@/views/sys/local-ca/api";
 
 defineOptions({
   name: "CustomAcmeProviderList",
@@ -166,7 +166,7 @@ async function openEditor(index?: number) {
  * 仅修改当前表单数据，仍需用户点击页面底部的「保存」才会写入系统设置。
  */
 async function openQuickAdd() {
-  const options = await localCaApi.GetOptions();
+  const options = await localCaApi.GetAdminOptions();
   const candidates = (options || []).filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !ca.disabled && (!ca.notAfter || Number(ca.notAfter) > Date.now()));
   if (candidates.length === 0) {
     notification.warning({ message: t("certd.sys.settings.customAcmeLocalCaQuickAddEmpty") });

@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { DataSource } from "typeorm";
 import { CertInfoEntity, CertStatus } from "../entity/cert-info.js";
-import { CertRevocationEntity } from "../../cert/entity/cert-revocation.js";
-import { LocalCaEntity } from "../../cert/entity/local-ca.js";
+import { CertRevocationEntity } from "../../local-ca/entity/cert-revocation.js";
+import { LocalCaEntity } from "../../local-ca/entity/local-ca.js";
 import { CertInfoService } from "./cert-info-service.js";
-import { CertRevocationService } from "../../cert/service/cert-revocation-service.js";
+import { CertRevocationService } from "../../local-ca/service/cert-revocation-service.js";
 
 async function createDataSource() {
   const ds = new DataSource({
@@ -55,7 +55,11 @@ describe("CertInfoService local revocation transaction", () => {
       service.repository = ds.getRepository(CertInfoEntity);
       revocation.repository = ds.getRepository(CertRevocationEntity);
       service.certRevocationService = revocation;
-      service.localCaRepository = { async findOne() { return { id: 2 }; } } as any;
+      service.localCaRepository = {
+        async findOne() {
+          return { id: 2 };
+        },
+      } as any;
 
       const cert = await addCert(service.repository, "0A11");
       await service.applyLocalRevocation({
@@ -88,7 +92,11 @@ describe("CertInfoService local revocation transaction", () => {
       service.repository = ds.getRepository(CertInfoEntity);
       revocation.repository = ds.getRepository(CertRevocationEntity);
       service.certRevocationService = revocation;
-      service.localCaRepository = { async findOne() { return { id: 2 }; } } as any;
+      service.localCaRepository = {
+        async findOne() {
+          return { id: 2 };
+        },
+      } as any;
 
       const cert = await addCert(service.repository, "0A22");
       await ds.query(`CREATE TRIGGER fail_local_cert_revoke

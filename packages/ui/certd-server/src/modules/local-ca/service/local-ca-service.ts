@@ -1,0 +1,1956 @@
+import crypto from "node:crypto";
+import * as x509 from "@peculiar/x509";
+import { logger } from "@certd/basic";
+import { runTransaction } from "../../db/db-transaction.js";
+import fs from "node:fs";
+import path from "node:path";
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { EntityManager, In, Like, Repository } from "typeorm";
+import { BaseService, EncryptService, PageReq, SysInstallInfo, SysSettingsService, ValidateException } from "@certd/lib-server";
+import { LocalCaEntity } from "../entity/local-ca.js";
+import { LocalCaAdminEntity } from "../entity/local-ca-admin.js";
+import { LocalCaGrantEntity } from "../entity/local-ca-grant.js";
+import { AcmeEabEntity, AcmeOrderEntity } from "../../acme-server/entity/acme-server.js";
+import { CertInfoService } from "../../monitor/service/cert-info-service.js";
+import { CertRevocationService } from "./cert-revocation-service.js";
+import { CertStatus } from "../../monitor/entity/cert-info.js";
+import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
+import { randomId } from "../../acme-server/service/acme-jws.js";
+import {
+  createCrl,
+  createIntermediateCa,
+  createRootCa,
+  getBasicConstraints,
+  getCertSerialNumber,
+  getCrlDistributionUrls,
+  getCrlInfo as parseCrlInfo,
+  getPublicKeyPem,
+  isSelfSignedCa,
+  issueLeafCertificate,
+  LocalCaKeyType,
+  LocalCaSubject,
+  LocalCaUsage,
+  matchAllowedDomains,
+  verifyCertIssuedBy,
+  signCsr,
+  sha256Hex,
+  validateImportedIntermediateCa,
+  validateImportedRootCa,
+} from "./local-ca-crypto.js";
+
+function isUniqueConstraintError(e: any) {
+  const code = String(e?.code || "");
+  const message = String(e?.message || "");
+  return ["SQLITE_CONSTRAINT", "23505", "ER_DUP_ENTRY"].includes(code) || /UNIQUE constraint failed|duplicate key|Duplicate entry/i.test(message);
+}
+
+function randomEabHmacKey() {
+  // RFC 8555 EAB HMAC key：统一使用无填充的 base64url
+  return crypto.randomBytes(32).toString("base64url");
+}
+
+function normalizeBaseUrl(value?: string) {
+  const text = String(value || "").trim();
+  if (!text) {
+    return "";
+  }
+  let url: URL;
+  try {
+    url = new URL(text);
+  } catch (e) {
+    throw new ValidateException("Base URL 格式不合法");
+  }
+  if (!["http:", "https:"].includes(url.protocol)) {
+    throw new ValidateException("Base URL 必须以 http:// 或 https:// 开头");
+  }
+  if (url.username || url.password) {
+    throw new ValidateException("Base URL 不能包含用户名或密码");
+  }
+  if (url.search || url.hash) {
+    throw new ValidateException("Base URL 不能包含查询参数或片段");
+  }
+  const pathname = url.pathname.replace(/\/+$/, "");
+  return `${url.origin}${pathname}`;
+}
+
+export type LocalCaScope = {
+  id: number;
+  userId: number;
+  projectId?: number;
+};
+
+export type LocalCaGenerateReq = {
+  userId: number;
+  projectId?: number;
+  name: string;
+  subject: LocalCaSubject;
+  keyType?: LocalCaKeyType;
+  validityYears?: number;
+  usage?: LocalCaUsage;
+  allowedDomains?: string[];
+  maxValidityDays?: number;
+  baseUrl?: string;
+  remark?: string;
+  exportDisabled?: boolean;
+};
+
+export type LocalCaIntermediateReq = Omit<LocalCaScope, "id"> & {
+  rootId: number;
+  name: string;
+  subject: LocalCaSubject;
+  keyType?: LocalCaKeyType;
+  validityYears?: number;
+  usage?: LocalCaUsage;
+  allowedDomains?: string[];
+  maxValidityDays?: number;
+  baseUrl?: string;
+  remark?: string;
+  exportDisabled?: boolean;
+};
+
+export type LocalCaImportReq = {
+  userId: number;
+  projectId?: number;
+  parentId?: number;
+  name: string;
+  certPem: string;
+  privateKeyPem: string;
+  usage?: LocalCaUsage;
+  allowedDomains?: string[];
+  maxValidityDays?: number;
+  baseUrl?: string;
+  remark?: string;
+  exportDisabled?: boolean;
+  allowDuplicate?: boolean;
+  allowExternalCrl?: boolean;
+};
+
+export type LocalCaIssueReq = LocalCaScope & {
+  domains: string[];
+  keyType?: LocalCaKeyType;
+  validityDays?: number;
+  usage?: LocalCaUsage;
+};
+
+export type LocalCaSignCsrReq = LocalCaScope & {
+  csrPem: string;
+  validityDays?: number;
+  usage?: LocalCaUsage;
+  internal?: boolean;
+};
+
+export type LocalCaSafe = Omit<LocalCaEntity, "privateKeyEncrypted" | "privateKeyHash">;
+
+@Provide()
+@Scope(ScopeEnum.Request, { allowDowngrade: true })
+export class LocalCaService extends BaseService<LocalCaEntity> {
+  @InjectEntityModel(LocalCaEntity)
+  repository: Repository<LocalCaEntity>;
+
+  @InjectEntityModel(PipelineEntity)
+  pipelineRepository: Repository<PipelineEntity>;
+
+  @InjectEntityModel(LocalCaAdminEntity)
+  adminRepository: Repository<LocalCaAdminEntity>;
+
+  @InjectEntityModel(LocalCaGrantEntity)
+  grantRepository: Repository<LocalCaGrantEntity>;
+
+  @InjectEntityModel(AcmeEabEntity)
+  acmeEabRepository: Repository<AcmeEabEntity>;
+
+  @InjectEntityModel(AcmeOrderEntity)
+  acmeOrderRepository: Repository<AcmeOrderEntity>;
+
+  @Inject()
+  encryptService: EncryptService;
+
+  @Inject()
+  certInfoService: CertInfoService;
+
+  @Inject()
+  certRevocationService: CertRevocationService;
+
+  @Inject()
+  sysSettingsService: SysSettingsService;
+
+  //@ts-ignore
+  getRepository() {
+    return this.repository;
+  }
+
+  async page(pageReq: PageReq<LocalCaEntity>) {
+    const { query = {}, page } = pageReq;
+    for (const key of Object.keys(query)) {
+      if ((query as any)[key] == null) {
+        delete (query as any)[key];
+      }
+    }
+    if ((page as any).offset == null) {
+      (page as any).offset = 0;
+    }
+    if ((page as any).limit == null) {
+      (page as any).limit = 20;
+    }
+    const qb = this.repository.createQueryBuilder("main");
+    if (Object.keys(query).length > 0) {
+      qb.where(query);
+    }
+    if (pageReq.buildQuery) {
+      pageReq.buildQuery(qb);
+    }
+    qb.andWhere("main.deleted = :deleted", { deleted: false });
+    // 根CA按根分组；根在前，中间CA紧跟其父级
+    qb.addOrderBy("CASE WHEN main.parent_id IS NULL THEN main.id ELSE main.parent_id END", "DESC");
+    qb.addOrderBy("CASE WHEN main.parent_id IS NULL THEN 0 ELSE 1 END", "ASC");
+    qb.addOrderBy("main.id", "ASC");
+    qb.offset((page as any).offset).limit((page as any).limit);
+    const records = await qb.getMany();
+    const total = await qb.getCount();
+    for (const item of records) {
+      const safe = item as any;
+      delete safe.privateKeyEncrypted;
+      delete safe.privateKeyHash;
+    }
+    await this.attachParentNames(records as any[]);
+    return {
+      records,
+      total,
+      offset: (page as any).offset,
+      limit: (page as any).limit,
+    };
+  }
+
+  async listSafe(req: { adminUserId: number; searchKey?: string }) {
+    const accesses = await this.adminRepository.find({ where: { adminUserId: req.adminUserId } });
+    const ids = accesses.map(item => item.caId);
+    const list = ids.length
+      ? await this.find({
+          where: { id: In(ids), deleted: false },
+          order: { id: "DESC" },
+        })
+      : [];
+    const searchKey = String(req.searchKey || "")
+      .trim()
+      .toLowerCase();
+    const safeList = list
+      .filter(item => {
+        if (!searchKey) {
+          return true;
+        }
+        return item.name.toLowerCase().includes(searchKey) || item.subjectCn.toLowerCase().includes(searchKey);
+      })
+      .map(item => this.toSafe(item));
+    // 返回服务端实际解析出的访问地址，避免前端用自己的origin猜测ACME/CRL地址
+    for (const item of safeList) {
+      (item as any).effectiveBaseUrl = await this.resolveBaseUrl(item as any);
+    }
+    await this.attachParentNames(safeList as any[]);
+    return safeList;
+  }
+
+  private async attachParentNames(list: any[]) {
+    const parentIds = [...new Set(list.map(item => item.parentId).filter(id => id != null))];
+    if (parentIds.length === 0) {
+      return list;
+    }
+    const parents = await this.repository.find({
+      where: { id: In(parentIds) },
+      select: { id: true, name: true, subjectCn: true },
+    });
+    const nameMap = new Map(parents.map(item => [item.id, item.name]));
+    for (const item of list) {
+      item.parentName = item.parentId != null ? nameMap.get(item.parentId) || "" : "";
+      item.caPath = item.parentName ? `${item.parentName} / ${item.name}` : item.name;
+      item.level = item.parentId != null ? 1 : 0;
+    }
+    return list;
+  }
+
+  async getUserCa(req: LocalCaScope) {
+    const safe = this.toSafe(await this.getGrantedCa(req));
+    (safe as any).effectiveBaseUrl = await this.resolveBaseUrl(safe as any);
+    return safe;
+  }
+
+  async infoSafe(req: LocalCaScope) {
+    const safe = this.toSafe(await this.getOwnedCa(req));
+    (safe as any).effectiveBaseUrl = await this.resolveBaseUrl(safe as any);
+    return safe;
+  }
+
+  /**
+   * 授权用户（或管理员）读取CA的公开配置，供流水线域名校验等场景使用。
+   */
+  async infoForUse(req: LocalCaScope) {
+    const safe = this.toSafe(await this.getGrantedCa(req));
+    (safe as any).effectiveBaseUrl = await this.resolveBaseUrl(safe as any);
+    return safe;
+  }
+
+  private toOptionList(list: LocalCaEntity[]) {
+    return list.map(item => ({
+      id: item.id,
+      name: item.name,
+      subjectCn: item.subjectCn,
+      caType: item.caType,
+      parentId: item.parentId,
+      acmeEnabled: item.acmeEnabled,
+      disabled: item.disabled,
+      notAfter: item.notAfter,
+      baseUrl: (item as any).effectiveBaseUrl,
+    }));
+  }
+
+  /**
+   * 企业模式下项目用户/流水线的userId固定为-1，此时按项目授权匹配；否则按真实用户匹配。
+   */
+  private async listApplicableGrants(req: { userId: number; projectId?: number }) {
+    if (req.userId > 0) {
+      const grants = await this.grantRepository.find({ where: { userId: req.userId, disabled: false } });
+      return grants.filter(item => item.projectId === 0 || item.projectId === req.projectId);
+    }
+    if (req.projectId) {
+      return await this.grantRepository.find({ where: { projectId: req.projectId, disabled: false } });
+    }
+    return [];
+  }
+
+  async listOptions(req: { userId: number; projectId?: number; searchKey?: string }) {
+    const grants = await this.listApplicableGrants(req);
+    const accesses = req.userId > 0 ? await this.adminRepository.find({ where: { adminUserId: req.userId } }) : [];
+    const allowedIds = [...new Set([...grants.map(item => item.caId), ...accesses.map(item => item.caId)])];
+    if (allowedIds.length === 0) {
+      return [];
+    }
+    const list = await this.find({ where: { id: In(allowedIds), caType: "intermediate", deleted: false }, order: { id: "DESC" } });
+    const filtered = list.filter(item => !req.searchKey || item.name.toLowerCase().includes(req.searchKey.toLowerCase()) || item.subjectCn.toLowerCase().includes(req.searchKey.toLowerCase()));
+    const safeList = filtered.map(item => this.toSafe(item));
+    for (const item of safeList) {
+      (item as any).effectiveBaseUrl = await this.resolveBaseUrl(item as any);
+    }
+    return this.toOptionList(safeList as any);
+  }
+
+  async listAdminOptions(req: { adminUserId: number; searchKey?: string }) {
+    const list = await this.listSafe({ adminUserId: req.adminUserId, searchKey: req.searchKey });
+    return this.toOptionList(list as any);
+  }
+
+  async getOptionsByIds(req: { ids: number[]; userId: number; projectId?: number }) {
+    const ids = this.filterIds(req.ids || []);
+    if (ids.length === 0) {
+      return [];
+    }
+    const grants = await this.listApplicableGrants(req);
+    const accesses = req.userId > 0 ? await this.adminRepository.find({ where: { adminUserId: req.userId } }) : [];
+    const allowedIds = new Set([...grants.map(item => item.caId), ...accesses.map(item => item.caId)]);
+    const list = await this.find({
+      where: {
+        id: In(ids.filter(id => allowedIds.has(id))),
+        caType: "intermediate",
+        deleted: false,
+      },
+    });
+    const safeList = list.map(item => this.toSafe(item));
+    for (const item of safeList) {
+      (item as any).effectiveBaseUrl = await this.resolveBaseUrl(item as any);
+    }
+    return this.toOptionList(safeList as any);
+  }
+
+  async generateCa(req: LocalCaGenerateReq) {
+    await this.assertNameAvailable(req);
+    const keyType = req.keyType || "rsa2048";
+    const material = await createRootCa({
+      subject: req.subject,
+      keyType,
+      validityYears: req.validityYears || 10,
+    });
+    const bean = new LocalCaEntity();
+    bean.name = req.name.trim();
+    bean.source = "generated";
+    bean.caType = "root";
+    bean.parentId = null;
+    bean.keyType = keyType;
+    bean.keySize = material.keySize;
+    bean.hashAlgorithm = "SHA256";
+    bean.subject = JSON.stringify(material.subject);
+    bean.subjectCn = material.subjectCn;
+    bean.certPem = material.certPem;
+    bean.privateKeyEncrypted = this.encryptService.encrypt(material.privateKeyPem);
+    bean.privateKeyHash = sha256Hex(material.privateKeyPem);
+    bean.keyEncryptVersion = "1";
+    bean.fingerprintSha256 = material.fingerprintSha256;
+    bean.notBefore = material.notBefore;
+    bean.notAfter = material.notAfter;
+    bean.usage = req.usage || "server";
+    const list = this.normalizeAllowedDomains(req.allowedDomains);
+    bean.allowedDomains = list.length ? JSON.stringify(list) : null;
+    bean.maxValidityDays = req.maxValidityDays || 0;
+    bean.acmeEnabled = false;
+    bean.acmeDirectIssue = false;
+    bean.acmeConfig = null;
+    bean.baseUrl = normalizeBaseUrl(req.baseUrl);
+    bean.pathLength = 1;
+    bean.disabled = false;
+    bean.remark = req.remark || "";
+    bean.exportDisabled = req.exportDisabled === true;
+    bean.deleted = false;
+    bean.revoked = false;
+    const res = await this.add(bean);
+    await this.addAdminAccess(res.id, req.userId, "owner");
+    logger.info(`[local-ca] root generated ca=${res.id} admin=${req.userId} key=${keyType}`);
+    return { id: res.id };
+  }
+
+  async generateIntermediateCa(req: LocalCaIntermediateReq) {
+    await this.assertNameAvailable(req);
+    const root = await this.getOwnedCa({ id: req.rootId, userId: req.userId, projectId: req.projectId }, true);
+    if (root.caType !== "root") {
+      throw new ValidateException("只有根CA可以签发中间CA");
+    }
+    if (root.disabled) {
+      throw new ValidateException("根CA已禁用，不能签发中间CA");
+    }
+    const rootPrivateKey = this.decryptCaPrivateKey(root);
+    const material = await createIntermediateCa({
+      rootCertPem: root.certPem,
+      rootPrivateKeyPem: rootPrivateKey,
+      subject: req.subject,
+      keyType: req.keyType,
+      validityYears: req.validityYears,
+      crlDistributionPoint: await this.getCrlUrl(root),
+    });
+    const bean = new LocalCaEntity();
+    bean.name = req.name.trim();
+    bean.source = "generated";
+    bean.caType = "intermediate";
+    bean.parentId = root.id;
+    bean.keyType = material.keyType || "rsa2048";
+    bean.keySize = material.keySize;
+    bean.hashAlgorithm = "SHA256";
+    bean.subject = JSON.stringify(material.subject);
+    bean.subjectCn = material.subjectCn;
+    bean.certPem = material.certPem;
+    bean.privateKeyEncrypted = this.encryptService.encrypt(material.privateKeyPem);
+    bean.privateKeyHash = sha256Hex(material.privateKeyPem);
+    bean.keyEncryptVersion = "1";
+    bean.fingerprintSha256 = material.fingerprintSha256;
+    bean.notBefore = material.notBefore;
+    bean.notAfter = material.notAfter;
+    bean.usage = req.usage || root.usage;
+    const childAllowedDomains = await this.resolveChildAllowedDomains(req.allowedDomains, root);
+    bean.allowedDomains = childAllowedDomains.length ? JSON.stringify(childAllowedDomains) : null;
+    bean.maxValidityDays = await this.resolveChildMaxValidity(req.maxValidityDays, root);
+    bean.acmeEnabled = false;
+    bean.acmeDirectIssue = false;
+    bean.acmeConfig = null;
+    bean.baseUrl = normalizeBaseUrl(req.baseUrl) || root.baseUrl || null;
+    bean.pathLength = 0;
+    bean.disabled = false;
+    bean.remark = req.remark || "";
+    bean.exportDisabled = req.exportDisabled === true;
+    bean.deleted = false;
+    bean.revoked = false;
+    await this.refreshRootCrlCache(root, rootPrivateKey);
+    const res = await this.add(bean);
+    await this.addAdminAccess(res.id, req.userId, "owner");
+    await this.markBaseUrlLocked(root.id);
+    logger.info(`[local-ca] intermediate generated ca=${res.id} root=${root.id} admin=${req.userId}`);
+    return { id: res.id };
+  }
+
+  async checkImportDuplicate(req: { userId: number; projectId?: number; parentId?: number; certPem: string }) {
+    let fingerprint: string;
+    let selfSigned: boolean;
+    try {
+      fingerprint = new crypto.X509Certificate(req.certPem).fingerprint256.replaceAll(":", "").toLowerCase();
+      selfSigned = isSelfSignedCa(req.certPem);
+    } catch (e: any) {
+      throw new ValidateException(`证书解析失败：${e.message}`);
+    }
+    const duplicated = await this.repository.findOne({
+      where: { fingerprintSha256: fingerprint },
+      select: { id: true, name: true },
+    });
+    const base = duplicated ? { duplicated: true, id: duplicated.id, name: duplicated.name } : { duplicated: false };
+    if (selfSigned || req.parentId == null) {
+      return base;
+    }
+    const parent = await this.getOwnedCa({ id: req.parentId, userId: req.userId, projectId: req.projectId });
+    const expectedCrlUrl = await this.getCrlUrl(parent);
+    const expected = new URL(expectedCrlUrl).toString().replace(/\/+$/, "");
+    const urls = getCrlDistributionUrls(req.certPem).filter(url => {
+      try {
+        return ["http:", "https:"].includes(new URL(url).protocol);
+      } catch (e) {
+        return false;
+      }
+    });
+    let matchedLocalCrl = false;
+    let externalCrl = false;
+    let mismatchCrl = false;
+    for (const value of urls) {
+      const url = new URL(value);
+      const looksLikeLocal = url.pathname.includes("/api/sys/local-ca/crl");
+      if (url.origin === new URL(expected).origin || looksLikeLocal) {
+        if (url.toString().replace(/\/+$/, "") !== expected) {
+          mismatchCrl = true;
+        } else {
+          matchedLocalCrl = true;
+        }
+      } else {
+        externalCrl = true;
+      }
+    }
+    return {
+      ...base,
+      expectedCrlUrl,
+      missingCrl: urls.length === 0,
+      mismatchCrl,
+      externalCrl: externalCrl && !matchedLocalCrl,
+    };
+  }
+
+  async importCa(req: LocalCaImportReq) {
+    await this.assertNameAvailable(req);
+    let selfSigned: boolean;
+    try {
+      selfSigned = isSelfSignedCa(req.certPem);
+    } catch (e: any) {
+      throw new ValidateException(`证书解析失败：${e.message}`);
+    }
+    let parent: LocalCaEntity | null = null;
+    let material;
+    if (selfSigned) {
+      material = await validateImportedRootCa({
+        certPem: req.certPem,
+        privateKeyPem: req.privateKeyPem,
+      });
+    } else {
+      if (!req.parentId) {
+        throw new ValidateException("导入中间CA时必须选择上级根CA");
+      }
+      parent = await this.getOwnedCa({ id: req.parentId, userId: req.userId, projectId: req.projectId });
+      if (!parent) {
+        throw new ValidateException("上级根CA不存在");
+      }
+      if (parent.caType !== "root") {
+        throw new ValidateException("选中证书的上级必须是根CA");
+      }
+      material = await validateImportedIntermediateCa({
+        certPem: req.certPem,
+        privateKeyPem: req.privateKeyPem,
+        parentCertPem: parent.certPem,
+        expectedCrlUrl: await this.getCrlUrl(parent),
+        allowExternalCrl: req.allowExternalCrl === true,
+      });
+      // 重新导入不能绕过父CA的吊销记录
+      const serialNumber = getCertSerialNumber(material.certPem);
+      const revoked = await this.certRevocationService.findBySerial(parent.id, serialNumber);
+      if (revoked) {
+        throw new ValidateException("该中间CA已被上级根CA吊销，不能导入");
+      }
+    }
+    const duplicated = await this.repository.findOne({
+      where: { fingerprintSha256: material.fingerprintSha256 },
+    });
+    if (duplicated && req.allowDuplicate !== true) {
+      throw new ValidateException(`该CA证书已在「${duplicated.name}」中登记。重复记录可能无法妥善管理，建议新建一个；如仍需继续导入，请确认后重试`);
+    }
+    if (duplicated) {
+      logger.warn(`[local-ca] duplicate ca import allowed ca=${duplicated.id} user=${req.userId} project=${req.projectId ?? "-"}`);
+    }
+    const bean = new LocalCaEntity();
+    bean.name = req.name.trim();
+    bean.source = "imported";
+    bean.caType = selfSigned ? "root" : "intermediate";
+    bean.parentId = parent?.id ?? null;
+    bean.keyType = material.keyType || "rsa2048";
+    bean.keySize = material.keySize;
+    bean.hashAlgorithm = "SHA256";
+    bean.subject = JSON.stringify(material.subject);
+    bean.subjectCn = material.subjectCn;
+    bean.certPem = material.certPem;
+    bean.privateKeyEncrypted = this.encryptService.encrypt(material.privateKeyPem);
+    bean.privateKeyHash = sha256Hex(material.privateKeyPem);
+    bean.keyEncryptVersion = "1";
+    bean.fingerprintSha256 = material.fingerprintSha256;
+    bean.notBefore = material.notBefore;
+    bean.notAfter = material.notAfter;
+    bean.usage = req.usage || parent?.usage || "server";
+    if (selfSigned) {
+      const list = this.normalizeAllowedDomains(req.allowedDomains);
+      bean.allowedDomains = list.length ? JSON.stringify(list) : null;
+    } else {
+      const list = await this.resolveChildAllowedDomains(req.allowedDomains, parent);
+      bean.allowedDomains = list.length ? JSON.stringify(list) : null;
+    }
+    if (selfSigned) {
+      bean.maxValidityDays = req.maxValidityDays != null ? this.normalizeMaxValidityDays(req.maxValidityDays) : 0;
+    } else {
+      bean.maxValidityDays = await this.resolveChildMaxValidity(req.maxValidityDays, parent);
+    }
+    bean.acmeEnabled = false;
+    bean.acmeDirectIssue = false;
+    bean.acmeConfig = null;
+    bean.baseUrl = normalizeBaseUrl(req.baseUrl) || parent?.baseUrl || null;
+    bean.pathLength = material.pathLength ?? (selfSigned ? getBasicConstraints(material.certPem).pathLength ?? 1 : 0);
+    bean.disabled = false;
+    bean.remark = req.remark || "";
+    bean.exportDisabled = req.exportDisabled === true;
+    bean.deleted = false;
+    bean.revoked = false;
+    let res;
+    try {
+      res = await this.add(bean);
+    } catch (e: any) {
+      if (isUniqueConstraintError(e)) {
+        throw new ValidateException("该CA证书已登记，不能重复导入");
+      }
+      throw e;
+    }
+    await this.addAdminAccess(res.id, req.userId, "owner");
+    if (parent) {
+      await this.markBaseUrlLocked(parent.id);
+    }
+    logger.info(`[local-ca] ca imported ca=${res.id} type=${bean.caType} parent=${bean.parentId ?? "-"} admin=${req.userId}`);
+    return { id: res.id };
+  }
+
+  /**
+   * CA 签发核心：流水线插件、独立签发、未来 ACME finalize 都走这里。
+   */
+  async signCsr(req: LocalCaSignCsrReq) {
+    const ca = req.internal ? await this.findOne({ where: { id: req.id, deleted: false } }) : await this.getGrantedCa(req);
+    if (!ca) {
+      throw new ValidateException("本地CA不存在或无访问权限");
+    }
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("根CA不能直接签发叶子证书，请选择中间CA");
+    }
+    if (ca.revoked) {
+      throw new ValidateException("该本地CA已被父CA吊销，不能签发");
+    }
+    if (ca.disabled) {
+      throw new ValidateException("该本地CA已禁用");
+    }
+    await this.assertCaNotRevokedByParent(ca);
+    const maxValidityDays = await this.resolveEffectiveMaxValidityDays(ca);
+    if (maxValidityDays <= 0) {
+      throw new ValidateException("中间CA必须设置有限的最大签发天数");
+    }
+    const privateKeyPem = this.decryptCaPrivateKey(ca);
+    const result = await signCsr({
+      caCertPem: ca.certPem,
+      caPrivateKeyPem: privateKeyPem,
+      csrPem: req.csrPem,
+      validityDays: req.validityDays,
+      maxValidityDays,
+      allowedDomains: this.parseAllowedDomains(ca.allowedDomains),
+      usage: (req.usage || ca.usage) as LocalCaUsage,
+      crlDistributionPoint: await this.getCrlUrl(ca),
+    });
+    await this.assertCaStillUsable(ca.id);
+    if (!ca.baseUrlLocked) {
+      await this.markBaseUrlLocked(ca.id);
+      ca.baseUrlLocked = true;
+    }
+    logger.info(`[local-ca] leaf issued ca=${ca.id} serial=${result.serialNumber} user=${req.userId} project=${req.projectId ?? "-"}`);
+    return result;
+  }
+
+  async issueLeaf(req: LocalCaIssueReq) {
+    const ca = await this.getGrantedCa(req);
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("根CA不能直接签发叶子证书，请选择中间CA");
+    }
+    if (ca.revoked) {
+      throw new ValidateException("该本地CA已被父CA吊销，不能签发");
+    }
+    if (ca.disabled) {
+      throw new ValidateException("该本地CA已禁用");
+    }
+    await this.assertCaNotRevokedByParent(ca);
+    const maxValidityDays = await this.resolveEffectiveMaxValidityDays(ca);
+    if (maxValidityDays <= 0) {
+      throw new ValidateException("中间CA必须设置有限的最大签发天数");
+    }
+    const privateKeyPem = this.decryptCaPrivateKey(ca);
+    const result = await issueLeafCertificate({
+      caCertPem: ca.certPem,
+      caPrivateKeyPem: privateKeyPem,
+      domains: req.domains,
+      keyType: req.keyType || (ca.keyType as LocalCaKeyType),
+      validityDays: req.validityDays,
+      maxValidityDays,
+      allowedDomains: this.parseAllowedDomains(ca.allowedDomains),
+      usage: (req.usage || ca.usage) as LocalCaUsage,
+      crlDistributionPoint: await this.getCrlUrl(ca),
+    });
+    await this.assertCaStillUsable(ca.id);
+    if (!ca.baseUrlLocked) {
+      await this.markBaseUrlLocked(ca.id);
+      ca.baseUrlLocked = true;
+    }
+    logger.info(`[local-ca] leaf issued ca=${ca.id} serial=${result.serialNumber} domains=${req.domains.length} user=${req.userId} project=${req.projectId ?? "-"}`);
+    return result;
+  }
+
+  /**
+   * 签名期间CA可能被并发禁用/吊销；返回证书前再次确认，避免把已失效CA新签的证书交给调用方。
+   */
+  private async assertCaStillUsable(caId: number) {
+    const ca = await this.findOne({ where: { id: caId, deleted: false } });
+    if (!ca || ca.disabled || ca.revoked) {
+      throw new ValidateException("本地CA已被禁用或吊销，本次签发已取消");
+    }
+    if (ca.notAfter && ca.notAfter < Date.now()) {
+      throw new ValidateException("本地CA已过期，本次签发已取消");
+    }
+    await this.assertCaNotRevokedByParent(ca);
+  }
+
+  private assertAcmeCaUsable(ca: LocalCaEntity | null) {
+    if (!ca || ca.caType !== "intermediate" || !ca.acmeEnabled) {
+      throw new ValidateException("该本地CA未启用ACME服务（仅中间CA支持ACME）");
+    }
+    if (ca.revoked) {
+      throw new ValidateException("该本地CA已被父CA吊销，ACME服务不可用");
+    }
+    if (ca.disabled) {
+      throw new ValidateException("该本地CA已禁用，ACME服务不可用");
+    }
+    if (ca.notAfter && ca.notAfter <= Date.now()) {
+      throw new ValidateException("该本地CA已过期，ACME服务不可用");
+    }
+  }
+
+  async getAcmeCa(id: number) {
+    const ca = await this.repository.findOne({ where: { id, deleted: false } });
+    this.assertAcmeCaUsable(ca);
+    await this.assertCaNotRevokedByParent(ca);
+    return ca;
+  }
+
+  /**
+   * 吊销接口允许CA已禁用：否则CA关闭后其历史证书将无法撤销，也无法安全归档删除。
+   */
+  async getCaForAcmeRevocation(id: number) {
+    const ca = await this.repository.findOne({ where: { id, deleted: false } });
+    if (!ca) {
+      throw new ValidateException("本地CA不存在");
+    }
+    return ca;
+  }
+
+  /**
+   * finalize 时在事务内重新读取并锁定CA行，确保关闭直签/收紧域名范围与签发不会交错。
+   */
+  async getAcmeCaForUpdate(id: number, manager: EntityManager) {
+    const repository = manager.getRepository(LocalCaEntity);
+    const driverType = String(manager.connection?.options?.type || "");
+    const useLock = !driverType.includes("sqlite");
+    const ca = await repository.findOne({
+      where: { id, deleted: false },
+      ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+    });
+    this.assertAcmeCaUsable(ca);
+    await this.assertCaNotRevokedByParent(ca);
+    return ca;
+  }
+
+  async markBaseUrlLocked(caId: number, manager?: EntityManager) {
+    const repository = manager ? manager.getRepository(LocalCaEntity) : this.repository;
+    const ca = await repository.findOne({ where: { id: caId } });
+    if (!ca || ca.baseUrlLocked) {
+      return;
+    }
+    // 锁定时把实际使用的地址固化到CA记录，避免后续bindUrl变化导致已签发证书CRL地址漂移
+    const baseUrl = ca.baseUrl ? normalizeBaseUrl(ca.baseUrl) : await this.resolveBaseUrl(ca);
+    await repository.update({ id: caId, baseUrlLocked: false } as any, { baseUrl: baseUrl || null, baseUrlLocked: true } as any);
+  }
+
+  async signCsrForAcme(caId: number, csrPem: string, validityDays = 90) {
+    const ca = await this.getAcmeCa(caId);
+    return await this.signCsr({
+      id: ca.id,
+      userId: 0,
+      csrPem,
+      validityDays,
+      internal: true,
+    });
+  }
+
+  async setAcmeEnabled(req: LocalCaScope & { enabled: boolean; validityDays?: number }) {
+    const ca = await this.getOwnedCa(req);
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("只有中间CA可以启用ACME服务");
+    }
+    if (!req.enabled) {
+      // 关闭ACME时原子关闭直签并失效未完成直签订单，避免重新启用后旧订单复活
+      await this.disableAcmeDirectIssue(ca, true);
+      ca.acmeEnabled = false;
+      ca.acmeDirectIssue = false;
+      logger.info(`[local-ca] acme disabled ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
+      return;
+    }
+    ca.acmeEnabled = true;
+    if (req.validityDays) {
+      ca.acmeConfig = JSON.stringify({ validityDays: Math.max(1, Math.min(3650, req.validityDays)) });
+    }
+    await this.update(ca);
+    logger.info(`[local-ca] acme enabled ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
+  }
+
+  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number }) {
+    const ca = await this.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("只有中间CA可以创建ACME凭证");
+    }
+    if (!ca.acmeEnabled) {
+      throw new ValidateException("请先启用该中间CA的ACME服务");
+    }
+    const id = randomId(16);
+    const kid = `eab_${randomId(12)}`;
+    const hmacKey = randomEabHmacKey();
+    const toInt = (value: any, fallback: number) => {
+      const num = Number(value);
+      return Number.isFinite(num) ? Math.trunc(num) : fallback;
+    };
+    const maxUses = Math.max(0, Math.min(10000, toInt(req.maxUses, 1)));
+    const expiresDays = Math.max(0, Math.min(3650, toInt(req.expiresDays, 0)));
+    const allowedDomains = this.normalizeAllowedDomains(req.allowedDomains);
+    let grantUserId = 0;
+    let grantProjectId: number | undefined = undefined;
+    if (req.grantId != null) {
+      const grant = await this.grantRepository.findOne({ where: { id: req.grantId, caId: ca.id, disabled: false } });
+      if (!grant) {
+        throw new ValidateException("EAB绑定的用户授权不存在或已禁用");
+      }
+      grantUserId = grant.userId;
+      grantProjectId = grant.projectId > 0 ? grant.projectId : undefined;
+    }
+    const bean = this.acmeEabRepository.create({
+      id,
+      caId: ca.id,
+      grantId: req.grantId ?? null,
+      userId: grantUserId,
+      projectId: grantProjectId,
+      name: String(req.name || "").trim() || "ACME凭证",
+      kid,
+      allowedDomains: allowedDomains.length ? JSON.stringify(allowedDomains) : null,
+      hmacKeyEncrypted: this.encryptService.encrypt(hmacKey),
+      hmacKeyHash: sha256Hex(hmacKey),
+      maxUses,
+      usedCount: 0,
+      expiresTime: expiresDays > 0 ? Date.now() + expiresDays * 24 * 3600 * 1000 : null,
+      disabled: false,
+    });
+    await this.acmeEabRepository.save(bean);
+    logger.info(`[local-ca] eab created ca=${ca.id} eab=${bean.id} kid=${kid} maxUses=${maxUses} allowedDomains=${allowedDomains.length}`);
+    return {
+      id,
+      caId: ca.id,
+      name: bean.name,
+      kid,
+      hmacKey,
+      maxUses,
+      allowedDomains,
+      grantId: bean.grantId,
+      userId: bean.userId,
+      projectId: bean.projectId,
+      expiresTime: bean.expiresTime,
+    };
+  }
+
+  async setAcmeEabDisabled(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; disabled: boolean }) {
+    if (typeof req.disabled !== "boolean") {
+      throw new ValidateException("disabled必须是布尔值");
+    }
+    const ca = await this.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("只有中间CA可以管理ACME凭证");
+    }
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法变更ACME凭证状态");
+    }
+    const result = await runTransaction(manager, async tx => {
+      const repository = tx.getRepository(AcmeEabEntity);
+      const driverType = String(tx.connection?.options?.type || "");
+      const useLock = !driverType.includes("sqlite");
+      const bean = await repository.findOne({
+        where: { id: req.eabId, caId: ca.id },
+        ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+      });
+      if (!bean) {
+        throw new ValidateException("ACME凭证不存在或无访问权限");
+      }
+      bean.disabled = req.disabled;
+      bean.updateTime = new Date();
+      await repository.save(bean);
+      return { id: bean.id, disabled: bean.disabled };
+    });
+    logger.info(`[local-ca] eab ${result.disabled ? "disabled" : "enabled"} ca=${ca.id} eab=${result.id} user=${req.userId}`);
+    return result;
+  }
+
+  async listAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number }) {
+    const ca = await this.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+    const list = await this.acmeEabRepository.find({ where: { caId: ca.id }, order: { createTime: "DESC" } });
+    return list.map(item => ({
+      id: item.id,
+      name: item.name,
+      kid: item.kid,
+      allowedDomains: item.allowedDomains,
+      maxUses: item.maxUses,
+      usedCount: item.usedCount,
+      expiresTime: item.expiresTime,
+      disabled: item.disabled,
+      grantId: item.grantId,
+      userId: item.userId,
+      projectId: item.projectId,
+      createTime: item.createTime,
+    }));
+  }
+
+  async getAcmeEabSecret(caId: number, kid: string) {
+    const bean = await this.acmeEabRepository.findOne({ where: { caId, kid } });
+    if (!bean) {
+      return null;
+    }
+    let hmacKey: string;
+    try {
+      hmacKey = this.encryptService.decrypt(bean.hmacKeyEncrypted);
+    } catch (e) {
+      return null;
+    }
+    if (bean.hmacKeyHash && sha256Hex(hmacKey) !== bean.hmacKeyHash) {
+      return null;
+    }
+    return { ...bean, hmacKey };
+  }
+
+  async getAcmeEabProfile(id: string, manager?: EntityManager) {
+    const repository = manager ? manager.getRepository(AcmeEabEntity) : this.acmeEabRepository;
+    const driverType = String(repository.manager?.connection?.options?.type || "");
+    const useLock = !!manager && !driverType.includes("sqlite");
+    const bean = await repository.findOne({
+      where: { id },
+      ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+    });
+    if (!bean || bean.disabled || (bean.expiresTime && bean.expiresTime <= Date.now())) {
+      return null;
+    }
+    let allowedDomains: string[] = [];
+    if (bean.allowedDomains) {
+      try {
+        const parsed = JSON.parse(bean.allowedDomains);
+        if (!Array.isArray(parsed)) {
+          throw new Error("not an array");
+        }
+        allowedDomains = parsed;
+      } catch (e) {
+        throw new ValidateException("EAB allowedDomains配置损坏，已拒绝操作");
+      }
+    }
+    return { id: bean.id, allowedDomains };
+  }
+
+  async consumeAcmeEab(id: string, manager?: EntityManager) {
+    const repository = manager ? manager.getRepository(AcmeEabEntity) : this.acmeEabRepository;
+    const metadata: any = repository.metadata;
+    const usedCountColumn = metadata?.findColumnWithPropertyName?.("usedCount")?.databaseName || "used_count";
+    const maxUsesColumn = metadata?.findColumnWithPropertyName?.("maxUses")?.databaseName || "max_uses";
+    const disabledColumn = metadata?.findColumnWithPropertyName?.("disabled")?.databaseName || "disabled";
+    const expiresColumn = metadata?.findColumnWithPropertyName?.("expiresTime")?.databaseName || "expires_time";
+    const result = await repository
+      .createQueryBuilder()
+      .update()
+      .set({ usedCount: () => `${usedCountColumn} + 1`, updateTime: new Date() })
+      .where("id = :id", { id })
+      .andWhere(`${disabledColumn} = :disabled`, { disabled: false })
+      .andWhere(`(${expiresColumn} IS NULL OR ${expiresColumn} > :now)`, { now: Date.now() })
+      .andWhere(`(${maxUsesColumn} = 0 OR ${usedCountColumn} < ${maxUsesColumn})`)
+      .execute();
+    return (result.affected || 0) > 0;
+  }
+
+  async getCrl(id: number) {
+    const ca = await this.findOne({ where: { id } });
+    if (!ca) {
+      throw new ValidateException("本地CA不存在");
+    }
+    if (ca.caType === "root") {
+      if (!ca.lastCrlPem || Number(ca.lastCrlTime || 0) <= 0) {
+        throw new ValidateException("Root CRL尚未生成或已失效；请先创建中间CA或执行显式的Root CRL刷新");
+      }
+      const parsed = new x509.X509Crl(ca.lastCrlPem);
+      if (parsed.nextUpdate && parsed.nextUpdate.getTime() <= Date.now()) {
+        throw new ValidateException("Root CRL已过期，请通过管理接口执行显式刷新（需2FA/Passkey）");
+      }
+      return {
+        pem: ca.lastCrlPem,
+        der: Buffer.from(parsed.rawData),
+        filename: `local-ca-${ca.id}.crl`,
+      };
+    }
+    if (ca.lastCrlPem && Number(ca.lastCrlTime || 0) > 0) {
+      try {
+        const cached = new x509.X509Crl(ca.lastCrlPem);
+        const nextUpdate = cached.nextUpdate?.getTime() || 0;
+        if (nextUpdate > Date.now() + 60 * 60 * 1000) {
+          return {
+            pem: ca.lastCrlPem,
+            der: Buffer.from(cached.rawData),
+            filename: `local-ca-${ca.id}.crl`,
+          };
+        }
+      } catch (e) {
+        // 缓存损坏则重新生成
+      }
+    }
+    const privateKeyPem = this.decryptCaPrivateKey(ca);
+    // 条件写入失败说明序号已被并发吊销/生成推进，此时不能把本次生成的旧CRL返回给客户端。
+    // 重新读取吊销快照后再生成；连续冲突时退回已经成功写入的最新缓存。
+    const maxAttempts = 3;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const crlNumber = await this.nextCrlNumber(ca.id);
+      const revoked = await this.certRevocationService.listByCa(ca.id);
+      const now = Date.now();
+      const entries = revoked
+        .filter(item => item.serialNumber)
+        // 证书过期后不再需要出现在完整CRL中；吊销记录本身永久保留
+        .filter(item => !item.expiresTime || item.expiresTime > now)
+        .map(item => ({
+          serialNumber: item.serialNumber,
+          revokeTime: item.revokedTime,
+          reason: item.reason,
+        }));
+      const crl = await createCrl({
+        caCertPem: ca.certPem,
+        caPrivateKeyPem: privateKeyPem,
+        entries,
+        crlNumber,
+      });
+      if (await this.storeCrlCache(ca.id, crlNumber, crl.pem)) {
+        logger.info(`[local-ca] crl generated ca=${ca.id} number=${crlNumber} entries=${entries.length} attempts=${attempt + 1}`);
+        return {
+          ...crl,
+          filename: `local-ca-${ca.id}.crl`,
+        };
+      }
+      logger.warn(`[local-ca] crl cache conflict ca=${ca.id} number=${crlNumber} attempt=${attempt + 1}`);
+    }
+    const latest = await this.findOne({ where: { id: ca.id } });
+    if (latest?.lastCrlPem && Number(latest.lastCrlTime || 0) > 0) {
+      try {
+        const cached = new x509.X509Crl(latest.lastCrlPem);
+        // 回退缓存同样必须未过期，避免向客户端返回已失效CRL
+        if ((cached.nextUpdate?.getTime() || 0) > Date.now()) {
+          return {
+            pem: latest.lastCrlPem,
+            der: Buffer.from(cached.rawData),
+            filename: `local-ca-${ca.id}.crl`,
+          };
+        }
+      } catch (e) {
+        // 缓存损坏或已过期则继续抛出重试错误
+      }
+    }
+    throw new ValidateException("CRL生成失败且没有可用缓存，请稍后重试");
+  }
+
+  private async storeCrlCache(caId: number, crlNumber: number, pem: string) {
+    // 只有当前 CRL Number 仍是本次生成值时才能覆盖，避免旧生成覆盖新CRL
+    const result = await this.repository.createQueryBuilder().update().set({ lastCrlPem: pem, lastCrlTime: Date.now() }).where("id = :id AND crl_number = :crlNumber", { id: caId, crlNumber }).execute();
+    return (result.affected || 0) > 0;
+  }
+
+  private async nextCrlNumber(caId: number) {
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法生成CRL序号");
+    }
+    return await runTransaction(manager, async tx => {
+      const repository = tx.getRepository(LocalCaEntity);
+      const metadata: any = repository.metadata;
+      const column = metadata?.findColumnWithPropertyName?.("crlNumber")?.databaseName || "crl_number";
+      const updated = await repository
+        .createQueryBuilder()
+        .update()
+        .set({ crlNumber: () => `${column} + 1` })
+        .where("id = :id", { id: caId })
+        .execute();
+      if (!updated.affected) {
+        throw new ValidateException("本地CA不存在");
+      }
+      const ca = await repository.findOne({ where: { id: caId } });
+      return Number(ca.crlNumber);
+    });
+  }
+
+  async getCaBaseUrl(caId: number) {
+    const ca = await this.findOne({ where: { id: caId } });
+    return await this.resolveBaseUrl(ca);
+  }
+
+  private async resolveBaseUrl(ca?: LocalCaEntity | null) {
+    if (ca?.baseUrl) {
+      return normalizeBaseUrl(ca.baseUrl);
+    }
+    if (!this.sysSettingsService) {
+      return "http://127.0.0.1:7001";
+    }
+    const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
+    return normalizeBaseUrl(installInfo?.bindUrl || "http://127.0.0.1:7001");
+  }
+
+  private async getCrlUrl(ca: LocalCaEntity) {
+    const baseUrl = await this.resolveBaseUrl(ca);
+    return `${baseUrl}/api/sys/local-ca/crl?id=${ca.id}`;
+  }
+
+  /**
+   * 关闭EAB直签（或整个ACME服务）时在同一事务内失效尚未完成的直签订单。
+   */
+  private async disableAcmeDirectIssue(ca: LocalCaEntity, disableAcme = false) {
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法关闭ACME直签");
+    }
+    await runTransaction(manager, async tx => {
+      const caRepository = tx.getRepository(LocalCaEntity);
+      const driverType = String(tx.connection?.options?.type || "");
+      if (!driverType.includes("sqlite")) {
+        await caRepository.findOne({ where: { id: ca.id }, lock: { mode: "pessimistic_write" as const } });
+      }
+      await caRepository.update({ id: ca.id }, { acmeDirectIssue: false, ...(disableAcme ? { acmeEnabled: false } : {}) } as any);
+      const errorMessage = disableAcme ? "ACME服务已关闭，请重新创建订单" : "EAB直签已关闭，请重新创建订单";
+      await tx.getRepository(AcmeOrderEntity).update({ caId: ca.id, directIssue: true, status: In(["pending", "ready"]) }, { status: "invalid", error: errorMessage, updateTime: new Date() } as any);
+    });
+    logger.info(`[local-ca] ${disableAcme ? "acme disabled" : "direct issue disabled"} ca=${ca.id}; unfinished direct orders invalidated`);
+  }
+
+  async requiresStepUpForUpdate(req: LocalCaScope & { usage?: string; maxValidityDays?: number; allowedDomains?: string[]; baseUrl?: string; acmeDirectIssue?: boolean; exportDisabled?: boolean }) {
+    const ca = await this.getOwnedCa(req);
+    if (req.acmeDirectIssue === true && !ca.acmeDirectIssue) {
+      return true;
+    }
+    if (req.allowedDomains != null) {
+      try {
+        if (JSON.stringify(this.normalizeAllowedDomains(req.allowedDomains)) !== JSON.stringify(this.parseAllowedDomains(ca.allowedDomains))) {
+          return true;
+        }
+      } catch (e) {
+        return true;
+      }
+    }
+    if (req.maxValidityDays != null && this.normalizeMaxValidityDays(req.maxValidityDays) !== (Number(ca.maxValidityDays) || 0)) {
+      return true;
+    }
+    if (req.usage != null && req.usage !== ca.usage) {
+      return true;
+    }
+    if (req.baseUrl != null && normalizeBaseUrl(req.baseUrl) !== normalizeBaseUrl(ca.baseUrl)) {
+      return true;
+    }
+    if (req.exportDisabled === false && ca.exportDisabled === true) {
+      return true;
+    }
+    return false;
+  }
+
+  async listGrants(req: LocalCaScope) {
+    const ca = await this.getOwnedCa(req);
+    return await this.grantRepository.find({ where: { caId: ca.id }, order: { id: "DESC" } });
+  }
+
+  async addGrant(req: { id: number; userId: number; grantUserId: number; grantProjectId?: number }) {
+    if (!Number.isInteger(req.grantUserId) || req.grantUserId <= 0) {
+      throw new ValidateException("请选择有效的用户");
+    }
+    if (req.grantProjectId != null && (!Number.isInteger(req.grantProjectId) || req.grantProjectId <= 0)) {
+      throw new ValidateException("项目ID不合法");
+    }
+    const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("只能授权中间CA");
+    }
+    const projectId = req.grantProjectId ?? 0;
+    const existing = await this.grantRepository.findOne({
+      where: { caId: ca.id, userId: req.grantUserId, projectId },
+    });
+    if (existing) {
+      if (existing.disabled) {
+        await this.grantRepository.update({ id: existing.id }, { disabled: false, updateTime: new Date() });
+      }
+      return existing;
+    }
+    const bean = this.grantRepository.create({
+      caId: ca.id,
+      userId: req.grantUserId,
+      projectId,
+      createdByAdminId: req.userId,
+      disabled: false,
+    });
+    return await this.grantRepository.save(bean);
+  }
+
+  async removeGrant(req: { id: number; userId: number; grantId: number }) {
+    const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    const grant = await this.grantRepository.findOne({ where: { id: req.grantId, caId: ca.id } });
+    if (!grant) {
+      throw new ValidateException("授权不存在");
+    }
+    // 同一(caId,userId,projectId)可能存在历史重复行，撤销时全部删除并禁用其EAB，避免残留授权
+    const duplicates = await this.grantRepository.find({
+      where: { caId: ca.id, userId: grant.userId, projectId: grant.projectId },
+    });
+    const grantIds = duplicates.map(item => item.id);
+    await this.acmeEabRepository.update({ grantId: In(grantIds) }, { disabled: true, updateTime: new Date() } as any);
+    await this.grantRepository.delete({ id: In(grantIds) } as any);
+  }
+
+  async listAdmins(req: LocalCaScope) {
+    const ca = await this.getOwnedCa(req);
+    return await this.adminRepository.find({ where: { caId: ca.id }, order: { id: "DESC" } });
+  }
+
+  async addCaAdmin(req: { id: number; userId: number; adminUserId: number; role?: string }) {
+    if (!Number.isInteger(req.adminUserId) || req.adminUserId <= 0) {
+      throw new ValidateException("请选择有效的管理员用户");
+    }
+    if (req.role === "owner") {
+      throw new ValidateException("本地CA仅允许创建者作为所有者，不能添加其他所有者");
+    }
+    const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    const existing = await this.findAdminAccess(ca.id, req.adminUserId);
+    if (existing?.role === "owner") {
+      return existing;
+    }
+    return await this.addAdminAccess(ca.id, req.adminUserId, "operator");
+  }
+
+  async removeCaAdmin(req: { id: number; userId: number; adminUserId: number }) {
+    const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    const access = await this.findAdminAccess(ca.id, req.adminUserId);
+    if (!access) {
+      return;
+    }
+    if (access.role === "owner") {
+      throw new ValidateException("不能移除CA的创建管理员");
+    }
+    await this.adminRepository.delete({ id: access.id });
+  }
+
+  async updateMeta(
+    req: LocalCaScope & {
+      name?: string;
+      remark?: string;
+      usage?: LocalCaUsage;
+      maxValidityDays?: number;
+      allowedDomains?: string[];
+      baseUrl?: string;
+      acmeDirectIssue?: boolean;
+      exportDisabled?: boolean;
+    }
+  ) {
+    const ca = await this.getOwnedCa(req);
+    if (req.name != null && req.name.trim() !== ca.name) {
+      await this.assertNameAvailable({
+        userId: req.userId,
+        projectId: req.projectId,
+        name: req.name,
+      });
+      ca.name = req.name.trim();
+    }
+    if (req.remark != null) {
+      ca.remark = req.remark;
+    }
+    if (req.usage != null) {
+      if (!["server", "client", "both"].includes(req.usage)) {
+        throw new ValidateException("CA用途不合法");
+      }
+      ca.usage = req.usage;
+    }
+    if (req.maxValidityDays != null) {
+      const days = this.normalizeMaxValidityDays(req.maxValidityDays);
+      if (ca.caType === "intermediate" && ca.parentId) {
+        const parent = await this.findOne({ where: { id: ca.parentId, deleted: false } });
+        if (!parent) {
+          throw new ValidateException("上级CA不存在，无法设置最大签发天数");
+        }
+        const parentLimit = await this.resolveParentMaxValidityDays(parent);
+        this.assertChildMaxValidity(days, parentLimit);
+      }
+      ca.maxValidityDays = days;
+    }
+    if (req.allowedDomains != null) {
+      let list = this.normalizeAllowedDomains(req.allowedDomains);
+      if (ca.caType === "intermediate" && ca.parentId) {
+        const parent = await this.findOne({ where: { id: ca.parentId } });
+        if (!parent) {
+          throw new ValidateException("上级CA不存在，无法设置允许域名");
+        }
+        list = await this.resolveChildAllowedDomains(list, parent);
+      } else if (ca.caType === "root" && list.length > 0) {
+        await this.assertRootAllowedDomainsCoverChildren(ca, list);
+      }
+      ca.allowedDomains = list.length ? JSON.stringify(list) : null;
+    }
+    if (req.baseUrl != null) {
+      const nextBaseUrl = normalizeBaseUrl(req.baseUrl) || null;
+      const currentBaseUrl = normalizeBaseUrl(ca.baseUrl) || null;
+      if (nextBaseUrl !== currentBaseUrl) {
+        if (ca.baseUrlLocked) {
+          throw new ValidateException("该CA的访问地址已用于签发证书或创建ACME账户，修改会导致历史CRL/ACME地址失效，已禁止变更");
+        }
+        if (ca.acmeEnabled) {
+          throw new ValidateException("该CA的ACME服务已启用，修改访问地址会影响现有Directory URL，请先停用ACME服务");
+        }
+      }
+      ca.baseUrl = nextBaseUrl;
+    }
+    let disableDirectIssue = false;
+    if (req.acmeDirectIssue != null) {
+      if (req.acmeDirectIssue && ca.caType !== "intermediate") {
+        throw new ValidateException("只有中间CA可以开启EAB直签");
+      }
+      if (req.acmeDirectIssue && !ca.acmeEnabled) {
+        throw new ValidateException("请先启用该中间CA的ACME服务");
+      }
+      if (!req.acmeDirectIssue && ca.acmeDirectIssue) {
+        // 保留当前值交给 this.update 写入，随后用事务关闭并失效未完成订单
+        disableDirectIssue = true;
+      } else {
+        ca.acmeDirectIssue = req.acmeDirectIssue === true;
+      }
+    }
+    if (req.exportDisabled != null) {
+      ca.exportDisabled = req.exportDisabled === true;
+    }
+    if (disableDirectIssue) {
+      // 先在同一事务关闭直签并失效未完成订单，再保存其他配置，避免窗口内旧订单继续签发
+      ca.acmeDirectIssue = false;
+      await this.disableAcmeDirectIssue(ca);
+    }
+    await this.update(ca);
+  }
+
+  async listIssuedCerts(req: LocalCaScope) {
+    const ca = await this.getOwnedCa(req);
+    const list = await this.certInfoService.find({
+      where: { localCaId: ca.id },
+      order: { id: "DESC" },
+    });
+    const children = await this.find({ where: { parentId: ca.id, deleted: false }, order: { id: "DESC" } });
+    const childRows = children.map(item => ({
+      id: item.id,
+      type: "ca",
+      caType: item.caType,
+      domain: item.subjectCn,
+      domains: item.subjectCn,
+      serialNumber: getCertSerialNumber(item.certPem),
+      status: item.disabled ? "inactive" : "active",
+      effectiveTime: item.notBefore,
+      expiresTime: item.notAfter,
+      applyTime: item.createTime ? new Date(item.createTime).getTime() : undefined,
+      fromType: "ca",
+      revokeTime: undefined,
+    }));
+    const leafRows = list.map(item => ({
+      id: item.id,
+      type: "leaf",
+      caType: undefined,
+      domain: item.domain,
+      domains: item.domains,
+      serialNumber: item.serialNumber,
+      status: item.status,
+      effectiveTime: item.effectiveTime,
+      expiresTime: item.expiresTime,
+      applyTime: item.applyTime,
+      fromType: item.fromType,
+      revokeTime: item.revokeTime,
+    }));
+    return [...childRows, ...leafRows];
+  }
+
+  async revokeIssuedCert(req: LocalCaScope & { certId: number }) {
+    const ca = await this.getOwnedCa(req);
+    const cert = await this.certInfoService.findOne({ where: { id: req.certId, localCaId: ca.id } });
+    if (!cert) {
+      throw new ValidateException("证书记录不存在或无访问权限");
+    }
+    if (cert.status === CertStatus.revoked) {
+      throw new ValidateException("证书已吊销");
+    }
+    if (!cert.serialNumber) {
+      throw new ValidateException("证书序列号缺失，无法写入吊销记录");
+    }
+    await this.certInfoService.applyLocalRevocation({
+      certInfoId: cert.id,
+      caId: ca.id,
+      userId: cert.userId,
+      projectId: cert.projectId,
+      serialNumber: cert.serialNumber,
+      expiresTime: cert.expiresTime,
+    });
+  }
+
+  /**
+   * ACME系统级证书（未绑定用户仓库）也需要写入CRL；此入口只允许ACME服务在完成协议授权后调用。
+   */
+  async recordSystemCertRevocation(req: { caId: number; serialNumber: string; expiresTime?: number; userId?: number; projectId?: number; reason?: string }) {
+    const ca = await this.findOne({ where: { id: req.caId } });
+    if (!ca) {
+      throw new ValidateException("本地CA不存在");
+    }
+    const existing = await this.certRevocationService.findBySerial(ca.id, req.serialNumber);
+    if (existing) {
+      return existing.revokedTime;
+    }
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法安全吊销证书");
+    }
+    const revokedTime = Date.now();
+    await runTransaction(manager, async tx => {
+      await this.certRevocationService.record(
+        {
+          caId: ca.id,
+          userId: req.userId ?? 0,
+          projectId: req.projectId,
+          serialNumber: req.serialNumber,
+          revokedTime,
+          expiresTime: req.expiresTime,
+          reason: req.reason,
+        },
+        tx
+      );
+      await tx
+        .getRepository(LocalCaEntity)
+        .createQueryBuilder()
+        .update()
+        .set({ lastCrlTime: -1, crlNumber: () => "crl_number + 1" } as any)
+        .where("id = :id", { id: ca.id })
+        .execute();
+    });
+    return revokedTime;
+  }
+
+  /**
+   * 中间CA的吊销状态以父CA的吊销记录为准，防止历史数据或重新导入记录绕过 revoked 字段。
+   */
+  private async assertCaNotRevokedByParent(ca: LocalCaEntity | null) {
+    if (!ca || ca.caType !== "intermediate" || !ca.parentId) {
+      return;
+    }
+    const serialNumber = getCertSerialNumber(ca.certPem);
+    const revoked = await this.certRevocationService.findBySerial(ca.parentId, serialNumber);
+    if (revoked) {
+      throw new ValidateException("该本地CA已被上级根CA吊销，不能签发");
+    }
+  }
+
+  /**
+   * 计算CA层级中实际生效的最大签发天数。
+   * 0 表示不限制，但中间CA最终必须得到有限值。
+   */
+  private async resolveEffectiveMaxValidityDays(ca: LocalCaEntity) {
+    let limit = Number(ca.maxValidityDays) || 0;
+    let parentId = ca.parentId;
+    const seen = new Set<number>();
+    while (parentId && !seen.has(parentId)) {
+      seen.add(parentId);
+      const parent = await this.findOne({ where: { id: parentId, deleted: false } });
+      if (!parent) {
+        break;
+      }
+      const parentLimit = Number(parent.maxValidityDays) || 0;
+      if (parentLimit > 0) {
+        limit = limit > 0 ? Math.min(limit, parentLimit) : parentLimit;
+      }
+      parentId = parent.parentId;
+    }
+    return limit;
+  }
+
+  private async resolveParentMaxValidityDays(parent: LocalCaEntity) {
+    return await this.resolveEffectiveMaxValidityDays(parent);
+  }
+
+  private normalizeMaxValidityDays(value: number) {
+    const days = Number(value);
+    if (!Number.isFinite(days) || days < 0) {
+      throw new ValidateException("最大签发天数不合法");
+    }
+    return Math.floor(days);
+  }
+
+  private assertChildMaxValidity(requested: number, parentLimit: number) {
+    if (parentLimit > 0 && requested > parentLimit) {
+      throw new ValidateException(`中间CA的最大签发天数不能超过上级CA的${parentLimit}天`);
+    }
+    if (parentLimit === 0 && requested === 0) {
+      throw new ValidateException("上级CA未限制签发天数时，中间CA必须设置有限的最大签发天数");
+    }
+  }
+
+  private async resolveChildMaxValidity(requested: number | undefined, parent: LocalCaEntity) {
+    const parentLimit = await this.resolveParentMaxValidityDays(parent);
+    const value = requested != null ? this.normalizeMaxValidityDays(requested) : parentLimit;
+    this.assertChildMaxValidity(value, parentLimit);
+    return value;
+  }
+
+  private async getRevocationEntries(caId: number) {
+    const revoked = await this.certRevocationService.listByCa(caId);
+    const now = Date.now();
+    return revoked
+      .filter(item => item.serialNumber)
+      .filter(item => !item.expiresTime || item.expiresTime > now)
+      .map(item => ({
+        serialNumber: item.serialNumber,
+        revokeTime: item.revokedTime,
+        reason: item.reason,
+      }));
+  }
+
+  /**
+   * 生成并缓存Root CRL。
+   * Root条目只在创建中间CA、吊销中间CA、显式刷新时变化；条件写入失败说明有并发刷新/吊销，
+   * 必须重试，不能把未写入的序号当成成功结果返回。
+   */
+  private async refreshRootCrlCache(root: LocalCaEntity, rootPrivateKeyPem?: string) {
+    const privateKeyPem = rootPrivateKeyPem || this.decryptCaPrivateKey(root);
+    const maxAttempts = 3;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const crlNumber = await this.nextCrlNumber(root.id);
+      const entries = await this.getRevocationEntries(root.id);
+      const crl = await createCrl({
+        caCertPem: root.certPem,
+        caPrivateKeyPem: privateKeyPem,
+        entries,
+        crlNumber,
+        nextUpdateDays: 365,
+      });
+      if (await this.storeCrlCache(root.id, crlNumber, crl.pem)) {
+        logger.info(`[local-ca] root crl generated ca=${root.id} number=${crlNumber} entries=${entries.length} attempts=${attempt + 1}`);
+        return crlNumber;
+      }
+      logger.warn(`[local-ca] root crl cache conflict ca=${root.id} number=${crlNumber} attempt=${attempt + 1}`);
+    }
+    logger.warn(`[local-ca] root crl refresh exhausted ca=${root.id} attempts=${maxAttempts}`);
+    throw new ValidateException("Root CRL刷新期间发生并发变更，请重试");
+  }
+
+  async refreshAllCrls() {
+    const list = await this.find({ where: { caType: "intermediate" } });
+    for (const ca of list) {
+      try {
+        await this.getCrl(ca.id);
+      } catch (e: any) {
+        logger.warn(`本地CA CRL定时刷新失败(ca=${ca.id}): ${e?.message || e}`);
+      }
+    }
+  }
+
+  async refreshRootCrl(req: LocalCaScope) {
+    const root = await this.getOwnedCa(req, true);
+    if (root.caType !== "root") {
+      throw new ValidateException("只有Root CA可以执行Root CRL刷新");
+    }
+    const crlNumber = await this.refreshRootCrlCache(root);
+    return { crlNumber };
+  }
+
+  async listArchivedRoots(req: Omit<LocalCaScope, "id">) {
+    const accesses = await this.adminRepository.find({ where: { adminUserId: req.userId } });
+    const ids = accesses.map(item => item.caId);
+    const roots = ids.length ? await this.find({ where: { id: In(ids), deleted: true, caType: "root" }, order: { id: "DESC" } }) : [];
+    return roots.map(root => {
+      let nextUpdate: number | undefined;
+      try {
+        nextUpdate = root.lastCrlPem ? new x509.X509Crl(root.lastCrlPem).nextUpdate?.getTime() : undefined;
+      } catch (e) {
+        nextUpdate = undefined;
+      }
+      return {
+        id: root.id,
+        name: root.name,
+        subjectCn: root.subjectCn,
+        notAfter: root.notAfter,
+        crlNextUpdate: nextUpdate,
+      };
+    });
+  }
+
+  /**
+   * 已归档Root只允许做CRL维护，不允许重新启用或签发。
+   */
+  async refreshArchivedRootCrl(req: LocalCaScope) {
+    const root = await this.findOne({ where: { id: req.id, deleted: true, caType: "root" } });
+    if (!root) {
+      throw new ValidateException("归档Root CA不存在或无访问权限");
+    }
+    await this.getAdminAccess(root.id, req.userId, true);
+    const crlNumber = await this.refreshRootCrlCache(root);
+    logger.info(`[local-ca] archived root crl refreshed ca=${root.id} number=${crlNumber} user=${req.userId}`);
+    return { crlNumber };
+  }
+
+  async revokeIntermediate(req: LocalCaScope & { reason?: string }) {
+    const ca = await this.getOwnedCa(req, true);
+    if (ca.caType !== "intermediate" || !ca.parentId) {
+      throw new ValidateException("只能吊销中间CA");
+    }
+    const root = await this.findOne({ where: { id: ca.parentId, deleted: false } });
+    if (!root || root.caType !== "root") {
+      throw new ValidateException("中间CA的上级根CA不存在");
+    }
+    if (!verifyCertIssuedBy(ca.certPem, root.certPem)) {
+      throw new ValidateException("中间CA证书不是由该根CA签发，拒绝吊销");
+    }
+    const serialNumber = getCertSerialNumber(ca.certPem);
+    const revokedTime = Date.now();
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法安全吊销中间CA");
+    }
+    // 先持久化不可逆吊销状态与吊销记录，再生成CRL；CRL失败也不能恢复签发能力
+    await runTransaction(manager, async tx => {
+      await tx.getRepository(LocalCaEntity).update({ id: ca.id }, { disabled: true, revoked: true });
+      // 递增Root的CRL序号，防止并发的旧Root CRL覆盖包含本次吊销的新CRL
+      await tx
+        .getRepository(LocalCaEntity)
+        .createQueryBuilder()
+        .update()
+        .set({ lastCrlTime: -1, crlNumber: () => "crl_number + 1" } as any)
+        .where("id = :id", { id: root.id })
+        .execute();
+      await this.certRevocationService.record(
+        {
+          caId: root.id,
+          userId: req.userId,
+          projectId: req.projectId,
+          serialNumber,
+          revokedTime,
+          expiresTime: ca.notAfter,
+          reason: req.reason || "unspecified",
+        },
+        tx
+      );
+    });
+    ca.disabled = true;
+    ca.revoked = true;
+
+    // 这是显式的 Root 私钥使用操作：只在吊销中间CA时解密一次，生成并缓存Root CRL
+    let crlNumber: number;
+    try {
+      crlNumber = await this.refreshRootCrlCache(root);
+    } catch (e: any) {
+      logger.warn(`[local-ca] intermediate revoke crl refresh failed ca=${ca.id} root=${root.id}: ${e?.message || e}`);
+      // 只更新缓存标记，避免用事务前的旧实体覆盖已经递增的CRL序号
+      await this.repository.update({ id: root.id }, { lastCrlTime: -1 } as any);
+      throw e;
+    }
+
+    logger.info(`[local-ca] intermediate revoked ca=${ca.id} root=${root.id} serial=${serialNumber} crl=${crlNumber} user=${req.userId}`);
+    return { serialNumber, crlNumber };
+  }
+
+  async getPublicKey(req: LocalCaScope) {
+    const ca = await this.getOwnedCa(req);
+    return {
+      filename: `local-ca-${ca.id}-public-key.pem`,
+      pem: getPublicKeyPem(ca.certPem),
+    };
+  }
+
+  async getCrlInfo(req: LocalCaScope) {
+    const crl = await this.getCrl(req.id);
+    return {
+      filename: `local-ca-${req.id}.crl`,
+      ...parseCrlInfo(crl.pem),
+    };
+  }
+
+  async exportCa(req: LocalCaScope) {
+    const ca = await this.getOwnedCa(req, true);
+    if (ca.exportDisabled) {
+      throw new ValidateException("该CA已禁止导出");
+    }
+    const privateKeyPem = this.decryptCaPrivateKey(ca);
+    const lines = [
+      "# Certd Local CA export",
+      `# Name: ${ca.name}`,
+      `# CN: ${ca.subjectCn}`,
+      `# Fingerprint SHA-256: ${ca.fingerprintSha256}`,
+      `# Not After: ${new Date(Number(ca.notAfter)).toISOString()}`,
+      "# Keep this file secure. The private key can issue trusted certificates.",
+      "",
+      ca.certPem.trim(),
+      "",
+      privateKeyPem.trim(),
+      "",
+    ];
+    const filename = `local-ca-${ca.id}-${ca.subjectCn.replace(/[^a-zA-Z0-9._-]/g, "_")}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}.pem`;
+    // 按用户要求写在 Certd 进程运行目录，不写入持久化数据目录；权限仅当前用户可读
+    const filePath = path.join(process.cwd(), filename);
+    await fs.promises.writeFile(filePath, lines.join("\n"), { encoding: "utf8", mode: 0o600, flag: "wx" });
+    await fs.promises.chmod(filePath, 0o600);
+    logger.info(`[local-ca] private key exported ca=${ca.id} admin=${req.userId}`);
+    return {
+      filename,
+      path: filePath,
+    };
+  }
+
+  async setDisabled(req: LocalCaScope & { disabled: boolean }) {
+    if (typeof req.disabled !== "boolean") {
+      throw new ValidateException("disabled必须是布尔值");
+    }
+    const ca = await this.getOwnedCa(req);
+    if (!req.disabled && ca.revoked) {
+      throw new ValidateException("该本地CA已被父CA吊销，不能重新启用");
+    }
+    ca.disabled = req.disabled;
+    await this.update(ca);
+    logger.info(`[local-ca] ca ${req.disabled ? "disabled" : "enabled"} ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
+  }
+
+  async deleteCa(req: LocalCaScope) {
+    const ca = await this.getOwnedCa(req, true);
+    const pipelines = await this.pipelineRepository.find({
+      where: {
+        content: Like("%CertApplyLocalCa%"),
+      },
+      select: { id: true, title: true, content: true },
+    });
+    const referenced = pipelines.find(item => this.pipelineUsesCa(item.content, ca.id));
+    if (referenced) {
+      throw new ValidateException(`该本地CA已被流水线「${referenced.title}」引用，不能删除，请先修改流水线`);
+    }
+    if (!ca.disabled) {
+      throw new ValidateException("请先禁用该本地CA，并确认所有已签发证书均已吊销或过期");
+    }
+    if (ca.caType === "intermediate" && !ca.revoked) {
+      throw new ValidateException("请先吊销该中间CA，再归档");
+    }
+    const children = await this.find({ where: { parentId: ca.id, deleted: false } });
+    if (children.length > 0) {
+      throw new ValidateException("该CA下仍有中间CA，请先删除中间CA");
+    }
+    const issued = await this.certInfoService.find({
+      where: { localCaId: ca.id },
+      select: { id: true, status: true, expiresTime: true },
+    });
+    const now = Date.now();
+    const blocking = issued.filter(item => item.status !== CertStatus.revoked && (!item.expiresTime || item.expiresTime > now));
+    if (blocking.length > 0) {
+      throw new ValidateException("该本地CA仍有未吊销且未过期的证书，不能删除，请先吊销这些证书");
+    }
+    // 未绑定用户仓库的ACME系统级证书不在cd_cert_info中，也需要按订单记录阻止删除
+    const issuedSerials = new Set(issued.map(item => String(item.serialNumber || "").toUpperCase()));
+    const validOrders = await this.acmeOrderRepository.find({
+      where: { caId: ca.id, status: "valid" },
+      select: { serialNumber: true, expiresTime: true },
+    });
+    for (const order of validOrders || []) {
+      const serial = String(order.serialNumber || "").toUpperCase();
+      if (!serial || issuedSerials.has(serial) || !order.expiresTime || order.expiresTime <= now) {
+        continue;
+      }
+      const revoked = await this.certRevocationService.findBySerial(ca.id, serial);
+      if (!revoked) {
+        throw new ValidateException(`该本地CA仍有未吊销且未过期的ACME证书(${serial})，不能删除，请先吊销这些证书`);
+      }
+    }
+    ca.deleted = true;
+    ca.disabled = true;
+    await this.update(ca);
+    logger.info(`[local-ca] ca archived ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
+  }
+
+  private pipelineUsesCa(content: string, caId: number) {
+    if (!content) {
+      return false;
+    }
+    try {
+      const pipeline = JSON.parse(content);
+      for (const stage of pipeline.stages || []) {
+        for (const task of stage.tasks || []) {
+          for (const step of task.steps || []) {
+            if (step.type === "CertApplyLocalCa" && Number(step.input?.caId) === caId) {
+              return true;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      return false;
+    }
+    return false;
+  }
+
+  async getCaCertPem(req: LocalCaScope) {
+    const ca = await this.getOwnedCa(req);
+    return {
+      filename: `local-ca-${ca.id}.pem`,
+      pem: ca.certPem,
+    };
+  }
+
+  async assertCaOwner(req: LocalCaScope) {
+    await this.getOwnedCa(req);
+  }
+
+  async assertAdminCa(caId: number, adminUserId: number, requireOwner = false) {
+    return await this.getAdminAccess(caId, adminUserId, requireOwner);
+  }
+
+  async findAdminAccess(caId: number, adminUserId: number) {
+    return await this.adminRepository.findOne({ where: { caId, adminUserId } });
+  }
+
+  private async getAdminAccess(caId: number, adminUserId: number, requireOwner = false) {
+    const access = await this.findAdminAccess(caId, adminUserId);
+    if (!access) {
+      throw new ValidateException("本地CA不存在或无访问权限");
+    }
+    if (requireOwner && access.role !== "owner") {
+      throw new ValidateException("仅本地CA的创建管理员可以执行该操作");
+    }
+    return access;
+  }
+
+  async addAdminAccess(caId: number, adminUserId: number, role = "owner") {
+    const existing = await this.findAdminAccess(caId, adminUserId);
+    if (existing) {
+      await this.adminRepository.update({ id: existing.id }, { role, updateTime: new Date() });
+      return;
+    }
+    await this.adminRepository.save(this.adminRepository.create({ caId, adminUserId, role }));
+  }
+
+  private async getAccessibleCa(req: LocalCaScope, requireOwner = false) {
+    const ca = await this.findOne({ where: { id: req.id, deleted: false } });
+    if (!ca) {
+      throw new ValidateException("本地CA不存在或无访问权限");
+    }
+    await this.getAdminAccess(ca.id, req.userId, requireOwner);
+    return ca;
+  }
+
+  private async getGrantedCa(req: LocalCaScope) {
+    const ca = await this.findOne({ where: { id: req.id, deleted: false } });
+    if (!ca) {
+      throw new ValidateException("本地CA不存在或无访问权限");
+    }
+    if (req.userId > 0) {
+      const admin = await this.findAdminAccess(ca.id, req.userId);
+      if (admin) {
+        return ca;
+      }
+    }
+    const grants = await this.listApplicableGrants(req);
+    if (!grants.some(item => item.caId === ca.id)) {
+      throw new ValidateException("本地CA不存在或无访问权限");
+    }
+    return ca;
+  }
+
+  private async getOwnedCa(req: LocalCaScope, requireOwner = false) {
+    return await this.getAccessibleCa(req, requireOwner);
+  }
+
+  private decryptCaPrivateKey(ca: LocalCaEntity) {
+    let plain: string;
+    try {
+      plain = this.encryptService.decrypt(ca.privateKeyEncrypted);
+    } catch (e: any) {
+      throw new Error(`CA私钥解密失败，系统加密密钥可能已变更：${e.message}`);
+    }
+    if (ca.privateKeyHash && sha256Hex(plain) !== ca.privateKeyHash) {
+      throw new Error("CA私钥解密校验失败，私钥可能已损坏或被篡改");
+    }
+    return plain;
+  }
+
+  private normalizeAllowedDomains(list?: string[]) {
+    return (list || []).map(item => String(item || "").trim()).filter(Boolean);
+  }
+
+  private async resolveChildAllowedDomains(reqList: string[] | undefined, parent: LocalCaEntity) {
+    const parentList = this.parseAllowedDomains(parent.allowedDomains);
+    const childList = this.normalizeAllowedDomains(reqList);
+    if (childList.length === 0) {
+      return parentList;
+    }
+    if (parentList.length > 0) {
+      matchAllowedDomains(childList, parentList);
+    }
+    return childList;
+  }
+
+  private async assertRootAllowedDomainsCoverChildren(ca: LocalCaEntity, rootAllowedDomains: string[]) {
+    const children = await this.find({ where: { parentId: ca.id, deleted: false } });
+    for (const child of children) {
+      let childList: string[];
+      try {
+        childList = this.parseAllowedDomains(child.allowedDomains);
+      } catch (e) {
+        throw new ValidateException(`子CA「${child.name}」的允许域名配置损坏，无法修改根CA范围`);
+      }
+      if (childList.length === 0) {
+        throw new ValidateException(`子CA「${child.name}」当前未限制允许域名，请先为子CA设置范围`);
+      }
+      try {
+        matchAllowedDomains(childList, rootAllowedDomains);
+      } catch (e) {
+        throw new ValidateException(`子CA「${child.name}」的允许域名超出新的根CA范围`);
+      }
+    }
+  }
+
+  private parseAllowedDomains(value: string) {
+    if (!value) {
+      return [];
+    }
+    try {
+      const parsed = JSON.parse(value);
+      if (!Array.isArray(parsed)) {
+        throw new Error("not an array");
+      }
+      return parsed;
+    } catch (e) {
+      throw new ValidateException("allowedDomains配置损坏，已拒绝签发");
+    }
+  }
+
+  private async assertNameAvailable(req: { userId: number; projectId?: number; name: string }) {
+    if (!req.name || !req.name.trim()) {
+      throw new ValidateException("名称不能为空");
+    }
+    const old = await this.findOne({
+      where: {
+        name: req.name.trim(),
+        deleted: false,
+      },
+    });
+    if (old) {
+      throw new ValidateException(`本地CA名称「${req.name}」已存在`);
+    }
+  }
+
+  private toSafe(item: LocalCaEntity): LocalCaSafe {
+    const copy: any = { ...item };
+    delete copy.privateKeyEncrypted;
+    delete copy.privateKeyHash;
+    return copy;
+  }
+}

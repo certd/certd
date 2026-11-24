@@ -14,8 +14,8 @@ import { PipelineService } from "../pipeline/service/pipeline-service.js";
 import { UserService } from "../sys/authority/service/user-service.js";
 import { AuditService } from "../sys/enterprise/service/audit-service.js";
 import { ProjectService } from "../sys/enterprise/service/project-service.js";
-import { LocalCaService } from "../cert/service/local-ca-service.js";
-import { AcmeServerService } from "../cert/service/acme-server-service.js";
+import { LocalCaService } from "../local-ca/service/local-ca-service.js";
+import { AcmeServerService } from "../acme-server/service/acme-server-service.js";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })

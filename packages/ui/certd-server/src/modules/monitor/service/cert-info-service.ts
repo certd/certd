@@ -9,9 +9,9 @@ import { CertInfo, CertReader } from "@certd/plugin-cert";
 import { AcmeService } from "../../../plugins/plugin-cert/plugin/cert-plugin/acme.js";
 import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
 import { UserSettingsService } from "../../mine/service/user-settings-service.js";
-import { CertRevocationService } from "../../cert/service/cert-revocation-service.js";
-import { LocalCaEntity } from "../../cert/entity/local-ca.js";
-import { runTransaction } from "../../cert/service/db-transaction.js";
+import { CertRevocationService } from "../../local-ca/service/cert-revocation-service.js";
+import { LocalCaEntity } from "../../local-ca/entity/local-ca.js";
+import { runTransaction } from "../../db/db-transaction.js";
 
 export type UploadCertReq = {
   id?: number;
@@ -238,7 +238,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     const certProjectId = pipeline?.projectId;
 
     // 查找该流水线的空证书记录（占位记录，certInfo 为空）：存在则直接更新它，不新建记录
-    const placeholderRecord = await this.repository.findOne({
+    let placeholderRecord = await this.repository.findOne({
       where: {
         pipelineId,
         taskId: taskId,
@@ -247,6 +247,21 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       },
       order: { id: "DESC" },
     });
+    // 本地CA的ACME finalize会先写入一条不带私钥的证书记录；流水线拿到证书后应复用该记录，
+    // 否则同一证书会在仓库中出现两条active记录。外部队列无流水线时仍保留ACME记录。
+    if (!placeholderRecord && localCaId && serialNumber) {
+      // 企业项目流水线的userId固定为-1，ACME记录仍保存真实授权用户，按项目复用同一条证书
+      const acmeScope = certUserId > 0 ? this.buildUserProjectQuery(certUserId, certProjectId) : certProjectId ? { projectId: certProjectId } : { userId: certUserId };
+      placeholderRecord = await this.repository.findOne({
+        where: {
+          localCaId,
+          serialNumber: String(serialNumber).toUpperCase(),
+          pipelineId: IsNull(),
+          ...acmeScope,
+        },
+        order: { id: "DESC" },
+      });
+    }
 
     // 解析ACME账号授权id，随证书记录落库：吊销旧证书时直接读表，无需再解析流水线
     const acmeAccountAccessId = this.parseAcmeAccountAccessId(pipeline);
@@ -501,11 +516,9 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   }
 
   async applyLocalRevocation(req: { certInfoId: number; caId: number; userId: number; projectId?: number; serialNumber: string; expiresTime?: number; reason?: string }) {
-    // 证书上的 localCaId 可能来自历史数据或被篡改，写吊销记录前必须确认该CA属于当前用户/项目，
-    // 否则会向其他租户的CA写入吊销项（CRL 被污染）。
-    const owner = this.buildUserProjectQuery(req.userId, req.projectId);
+    // CA由管理员全局维护，这里只校验CA存在，证书记录仍需匹配所属用户/项目/序列号
     const ownedCa = await this.localCaRepository.findOne({
-      where: { id: req.caId, ...owner, deleted: false },
+      where: { id: req.caId, deleted: false },
       select: { id: true },
     });
     if (!ownedCa) {

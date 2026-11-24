@@ -210,17 +210,6 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.navigation.localCa",
-            name: "LocalCaManager",
-            path: "/cert/cert/local-ca",
-            component: "/certd/cert/local-ca/index.vue",
-            meta: {
-              icon: "ph:certificate",
-              auth: true,
-              keepAlive: true,
-            },
-          },
-          {
             title: "certd.navigation.certApplyTemplate",
             name: "CertApplyTemplate",
             path: "/cert/cert/apply-template",
