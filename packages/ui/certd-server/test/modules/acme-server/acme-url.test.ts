@@ -16,4 +16,8 @@ describe("isSameAcmeUrl full-URL trusted matching", () => {
   it("rejects different query", () => {
     expect(isSameAcmeUrl("https://acme.example.com/acme/directory?x=1", "https://acme.example.com/acme/directory")).toBe(false);
   });
+  it("rejects userinfo and fragment", () => {
+    expect(isSameAcmeUrl("https://user:password@acme.example.com/acme/directory", "https://acme.example.com/acme/directory")).toBe(false);
+    expect(isSameAcmeUrl("https://acme.example.com/acme/directory#fragment", "https://acme.example.com/acme/directory")).toBe(false);
+  });
 });

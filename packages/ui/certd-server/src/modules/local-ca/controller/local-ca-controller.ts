@@ -31,11 +31,13 @@ export class LocalCaController extends CrudController<LocalCaService> {
     const userId = this.getUserId();
     const name = body.query.name;
     const subjectCn = body.query.subjectCn;
+    const status = body.query.status;
     if (!body.query.caType) {
       delete body.query.caType;
     }
     delete body.query.name;
     delete body.query.subjectCn;
+    delete body.query.status;
     const res = await this.service.page({
       query: body.query,
       page: body.page,
@@ -50,6 +52,11 @@ export class LocalCaController extends CrudController<LocalCaService> {
         }
         if (subjectCn) {
           bq.andWhere("subject_cn like :subjectCn", { subjectCn: `%${subjectCn}%` });
+        }
+        if (status === "normal") {
+          bq.andWhere("main.disabled = 0 AND main.rotated_to_id IS NULL");
+        } else if (status === "rotated") {
+          bq.andWhere("main.rotated_to_id IS NOT NULL");
         }
       },
     });

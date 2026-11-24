@@ -95,6 +95,11 @@ class HttpClient {
 
         opts.headers['Content-Type'] = 'application/jose+json';
 
+        /* 重定向策略：默认0（不跟随），可由 acmeSettings.maxRedirects 覆盖以兼容依赖跳转的第三方ACME */
+        if (opts.maxRedirects == null) {
+            opts.maxRedirects = axios.defaults.acmeSettings?.maxRedirects ?? 0;
+        }
+
         /* Request */
         this.log(`HTTP request: ${method} ${url}`);
         const resp = await axios.request(opts);

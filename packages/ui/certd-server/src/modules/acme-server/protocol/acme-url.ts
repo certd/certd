@@ -8,5 +8,8 @@ export function isSameAcmeUrl(actual: string, expected: string) {
     return false;
   }
   const normPath = (u: URL) => u.pathname.replace(/\/+$/, "");
+  if (a.username || a.password || a.hash || e.username || e.password || e.hash) {
+    return false;
+  }
   return a.origin === e.origin && normPath(a) === normPath(e) && a.search === e.search;
 }

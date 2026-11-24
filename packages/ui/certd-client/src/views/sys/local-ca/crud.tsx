@@ -340,6 +340,19 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           search: { show: true },
           column: { width: 110, component: { color: "auto" } },
         },
+        status: {
+          title: t("certd.localCa.fields.status"),
+          type: "dict-select",
+          dict: dict({
+            data: [
+              { label: t("certd.localCa.statusNormal"), value: "normal", color: "green" },
+              { label: t("certd.localCa.statusRotated"), value: "rotated", color: "default" },
+            ],
+          }),
+          form: { show: false },
+          search: { show: true },
+          column: { show: false },
+        },
         caPath: {
           title: t("certd.localCa.fields.caPath"),
           type: "text",

@@ -26,6 +26,8 @@ instance.defaults.acmeSettings = {
 
     retryMaxAttempts: 3,
     retryDefaultDelay: 3,
+    // 默认不跟随重定向，避免借301/302跳出可信来源边界；依赖重定向的第三方可调大此值
+    maxRedirects: 0,
 };
 // instance.defaults.proxy = {
 //     host: '192.168.34.139',
