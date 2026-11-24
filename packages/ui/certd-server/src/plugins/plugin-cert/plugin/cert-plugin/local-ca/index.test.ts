@@ -87,6 +87,16 @@ function createPlugin(leaf: any, opts: { caDisabled?: boolean; caType?: string; 
   return { plugin, calls };
 }
 
+function setTrustedProviders(plugin: any, urls: string[]) {
+  const orig = plugin.ctx.serviceGetter.get.bind(plugin.ctx.serviceGetter);
+  plugin.ctx.serviceGetter.get = async (name: string) => {
+    if (name === "customAcmeProviderService") {
+      return { getAll: async () => urls.map(u => ({ directoryUrl: u })) };
+    }
+    return orig(name);
+  };
+}
+
 describe("CertApplyLocalCa", () => {
   it("首次签发时 output 后携带 localCaId/serial 发事件", async () => {
     const leaf = await createLeaf();
@@ -188,13 +198,88 @@ describe("CertApplyLocalCa", () => {
     await assert.rejects(() => plugin.condition(), /本地CA已禁用/);
   });
 
-  it("普通用户不能把远程ACME指向本机/链路本地地址", async () => {
+  it("普通用户不能把远程ACME指向本机/链路本地地址（须用可信颁发机构）", async () => {
     const leaf = await createLeaf();
     const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
     plugin.mode = "remote-acme";
     plugin.directoryUrl = "http://127.0.0.1:7001/api/acme/9/directory";
     (plugin.ctx.user as any).role = "user";
+    await assert.rejects(() => (plugin as any).getResolvedDirectoryUrl(), /普通用户远程ACME必须使用管理员/);
+  });
+
+  it("普通用户使用完全匹配的可信Directory URL允许通过", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "remote-acme";
+    plugin.directoryUrl = "https://acme.example.com/acme/directory";
+    (plugin.ctx.user as any).role = "user";
+    setTrustedProviders(plugin, ["https://acme.example.com/acme/directory"]);
+    assert.equal(await (plugin as any).getResolvedDirectoryUrl(), "https://acme.example.com/acme/directory");
+  });
+
+  it("普通用户相同origin不同path不被视为可信", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "remote-acme";
+    plugin.directoryUrl = "https://acme.example.com/another/path";
+    (plugin.ctx.user as any).role = "user";
+    setTrustedProviders(plugin, ["https://acme.example.com/acme/directory"]);
+    await assert.rejects(() => (plugin as any).getResolvedDirectoryUrl(), /普通用户远程ACME必须使用管理员/);
+  });
+
+  it("普通用户不同端口不被视为可信", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "remote-acme";
+    plugin.directoryUrl = "https://acme.example.com:8443/acme/directory";
+    (plugin.ctx.user as any).role = "user";
+    setTrustedProviders(plugin, ["https://acme.example.com/acme/directory"]);
+    await assert.rejects(() => (plugin as any).getResolvedDirectoryUrl(), /普通用户远程ACME必须使用管理员/);
+  });
+
+  it("可信URL规范化忽略尾部斜杠与默认端口", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "remote-acme";
+    plugin.directoryUrl = "https://acme.example.com:443/acme/directory/";
+    (plugin.ctx.user as any).role = "user";
+    setTrustedProviders(plugin, ["https://acme.example.com/acme/directory"]);
+    assert.equal(await (plugin as any).getResolvedDirectoryUrl(), "https://acme.example.com:443/acme/directory/");
+  });
+
+  it("管理员非可信内网Directory URL仍被SSRF拦截", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "remote-acme";
+    plugin.directoryUrl = "http://127.0.0.1:7001/api/acme/9/directory";
+    (plugin.ctx.user as any).role = "admin";
     await assert.rejects(() => (plugin as any).getResolvedDirectoryUrl(), /本机\/私网\/链路本地/);
+  });
+
+  it("管理员配置的可信内网Directory URL允许使用", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "remote-acme";
+    plugin.directoryUrl = "http://127.0.0.1:7001/api/acme/9/directory";
+    (plugin.ctx.user as any).role = "admin";
+    setTrustedProviders(plugin, ["http://127.0.0.1:7001/api/acme/9/directory"]);
+    assert.equal(await (plugin as any).getResolvedDirectoryUrl(), "http://127.0.0.1:7001/api/acme/9/directory");
+  });
+
+  it("远程ACME Directory返回重定向时不判定为直签", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "remote-acme";
+    plugin.directoryUrl = "https://acme.example.com/acme/directory";
+    plugin.acmeAccountAccessId = 1;
+    setTrustedProviders(plugin, ["https://acme.example.com/acme/directory"]);
+    const originalFetch = (globalThis as any).fetch;
+    (globalThis as any).fetch = async () => ({ status: 302, ok: false, async json() { return {}; } });
+    try {
+      assert.equal(await (plugin as any).isDirectIssueMode({ id: 1 }), false);
+    } finally {
+      (globalThis as any).fetch = originalFetch;
+    }
   });
 
   it("真实续期判断不会因域名过滤而每次重签", async () => {
