@@ -1237,8 +1237,18 @@ export class PipelineService extends BaseService<PipelineEntity> {
       updates.push({ item, pipeline });
     }
 
+    const succeeded: string[] = [];
+    const failed: string[] = [];
     for (const update of updates) {
-      await this.doUpdatePipelineJson(update.item, update.pipeline);
+      try {
+        await this.doUpdatePipelineJson(update.item, update.pipeline);
+        succeeded.push(update.item.title);
+      } catch (e: any) {
+        failed.push(`${update.item.title}：${e?.message || e}`);
+      }
+    }
+    if (failed.length > 0) {
+      throw new ValidateException(`批量修改未完全成功（该操作不是数据库事务）：成功 ${succeeded.length} 条${succeeded.length ? `（${succeeded.join("、")}）` : ""}；失败 ${failed.length} 条（${failed.join("；")}）。请刷新后核对`);
     }
     return list.length;
   }

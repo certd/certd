@@ -20,6 +20,8 @@ export class SiteInfoEntity {
   certDomains: string;
   @Column({ name: "cert_info", comment: "证书详情", length: 4096 })
   certInfo: string;
+  @Column({ name: "cert_chain", comment: "服务器提供的证书链摘要JSON", type: "text", nullable: true })
+  certChain: string;
   @Column({ name: "cert_status", comment: "证书状态", length: 100 })
   certStatus: string;
 
