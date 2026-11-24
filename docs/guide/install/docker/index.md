@@ -4,39 +4,22 @@
 
 ### 镜像版本选择
 
-Certd 提供多种 Docker 镜像版本，您可以根据需要选择：
+在 Compose 中将镜像地址与标签用冒号连接，例如 `certd/certd:stable`。
 
-#### 1. 镜像地址：
+| 仓库 | 镜像地址 |
+| --- | --- |
+| 阿里云 | `registry.cn-shenzhen.aliyuncs.com/certd/certd` |
+| Docker Hub | `certd/certd` |
+| GitHub Container Registry | `ghcr.io/certd/certd` |
 
-| 镜像仓库 | 最新预览版  | 稳定版 | slim版 | armv7版 | 
-| --- | --- | --- | --- | --- | 
-| 阿里云【默认】 | `registry.cn-shenzhen.aliyuncs.com/certd/certd:latest` | `certd:stable` | `certd:slim` | `certd:armv7` |
-| Docker Hub | `certd/certd:latest` | `certd:stable` | `certd:slim` | `certd:armv7` |
-| GitHub Packages | `ghcr.io/certd/certd:latest` | `certd:stable` | `certd:slim` | `certd:armv7` |
+| 标签 | 用途 |
+| --- | --- |
+| `stable` | Alpine 稳定通道，适合生产环境 |
+| `latest` | Alpine 预览通道，可试用新功能 |
+| `slim-stable` / `slim` | Debian slim 的稳定／预览通道，适合需要 glibc 兼容性的环境 |
+| `armv7` | 32 位 ARMv7 专用通道 |
 
-> 后面的各个版本省略了镜像地址，使用时需要将镜像地址拼接完整。
-
-#### 2. 版本标签说明：
-
-**最新版本标签：**
-
-| 版本 | 标签 | 说明 |
-| --- | --- | --- |
-| 最新预览版【默认】 | `certd:latest` | 指向最新开发版本，包含最新功能，但稳定性不如稳定版  | 
-| 最新稳定版 | `certd:stable` | 指向经过充分测试的生产就绪版本，推荐生产环境使用  |  
-
-**系统分支版本：**
-
-> 根据基础镜像不同，分为如下三个分支版本，没有特殊需求选择默认的即可（他们功能是一样的）
-
-| 系统版本 | 版本标签 |   基础系统 | 说明 | 稳定版标签 | 指定版本 |
-| --- | --- | --- | --- | --- | --- |
-| alpine【默认】 | `certd:latest` |  Alpine Linux | 默认版本，镜像体积小  | `certd:stable` | `certd:1.43.0` |
-| slim | `certd:slim` |  Debian slim | 基于glibc，dns解析兼容性好 | `certd:slim-stable` | `certd:1.43.0-slim` |
-| armv7 | `certd:armv7` |  Alpine Linux | ARMv7 架构专用版本 | `certd:armv7-stable` | `certd:1.43.0-armv7` |
-
-
-> 如果您不确定使用哪个版本，请使用默认的 `certd:latest` 版本。
+需要固定版本时，可使用发行版对应的版本号，或其 `-slim`、`-armv7` 标签。[镜像说明](../../image.md)
 
 最新版本号：
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/certd/certd?label=Latest%20Release&sort=semver)
@@ -125,18 +108,28 @@ https://your_server_ip:7002
 1. 修改`docker-compose.yaml`中的镜像版本号
 2. 运行`docker compose up -d` 即可
 
-### 如果使用`latest`版本
+### 如果使用滚动标签
+
+在 Compose 文件目录运行以下命令。Compose 会根据当前 `image` 拉取配置的稳定或预览通道。
+
 ```shell
 cd /opt/certd
-#重新拉取镜像
-docker pull registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
-# 重新启动容器
-docker compose down
+docker compose pull certd
 docker compose up -d
+docker compose logs --tail 100 certd
 ```
+
+升级后确认能登录、查看流水线和证书。需要长时间追踪更新时可使用[自动升级](../auto.md)。跨版本升级前请看[重要兼容变化](../upgrade.md#重要兼容变化)。
+
 ## 三、数据备份
 > 数据默认存在`/data/certd`目录下，不用担心数据丢失   
 > 建议配置一条[数据库备份流水线](../../use/backup/) 自动备份
+
+### SQLite 写入错误排查
+
+如果升级或迁移时日志出现 `SQLITE_IOERR_WRITE` 或 `SqliteError: disk I/O error`，先检查宿主机磁盘空间、`/data/certd` 的目录权限、容器挂载是否为可写，以及宿主机文件系统和 Docker 存储是否正常。当前代码只能根据错误码给出兼容性提示，无法判断根因，也不保证更换镜像能解决。
+
+在确认数据目录可写并已完成备份后，可用同一 Certd 版本的 `slim` 标签做兼容性对照测试。固定版本时使用对应的 `[version]-slim` 标签。测试前确认新容器继续挂载同一个 `/app/data`，不要用空数据目录启动来代替验证。若错误仍存在，保留完整日志并继续排查磁盘、权限和文件系统。
 
 ## 四、备份恢复
 

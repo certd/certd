@@ -36,6 +36,7 @@ export default defineConfig({
     ],
     themeConfig: {
         logo: "/static/logo/logo.svg",
+        outline: { label: "本页目录" },
         search: {
             provider: "local",
             options: {
@@ -86,11 +87,18 @@ export default defineConfig({
                     ]
                 },
                 {
-                    text: "特性",
+                    text: "使用指南",
                     items: [
-                        {text: "CNAME代理校验", link: "/guide/feature/cname/index.md"},
+                        {text: "证书申请与托管", link: "/guide/use/cert/"},
+                        {text: "域名验证", link: "/guide/use/cert/validation.md"},
+                        {text: "流水线", link: "/guide/use/pipeline/"},
+                        {text: "站点与域名监控", link: "/guide/use/monitor/"},
+                        {text: "部署到 SSH 主机", link: "/guide/use/host/"},
+                        {text: "CNAME 代理校验", link: "/guide/feature/cname/"},
                         {text: "多数据库支持", link: "/guide/install/database.md"},
                         {text: "开放接口", link: "/guide/open/index.md"},
+                        {text: "Certd Client", link: "/guide/open/client.md"},
+                        {text: "插件市场", link: "/guide/plugins/market.md"},
                         {
                             text: "站点安全",  link: "/guide/feature/safe/"
                         },
@@ -107,8 +115,12 @@ export default defineConfig({
                 {
                     text: "常见问题",
                     items: [
-                        {text: "QA", link: "/guide/qa/use.md"},
+                        {text: "常见故障", link: "/guide/qa/use.md"},
                         {text: "忘记密码/无法登录", link: "/guide/use/forgotpasswd/"},
+                        {text: "第三方登录与 Passkey", link: "/guide/use/setting/oauth.md"},
+                        {text: "系统管理与站点设置", link: "/guide/use/setting/admin.md"},
+                        {text: "网络与健康检查", link: "/guide/use/setting/network.md"},
+                        {text: "插件运行时依赖", link: "/guide/use/setting/runtime-dependencies.md"},
                         {text: "群晖证书部署", link: "/guide/use/synology/"},
                         {text: "腾讯云密钥获取", link: "/guide/use/tencent/"},
                         {text: "连接windows主机", link: "/guide/use/host/windows.md"},

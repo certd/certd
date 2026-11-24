@@ -1,41 +1,31 @@
-# CNAME代理校验方式
+# CNAME 代理验证
 
-通过CNAME代理校验方式，可以给`Certd`不支持的域名服务商的域名申请证书。
+当 Certd 无法直接操作申请域名的 DNS 时，可以先手动添加 CNAME，再让 Certd 在可管理的代理域名下自动写入 TXT。整个流程只需要手动配置一次 CNAME，后续续期可复用。
 
-## 1. 前言
-* 申请证书是需要`校验域名所有权`的。
-* `DNS校验方式`需要开发适配DNS服务商的接口
-* 目前`Certd`已实现`主流域名注册商`的接口（阿里云、腾讯云、华为云、Cloudflare、西数）
-* 如果域名不在这几家，`DNS校验方式`就行不通
-* 那么就只能通过`CNAME代理校验方式`来实现`证书自动申请`
+以申请 `example.com` 为例，假设 Certd 生成的代理目标是 `id.validation.example.net`。
 
-## 2. 原理
-* 假设你要申请证书的域名叫：`cert.com` ,它是在`Certd`不支持的服务商注册的
-* 假设我们还有另外一个域名叫：`proxy.com`，它是在`Certd`支持的服务商注册的。
-* 当我们按照如下进行配置时
-```
-                  CNAME记录（手动、固定）           TXT记录（自动、随机）
-_acme-challenge.cert.com ---> xxxxx.cname.proxy.com ----> txt-record-abcdefg
-   
-```
-* 证书颁发机构就可以从`_acme-challenge.cert.com`查到TXT记录 `txt-record-abcdefg`，从而完成域名所有权校验。
-* 以上可以看出 `xxxxx.cname.proxy.com ----> txt-record-abcdefg` 这一段`Certd` 是可以自动添加的。
-* 剩下的只需要在你的`cert.com`域名中手动添加一条固定的`CNAME解析`即可
-                         
+| 写入位置 | 记录类型 | 操作 |
+| --- | --- | --- |
+| `_acme-challenge.example.com` | CNAME | 在申请域名的 DNS 中添加，目标填 `id.validation.example.net`。 |
+| `id.validation.example.net` | TXT | Certd 在签发或续期时自动写入用来验证的值。 |
 
-## 3. Certd CNAME使用步骤
+## 配置单个域名
 
+1. 新建证书流水线，填入申请的域名并选择 **CNAME 代理验证**。
+2. 打开验证计划，选择可用的 **CNAME 服务**。可以使用实例提供的公共服务。自托管实例的管理员也可在 **系统管理 → CNAME服务设置** 配置自有的代理域名和 DNS 授权。
+3. 按 Certd 显示的 **主机记录** 和 CNAME 目标，到申请域名的 DNS 控制台创建记录。使用 Cloudflare 时将这条验证 CNAME 设为仅 DNS。
+4. 回到 Certd 点击 **验证**。成功后保存和运行流水线，保留 CNAME，供以后续期。
 
-1. 创建证书流水线，输入你要申请证书的域名，假设就是`cert.com`，然后选择`CNAME`校验方式
-2. 此时需要配置验证计划，Certd会生成一个随机的CNAME记录模版，例如：`_acme-challenge`->`xxxxxx.cname.proxy.com`
-   ![](./images/cname2.png)
-3. 您需要手动在你的`cert.com`域名中添加CNAME解析，点击验证，校验成功后就可以开始申请证书了 (此操作每个域名只需要做一次，后续可以重复使用，注意不要删除添加的CNAME记录)
-   ![](./images/cname3.png)
-   ![](./images/cname4.png)
-4. 申请过程中，Certd会在`xxxxxx.cname.proxy.com`下自动添加TXT记录。 
-5. 到此即可自动化申请证书了
+![流水线验证计划显示 CNAME 主机记录和目标](./images/cname2.png)
 
+## 批量导入和导出
 
+1. 打开 **设置 → CNAME记录管理 → 批量导入**，确认 CNAME 服务，每行填一个域名。泛域名去掉 `*.` 前缀，已有记录会被跳过。
+2. 生成记录后选择 **批量导出**，按 DNS 服务商支持的格式导入记录，或依据表格逐条添加。
+3. 回到 Certd 验证记录。申请任务会查找对应域名中已验证的 CNAME 记录。
 
+## 排查验证失败
 
-
+- **记录未生效。** 检查当前权威 DNS、主机记录和目标地址。DNS 控制台如果会自动补全域名，只填写主机名前缀。
+- **主域名与配置不一致。** 如果创建流水线后改过子域名托管，在 CNAME 记录列表重置校验状态并重新验证，然后重新保存申请任务的验证计划。
+- **日志显示找不到目标 TXT。** 先确认 CNAME 跳转正确，再检查目标 DNS 授权和 TXT 的传播情况。详见 [DNS 验证排错](../../use/cert/validation.md#排查-dns-验证失败)。
