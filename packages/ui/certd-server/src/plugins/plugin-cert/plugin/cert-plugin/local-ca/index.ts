@@ -233,8 +233,13 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   }
 
   getCheckChangeInputKeys(): string[] {
-    const keys = super.getCheckChangeInputKeys();
-    return [...new Set([...keys, "mode", "caId", "keyType", "validityDays", "directoryUrl"])];
+    // 仅纳入任务输入中稳定存在的字段，避免插件默认空字符串(pfxPassword/directoryUrl)
+    // 与任务输入缺失字段不一致导致每次运行都误判参数变化而重签。
+    const keys = ["domains", "mode", "caId", "keyType", "validityDays"];
+    if (this.mode === "remote-acme") {
+      keys.push("directoryUrl");
+    }
+    return keys;
   }
 
   async condition() {
