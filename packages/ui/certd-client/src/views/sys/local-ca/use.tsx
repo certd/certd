@@ -908,7 +908,29 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       cancelText: t("certd.common.cancel"),
       async onOk() {
         await openStepUp(t("certd.localCa.archiveCaStepUpTitle"), t("certd.localCa.archiveCaDesc", { name: row.name }), async () => {
-          await localCaApi.Archive(row.id);
+          try {
+            await localCaApi.Archive(row.id);
+          } catch (e: any) {
+            if (/流水线.*引用/.test(String(e?.message || ""))) {
+              const confirmed = await new Promise<boolean>(resolve => {
+                Modal.confirm({
+                  title: t("certd.localCa.forceArchiveTitle"),
+                  content: t("certd.localCa.forceArchiveContent", { name: row.name }),
+                  okText: t("certd.localCa.forceArchiveOk"),
+                  okType: "danger",
+                  cancelText: t("certd.common.cancel"),
+                  onOk: () => resolve(true),
+                  onCancel: () => resolve(false),
+                });
+              });
+              if (!confirmed) {
+                throw e;
+              }
+              await localCaApi.Archive(row.id, true);
+            } else {
+              throw e;
+            }
+          }
           notification.success({ message: t("certd.localCa.archiveSuccess") });
           await crudExpose.doRefresh();
         });

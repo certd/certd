@@ -1453,7 +1453,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     logger.info(`[local-ca] ca ${req.disabled ? "disabled" : "enabled"} ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
   }
 
-  async archiveCa(req: LocalCaScope) {
+  async archiveCa(req: LocalCaScope & { force?: boolean }) {
     const ca = await this.accessService.getOwnedCa(req, true);
     const pipelines = await this.pipelineRepository.find({
       where: {
@@ -1462,8 +1462,11 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       select: { id: true, title: true, content: true },
     });
     const referenced = pipelines.find(item => this.pipelineUsesCa(item.content, ca.id));
-    if (referenced) {
+    if (referenced && !req.force) {
       throw new ValidateException(`该本地CA已被流水线「${referenced.title}」引用，不能归档，请先修改流水线`);
+    }
+    if (referenced && req.force) {
+      logger.warn(`[local-ca] force archive ca=${ca.id} despite pipeline reference「${referenced.title}」 user=${req.userId}`);
     }
     if (!ca.disabled) {
       throw new ValidateException("请先禁用该本地CA，再归档");
