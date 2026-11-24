@@ -60,7 +60,7 @@ const ACME_MODES: LocalCaApplyMode[] = ["local-acme", "remote-acme"];
         caId: { title: "CA", helper: "Local direct signing requires an intermediate CA. Local ACME requires ACME to be enabled on that CA." },
         keyType: { title: "Key Type" },
         validityDays: { title: "Validity (Days)", helper: "Capped by the CA's remaining validity." },
-        directoryUrl: { title: "ACME Directory URL", helper: "Admin only. For example https://certd.example.com/api/acme/12/directory" },
+        directoryUrl: { title: "ACME Directory URL", helper: "Remote ACME directory. Loopback/link-local addresses are admin-only. Example: https://certd.example.com/api/acme/12/directory" },
         renewDays: { title: "Renew Before (Days)", helper: "Reissue when the current certificate expires within this window." },
         privateKeyType: { title: "Key Algorithm" },
       },
@@ -202,7 +202,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
 
   @TaskInput({
     title: "远程ACME Directory URL",
-    helper: "远程ACME模式必填，例如 https://certd.example.com/api/acme/12/directory",
+    helper: "远程ACME模式必填；本机/链路本地地址仅管理员可用。例如 https://certd.example.com/api/acme/12/directory",
     component: {
       placeholder: "https://your-certd.example.com/api/acme/12/directory",
     },

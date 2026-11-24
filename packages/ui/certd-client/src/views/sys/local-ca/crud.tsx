@@ -214,7 +214,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           revokeIntermediate: {
-            order: 1,
+            order: 2,
             type: "link",
             text: null,
             tooltip: { title: t("certd.localCa.revokeIntermediate") },
@@ -225,7 +225,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           view: {
-            order: 2,
+            order: 3,
             type: "link",
             text: null,
             tooltip: { title: t("certd.localCa.view") },
@@ -235,7 +235,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           certs: {
-            order: 6,
+            order: 4,
             type: "link",
             text: null,
             tooltip: { title: t("certd.localCa.issuedCerts") },
@@ -245,12 +245,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           acmeAccounts: {
-            order: 7,
+            order: 5,
             type: "link",
             text: null,
             tooltip: { title: t("certd.localCa.acmeAccounts") },
             icon: "ph:users-three",
-            show: ({ row }) => row.caType === "intermediate" && row.acmeEnabled,
+            show: compute(({ row }) => row.caType === "intermediate" && row.acmeEnabled),
             click: async ({ row }) => {
               await openAcmeAccounts(row);
             },
