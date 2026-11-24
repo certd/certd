@@ -455,6 +455,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               name: "fs-dict-switch",
               vModel: "checked",
+              disabled: compute(({ row }) => !!row.rotatedToId || !!row.revoked),
               on: {
                 async change({ row, $event }) {
                   if ($event === false) {
@@ -487,7 +488,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               name: "fs-dict-switch",
               vModel: "checked",
-              disabled: compute(({ row }) => row.caType !== "intermediate"),
+              disabled: compute(({ row }) => row.caType !== "intermediate" || !!row.rotatedToId || !!row.revoked),
               on: {
                 async change({ row, $event }) {
                   if (row.caType !== "intermediate") {

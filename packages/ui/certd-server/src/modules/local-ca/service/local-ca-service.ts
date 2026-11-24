@@ -1400,6 +1400,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!req.disabled && ca.revoked) {
       throw new ValidateException("该本地CA已被父CA吊销，不能重新启用");
     }
+    if (!req.disabled && ca.rotatedToId) {
+      throw new ValidateException("该CA已轮换到新CA，旧CA密钥已退役，不能重新启用，请使用新CA签发");
+    }
     ca.disabled = req.disabled;
     await this.update(ca);
     logger.info(`[local-ca] ca ${req.disabled ? "disabled" : "enabled"} ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
