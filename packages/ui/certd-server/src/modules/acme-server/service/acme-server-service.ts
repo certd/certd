@@ -363,7 +363,6 @@ export class AcmeServerService {
     if (!manager?.transaction) {
       throw new AcmeProblem("serverInternal", "订单事务不可用", 500);
     }
-    const config = this.parseAcmeConfig(ca.acmeConfig);
     return await runTransaction(manager, async tx => {
       const orderRepository = tx.getRepository(AcmeOrderEntity);
       const order = await orderRepository.findOne({ where: { id: orderId, caId } });
@@ -382,6 +381,8 @@ export class AcmeServerService {
       const freshCa = await this.issuer.getAcmeCaForUpdate(caId, tx);
       this.assertDirectIssueAllowed(order, freshCa);
       await this.assertOrderStillAuthorized(freshCa, account, order, tx);
+      // 事务内读取最新ACME配置，避免订单创建后管理员调整有效期仍用旧值签发
+      const freshConfig = this.parseAcmeConfig(freshCa.acmeConfig);
 
       // 条件更新认领订单，保证并发 finalize 只有一个能签发
       const claimed = await orderRepository.update({ id: orderId, caId, accountId: account.id, status: "ready" }, { status: "processing", updateTime: new Date() });
@@ -395,7 +396,7 @@ export class AcmeServerService {
 
       let signed;
       try {
-        signed = await this.issuer.signCsrForAcme(ca.id, csrPem, config.validityDays);
+        signed = await this.issuer.signCsrForAcme(freshCa.id, csrPem, freshConfig.validityDays);
       } catch (e: any) {
         logger.warn(`[acme] finalize signing failed ca=${ca.id} order=${order.id} account=${account.id}: ${e?.message || e}`);
         throw new AcmeProblem("serverInternal", `证书签发失败：${e.message}`, 500);

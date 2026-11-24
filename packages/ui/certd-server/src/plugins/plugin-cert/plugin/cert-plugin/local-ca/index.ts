@@ -11,6 +11,9 @@ import type { LocalCaSignerGetter } from "../../../../../modules/local-ca/servic
 import { filterAllowedDomains, verifyCertIssuedBy, type LocalCaKeyType } from "../../../../../modules/local-ca/service/local-ca-crypto.js";
 import { parseLocalCaDirectory } from "../../../../../modules/local-ca/service/local-ca-directory.js";
 import { isSameAcmeUrl } from "../../../../../modules/acme-server/protocol/acme-url.js";
+import net from "node:net";
+import dns from "node:dns/promises";
+import { isBlockedAddress } from "./ssrf.js";
 
 export type LocalCaApplyMode = "local-direct" | "local-acme" | "remote-acme";
 
@@ -298,7 +301,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       const providers = (await service?.getAll?.()) || [];
       return providers.some((provider: any) => {
         try {
-          return provider?.directoryUrl && new URL(provider.directoryUrl).origin === url.origin;
+          return provider?.directoryUrl && isSameAcmeUrl(url.href, provider.directoryUrl);
         } catch {
           return false;
         }
@@ -403,12 +406,32 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     if (!["http:", "https:"].includes(url.protocol)) {
       throw new Error("远程ACME Directory URL仅支持 http/https");
     }
-    if (this.isAdmin()) {
+    if (url.username || url.password || url.hash) {
+      throw new Error("远程ACME Directory URL不允许包含用户名、密码或fragment");
+    }
+    // 管理员显式配置的完整Directory URL（规范化后精确匹配，非仅origin）视为可信，允许内部地址
+    if (await this.isTrustedAcmeProvider(url)) {
       return;
     }
-    // 普通用户远程ACME只允许管理员配置的可信颁发机构，避免SSRF/DNS rebinding；管理员不受限
-    if (!(await this.isTrustedAcmeProvider(url))) {
-      throw new Error("普通用户远程ACME必须使用管理员在系统设置中配置的自定义ACME颁发机构");
+    if (!this.isAdmin()) {
+      throw new Error("普通用户远程ACME必须使用管理员在系统设置中配置的自定义ACME颁发机构（完整Directory URL）");
+    }
+    // 管理员非可信源：仍须通过SSRF地址检查（含DNS解析后的所有A/AAAA），避免访问内网/保留地址
+    const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+    const blockedHost = host === "localhost" || host.endsWith(".localhost") || host === "metadata.google.internal" || host === "100.100.100.200" || host === "169.254.169.254";
+    if (blockedHost || isBlockedAddress(host)) {
+      throw new Error("远程ACME Directory URL指向本机/私网/链路本地/保留地址，禁止访问；如需内部ACME请在系统设置中配置可信颁发机构");
+    }
+    if (!net.isIP(host)) {
+      let addresses: { address: string }[] = [];
+      try {
+        addresses = await dns.lookup(host, { all: true, verbatim: true });
+      } catch {
+        throw new Error("远程ACME Directory URL域名解析失败");
+      }
+      if (!addresses.length || addresses.some(item => isBlockedAddress(item.address))) {
+        throw new Error("远程ACME Directory URL解析到受限地址，禁止访问");
+      }
     }
   }
 
@@ -551,7 +574,11 @@ export class CertApplyLocalCa extends CertApplyPlugin {
         method: "GET",
         headers: { Accept: "application/json" },
         signal: controller.signal,
+        redirect: "manual",
       });
+      if (response.status >= 300 && response.status < 400) {
+        throw new Error("ACME Directory不允许重定向");
+      }
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }

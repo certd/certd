@@ -12,6 +12,9 @@ import { log } from './logger.js';
 
 const instance = axios.create();
 
+/* ACME endpoint 不允许跟随重定向，避免借重定向跳出可信来源边界（RFC8555 endpoint 应为绝对URL） */
+instance.defaults.maxRedirects = 0;
+
 /* Default User-Agent */
 instance.defaults.headers.common['User-Agent'] = `@certd/acme-client`;
 

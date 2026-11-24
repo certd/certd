@@ -7,5 +7,6 @@ export function isSameAcmeUrl(actual: string, expected: string) {
   } catch (e) {
     return false;
   }
-  return a.origin === e.origin && a.pathname === e.pathname && a.search === e.search && a.hash === e.hash;
+  const normPath = (u: URL) => u.pathname.replace(/\/+$/, "");
+  return a.origin === e.origin && normPath(a) === normPath(e) && a.search === e.search;
 }

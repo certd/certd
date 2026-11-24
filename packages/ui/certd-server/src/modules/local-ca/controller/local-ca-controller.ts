@@ -70,9 +70,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
   @Post("/generate", { description: Constants.per.authOnly, summary: "生成根CA" })
   async generate(@Body(ALL) body: any) {
     this.assertSystemAdmin();
-    if (String(body.dnsServer || "").trim()) {
-      this.assertStepUp(body.verifyToken, "设置CA DNS服务器");
-    }
+    this.assertStepUp(body.verifyToken, "生成根CA");
     const userId = this.getUserId();
     const res = await this.service.generateCa({
       userId,
@@ -189,6 +187,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       baseUrl: body.baseUrl,
       acmeDirectIssue: body.acmeDirectIssue,
       exportDisabled: body.exportDisabled,
+      dnsServer: body.dnsServer,
     });
     if (sensitive) {
       this.assertStepUp(body.verifyToken, "修改本地CA安全策略");
@@ -205,6 +204,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       baseUrl: body.baseUrl,
       acmeDirectIssue: body.acmeDirectIssue,
       exportDisabled: body.exportDisabled,
+      dnsServer: body.dnsServer,
     });
     this.auditLog({ content: `修改了本地CA「${body.name}」(ID:${body.id})` });
     return this.ok(true);
