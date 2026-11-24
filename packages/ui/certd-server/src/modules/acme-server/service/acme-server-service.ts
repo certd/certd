@@ -1,5 +1,6 @@
 import crypto, { X509Certificate } from "node:crypto";
 import dns from "node:dns/promises";
+import { createCustomResolver } from "@certd/acme-client";
 import net from "node:net";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
@@ -752,7 +753,7 @@ export class AcmeServerService {
     challenge.updateTime = new Date();
     await this.challengeRepository.save(challenge);
     try {
-      await this.performValidation(challenge, authz);
+      await this.performValidation(challenge, authz, ca.dnsServer);
       challenge.status = "valid";
       challenge.validatedTime = Date.now();
       authz.status = "valid";
@@ -771,12 +772,13 @@ export class AcmeServerService {
     await this.refreshOrderStatus(ca, authz.orderId);
   }
 
-  private async performValidation(challenge: AcmeChallengeEntity, authz: AcmeAuthzEntity) {
+  private async performValidation(challenge: AcmeChallengeEntity, authz: AcmeAuthzEntity, dnsServer?: string | null) {
     if (challenge.type === "dns-01") {
       const expected = sha256Base64Url(challenge.keyAuthorization);
       let records: string[][];
       try {
-        records = await dns.resolveTxt(`_acme-challenge.${authz.identifierValue}`);
+        const resolver = dnsServer ? await createCustomResolver(String(dnsServer).split(/[,，\s]+/).filter(Boolean)) : dns;
+        records = await resolver.resolveTxt(`_acme-challenge.${authz.identifierValue}`);
       } catch (e: any) {
         throw new Error(`DNS TXT查询失败（${e.code || e.message}）`);
       }

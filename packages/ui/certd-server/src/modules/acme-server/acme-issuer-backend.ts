@@ -13,6 +13,7 @@ export interface AcmeCaView {
   acmeDirectIssue?: boolean;
   acmeConfig?: string | null;
   baseUrl?: string | null;
+  dnsServer?: string | null;
   notAfter?: number;
   disabled?: boolean;
   revoked?: boolean;
