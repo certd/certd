@@ -131,13 +131,12 @@ describe("CertApplyLocalCa", () => {
     const leaf = await createLeaf();
     const { plugin } = createPlugin(leaf, { inputChanged: true, acmeDirectIssue: true } as any);
     plugin.mode = "local-acme";
-    plugin.eabKid = "eab_kid";
-    plugin.eabHmacKey = "hmac";
+    plugin.acmeAccountAccessId = 1;
     (plugin as any).localCa = undefined;
 
     const plan = await (plugin as any).createDomainsVerifyPlanByAuto(["plugin.example.com"], null);
     assert.deepEqual(plan, {});
-    assert.equal((plugin as any).requiresAcmeAccount(), false);
+    assert.equal((plugin as any).requiresAcmeAccount(), true);
     assert.equal(await (plugin as any).getResolvedDirectoryUrl(), "https://certd.example.com/api/acme/1/directory");
   });
 
@@ -145,8 +144,7 @@ describe("CertApplyLocalCa", () => {
     const leaf = await createLeaf();
     const { plugin } = createPlugin(leaf, { inputChanged: true, acmeDirectIssue: false } as any);
     plugin.mode = "local-acme";
-    plugin.eabKid = "eab_kid";
-    plugin.eabHmacKey = "hmac";
+    plugin.acmeAccountAccessId = 1;
     (plugin as any).localCa = undefined;
     let called = false;
     (plugin as any).isDirectIssueMode = async () => false;
@@ -164,8 +162,7 @@ describe("CertApplyLocalCa", () => {
     const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
     plugin.mode = "remote-acme";
     plugin.directoryUrl = "https://remote.example.com/api/acme/9/directory";
-    plugin.eabKid = "eab_kid";
-    plugin.eabHmacKey = "hmac";
+    plugin.acmeAccountAccessId = 1;
     const originalFetch = (globalThis as any).fetch;
     (globalThis as any).fetch = async () => ({
       ok: true,
@@ -222,8 +219,7 @@ describe("CertApplyLocalCa", () => {
     const { plugin } = createPlugin(leaf, { old, inputChanged: false } as any);
     delete (plugin as any).condition;
     plugin.mode = "local-acme";
-    plugin.eabKid = "eab_kid";
-    plugin.eabHmacKey = "hmac";
+    plugin.acmeAccountAccessId = 1;
     plugin.sslProvider = "custom" as any;
     (plugin as any).localCa = undefined;
     await plugin.onInit();

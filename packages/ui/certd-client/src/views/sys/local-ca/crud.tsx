@@ -194,7 +194,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           intermediate: {
             order: 0,
             type: "link",
-            text: t("certd.localCa.intermediate"),
+            text: null,
+            tooltip: { title: t("certd.localCa.intermediate") },
             icon: "ph:git-branch",
             show: compute(({ row }) => hasActionPermission("write") && row.caType === "root"),
             click: async ({ row }) => {

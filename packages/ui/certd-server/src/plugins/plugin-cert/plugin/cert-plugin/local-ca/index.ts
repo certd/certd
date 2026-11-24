@@ -59,8 +59,6 @@ const ACME_MODES: LocalCaApplyMode[] = ["local-acme", "remote-acme"];
         keyType: { title: "Key Type" },
         validityDays: { title: "Validity (Days)", helper: "Capped by the CA's remaining validity." },
         directoryUrl: { title: "ACME Directory URL", helper: "Admin only. For example https://certd.example.com/api/acme/12/directory" },
-        eabKid: { title: "EAB KID", helper: "Admin only. Leave empty and use an ACME account instead." },
-        eabHmacKey: { title: "EAB HMAC Key", helper: "Admin only. Leave empty and use an ACME account instead." },
         renewDays: { title: "Renew Before (Days)", helper: "Reissue when the current certificate expires within this window." },
         privateKeyType: { title: "Key Algorithm" },
       },
@@ -210,26 +208,6 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   })
   directoryUrl = "";
 
-  @TaskInput({
-    title: "EAB KID",
-    helper: "仅系统管理员可直接填写EAB凭证；普通用户请使用下方ACME账号授权",
-    component: {
-      placeholder: "eab_xxxxxxxx",
-    },
-    order: -9970,
-  })
-  eabKid = "";
-
-  @TaskInput({
-    title: "EAB HMAC Key",
-    helper: "仅系统管理员可直接填写EAB HMAC Key；普通用户请使用下方ACME账号授权",
-    component: {
-      name: "input-password",
-      vModel: "value",
-    },
-    order: -9960,
-  })
-  eabHmacKey = "";
 
   private localCa?: LocalCaSubscribeInfo;
   private resolvedDirectoryUrl?: string;
@@ -240,14 +218,8 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     if (!this.mode) {
       this.mode = "local-direct";
     }
-    if (this.eabHmacKey) {
-      this.registerSecret(this.eabHmacKey);
-    }
     if (this.mode === "remote-acme") {
       this.assertRemoteUrlAllowed();
-    }
-    if (this.mode !== "local-direct") {
-      this.assertInlineEabAllowed();
     }
     if (this.mode === "local-acme") {
       await this.prepareLocalCa(true);
@@ -256,7 +228,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
 
   getCheckChangeInputKeys(): string[] {
     const keys = super.getCheckChangeInputKeys();
-    return [...new Set([...keys, "mode", "caId", "keyType", "validityDays", "directoryUrl", "eabKid"])];
+    return [...new Set([...keys, "mode", "caId", "keyType", "validityDays", "directoryUrl"])];
   }
 
   async condition() {
@@ -333,15 +305,12 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   }
 
   protected async resolveCustomAcmeEab(): Promise<EabAccess | null | undefined> {
-    if (!this.hasInlineEab()) {
-      return undefined;
-    }
-    this.assertInlineEabAllowed();
-    return { kid: this.eabKid.trim(), hmacKey: this.eabHmacKey.trim() } as any;
+    // EAB凭证统一复用ACME账号授权，不在任务内明文填写
+    return undefined;
   }
 
   protected requiresAcmeAccount(): boolean {
-    return this.acmeAccountAccessId != null || !this.hasInlineEab();
+    return true;
   }
 
   protected async createDomainsVerifyPlanByAuto(domains: string[], acmeAccount?: any) {
@@ -356,9 +325,6 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     return await super.createDomainsVerifyPlanByAuto(domains, acmeAccount);
   }
 
-  private hasInlineEab() {
-    return !!(this.eabKid && this.eabHmacKey);
-  }
 
   /**
    * 远程Directory URL由任务配置直接指定，仅允许系统管理员使用，避免普通用户借ACME客户端发起内网请求。
@@ -389,14 +355,6 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     }
   }
 
-  /**
-   * 任务输入中的EAB HMAC为明文存储，仅允许系统管理员使用；普通用户应使用加密存储的ACME账号授权。
-   */
-  private assertInlineEabAllowed() {
-    if (this.hasInlineEab() && !this.isAdmin()) {
-      throw new Error("任务内直接填写EAB凭证仅限系统管理员；普通用户请使用ACME账号授权");
-    }
-  }
 
   private async doLocalDirect(): Promise<CertReader> {
     const ca = await this.prepareLocalCa(false);
@@ -478,8 +436,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
    * ACME账号缓存按sslProvider隔离；不同CA/远程目录必须使用独立命名空间，避免复用错误账号。
    */
   private buildSslProvider(directoryUrl: string) {
-    const scope = this.hasInlineEab() ? `${directoryUrl}#${this.eabKid}` : directoryUrl;
-    const digest = crypto.createHash("sha256").update(scope).digest("hex").slice(0, 16);
+    const digest = crypto.createHash("sha256").update(directoryUrl).digest("hex").slice(0, 16);
     return `localca-${digest}`;
   }
 
@@ -512,7 +469,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     if (this.directIssueCache != null) {
       return this.directIssueCache;
     }
-    const hasAccountCredential = this.hasInlineEab() || acmeAccount != null || this.acmeAccountAccessId != null;
+    const hasAccountCredential = acmeAccount != null || this.acmeAccountAccessId != null;
     if (!hasAccountCredential) {
       return false;
     }
@@ -577,8 +534,6 @@ localCaInput.directoryUrl.mergeScript = `return {
   show: ctx.compute(({ form }) => form.mode === 'remote-acme'),
   required: ctx.compute(({ form }) => form.mode === 'remote-acme')
 }`;
-localCaInput.eabKid.mergeScript = `return { show: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode)) }`;
-localCaInput.eabHmacKey.mergeScript = localCaInput.eabKid.mergeScript;
 localCaInput.email.mergeScript = `return { show: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode)), required: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode)) }`;
 localCaInput.sslProvider.show = false;
 localCaInput.version.show = false;
@@ -632,8 +587,10 @@ localCaInput.reverseProxy.mergeScript = `return {
   show: ctx.compute(({ form }) => form.mode === 'remote-acme'),
   component: { placeholder: 'certd.yourproxy.com' }
 }`;
-localCaInput.certProfile.show = false;
-localCaInput.preferredChain.show = false;
+// 本地CA插件不需要通用ACME的厂商/链配置，直接移除避免冗余
+for (const key of ["certProfile", "preferredChain", "googleAccessId", "eabAccessId", "googleCommonEabAccessId", "googleCommonAcmeAccountAccessId", "zerosslCommonEabAccessId", "zerosslCommonAcmeAccountAccessId", "sslcomCommonEabAccessId", "sslcomCommonAcmeAccountAccessId", "litesslCommonEabAccessId", "litesslCommonAcmeAccountAccessId"]) {
+  delete localCaInput[key];
+}
 localCaInput.eabAccessId.show = false;
 localCaInput.googleAccessId.show = false;
 localCaInput.certApplyRetryCount.mergeScript = `return { show: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode)) }`;
