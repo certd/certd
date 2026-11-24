@@ -298,9 +298,24 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async getUserCa(req: LocalCaScope) {
-    const safe = this.toSafe(await this.accessService.getGrantedCa(req));
+    const ca = await this.followRotation(await this.accessService.getGrantedCa(req), req);
+    const safe = this.toSafe(ca);
     (safe as any).effectiveBaseUrl = await this.crlService.resolveBaseUrl(safe as any);
     return safe;
+  }
+
+  /** 轮换后签发自动指向新CA（与ACME重定向一致），保证引用旧CA的流水线无缝续期。 */
+  private async followRotation(ca: LocalCaEntity, req?: LocalCaScope): Promise<LocalCaEntity> {
+    let hops = 0;
+    while (ca.rotatedToId && hops < 5) {
+      const next = await this.repository.findOne({ where: { id: ca.rotatedToId, deleted: false } });
+      if (!next) {
+        break;
+      }
+      ca = req && !(req as any).internal ? await this.accessService.getGrantedCa({ ...req, id: next.id }) : next;
+      hops++;
+    }
+    return ca;
   }
 
   async infoSafe(req: LocalCaScope) {
@@ -731,7 +746,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
    * CA 签发核心：流水线插件、独立签发、未来 ACME finalize 都走这里。
    */
   async signCsr(req: LocalCaSignCsrReq) {
-    const ca = req.internal ? await this.findOne({ where: { id: req.id, deleted: false } }) : await this.accessService.getGrantedCa(req);
+    const ca = await this.followRotation(req.internal ? await this.findOne({ where: { id: req.id, deleted: false } }) : await this.accessService.getGrantedCa(req), req);
     if (!ca) {
       throw new ValidateException("本地CA不存在或无访问权限");
     }
@@ -770,7 +785,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async issueLeaf(req: LocalCaIssueReq) {
-    const ca = await this.accessService.getGrantedCa(req);
+    const ca = await this.followRotation(await this.accessService.getGrantedCa(req), req);
     if (ca.caType !== "intermediate") {
       throw new ValidateException("根CA不能直接签发叶子证书，请选择中间CA");
     }
