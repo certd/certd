@@ -1,5 +1,5 @@
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { notification } from "ant-design-vue";
+import { notification, Tag } from "ant-design-vue";
 import dayjs from "dayjs";
 import { localCaApi } from "./api";
 import { useLocalCaDialogs } from "./use";
@@ -301,10 +301,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             width: 200,
             ellipsis: true,
             cellRender({ value, row }) {
+              const rotated = !!row.rotatedToId;
+              const inactive = rotated || row.disabled || row.revoked;
               return (
-                <span style={{ paddingLeft: row.level ? "18px" : "0" }}>
+                <span style={{ paddingLeft: row.level ? "18px" : "0", color: inactive ? "#999" : undefined, textDecoration: inactive ? "line-through" : undefined }}>
                   {row.level ? "↳ " : ""}
                   {value}
+                  {rotated ? <Tag style={{ marginLeft: 6, textDecoration: "none" }}>{t("certd.localCa.rotatedTag")}</Tag> : row.disabled ? <Tag style={{ marginLeft: 6, textDecoration: "none" }}>{t("common.disabled")}</Tag> : null}
                 </span>
               );
             },

@@ -259,6 +259,7 @@ export default {
   stepUpCancelled: "Verification cancelled",
   verifyAndContinue: "Verify and continue",
   updateSuccess: "Updated successfully",
+  rotatedTag: "Rotated",
   rotateIntermediate: "Rotate Intermediate CA",
   rotateIntermediateTitle: "Rotate Intermediate CA",
   rotateIntermediateDesc: 'A new intermediate CA will be created for "{name}" and the old CA will be disabled. Existing certificates remain verifiable; switch issuance to the new CA.',
