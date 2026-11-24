@@ -1145,18 +1145,30 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return [...childRows, ...leafRows];
   }
 
-  /** 按序列号查证书PEM（供CRL/订单查看证书信息），先查ACME订单再查用户证书仓库。 */
-  async getCertPemBySerial(req: LocalCaScope & { serial: string }): Promise<string | null> {
-    const ca = await this.accessService.getOwnedCa(req);
+  /** 按序列号查证书PEM（供CRL/订单查看证书信息）。
+   * 根CA的CRL条目是其下级中间CA签发的证书，故需在本CA及全部下级CA范围内查找；
+   * 允许已归档CA（CRL永久公开，查看证书信息不受deleted限制）。 */
+  async getCertPemBySerial(req: { id: number; userId: number; serial: string }): Promise<string | null> {
     const serial = String(req.serial || "").trim();
     if (!serial) {
       return null;
     }
-    const order = await this.acmeOrderRepository.findOne({ where: { caId: ca.id, serialNumber: serial } });
+    const ca = await this.findOne({ where: { id: req.id } });
+    if (!ca) {
+      throw new ValidateException("本地CA不存在");
+    }
+    const access = await this.adminRepository.findOne({ where: { caId: req.id, adminUserId: req.userId } });
+    if (!access) {
+      throw new ValidateException("本地CA不存在或无访问权限");
+    }
+    const ids = [ca.id];
+    const children = await this.find({ where: { parentId: ca.id } });
+    ids.push(...children.map(item => item.id));
+    const order = await this.acmeOrderRepository.findOne({ where: { caId: In(ids), serialNumber: serial } });
     if (order?.certPem) {
       return order.certPem;
     }
-    const cert = await this.certInfoService.findOne({ where: { localCaId: ca.id, serialNumber: serial } });
+    const cert = await this.certInfoService.findOne({ where: { localCaId: In(ids), serialNumber: serial } });
     if (cert?.certInfo) {
       try {
         return JSON.parse(cert.certInfo).crt || null;

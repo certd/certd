@@ -409,8 +409,9 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/certBySerial", { description: Constants.per.authOnly, summary: "按序列号查询证书PEM（查看证书信息）" })
   async certBySerial(@Body(ALL) body: any) {
-    const { userId, projectId } = await this.checkCaAccess(body.id, "read");
-    const certPem = await this.service.getCertPemBySerial({ id: body.id, userId, projectId, serial: body.serial });
+    this.assertSystemAdmin();
+    const userId = this.getUserId();
+    const certPem = await this.service.getCertPemBySerial({ id: body.id, userId, serial: body.serial });
     return this.ok({ certPem });
   }
 
