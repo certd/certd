@@ -791,6 +791,22 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
+  function openRotateIntermediate(row: any) {
+    Modal.confirm({
+      title: t("certd.localCa.rotateIntermediateTitle"),
+      content: t("certd.localCa.rotateIntermediateDesc", { name: row.name }),
+      okText: t("certd.localCa.rotateIntermediateOk"),
+      cancelText: t("certd.common.cancel"),
+      async onOk() {
+        await openStepUp(t("certd.localCa.rotateIntermediateTitle"), t("certd.localCa.rotateIntermediateStepUp"), async () => {
+          const res = await localCaApi.RotateIntermediate({ id: row.id });
+          notification.success({ message: t("certd.localCa.rotateIntermediateSuccess", { id: res.id }) });
+          await crudExpose.doRefresh();
+        });
+      },
+    });
+  }
+
   function openRevokeIntermediate(row: any) {
     if (row?.caType !== "intermediate") {
       notification.warning({ message: t("certd.localCa.onlyIntermediate") });
@@ -873,6 +889,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openIssuedCerts,
     openAcmeAccounts,
     openRevokeIntermediate,
+    openRotateIntermediate,
     openEnableCa,
     openDeleteCa,
     openStepUp,

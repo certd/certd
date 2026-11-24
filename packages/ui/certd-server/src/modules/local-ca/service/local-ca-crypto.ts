@@ -888,7 +888,8 @@ export async function signCsr(req: {
   const maxDays = req.maxValidityDays && req.maxValidityDays > 0 ? req.maxValidityDays : requestedDays;
   const days = Math.min(requestedDays, maxDays);
   const notBefore = new Date(now - 5 * 60 * 1000);
-  const caLimit = caCert.notAfter.getTime() - 24 * 3600 * 1000;
+  // 叶证书到期日硬上限为签发CA到期日，并预留7天余量用于续期/轮换/部署回滚
+  const caLimit = caCert.notAfter.getTime() - 7 * 24 * 3600 * 1000;
   const notAfter = new Date(Math.min(now + days * 24 * 3600 * 1000, caLimit));
   if (notAfter.getTime() <= notBefore.getTime()) {
     throw new Error("CA证书剩余有效期不足，无法签发");

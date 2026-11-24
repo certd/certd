@@ -472,6 +472,93 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return { id: res.id };
   }
 
+  /**
+   * 轮换中间CA：生成全新密钥对的新中间CA，复制授权/管理员/策略；旧中间CA停止签发但暂不吊销，
+   * 已签发的叶证书仍可用旧中间CA验证，直到自然过期或完成重签。
+   */
+  async rotateIntermediateCa(req: { id: number; userId: number; name?: string; subject?: LocalCaSubject; keyType?: LocalCaKeyType; validityYears?: number }) {
+    const old = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    if (old.caType !== "intermediate" || !old.parentId) {
+      throw new ValidateException("只有中间CA可以轮换");
+    }
+    if (old.revoked) {
+      throw new ValidateException("该中间CA已吊销，不能轮换");
+    }
+    const root = await this.getOwnedCa({ id: old.parentId, userId: req.userId }, true);
+    if (root.caType !== "root" || root.disabled) {
+      throw new ValidateException("上级根CA不可用，不能轮换");
+    }
+    const name = (req.name || `${old.name}-rotated`).trim();
+    await this.assertNameAvailable({ userId: req.userId, name });
+    const rootPrivateKey = this.decryptCaPrivateKey(root);
+    const subject = req.subject || (JSON.parse(old.subject) as LocalCaSubject);
+    const material = await createIntermediateCa({
+      rootCertPem: root.certPem,
+      rootPrivateKeyPem: rootPrivateKey,
+      subject,
+      keyType: req.keyType || (old.keyType as LocalCaKeyType),
+      validityYears: req.validityYears || 5,
+      crlDistributionPoint: await this.getCrlUrl(root),
+    });
+    const bean = new LocalCaEntity();
+    bean.name = name;
+    bean.source = "generated";
+    bean.caType = "intermediate";
+    bean.parentId = root.id;
+    bean.keyType = material.keyType || old.keyType;
+    bean.keySize = material.keySize;
+    bean.hashAlgorithm = "SHA256";
+    bean.subject = JSON.stringify(material.subject);
+    bean.subjectCn = material.subjectCn;
+    bean.certPem = material.certPem;
+    bean.privateKeyEncrypted = this.encryptService.encrypt(material.privateKeyPem);
+    bean.privateKeyHash = sha256Hex(material.privateKeyPem);
+    bean.keyEncryptVersion = "1";
+    bean.fingerprintSha256 = material.fingerprintSha256;
+    bean.notBefore = material.notBefore;
+    bean.notAfter = material.notAfter;
+    bean.usage = old.usage;
+    bean.allowedDomains = old.allowedDomains;
+    bean.maxValidityDays = old.maxValidityDays;
+    bean.acmeEnabled = false;
+    bean.acmeDirectIssue = false;
+    bean.acmeConfig = null;
+    bean.baseUrl = old.baseUrl || root.baseUrl || null;
+    bean.pathLength = 0;
+    bean.disabled = false;
+    bean.remark = `轮换自CA(ID:${old.id})`;
+    bean.exportDisabled = old.exportDisabled;
+    bean.deleted = false;
+    bean.revoked = false;
+    await this.refreshRootCrlCache(root, rootPrivateKey);
+    const res = await this.add(bean);
+    await this.addAdminAccess(res.id, req.userId, "owner");
+    const oldAdmins = await this.adminRepository.find({ where: { caId: old.id } });
+    for (const admin of oldAdmins) {
+      if (admin.role !== "owner") {
+        await this.addAdminAccess(res.id, admin.adminUserId, "operator");
+      }
+    }
+    const oldGrants = await this.grantRepository.find({ where: { caId: old.id, disabled: false } });
+    for (const grant of oldGrants) {
+      await this.grantRepository.save(
+        this.grantRepository.create({
+          caId: res.id,
+          userId: grant.userId,
+          projectId: grant.projectId,
+          createdByAdminId: req.userId,
+          disabled: false,
+        })
+      );
+    }
+    await this.markBaseUrlLocked(root.id);
+    old.disabled = true;
+    old.remark = `已轮换到新CA(ID:${res.id})，停止签发新证书`;
+    await this.update(old);
+    logger.info(`[local-ca] intermediate rotated old=${old.id} new=${res.id} root=${root.id} admin=${req.userId}`);
+    return { id: res.id, oldId: old.id };
+  }
+
   async checkImportDuplicate(req: { userId: number; projectId?: number; parentId?: number; certPem: string }) {
     let fingerprint: string;
     let selfSigned: boolean;

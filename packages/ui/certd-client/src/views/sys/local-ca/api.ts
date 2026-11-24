@@ -188,6 +188,14 @@ export const localCaApi = {
     });
   },
 
+  async RotateIntermediate(data: any) {
+    return await req({
+      url: apiPrefix + "/intermediate/rotate",
+      method: "post",
+      data: { ...data, verifyToken: getSecretAccessToken() },
+    });
+  },
+
   async RevokeIntermediate(id: number, verifyToken: string) {
     return await req({
       url: apiPrefix + "/intermediate/revoke",

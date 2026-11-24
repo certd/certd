@@ -21,6 +21,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     openIssuedCerts,
     openAcmeAccounts,
     openRevokeIntermediate,
+    openRotateIntermediate,
     openEnableCa,
     openDeleteCa,
     openArchivedRoots,
@@ -198,6 +199,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: ({ row }) => hasActionPermission("write") && row.caType === "root",
             click: async ({ row }) => {
               await openIntermediate(row);
+            },
+          },
+          rotate: {
+            order: 1,
+            type: "link",
+            text: null,
+            tooltip: { title: t("certd.localCa.rotateIntermediate") },
+            icon: "ph:arrows-clockwise",
+            show: ({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled && !row.revoked,
+            click: async ({ row }) => {
+              openRotateIntermediate(row);
             },
           },
           revokeIntermediate: {

@@ -142,6 +142,24 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(res);
   }
 
+  @Post("/intermediate/rotate", { description: Constants.per.authOnly, summary: "轮换中间CA（生成新中间CA并停用旧CA）" })
+  async rotateIntermediate(@Body(ALL) body: any) {
+    this.assertSystemAdmin();
+    this.assertStepUp(body.verifyToken, "轮换中间CA");
+    const userId = this.getUserId();
+    await this.checkCaAccess(body.id, "write", true);
+    const res = await this.service.rotateIntermediateCa({
+      id: body.id,
+      userId,
+      name: body.name,
+      subject: body.subject,
+      keyType: body.keyType,
+      validityYears: body.validityYears,
+    });
+    this.auditLog({ content: `轮换中间CA(ID:${body.id})，新CA(ID:${res.id})` });
+    return this.ok(res);
+  }
+
   @Post("/info", { description: Constants.per.authOnly, summary: "查询本地CA详情" })
   async info(@Query("id") id: number) {
     const userId = this.getUserId();

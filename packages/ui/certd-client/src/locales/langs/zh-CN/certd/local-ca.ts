@@ -257,5 +257,11 @@ export default {
   stepUpCancelled: "已取消验证",
   verifyAndContinue: "验证并继续",
   updateSuccess: "修改成功",
+  rotateIntermediate: "轮换中间CA",
+  rotateIntermediateTitle: "轮换中间CA",
+  rotateIntermediateDesc: "将创建新的中间CA「{name}」并停用旧CA。旧CA已签发的证书仍可验证，请尽快切换到新CA签发。",
+  rotateIntermediateOk: "确认轮换",
+  rotateIntermediateStepUp: "轮换中间CA需要验证动态码或Passkey。",
+  rotateIntermediateSuccess: "轮换成功，新中间CA ID：{id}",
 
 };
