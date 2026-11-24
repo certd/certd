@@ -8,7 +8,7 @@
               <a-button size="small" type="primary" :loading="acmeEnabling" @click="enableAcme">{{ t("certd.localCa.enableAcme") }}</a-button>
             </template>
           </a-alert>
-          <a-descriptions class="local-ca-settings" bordered :column="1" size="small">
+          <a-descriptions class="local-ca-settings" bordered :column="2" size="small">
             <a-descriptions-item :label="t('certd.localCa.fields.name')">{{ row.name }}</a-descriptions-item>
             <a-descriptions-item :label="t('certd.localCa.fields.caType')">
               {{ row.caType === "intermediate" ? t("certd.localCa.caTypeIntermediate") : t("certd.localCa.caTypeRoot") }}

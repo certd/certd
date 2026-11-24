@@ -152,7 +152,7 @@ export default {
     caType: "CA Type",
     parentCa: "Parent CA",
     baseUrl: "Base URL",
-    baseUrlHelper: "Leave empty to use {origin}; CRL and ACME URLs use this address. Existing certificates keep the old address, so the old host must stay available until they expire",
+    baseUrlHelper: "Root CA: leave empty to use the current site {origin}; CRL/ACME URLs use this address. Intermediate CA inherits the root CA address and is immutable. After root changes, old certificates still point to the old address until they expire",
     caPath: "Hierarchy",
     acmeEnabled: "ACME",
     acmeDirectIssue: "EAB Direct Issue",

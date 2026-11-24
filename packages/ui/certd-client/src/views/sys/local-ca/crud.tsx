@@ -92,17 +92,28 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     } catch (e: any) {
       const message = String(e?.message || "");
       if (!/2FA|Passkey|验证/.test(message)) {
+        notification.error({ message });
         throw e;
       }
       const verified = await openStepUp(t("certd.localCa.updateStepUpTitle"), t("certd.localCa.updateStepUpDesc"), async () => {});
       if (!verified) {
         throw e;
       }
-      return await localCaApi.UpdateObj(form);
+      try {
+        return await localCaApi.UpdateObj(form);
+      } catch (retryError: any) {
+        notification.error({ message: String(retryError?.message || retryError) });
+        throw retryError;
+      }
     }
   };
   const delRequest = async ({ row }: DelReq) => {
-    return await localCaApi.DelObj(row.id);
+    try {
+      return await localCaApi.DelObj(row.id);
+    } catch (e: any) {
+      notification.error({ message: String(e?.message || e) });
+      throw e;
+    }
   };
   const addRequest = async ({ form }: AddReq) => {
     return form;
@@ -198,17 +209,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             icon: "ph:certificate",
             click: async ({ row }) => {
               await openView(row);
-            },
-          },
-          export: {
-            order: 5,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.export") },
-            icon: "ph:export",
-            show: ({ row }) => hasActionPermission("write") && !row.exportDisabled,
-            click: async ({ row }) => {
-              await openExport(row);
             },
           },
           certs: {
@@ -333,11 +333,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               placeholder: window.location.origin,
               disabled: compute(({ form }) => form.caType === "intermediate"),
             },
-            helper: compute(({ form }) =>
-              form.caType === "intermediate"
-                ? t("certd.localCa.fields.baseUrlImmutableHelper")
-                : t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin })
-            ),
+            helper: t("certd.localCa.fields.baseUrlHelper", { origin: window.location.origin }),
           },
           search: { show: false },
           column: { width: 220, ellipsis: true },
@@ -461,8 +457,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               name: "fs-dict-switch",
               vModel: "checked",
+              disabled: compute(({ row }) => row.caType !== "intermediate"),
               on: {
                 async change({ row, $event }) {
+                  if (row.caType !== "intermediate") {
+                    await crudExpose.doRefresh();
+                    return;
+                  }
                   if ($event === true) {
                     const verified = await openStepUp(t("certd.localCa.acmeStepUpTitle"), t("certd.localCa.acmeStepUpDesc"), async () => {
                       await localCaApi.EnableAcme(row.id, true, getSecretAccessToken());

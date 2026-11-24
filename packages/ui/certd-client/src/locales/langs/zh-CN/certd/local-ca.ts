@@ -154,7 +154,7 @@ export default {
     caType: "CA类型",
     parentCa: "上级CA",
     baseUrl: "Base URL",
-    baseUrlHelper: "留空使用当前站点 {origin}；证书内 CRL 和 ACME 地址将使用该地址。修改后旧证书仍指向旧地址，旧域名必须继续服务直到证书过期",
+    baseUrlHelper: "根CA留空使用当前站点 {origin}；证书内 CRL 和 ACME 地址将使用该地址。中间CA自动继承根CA地址且不可修改；根CA修改后旧证书仍指向旧地址，旧域名必须继续服务直到证书过期",
     caPath: "层级/分支",
     acmeEnabled: "ACME",
     acmeDirectIssue: "EAB直签",
