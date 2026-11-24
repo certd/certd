@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import net from "node:net";
 import * as x509 from "@peculiar/x509";
 import { logger } from "@certd/basic";
 import { runTransaction } from "../../db/db-transaction.js";
@@ -120,8 +121,47 @@ export type LocalCaSafe = Omit<LocalCaEntity, "privateKeyEncrypted" | "privateKe
  * ACL/授权委托 LocalCaAccessService，CRL/Base URL委托 LocalCaCrlService，ACME视图/EAB委托 LocalCaAcmeService。
  * 依赖方向：facade → access/crl/acme；crl/acme → access；子服务之间不互相依赖。
  */
+function normalizeDnsServerInput(value: any): string | null {
+  const text = String(value || "").trim();
+  if (!text) return null;
+  const items = text.split(/[,，\s]+/).map(item => item.trim()).filter(Boolean);
+  if (items.length > 5) {
+    throw new ValidateException("DNS服务器最多配置5个");
+  }
+  for (const item of items) {
+    let host = item;
+    let port = "";
+    if (item.startsWith("[")) {
+      const match = item.match(/^\[([^\]]+)\](?::(\d+))?$/);
+      if (!match || !net.isIP(match[1])) throw new ValidateException(`DNS服务器IPv6格式错误: ${item}`);
+      host = match[1];
+      port = match[2] || "";
+    } else if (net.isIP(item)) {
+      host = item;
+    } else {
+      const lastColon = item.lastIndexOf(":");
+      if (lastColon > 0) {
+        const maybePort = item.slice(lastColon + 1);
+        const maybeHost = item.slice(0, lastColon);
+        if (/^\d+$/.test(maybePort) && net.isIP(maybeHost) !== 6) {
+          host = maybeHost;
+          port = maybePort;
+        }
+      }
+      if (!net.isIP(host) && !/^[a-zA-Z0-9._-]+$/.test(host)) {
+        throw new ValidateException(`DNS服务器地址格式错误: ${item}`);
+      }
+    }
+    if (port && (Number(port) < 1 || Number(port) > 65535)) {
+      throw new ValidateException(`DNS服务器端口超出范围: ${item}`);
+    }
+  }
+  return items.join(",");
+}
+
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
+
 export class LocalCaService extends BaseService<LocalCaEntity> {
   @InjectEntityModel(LocalCaEntity)
   repository: Repository<LocalCaEntity>;
@@ -265,6 +305,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   async infoSafe(req: LocalCaScope) {
     const safe = this.toSafe(await this.accessService.getOwnedCa(req));
+    delete (safe as any).dnsServer;
     (safe as any).effectiveBaseUrl = await this.crlService.resolveBaseUrl(safe as any);
     return safe;
   }
@@ -274,6 +315,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
    */
   async infoForUse(req: LocalCaScope) {
     const safe = this.toSafe(await this.accessService.getGrantedCa(req));
+    delete (safe as any).dnsServer;
     (safe as any).effectiveBaseUrl = await this.crlService.resolveBaseUrl(safe as any);
     return safe;
   }
@@ -433,7 +475,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
     bean.baseUrl = normalizeBaseUrl(req.baseUrl) || root.baseUrl || (await this.crlService.resolveBaseUrl(root));
-    bean.dnsServer = String(req.dnsServer || "").trim() || null;
+    bean.dnsServer = normalizeDnsServerInput(req.dnsServer);
     bean.pathLength = 0;
     bean.disabled = false;
     bean.remark = req.remark || "";
@@ -654,7 +696,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.acmeDirectIssue = false;
     bean.acmeConfig = null;
     bean.baseUrl = normalizeBaseUrl(req.baseUrl) || parent?.baseUrl || null;
-    bean.dnsServer = String(req.dnsServer || "").trim() || null;
+    bean.dnsServer = normalizeDnsServerInput(req.dnsServer);
     bean.pathLength = material.pathLength ?? (selfSigned ? getBasicConstraints(material.certPem).pathLength ?? 1 : 0);
     bean.disabled = false;
     bean.remark = req.remark || "";
@@ -889,7 +931,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (req.exportDisabled === false && ca.exportDisabled === true) {
       return true;
     }
-    if (req.dnsServer != null && (String(req.dnsServer || "").trim() || null) !== (ca.dnsServer || null)) {
+    if (req.dnsServer != null && normalizeDnsServerInput(req.dnsServer) !== (ca.dnsServer || null)) {
       return true;
     }
     return false;
@@ -1023,7 +1065,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       }
     }
     if (req.dnsServer != null) {
-      ca.dnsServer = String(req.dnsServer || "").trim() || null;
+      ca.dnsServer = normalizeDnsServerInput(req.dnsServer);
     }
     if (req.exportDisabled != null) {
       ca.exportDisabled = req.exportDisabled === true;

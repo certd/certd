@@ -263,23 +263,34 @@ async function createCustomResolver(servers, logger = log) {
     for (const item of servers || []) {
         const value = String(item || "").trim();
         if (!value) continue;
-        const lastColon = value.lastIndexOf(":");
         let host = value;
         let port = "";
-        if (lastColon > 0 && !value.startsWith("[")) {
-            const maybePort = value.slice(lastColon + 1);
-            if (/^\d+$/.test(maybePort)) {
-                host = value.slice(0, lastColon);
-                port = maybePort;
+        if (value.startsWith("[")) {
+            const match = value.match(/^\[([^\]]+)\](?::(\d+))?$/);
+            if (!match || !net.isIP(match[1])) throw new Error(`DNS服务器IPv6格式错误: ${value}`);
+            host = match[1];
+            port = match[2] || "";
+        } else if (net.isIP(value)) {
+            host = value; // 裸IPv4/IPv6，不猜测端口
+        } else {
+            const lastColon = value.lastIndexOf(":");
+            if (lastColon > 0) {
+                const maybePort = value.slice(lastColon + 1);
+                const maybeHost = value.slice(0, lastColon);
+                if (/^\d+$/.test(maybePort) && net.isIP(maybeHost) !== 6) {
+                    host = maybeHost;
+                    port = maybePort;
+                }
             }
         }
+        if (port && (Number(port) < 1 || Number(port) > 65535)) throw new Error(`DNS服务器端口超出范围: ${value}`);
         let address = host;
         if (!net.isIP(host)) {
             const records = await dns.lookup(host, { all: true, verbatim: true });
             if (!records.length) throw new Error(`DNS服务器域名解析失败: ${host}`);
             address = records[0].address;
         }
-        normalized.push(port ? `${address}:${port}` : address);
+        normalized.push(net.isIP(address) === 6 ? (port ? `[${address}]:${port}` : address) : (port ? `${address}:${port}` : address));
     }
     if (!normalized.length) return null;
     resolver.setServers(normalized);
@@ -287,7 +298,7 @@ async function createCustomResolver(servers, logger = log) {
     return resolver;
 }
 
-async function getAuthoritativeDnsResolver(recordName, logger = log, customServers) {
+async function getAuthoritativeDnsResolver(recordName, logger = log, customServers = undefined) {
     logger(`获取域名${recordName}的权威NS服务器: `);
     const resolver = (await createCustomResolver(customServers, logger)) || new dns.Resolver({timeout: 2000,tries: 2});
     const baseResolver = customServers?.length ? resolver : dns;

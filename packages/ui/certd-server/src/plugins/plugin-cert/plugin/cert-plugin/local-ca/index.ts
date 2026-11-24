@@ -1,6 +1,4 @@
 import crypto from "node:crypto";
-import net from "node:net";
-import dns from "node:dns/promises";
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import { CertReader } from "@certd/plugin-lib";
 import type { CustomAcmeProvider } from "@certd/lib-server";
@@ -31,32 +29,6 @@ type LocalCaSubscribeInfo = {
   dnsServer?: string | null;
 };
 
-
-function isBlockedAddress(address: string): boolean {
-  const host = address.toLowerCase().replace(/^\[|\]$/g, "");
-  const version = net.isIP(host);
-  if (version === 4) {
-    const parts = host.split(".").map(Number);
-    const [a, b] = parts;
-    if (a === 0 || a === 10 || a === 127) return true;
-    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
-    if (a === 169 && b === 254) return true; // link-local/metadata
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && (b === 168 || b === 0)) return true;
-    if (a === 198 && (b === 18 || b === 19)) return true; // benchmark
-    if (a >= 224) return true; // multicast/reserved
-    return false;
-  }
-  if (version === 6) {
-    if (host === "::1" || host === "::") return true;
-    if (host.startsWith("::ffff:")) return isBlockedAddress(host.slice(7));
-    if (host.startsWith("fe80:") || host.startsWith("fe8") || host.startsWith("fe9") || host.startsWith("fea") || host.startsWith("feb")) return true;
-    if (host.startsWith("fc") || host.startsWith("fd")) return true; // ULA fc00::/7
-    if (host.startsWith("ff")) return true; // multicast
-    return false;
-  }
-  return false;
-}
 
 const ACME_MODES: LocalCaApplyMode[] = ["local-acme", "remote-acme"];
 
@@ -434,28 +406,9 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     if (this.isAdmin()) {
       return;
     }
-    const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
-    const blockedHost = host === "localhost" || host.endsWith(".localhost") || host === "metadata.google.internal" || host === "100.100.100.200" || host === "169.254.169.254";
-    if (blockedHost || isBlockedAddress(host)) {
-      if (await this.isTrustedAcmeProvider(url)) {
-        return;
-      }
-      throw new Error("普通用户不能使用本机/私网/链路本地/保留地址作为远程ACME Directory URL；如需内部ACME，请由管理员在系统设置中配置自定义ACME颁发机构");
-    }
-    // 域名解析后的所有A/AAAA地址也必须通过检查，避免解析到内网
-    if (!net.isIP(host)) {
-      let addresses: { address: string }[] = [];
-      try {
-        addresses = await dns.lookup(host, { all: true, verbatim: true });
-      } catch {
-        throw new Error("远程ACME Directory URL域名解析失败");
-      }
-      if (!addresses.length || addresses.some(item => isBlockedAddress(item.address))) {
-        if (await this.isTrustedAcmeProvider(url)) {
-          return;
-        }
-        throw new Error("远程ACME Directory URL解析到受限地址，普通用户禁止访问");
-      }
+    // 普通用户远程ACME只允许管理员配置的可信颁发机构，避免SSRF/DNS rebinding；管理员不受限
+    if (!(await this.isTrustedAcmeProvider(url))) {
+      throw new Error("普通用户远程ACME必须使用管理员在系统设置中配置的自定义ACME颁发机构");
     }
   }
 
