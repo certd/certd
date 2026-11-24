@@ -186,6 +186,12 @@ function createService() {
           if (entity?.name === "AcmeOrderEntity") {
             return (service as any).acmeOrderRepository;
           }
+          if (entity?.name === "LocalCaGrantEntity") {
+            return service.grantRepository;
+          }
+          if (entity?.name === "LocalCaAdminEntity") {
+            return service.adminRepository;
+          }
           return service.repository;
         },
       });
