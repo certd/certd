@@ -78,6 +78,8 @@ admin/123456
 > 默认数据保存在`/data/certd`目录下，可以手动备份    
 > 建议配置一条 [数据库备份流水线](../../use/backup/)，自动备份
 
+部署 1Panel 证书插件时，1Panel 2.1.x 及以上可选择 Strict 或 Mux SSL 模式，旧版本保持默认。站点证书任务需要先在 1Panel 上传证书，再选择证书 ID；如果 Certd 与 1Panel 不在同一台机器，请把 Certd 的来源地址加入 1Panel API 白名单。
+
 #### 2.5 恢复
 
 将备份的`db.sqlite`及同目录下的其他文件一起覆盖到原来的位置，重启certd即可

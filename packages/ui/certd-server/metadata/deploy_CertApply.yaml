@@ -277,7 +277,7 @@ input:
 
       5.  <b>多DNS提供商</b>：每个域名可以选择独立的DNS提供商或校验方式
 
-      6.  <b>自动匹配</b>：此处无需选择校验方式，需要在[域名管理](#/certd/cert/domain)中提前配置好校验方式
+      6.  <b>自动匹配</b>：默认需在[域名管理](#/certd/cert/domain)提前配置校验方式；本地CA开启EAB直签时自动跳过
     order: 0
   dnsProviderType:
     title: DNS解析服务商

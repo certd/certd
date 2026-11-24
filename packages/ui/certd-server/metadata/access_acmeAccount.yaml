@@ -36,6 +36,11 @@ i18n:
 
           litessl: Create an EAB on the [litessl EAB
           page](https://freessl.cn/automation/eab-manager).
+
+          Local CA: enable ACME for an intermediate CA and create an EAB
+          credential in Local CA Management. Quick-add the custom ACME provider
+          in System Settings > Pipeline Settings (copy the Directory URL from
+          the CA details), then fill in this credential's KID and HMAC Key.
       eabHmacKey:
         title: EAB HMAC Key
         component:
@@ -127,6 +132,9 @@ input:
       credentials链接，然后点击编辑按钮，查看Secret key和HMAC key
 
       litessl:[litesslEAB页面](https://freessl.cn/automation/eab-manager),然后点击新增EAB
+
+      本地CA：请先在「本地CA管理」中为中间CA开启ACME并创建EAB凭证；再到「系统设置-流水线设置」快速添加自定义ACME（Directory
+      URL 从CA详情复制），最后把凭证的 KID 和 HMAC Key 填到这里生成账号。
     required: true
     encrypt: true
     mergeScript: |2-

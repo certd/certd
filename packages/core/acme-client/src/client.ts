@@ -508,7 +508,7 @@ class AcmeClient {
             throw new Error('Unable to verify ACME challenge, URL not found');
         }
 
-        const {challenges} = createChallengeFn({logger:this.logger,walkFromAuthoritative: this.opts.walkFromAuthoritative});
+        const {challenges} = createChallengeFn({logger:this.logger,walkFromAuthoritative: this.opts.walkFromAuthoritative,dnsServers:this.opts.dnsServers});
  
         const verify = challenges
         if (typeof verify[challenge.type] === 'undefined') {

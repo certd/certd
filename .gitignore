@@ -22,6 +22,7 @@ nohup.out
 /packages/ui/*/node_modules
 /packages/*/node_modules
 #/pnpm-lock.yaml
+tmp/
 
 
 tsconfig.tsbuildinfo

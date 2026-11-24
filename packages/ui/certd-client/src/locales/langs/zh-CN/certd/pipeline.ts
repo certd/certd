@@ -13,6 +13,7 @@ export default {
     pullStage: "证书拉取阶段",
     pullTask: "拉取证书任务",
     pullStep: "拉取证书",
+    localCaPipeline: "本地CA流水线",
     legoCertPipeline: "Lego证书流水线",
     customPipeline: "自定义流水线",
     batchAddPipeline: "模版批量创建流水线",

@@ -5,6 +5,7 @@
 
 import tls from 'tls';
 import dnsSdk from 'dns';
+import net from 'net';
 import { readCertificateInfo, splitPemChain }from './crypto/index.js'
 import { log } from './logger.js'
 
@@ -226,9 +227,9 @@ function formatResponseError(resp) {
  * @returns {Promise<string>} Root domain name
  */
 
-async function resolveDomainBySoaRecord(recordName, logger = log) {
+async function resolveDomainBySoaRecord(recordName, logger = log, resolver = dns) {
     try {
-        await dns.resolveSoa(recordName);
+        await resolver.resolveSoa(recordName);
         logger(`找到${recordName}的SOA记录`);
         return recordName;
     }
@@ -240,7 +241,7 @@ async function resolveDomainBySoaRecord(recordName, logger = log) {
             throw new Error('SOA record查找失败');
         }
 
-        return resolveDomainBySoaRecord(parentRecordName,logger);
+        return resolveDomainBySoaRecord(parentRecordName,logger,resolver);
     }
 }
 
@@ -251,19 +252,66 @@ async function resolveDomainBySoaRecord(recordName, logger = log) {
  * @returns {Promise<dns.Resolver>} DNS resolver
  */
 
-async function getAuthoritativeDnsResolver(recordName, logger = log) {
+
+/**
+ * 创建自定义DNS resolver，支持 ip:port / host:port（非标准端口）。
+ * host 会先通过系统DNS解析为IP，再交给 Resolver。
+ */
+async function createCustomResolver(servers, logger = log) {
+    const resolver = new dns.Resolver({ timeout: 2000, tries: 2 });
+    const normalized = [];
+    for (const item of servers || []) {
+        const value = String(item || "").trim();
+        if (!value) continue;
+        let host = value;
+        let port = "";
+        if (value.startsWith("[")) {
+            const match = value.match(/^\[([^\]]+)\](?::(\d+))?$/);
+            if (!match || !net.isIP(match[1])) throw new Error(`DNS服务器IPv6格式错误: ${value}`);
+            host = match[1];
+            port = match[2] || "";
+        } else if (net.isIP(value)) {
+            host = value; // 裸IPv4/IPv6，不猜测端口
+        } else {
+            const lastColon = value.lastIndexOf(":");
+            if (lastColon > 0) {
+                const maybePort = value.slice(lastColon + 1);
+                const maybeHost = value.slice(0, lastColon);
+                if (/^\d+$/.test(maybePort) && net.isIP(maybeHost) !== 6) {
+                    host = maybeHost;
+                    port = maybePort;
+                }
+            }
+        }
+        if (port && (Number(port) < 1 || Number(port) > 65535)) throw new Error(`DNS服务器端口超出范围: ${value}`);
+        let address = host;
+        if (!net.isIP(host)) {
+            const records = await dns.lookup(host, { all: true, verbatim: true });
+            if (!records.length) throw new Error(`DNS服务器域名解析失败: ${host}`);
+            address = records[0].address;
+        }
+        normalized.push(net.isIP(address) === 6 ? (port ? `[${address}]:${port}` : address) : (port ? `${address}:${port}` : address));
+    }
+    if (!normalized.length) return null;
+    resolver.setServers(normalized);
+    logger(`使用自定义DNS服务器: ${normalized.join(", ")}`);
+    return resolver;
+}
+
+async function getAuthoritativeDnsResolver(recordName, logger = log, customServers = undefined) {
     logger(`获取域名${recordName}的权威NS服务器: `);
-    const resolver = new dns.Resolver({timeout: 2000,tries: 2});
+    const resolver = (await createCustomResolver(customServers, logger)) || new dns.Resolver({timeout: 2000,tries: 2});
+    const baseResolver = customServers?.length ? resolver : dns;
 
     try {
         /* Resolve root domain by SOA */
-        const domain = await resolveDomainBySoaRecord(recordName,logger);
+        const domain = await resolveDomainBySoaRecord(recordName,logger,baseResolver);
 
         /* Resolve authoritative NS addresses */
         logger(`获取到权威NS服务器name: ${domain}`);
-        const nsRecords = await dns.resolveNs(domain);
+        const nsRecords = await baseResolver.resolveNs(domain);
         logger(`域名权威NS服务器：${nsRecords}`);
-        const nsAddrArray = await Promise.all(nsRecords.map(async (r) => dns.resolve4(r)));
+        const nsAddrArray = await Promise.all(nsRecords.map(async (r) => baseResolver.resolve4(r)));
         const nsAddresses = [].concat(...nsAddrArray).filter((a) => a);
 
         if (!nsAddresses.length) {
@@ -349,6 +397,7 @@ export {
     findCertificateChainForIssuer,
     formatResponseError,
     getAuthoritativeDnsResolver,
+    createCustomResolver,
     retrieveTlsAlpnCertificate,
     resolveDomainBySoaRecord
 };

@@ -15,7 +15,7 @@
 | 11.| **天翼云授权** |  | 
 | 12.| **51dns授权** |  | 
 | 13.| **AcePanel授权** |  | 
-| 14.| **SFTP授权** |  | 
+| 14.| **SFTP授权** | HTTP 验证文件或证书远程拉取可用；选择 SFTP 或 SCP 并关联 SSH 登录授权。 |
 | 15.| **阿里云OSS授权** | 包含地域和Bucket | 
 | 16.| **APISIX授权** |  | 
 | 17.| **橙域网络(asia-isp)授权** | 橙域网络CDN API授权，用于部署证书到橙域CDN | 
@@ -50,8 +50,8 @@
 | 46.| **s3/minio授权** | S3/minio oss授权 | 
 | 47.| **namesilo授权** |  | 
 | 48.| **Next Terminal 授权** | 用于访问 Next Terminal API 的授权配置 | 
-| 49.| **Nginx Proxy Manager 授权** | 用于登录 Nginx Proxy Manager，并为代理主机证书部署提供授权。 | 
-| 50.| **1panel授权** | 账号和密码 | 
+| 49.| **Nginx Proxy Manager 授权** | 用于登录 Nginx Proxy Manager，并为代理主机证书部署提供授权。配置 2FA 时填写 TOTP 密钥；仅自签名 HTTPS 才忽略 TLS 证书校验。 |
+| 50.| **1Panel授权** | 1Panel 地址、用户名及密码。1Panel v2 另需确认节点访问和访问白名单。 |
 | 51.| **支付宝** |  | 
 | 52.| **白山云授权** |  | 
 | 53.| **宝塔云WAF授权** | 用于连接和管理宝塔云WAF服务的授权配置 | 
@@ -63,7 +63,7 @@
 | 59.| **猫云授权** |  | 
 | 60.| **plesk授权** |  | 
 | 61.| **长亭雷池授权** |  | 
-| 62.| **群晖登录授权** |  | 
+| 62.| **群晖登录授权** | 使用管理员组账号。开启 2FA 时获取设备 ID，并在 DSM 开启信任设备选项；可配置请求超时。 |
 | 63.| **uniCloud** | unicloud授权 | 
 | 64.| **微信支付** |  | 
 | 65.| **易盾rcdn授权** | 易盾CDN，每月免费30G，[注册即领](https://rhcdn.yiduncdn.com/register?code=8mn536rrzfbf8) | 
@@ -75,7 +75,7 @@
 | 71.| **Technitium DNS Server** | Technitium DNS Server 自建DNS服务器授权 | 
 | 72.| **UCloud授权** | 优刻得授权 | 
 | 73.| **又拍云** |  | 
-| 74.| **网宿授权** |  | 
+| 74.| **网宿授权** | 普通 CDN 使用 AccessKey 签名；CDN Pro 选择 ApiKey，并填写 API 账号名和 API Key。 |
 | 75.| **西部数码授权** |  | 
 | 76.| **我爱云授权** | 我爱云CDN | 
 | 77.| **新网授权（代理方式）** |  | 

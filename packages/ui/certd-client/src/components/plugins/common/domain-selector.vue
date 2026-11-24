@@ -55,6 +55,12 @@
     <div class="helper" :class="{ error: hasError }">
       {{ message }}
     </div>
+    <div v-if="invalidDomains.length" class="helper error">
+      {{ t("certd.common.pluginCommon.domainNotAllowed", { domains: invalidDomains.join(", ") }) }}
+    </div>
+    <a-modal v-model:open="editOpen" title="编辑域名" :width="420" @ok="saveEdit">
+      <a-input v-model:value="editValue" placeholder="请输入域名" @press-enter="saveEdit" />
+    </a-modal>
   </div>
 </template>
 <script setup lang="tsx">
@@ -92,6 +98,7 @@ const props = defineProps<{
   pager?: boolean;
   value?: any[];
   open?: boolean;
+  caId?: number;
 }>();
 
 const emit = defineEmits<{
@@ -114,6 +121,8 @@ const optionsRef = ref([]);
 const message = ref("");
 const hasError = ref(false);
 const loading = ref(false);
+const allowedDomains = ref<string[]>([]);
+const validationTick = ref(0);
 const pagerRef: Ref = ref({
   pageNo: 1,
   total: 0,
@@ -187,6 +196,179 @@ const filterOption = (input: string, option: any) => {
   return option.label.toLowerCase().includes(input.toLowerCase()) || String(option.value).toLowerCase().includes(input.toLowerCase());
 };
 
+function normalizeDomains(list: any[]) {
+  const result: string[] = [];
+  const seen = new Set<string>();
+  for (const item of list || []) {
+    for (const part of String(item).split(/[,，、|\s]+/)) {
+      const domain = part.trim();
+      if (!domain || seen.has(domain)) {
+        continue;
+      }
+      seen.add(domain);
+      result.push(domain);
+    }
+  }
+  return result;
+}
+
+function isAllowedDomain(domain: string) {
+  if (!allowedDomains.value || allowedDomains.value.length === 0) {
+    return true;
+  }
+  const value = String(domain || "")
+    .trim()
+    .toLowerCase();
+  const host = value.startsWith("*.") ? value.slice(2) : value;
+  const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(host) || host.includes(":");
+  return allowedDomains.value.some(item => {
+    const prefix = String(item || "")
+      .trim()
+      .toLowerCase()
+      .replace(/^\*\./, "");
+    if (!prefix) {
+      return true;
+    }
+    return isIp ? host === prefix : host === prefix || host.endsWith(`.${prefix}`);
+  });
+}
+
+const invalidDomains = computed(() => {
+  const tick = validationTick.value;
+  return normalizeDomains(props.value || []).filter(domain => tick >= 0 && !isAllowedDomain(domain));
+});
+
+async function loadAllowedDomains(caId?: number) {
+  validationTick.value++;
+  if (!caId) {
+    allowedDomains.value = [];
+    return;
+  }
+  try {
+    const info: any = await request({
+      url: "/sys/local-ca/info",
+      method: "post",
+      params: { id: caId },
+    });
+    let list: string[] = [];
+    try {
+      const parsed = info?.allowedDomains ? JSON.parse(info.allowedDomains) : [];
+      list = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      list = [];
+    }
+    allowedDomains.value = list;
+  } catch (e) {
+    allowedDomains.value = [];
+  } finally {
+    validationTick.value++;
+    selectKey.value++;
+  }
+}
+
+watch(
+  () => props.caId,
+  async caId => {
+    await loadAllowedDomains(caId);
+  },
+  { immediate: true }
+);
+
+function isChanged(list: string[], normalized: string[]) {
+  return normalized.length !== list.length || normalized.some((item, index) => item !== list[index]);
+}
+
+function cleanValue() {
+  const list = props.value || [];
+  const normalized = normalizeDomains(list);
+  if (isChanged(list, normalized)) {
+    emit("update:value", normalized);
+    // 强制重建，清除 a-select 内部残留的非法 tag
+    selectKey.value++;
+  }
+}
+
+watch(
+  () => props.value,
+  () => cleanValue(),
+  { deep: true }
+);
+
+function onValueChange(list: string[]) {
+  lastValueChangeAt = Date.now();
+  const normalized = normalizeDomains(list);
+  emit("update:value", normalized);
+  if (isChanged(list, normalized)) {
+    selectKey.value++;
+  }
+}
+
+// 输入法组合期间的回车/空格/逗号交给输入法处理，避免生成重复或空标签
+function onKeydownCapture(e: KeyboardEvent) {
+  if (!(e.isComposing || e.keyCode === 229)) {
+    return;
+  }
+  if (e.key === "Enter" || e.key === " " || e.key === "," || e.key === "，") {
+    e.stopPropagation();
+  }
+}
+
+function onSearchText(value: string) {
+  searchText.value = value;
+}
+
+// 失去焦点时清理已有非法项，并清空输入框；稍作延迟避免影响下拉选择
+function onSelectBlur() {
+  if (blurTimer) {
+    clearTimeout(blurTimer);
+  }
+  blurTimer = setTimeout(() => {
+    blurTimer = null;
+    const text = searchText.value;
+    searchText.value = "";
+    const input = selectRef.value?.$el?.querySelector("input");
+    if (input?.value) {
+      input.value = "";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    cleanValue();
+    validationTick.value++;
+
+    const value = normalizeDomains([text]).join(",");
+    // 刚通过下拉选择或分隔符新增过标签时，不把过滤词当成域名
+    if (!value || Date.now() - lastValueChangeAt < 500) {
+      return;
+    }
+    emit("update:value", normalizeDomains([...(props.value || []), value]));
+  }, 50);
+}
+
+function editTag(domain: string) {
+  searchText.value = "";
+  editOriginal.value = domain;
+  editValue.value = domain;
+  editOpen.value = true;
+}
+
+function saveEdit() {
+  const value = editValue.value.trim();
+  const list = normalizeDomains(props.value);
+  const index = list.indexOf(editOriginal.value);
+  if (index >= 0) {
+    if (value) {
+      list[index] = value;
+    } else {
+      list.splice(index, 1);
+    }
+  } else if (value) {
+    list.push(value);
+  }
+  emit("update:value", normalizeDomains(list));
+  editOpen.value = false;
+  editValue.value = "";
+  editOriginal.value = "";
+}
+
 async function onClick() {
   if (optionsRef.value?.length === 0) {
     await refreshOptions();
@@ -244,8 +426,8 @@ function tagRender(tag: { value: string; label: string; closable: boolean; onClo
       closable={tag.closable}
       onClose={tag.onClose}
       type="primary"
-      color="green"
-      title="点击复制"
+      color={isAllowedDomain(value) ? "green" : "red"}
+      title="点击编辑"
       class="domain-select-tag"
       onClick={async (event: MouseEvent) => {
         event.preventDefault();

@@ -451,7 +451,12 @@ export class Executor {
       utils,
       user: this.options.user,
       emitter: pipelineEmitter,
-      serviceGetter: this.options.serviceGetter,
+      serviceGetter: (() => {
+        const base = this.options.serviceGetter;
+        const scoped = base?.forPlugin?.(step.type, define?.serviceCapabilities) || base;
+        // 只暴露受限get()，插件不能调用forPlugin自我提升能力，也拿不到appCtx
+        return scoped ? { get: scoped.get.bind(scoped) } : undefined;
+      })(),
       projectId: this.pipeline.projectId,
     };
     await instance.setCtx(taskCtx);

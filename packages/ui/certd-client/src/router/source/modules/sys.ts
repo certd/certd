@@ -232,6 +232,19 @@ export const sysResources = [
         },
       },
       {
+        title: "certd.navigation.sysResources.localCa",
+        name: "SysLocalCaManager",
+        path: "/sys/local-ca",
+        component: "/sys/local-ca/index.vue",
+        meta: {
+          show: () => useUserStore().isAdmin,
+          icon: "ph:certificate",
+          permission: "sys:auth:user:view",
+          auth: true,
+          keepAlive: true,
+        },
+      },
+      {
         title: "certd.navigation.sysResources.userDataManager",
         name: "UserDataManager",
         path: "/sys/user-data",

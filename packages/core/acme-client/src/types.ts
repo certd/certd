@@ -59,6 +59,7 @@ export interface ClientAutoOptions {
     signal?: AbortSignal;
     profile?: string;
     waitDnsDiffuseTime?: number;
+    dnsServers?: string[];
 }
 
 export interface CertificateDomains {

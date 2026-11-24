@@ -1,60 +1,51 @@
+# Docker 自动升级
 
-## 自动升级配置
+Watchtower 可定期检查带有指定标签的 Docker 容器镜像。升级前先备份 Certd 的整个数据目录，并选择适合站点的发布通道。生产站点通常固定使用 `stable` 标签。
 
-### 1. 方法一：使用watchtower监控自动升级【推荐】
+## 配置 Compose
 
-1. 修改docker-compose.yaml文件增加如下配置       
-或 [下载完整的自动升级docker-compose.yaml配置](https://gitee.com/certd/certd/raw/v2/docker/auto/docker-compose.yaml)
+在 Certd 服务使用的 `docker-compose.yaml` 中设置镜像地址和 Watchtower 标签，再添加更新服务。以下示例从阿里云仓库拉取稳定版：
+
 ```yaml
 services:
   certd:
-     # 镜像                                                  #  ↓↓↓↓↓ ---- 镜像版本号 这里要保持为latest
-    image: registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
-    ... # 这里是你原来的docker-compose.yaml配置
-
-    # ↓↓↓↓ ---------------------------------------------------------  增加一个标签，表示certd需要自动升级
+    image: registry.cn-shenzhen.aliyuncs.com/certd/certd:stable
+    container_name: certd
+    restart: unless-stopped
     labels:
       com.centurylinklabs.watchtower.enable: "true"
+    volumes:
+      - /data/certd:/app/data
+    ports:
+      - "7001:7001"
+      - "7002:7002"
 
-#         ↓↓↓↓ ---------------------------------------------------------  自动升级watchtower配置，注意：上面certd的版本号要保持为latest
-  certd-updater:  # 添加 Watchtower 服务
+  certd-updater:
     image: containrrr/watchtower:latest
     container_name: certd-updater
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    # 配置 自动更新
     environment:
-      - WATCHTOWER_CLEANUP=true            # 自动清理旧版本容器
-      - WATCHTOWER_INCLUDE_STOPPED=false   # 不更新已停止的容器
-      - WATCHTOWER_LABEL_ENABLE=true       # 根据容器标签进行更新
-      - WATCHTOWER_POLL_INTERVAL=600       # 每 10 分钟检查一次更新
-
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_INCLUDE_STOPPED: "false"
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_POLL_INTERVAL: "600"
 ```
 
-2. 重启certd容器
-```shell
-cd certd
-docker compose down
+保留现有 `certd` 服务的其它环境变量和卷，只需核对镜像、标签和更新服务。挂载 `/var/run/docker.sock` 使更新服务可以管理 Docker 容器，仅在信任该配置及运行镜像来源时启用。
+
+配置完成后，从 Certd Compose 文件所在目录运行：
+
+```sh
 docker compose up -d
+docker compose ps
 ```
 
+检查 Certd 和 Watchtower 容器均正常运行。Watchtower 每 10 分钟检查带有更新标签的服务。
 
-### 2. 方法二：使用Certd版本监控功能【不太稳定】
+## 验证升级
 
-1. 选择Github-检查Release版本插件
-![](./images/github-release.png)
-按如下图填写配置
-![](./images/github-release-2.png)
+从 Certd 容器日志确认启动完成，再登录检查流水线、证书仓库和站点监控。实际执行流水线前确认部署目标与通知配置。具体升级兼容项见[版本升级](./upgrade.md)，数据恢复见[数据库备份](../use/backup/)。
 
-
-2. 检测到新版本后执行宿主机升级命令：
-
-```shell
-# 拉取最新镜像
-docker pull registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
-# 升级容器命令， 替换成你自己的certd更新命令
-export RESTART_CERT='sleep 10; cd ~/deploy/certd/ ; docker compose down; docker compose up -d'
-# 构造一个脚本10s后在后台执行，避免容器销毁时执行太快，导致流水线任务无法结束
-nohup sh -c '$RESTART_CERT' >/dev/null  2>&1 & echo '10秒后重启' && exit
-```
+希望先人工检查变更时，使用[Docker 手动升级步骤](./docker/index.md#二、升级certd)，并为服务指定固定版本标签。

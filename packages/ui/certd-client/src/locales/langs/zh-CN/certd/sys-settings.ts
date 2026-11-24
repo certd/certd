@@ -76,6 +76,18 @@ export default {
   customAcmeDeleteConfirmContent: "删除「{title}」可能影响使用它的流水线申请证书，确认是否删除？",
   customAcmeSaveCheck: "自定义ACME的名称、标识、Directory URL均为必填",
   customAcmeSslProviderUnique: "自定义ACME的标识(sslProvider)不能重复",
+  customAcmeLocalCaHelpTitle: "如何快速添加本地CA的ACME？",
+  customAcmeLocalCaHelpContent:
+    "1. 在「本地CA管理」中为中间CA开启ACME，并创建EAB凭证（Root CA不提供ACME服务）。\n2. 打开该CA的「查看」，复制 ACME Directory URL，形如 https://你的Certd地址/api/acme/<CA ID>/directory。\n3. 也可以直接使用下方的「从本地CA快速添加」自动填入名称、标识和 Directory URL，并打开「需要EAB」。\n4. 在证书申请任务中选择该颁发机构，并使用第1步的 EAB KID 和 HMAC Key 创建ACME账号。",
+  customAcmeLocalCaQuickAdd: "从本地CA快速添加",
+  customAcmeLocalCaQuickAddTitle: "选择要添加的本地CA",
+  customAcmeLocalCaQuickAddSelect: "本地CA",
+  customAcmeLocalCaQuickAddHelp: "仅列出已启用ACME的中间CA。添加后请点击页面底部「保存」使配置生效。",
+  customAcmeLocalCaQuickAddEmpty: "没有可添加的本地CA，请先在「本地CA管理」中为中间CA开启ACME。",
+  customAcmeLocalCaQuickAddNoBaseUrl: "无法确定本地CA的访问地址，请先在本地CA设置中配置访问地址。",
+  customAcmeLocalCaQuickAddExists: "该本地CA已添加，无需重复添加。",
+  customAcmeLocalCaQuickAddSuccess: "已添加，请点击页面底部「保存」后生效。",
+  customAcmeLocalCaQuickAddProviderName: "{name}（本地CA）",
 
   fixedCertExpireDays: "固定证书有效期天数",
   fixedCertExpireDaysHelper: "固定证书有效期天数，有助于列表进度条整齐显示",

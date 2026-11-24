@@ -14,6 +14,7 @@ export default {
     pullStage: "Certificate Pull Stage",
     pullTask: "Pull Certificate Task",
     pullStep: "Pull Certificate",
+    localCaPipeline: "Local CA Pipeline",
     customPipeline: "Custom Pipeline",
     batchAddPipeline: "Add Pipeline Use Template",
     myPipelinesDesc: "Pipeline Mode: Apply -> Deploy -> Schedule",
