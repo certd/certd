@@ -68,7 +68,9 @@
       <a-descriptions-item :label="t('certd.localCa.crlNumber')">{{ crlInfo?.crlNumber || "-" }}</a-descriptions-item>
     </a-descriptions>
     <a-table :data-source="crlInfo?.entries || []" :pagination="{ pageSize: 8 }" size="small" class="mt-3" row-key="serialNumber">
-      <a-table-column :title="t('certd.localCa.certSerial')" data-index="serialNumber" />
+      <a-table-column :title="t('certd.localCa.certSerial')">
+        <template #default="{ record }">{{ String(record.serialNumber || "").toUpperCase() }}</template>
+      </a-table-column>
       <a-table-column :title="t('certd.localCa.crlRevokedAt')">
         <template #default="{ record }">{{ formatTime(record.revocationDate) }}</template>
       </a-table-column>

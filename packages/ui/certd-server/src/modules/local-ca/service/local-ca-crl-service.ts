@@ -143,9 +143,14 @@ export class LocalCaCrlService {
 
   async getCrlInfo(req: LocalCaScope) {
     const crl = await this.getCrl(req.id);
+    const info = parseCrlInfo(crl.pem);
+    // 序列号统一大写展示，与证书仓库/吊销记录存储格式一致
+    if (Array.isArray(info.entries)) {
+      info.entries = info.entries.map((item: any) => ({ ...item, serialNumber: String(item.serialNumber || "").toUpperCase() }));
+    }
     return {
       filename: `local-ca-${req.id}.crl`,
-      ...parseCrlInfo(crl.pem),
+      ...info,
     };
   }
 
