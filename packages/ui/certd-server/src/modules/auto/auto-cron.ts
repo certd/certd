@@ -14,6 +14,8 @@ import { PipelineService } from "../pipeline/service/pipeline-service.js";
 import { UserService } from "../sys/authority/service/user-service.js";
 import { AuditService } from "../sys/enterprise/service/audit-service.js";
 import { ProjectService } from "../sys/enterprise/service/project-service.js";
+import { LocalCaService } from "../local-ca/service/local-ca-service.js";
+import { AcmeServerService } from "../acme-server/service/acme-server-service.js";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -54,6 +56,12 @@ export class AutoCron {
   @Inject()
   auditService: AuditService;
 
+  @Inject()
+  localCaService: LocalCaService;
+
+  @Inject()
+  acmeServerService: AcmeServerService;
+
   async init() {
     logger.info("加载定时trigger开始");
     await this.pipelineService.onStartup(this.immediateTriggerOnce, this.onlyAdminUser);
@@ -67,7 +75,35 @@ export class AutoCron {
 
     await this.registerDomainExpireCheckCron();
 
+    this.registerLocalCaCrlRefreshCron();
+    this.registerAcmeCleanupCron();
+
     // await this.registerAuditCleanCron();
+  }
+
+  registerAcmeCleanupCron() {
+    this.cron.register({
+      name: "localCaAcmeCleanup",
+      cron: "0 23 3 * * *",
+      job: async () => {
+        logger.info("开始清理过期的本地ACME订单");
+        await this.acmeServerService.cleanupExpired();
+        logger.info("本地ACME订单清理完成");
+      },
+    });
+  }
+
+  registerLocalCaCrlRefreshCron() {
+    const minute = Math.floor(Math.random() * 60);
+    this.cron.register({
+      name: "localCaCrlRefresh",
+      cron: `0 ${minute} */6 * * *`,
+      job: async () => {
+        logger.info("开始本地CA CRL定时刷新");
+        await this.localCaService.refreshAllCrls();
+        logger.info("本地CA CRL定时刷新完成");
+      },
+    });
   }
 
   async registerSiteMonitorCron() {

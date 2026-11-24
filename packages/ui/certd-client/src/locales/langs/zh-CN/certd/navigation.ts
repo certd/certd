@@ -18,6 +18,7 @@ export default {
   accessManager: "授权管理",
   dnsPersistRecord: "DNS持久验证记录",
   certApplyTemplate: "证书申请参数模版",
+  localCa: "本地CA管理",
   certApplyTemplateHelper: "预设证书申请参数，创建证书流水线时自动帮你填写参数。(不包含域名和校验方式)",
   subDomain: "子域名托管设置",
   pipelineGroup: "流水线分组管理",
@@ -86,5 +87,6 @@ export default {
     auditLogHelper: "查看所有用户的操作记录",
     domainMonitorSetting: "域名监控设置",
     jobHistory: "监控执行记录",
+    localCa: "本地CA管理",
   },
 };

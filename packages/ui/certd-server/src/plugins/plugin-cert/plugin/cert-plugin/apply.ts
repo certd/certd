@@ -220,7 +220,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 3.  <b>CNAME代理验证</b>：支持任何注册商的域名，第一次需要手动添加[CNAME记录](#/certd/cname/record)（如果经常申请失败，建议将DNS服务器修改为阿里云/腾讯云的，然后使用DNS直接验证）
 4.  <b>HTTP文件验证</b>：不支持泛域名，需要配置网站文件上传（IP证书必须选它）
 5.  <b>多DNS提供商</b>：每个域名可以选择独立的DNS提供商或校验方式
-6.  <b>自动匹配</b>：此处无需选择校验方式，需要在[域名管理](#/certd/cert/domain)中提前配置好校验方式
+6.  <b>自动匹配</b>：默认需在[域名管理](#/certd/cert/domain)提前配置校验方式；本地CA开启EAB直签时自动跳过
 `,
   })
   challengeType!: string;
@@ -646,11 +646,11 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   eab!: EabAccess;
 
   // 当前颁发机构在系统「流水线设置」中的配置（内置 + 自定义），onInit 时解析
-  private acmeProvider?: CustomAcmeProvider;
+  protected acmeProvider?: CustomAcmeProvider;
 
   async onInit() {}
 
-  private async getAcmeClient() {
+  protected async getAcmeClient() {
     if (this.acme) {
       return this.acme;
     }
@@ -685,6 +685,10 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         await getEab(this.sslProvider);
       }
     }
+    const customEab = await this.resolveCustomAcmeEab();
+    if (customEab !== undefined) {
+      eab = customEab;
+    }
     this.eab = eab;
     const subDomainsGetter = await this.ctx.serviceGetter.get<ISubDomainsGetter>("subDomainsGetter");
     const domainParser = new DomainParser(subDomainsGetter, this.logger);
@@ -712,9 +716,24 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   }
 
   /**
+   * 子类可返回自定义EAB（本地CA插件内联凭证），返回undefined表示沿用内置逻辑。
+   */
+  protected async resolveCustomAcmeEab(): Promise<EabAccess | null | undefined> {
+    return undefined;
+  }
+
+  /**
+   * 自定义ACME通常必须复用已注册账号；子类使用内联EAB时允许临时创建账号。
+   */
+  protected requiresAcmeAccount(): boolean {
+    const isCustomSslProvider = this.acmeProvider != null && this.acmeProvider.builtIn !== true;
+    return this.version === 2 || isCustomSslProvider;
+  }
+
+  /**
    * 获取当前颁发机构在系统「流水线设置」中的配置（内置 + 自定义）；未找到时给出明确报错
    */
-  private async getAcmeProvider(): Promise<CustomAcmeProvider> {
+  protected async getAcmeProvider(): Promise<CustomAcmeProvider> {
     if (!this.sslProvider) {
       throw new Error("请先选择证书颁发机构");
     }
@@ -775,7 +794,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       acmeAccount = await this.getCommonAcmeAccount();
     }
     const isCustomSslProvider = this.acmeProvider != null && this.acmeProvider.builtIn !== true;
-    if ((this.version === 2 || isCustomSslProvider) && !acmeAccount) {
+    if (this.requiresAcmeAccount() && !acmeAccount) {
       // 自定义ACME必须复用ACME账号（账号绑定Directory URL），不允许临时建账号
       throw new Error(isCustomSslProvider ? "自定义ACME必须选择对应的ACME账号" : "请选择颁发机构对应的ACME账号");
     }
@@ -787,7 +806,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     } else if (this.challengeType === "cname" || this.challengeType === "http" || this.challengeType === "dnses") {
       domainsVerifyPlan = await this.createDomainsVerifyPlan(domains, this.domainsVerifyPlan, acmeAccount);
     } else if (this.challengeType === "auto") {
-      domainsVerifyPlan = await this.createDomainsVerifyPlanByAuto(domains);
+      domainsVerifyPlan = await this.createDomainsVerifyPlanByAuto(domains, acmeAccount);
     } else {
       const dnsProviderType = this.dnsProviderType;
       const access = await this.getAccess(this.dnsProviderAccess);
@@ -810,7 +829,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     return new CertReader(certInfo);
   }
 
-  private async orderWithRetry(orderOptions: Parameters<AcmeService["order"]>[0]) {
+  protected async orderWithRetry(orderOptions: Parameters<AcmeService["order"]>[0]) {
     const maxRetryCount = this.getCertApplyRetryCount();
     let retryCount = 0;
 
@@ -959,7 +978,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     return plan;
   }
 
-  private async createDomainsVerifyPlanByAuto(domains: string[]) {
+  protected async createDomainsVerifyPlanByAuto(domains: string[], acmeAccount?: AcmeAccountInfo) {
     //从数据库里面自动选择校验方式
     // domain list
     const domainList = new Set<string>();
@@ -974,10 +993,13 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
     const plan: DomainsVerifyPlan = {};
 
-    for (const domain in verifiers) {
+    const missingDomains: string[] = [];
+    // 以请求域名列表为准逐项检查，避免 getVerifiers 直接漏掉某些域名
+    for (const domain of domainList) {
       const verifier = verifiers[domain];
       if (verifier == null) {
-        throw new Error(`没有找到与该域名（${domain}）匹配的校验方式，请先到‘域名管理’页面添加校验方式`);
+        missingDomains.push(domain);
+        continue;
       }
       if (verifier.type === "dns") {
         plan[domain] = await this.createDnsDomainVerifyPlan(verifier.dns, domain, verifier.mainDomain);
@@ -987,8 +1009,13 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         plan[domain] = await this.createHttpDomainVerifyPlan(verifier.http, domain, verifier.mainDomain);
       }
     }
+
+    if (missingDomains.length > 0) {
+      throw new Error(`没有找到与该域名（${missingDomains[0]}）匹配的校验方式，请先到‘域名管理’页面添加校验方式`);
+    }
     return plan;
   }
+
 
   private async createDnsDomainVerifyPlan(planSetting: DnsVerifier, domain: string, mainDomain: string): Promise<DomainVerifyPlan> {
     const access = await this.getAccess(planSetting.dnsProviderAccessId);

@@ -18,6 +18,7 @@ import plugin from "./certd/sys-plugin";
 import authority from "./certd/sys-authority";
 import cnameSettings from "./certd/sys-cname";
 import tutorial from "./certd/tutorial";
+import localCa from "./certd/local-ca";
 import cron from "./certd/cron";
 import client from "./certd/client";
 import wallet from "./certd/wallet";
@@ -65,4 +66,5 @@ export default {
   audit,
   applyTemplate,
   dnsPersist,
+  localCa,
 };

@@ -80,13 +80,14 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
   abstract onInit(): Promise<void>;
 
   //必须output之后执行
-  async emitCertApplySuccess() {
+  async emitCertApplySuccess(extra?: { extensions?: { issuer?: { type: string; id: string; serialNumber?: string } } }) {
     const emitter = this.ctx.emitter;
     const value = {
       cert: this.cert,
       certPassword: this.pfxPassword,
       pipelineId: this.ctx.pipeline.id,
       runnableId: this.ctx.step.id,
+      ...extra,
     };
     await emitter.emit(EVENT_CERT_APPLY_SUCCESS, value);
   }

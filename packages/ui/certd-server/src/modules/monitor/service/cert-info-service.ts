@@ -1,13 +1,15 @@
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { X509Certificate } from "node:crypto";
 import { AccessService, BaseService, CodeException, Constants, PageReq } from "@certd/lib-server";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Between, Equal, In, IsNull, LessThan, Not, Or, Repository } from "typeorm";
+import { Between, EntityManager, Equal, In, IsNull, LessThan, Not, Or, Repository } from "typeorm";
 import { CertInfoEntity, CertStatus } from "../entity/cert-info.js";
 import { logger, utils } from "@certd/basic";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
 import { AcmeService } from "../../../plugins/plugin-cert/plugin/cert-plugin/acme.js";
 import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
 import { UserSettingsService } from "../../mine/service/user-settings-service.js";
+import { CertRevocationService } from "../../local-ca/service/cert-revocation-service.js";
 
 export type UploadCertReq = {
   id?: number;
@@ -19,6 +21,8 @@ export type UploadCertReq = {
   taskId?: string;
   acmeAccountAccessId?: number;
   certPassword?: string;
+  localCaId?: number;
+  serialNumber?: string;
 };
 
 export type UpdateCertReq = {
@@ -27,6 +31,8 @@ export type UpdateCertReq = {
   fromType?: string;
   taskId?: string;
   certPassword?: string;
+  localCaId?: number;
+  serialNumber?: string;
 };
 
 /**
@@ -49,8 +55,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   @InjectEntityModel(PipelineEntity)
   pipelineRepository: Repository<PipelineEntity>;
 
+
   @Inject()
   userSettingsService: UserSettingsService;
+
+  @Inject()
+  certRevocationService: CertRevocationService;
 
   //@ts-ignore
   getRepository() {
@@ -97,6 +107,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     if (!entity) {
       throw new CodeException(Constants.res.openCertNotFound);
     }
+    if (entity.localCaId && entity.status !== CertStatus.revoked && (!entity.expiresTime || entity.expiresTime > Date.now())) {
+      throw new CodeException({
+        ...Constants.res.openCertNotFound,
+        message: "本地CA签发的未过期证书不能删除，请先吊销或等待证书过期",
+      });
+    }
     await this.repository.delete({
       id,
       ...userProjectQuery,
@@ -116,6 +132,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     }
     await this.repository.delete({
       pipelineId: id,
+      localCaId: IsNull(),
     });
   }
 
@@ -195,8 +212,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
    * 4. 同流水线、同申请任务的其他激活状态的证书记录被标记为未激活（inactive）。
    */
   async updateCertByPipelineId(req: UpdateCertReq) {
-    const { pipelineId, cert, fromType, taskId, certPassword } = req;
-
+    const { pipelineId, cert, fromType, taskId, certPassword, localCaId, serialNumber } = req;
 
     const pipeline = await this.pipelineRepository.findOne({
       where: { id: pipelineId },
@@ -218,15 +234,32 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     const certProjectId = pipeline?.projectId;
 
     // 查找该流水线的空证书记录（占位记录，certInfo 为空）：存在则直接更新它，不新建记录
-    const placeholderRecord = await this.repository.findOne({
-      where: {
-        pipelineId,
-        taskId: taskId,
-        certInfo: IsNull(),
-        ...this.buildUserProjectQuery(certUserId, certProjectId),
-      },
-      order: { id: "DESC" },
-    });
+    // 本地CA的ACME finalize会先写入一条不带私钥的证书记录；流水线拿到证书后优先复用该记录，
+    // 否则同一证书会在仓库中出现两条active记录。
+    let placeholderRecord: any = null;
+    if (localCaId && serialNumber) {
+      const acmeScope = certUserId > 0 ? this.buildUserProjectQuery(certUserId, certProjectId) : certProjectId ? { projectId: certProjectId } : { userId: certUserId };
+      placeholderRecord = await this.repository.findOne({
+        where: {
+          localCaId,
+          serialNumber: String(serialNumber).toUpperCase(),
+          pipelineId: IsNull(),
+          ...acmeScope,
+        },
+        order: { id: "DESC" },
+      });
+    }
+    if (!placeholderRecord) {
+      placeholderRecord = await this.repository.findOne({
+        where: {
+          pipelineId,
+          taskId: taskId,
+          certInfo: IsNull(),
+          ...this.buildUserProjectQuery(certUserId, certProjectId),
+        },
+        order: { id: "DESC" },
+      });
+    }
 
     // 解析ACME账号授权id，随证书记录落库：吊销旧证书时直接读表，无需再解析流水线
     const acmeAccountAccessId = this.parseAcmeAccountAccessId(pipeline);
@@ -240,6 +273,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       id: placeholderRecord?.id,
       acmeAccountAccessId,
       certPassword,
+      localCaId,
+      serialNumber,
     });
     // 旧证书标记为未激活（仅同申请任务产出的旧证书，避免误伤其他任务仍在使用的证书）
     await this.repository.update(
@@ -285,6 +320,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         pipelineId,
         ...this.buildUserProjectQuery(userId, projectId),
         status: CertStatus.active,
+        localCaId: IsNull(),
       });
       return;
     }
@@ -328,11 +364,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       bean.wildcardDomainCount = this.countWildcardDomains(taskDomains);
       await this.addOrUpdate(bean);
     }
-    // 删除孤儿 active 记录：流水线中已不存在的申请任务（含历史遗留 taskId 为空的 active 记录）
+    // 删除孤儿 active 记录：本地CA证书保留，避免 CA 删除保护失去依据
     await this.repository.delete({
       pipelineId,
       ...userProjectQuery,
       status: CertStatus.active,
+      localCaId: IsNull(),
       taskId: Or(IsNull(), Not(In(taskIds))),
     });
   }
@@ -386,6 +423,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     // 吊销旧证书时直接使用记录上的ACME账号授权id（无需再解析流水线）
     bean.acmeAccountAccessId = req.acmeAccountAccessId;
     bean.certPassword = req.certPassword;
+    bean.localCaId = req.localCaId;
+    bean.serialNumber = req.serialNumber;
     await this.addOrUpdate(bean);
     return bean;
   }
@@ -439,6 +478,20 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     }
     const certInfo = JSON.parse(entity.certInfo) as CertInfo;
 
+    if (entity.localCaId) {
+      // 本地CA签发的证书不经过ACME，吊销记录与证书状态在同一事务内写入
+      const serialNumber = entity.serialNumber || new X509Certificate(certInfo.crt).serialNumber;
+      await this.applyLocalRevocation({
+        certInfoId: entity.id,
+        caId: entity.localCaId,
+        userId: entity.userId,
+        projectId: entity.projectId,
+        serialNumber,
+        expiresTime: entity.expiresTime,
+      });
+      return;
+    }
+
     // 优先使用证书记录上保存的ACME账号授权id（吊销不再解析流水线）；旧数据没有该字段时回退解析流水线
     const { sslProvider, acmeAccount, useProxy, reverseProxy } = await this.resolveRevokeParamsWithEntity(entity, userId, projectId);
     if (!acmeAccount && !sslProvider) {
@@ -458,6 +511,15 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         revokeTime: Date.now(),
       }
     );
+  }
+
+  async applyLocalRevocation(req: { certInfoId: number; caId: number; userId: number; projectId?: number; serialNumber: string; expiresTime?: number; reason?: string }) {
+    // Local CA 专属吊销业务委托给 local-ca 模块，通用证书服务不实现CA逻辑
+    return await this.certRevocationService.revokeCertInfo(req);
+  }
+
+  protected getCertRepository(manager?: EntityManager) {
+    return manager ? manager.getRepository(CertInfoEntity) : this.repository;
   }
 
   /**

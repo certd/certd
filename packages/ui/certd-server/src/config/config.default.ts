@@ -36,6 +36,12 @@ const development = {
     // 信任反向代理传递的 X-Forwarded-For，确保 ctx.ip 获取客户端 IP
     proxy: true,
   },
+  bodyParser: {
+    enableTypes: ["json", "form"],
+    extendTypes: {
+      json: ["application/jose+json"],
+    },
+  },
   https: {
     enabled: true,
     port: 7002,

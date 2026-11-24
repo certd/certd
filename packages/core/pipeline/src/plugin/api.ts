@@ -64,6 +64,8 @@ export type PluginDefine = Registrable & {
       form: any;
     };
   };
+  /** 插件声明可访问的 ServiceGetter 能力清单（能力最小化） */
+  serviceCapabilities?: string[];
   onlyAdmin?: boolean;
   needPlus?: boolean;
   showRunStrategy?: boolean;
@@ -101,6 +103,14 @@ export type PipelineEvent<T = any> = {
   certPassword?: string;
   runnableId: string;
   pipelineId: number;
+  /** 通用签发来源扩展，具体业务由插件填充，核心不感知特定CA */
+  extensions?: {
+    issuer?: {
+      type: string;
+      id: string;
+      serialNumber?: string;
+    };
+  };
 };
 export type TaskInstanceContext = {
   //流水线定义

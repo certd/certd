@@ -451,7 +451,7 @@ export class Executor {
       utils,
       user: this.options.user,
       emitter: pipelineEmitter,
-      serviceGetter: this.options.serviceGetter,
+      serviceGetter: this.options.serviceGetter?.forPlugin?.(step.type, define?.serviceCapabilities) || this.options.serviceGetter,
       projectId: this.pipeline.projectId,
     };
     await instance.setCtx(taskCtx);

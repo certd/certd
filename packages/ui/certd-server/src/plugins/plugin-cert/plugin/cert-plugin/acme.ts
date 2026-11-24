@@ -39,6 +39,11 @@ export type AcmeAccountInfo = {
   email: string;
   directoryUrl: string;
   issuer?: string;
+  eab?: {
+    kid?: string;
+    hmacKey?: string;
+    usedAt?: number;
+  };
 };
 
 export type DnsPersistVerifyPlan = {
