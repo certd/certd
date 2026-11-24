@@ -518,11 +518,18 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(res);
   }
 
-  @Post("/archived/roots", { description: Constants.per.authOnly, summary: "查询已归档Root CA" })
+  @Post("/archived/roots", { description: Constants.per.authOnly, summary: "查询已归档CA" })
   async archivedRoots() {
     this.assertSystemAdmin();
     const userId = this.getUserId();
     return this.ok(await this.service.listArchivedRoots({ userId }));
+  }
+
+  @Post("/archived/info", { description: Constants.per.authOnly, summary: "查询已归档CA详情" })
+  async archivedInfo(@Body(ALL) body: any) {
+    this.assertSystemAdmin();
+    const userId = this.getUserId();
+    return this.ok(await this.service.getArchivedCaInfo({ id: body.id, userId }));
   }
 
   @Post("/crl/refreshArchived", { description: Constants.per.authOnly, summary: "刷新已归档Root CA的CRL（需2FA/Passkey）" })

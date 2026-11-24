@@ -1297,10 +1297,28 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         name: root.name,
         caType: root.caType,
         subjectCn: root.subjectCn,
+        keyType: root.keyType,
+        source: root.source,
+        notBefore: root.notBefore,
         notAfter: root.notAfter,
+        fingerprintSha256: root.fingerprintSha256,
+        revoked: root.revoked,
         crlNextUpdate: nextUpdate,
       };
     });
+  }
+
+  /** 管理员查看已归档CA详情（含证书PEM），用于归档表格的查看详细信息。 */
+  async getArchivedCaInfo(req: { id: number; userId: number }) {
+    const access = await this.adminRepository.findOne({ where: { caId: req.id, adminUserId: req.userId } });
+    if (!access) {
+      throw new ValidateException("本地CA不存在或无访问权限");
+    }
+    const ca = await this.findOne({ where: { id: req.id, deleted: true } });
+    if (!ca) {
+      throw new ValidateException("该CA未归档或不存在");
+    }
+    return this.toSafe(ca);
   }
 
   async revokeIntermediate(req: LocalCaScope & { reason?: string }) {

@@ -124,6 +124,14 @@ export const localCaApi = {
     });
   },
 
+  async GetArchivedInfo(id: number) {
+    return await req({
+      url: apiPrefix + "/archived/info",
+      method: "post",
+      data: { id },
+    });
+  },
+
   async ListAcmeAccounts(id: number) {
     return await req({
       url: apiPrefix + "/acme/accounts",

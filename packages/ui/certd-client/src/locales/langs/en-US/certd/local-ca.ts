@@ -281,6 +281,7 @@ export default {
   forceArchiveTitle: "Force archive local CA",
   forceArchiveContent: "This CA is still referenced by pipelines (possibly owned by other users). After force archiving, those pipelines will fail on next run. Notify affected users first. Force archive "{name}"?",
   forceArchiveOk: "Force archive",
+  archivedValidity: "Validity",
   viewCertInfo: "View certificate",
   statusNormal: "Active",
   statusRotated: "Rotated",

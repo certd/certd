@@ -281,6 +281,7 @@ export default {
   forceArchiveTitle: "强制归档本地CA",
   forceArchiveContent: "该CA仍被其他流水线（可能属于其他用户）引用。强制归档后这些流水线再次运行将因CA已归档而失败，建议先通知相关用户修改流水线。确认强制归档「{name}」？",
   forceArchiveOk: "强制归档",
+  archivedValidity: "有效期",
   viewCertInfo: "查看证书信息",
   statusNormal: "正常",
   statusRotated: "已轮转",

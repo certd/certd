@@ -1,36 +1,41 @@
 <template>
   <div class="archived-roots">
-    <a-empty v-if="!loading && list.length === 0" :description="t('certd.localCa.archivedRootsEmpty')" />
-    <a-spin :spinning="loading">
-      <a-list v-if="list.length > 0" :data-source="list" size="small">
-        <template #renderItem="{ item }">
-          <a-list-item>
-            <a-list-item-meta>
-              <template #title
-                >{{ item.name }}
-                <a-tag :color="item.caType === 'root' ? 'purple' : 'blue'" style="margin-left: 6px">{{ item.caType === "root" ? t("certd.localCa.caTypeRoot") : t("certd.localCa.caTypeIntermediate") }}</a-tag>
-                <span class="archived-root-cn">{{ item.subjectCn }}</span></template
-              >
-              <template #description> {{ t("certd.localCa.archivedRootsCrlExpiry") }}: {{ formatTime(item.crlNextUpdate) }} </template>
-            </a-list-item-meta>
-            <template #actions>
-              <a-button v-if="item.caType === 'root'" size="small" type="primary" :loading="refreshingId === item.id" @click="refresh(item)">
-                {{ t("certd.localCa.archivedRootsRefresh") }}
-              </a-button>
-            </template>
-          </a-list-item>
+    <a-table :data-source="list" :loading="loading" :pagination="{ pageSize: 10 }" size="small" row-key="id">
+      <a-table-column :title="t('certd.localCa.fields.name')" data-index="name" :width="200" ellipsis />
+      <a-table-column :title="t('certd.localCa.fields.caType')" :width="100">
+        <template #default="{ record }">
+          <a-tag :color="record.caType === 'root' ? 'purple' : 'blue'">{{ record.caType === "root" ? t("certd.localCa.caTypeRoot") : t("certd.localCa.caTypeIntermediate") }}</a-tag>
         </template>
-      </a-list>
-    </a-spin>
+      </a-table-column>
+      <a-table-column :title="t('certd.localCa.fields.subjectCn')" data-index="subjectCn" :width="180" ellipsis />
+      <a-table-column :title="t('certd.localCa.fields.keyType')" data-index="keyType" :width="100" />
+      <a-table-column :title="t('certd.localCa.archivedValidity')" :width="200">
+        <template #default="{ record }">{{ formatDate(record.notBefore) }} ~ {{ formatDate(record.notAfter) }}</template>
+      </a-table-column>
+      <a-table-column :title="t('certd.localCa.archivedRootsCrlExpiry')" :width="180">
+        <template #default="{ record }">{{ formatTime(record.crlNextUpdate) }}</template>
+      </a-table-column>
+      <a-table-column :title="t('certd.localCa.accessActions')" :width="160" align="center">
+        <template #default="{ record }">
+          <a-button type="link" size="small" @click="view(record)">{{ t("certd.localCa.view") }}</a-button>
+          <a-button v-if="record.caType === 'root'" type="link" size="small" :loading="refreshingId === record.id" @click="refresh(record)">
+            {{ t("certd.localCa.archivedRootsRefresh") }}
+          </a-button>
+        </template>
+      </a-table-column>
+    </a-table>
+    <LocalCaView ref="caViewRef" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { notification } from "ant-design-vue";
+import dayjs from "dayjs";
 import { useI18n } from "/src/locales";
 import { localCaApi } from "./api";
 import { getSecretAccessToken } from "/@/views/certd/access/api";
+import LocalCaView from "./ca-view.vue";
 
 defineOptions({ name: "LocalCaArchivedRoots" });
 
@@ -42,9 +47,13 @@ const { t } = useI18n();
 const list = ref<any[]>([]);
 const loading = ref(false);
 const refreshingId = ref<number | null>(null);
+const caViewRef = ref<any>();
 
 function formatTime(value?: number) {
-  return value ? new Date(value).toLocaleString() : t("certd.localCa.archivedRootsNoCrl");
+  return value ? dayjs(Number(value)).format("YYYY-MM-DD HH:mm:ss") : t("certd.localCa.archivedRootsNoCrl");
+}
+function formatDate(value?: number) {
+  return value ? dayjs(Number(value)).format("YYYY-MM-DD") : "-";
 }
 
 async function load() {
@@ -53,6 +62,15 @@ async function load() {
     list.value = await localCaApi.ListArchivedRoots();
   } finally {
     loading.value = false;
+  }
+}
+
+async function view(record: any) {
+  try {
+    const data = await localCaApi.GetArchivedInfo(record.id);
+    caViewRef.value?.open(data);
+  } catch (e: any) {
+    notification.error({ message: e?.message || t("certd.localCa.viewFailed") });
   }
 }
 
@@ -76,11 +94,3 @@ async function refresh(item: any) {
 
 onMounted(load);
 </script>
-
-<style lang="less" scoped>
-.archived-root-cn {
-  margin-left: 8px;
-  font-size: 12px;
-  color: var(--text-color-3, #999);
-}
-</style>
