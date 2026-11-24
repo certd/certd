@@ -33,6 +33,9 @@ export class CertRevocationEntity {
   @Column({ name: "expires_time", comment: "证书过期时间(ms)", type: "bigint", nullable: true })
   expiresTime: number;
 
+  @Column({ name: "cert_pem", comment: "被吊销证书PEM（供查看证书信息）", type: "text", nullable: true })
+  certPem: string;
+
   @Column({
     name: "create_time",
     comment: "创建时间",

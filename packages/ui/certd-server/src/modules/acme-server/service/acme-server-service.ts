@@ -499,6 +499,7 @@ export class AcmeServerService {
         expiresTime: new Date(cert.validTo).getTime(),
         userId: account?.userId ?? 0,
         projectId: account?.projectId,
+        certPem: cert.toString(),
       });
     }
     ctx.status = 200;

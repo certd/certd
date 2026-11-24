@@ -17,6 +17,7 @@ export type RecordRevocationReq = {
   revokedTime?: number;
   reason?: string;
   expiresTime?: number;
+  certPem?: string;
 };
 
 function normalizeSerialNumber(value: string) {
@@ -57,6 +58,7 @@ export class CertRevocationService {
       revokedTime: req.revokedTime || Date.now(),
       reason: req.reason || "unspecified",
       expiresTime: req.expiresTime,
+      certPem: req.certPem,
     });
     // 数据库原生 INSERT ... ON CONFLICT/IGNORE，避免并发吊销重复落库
     await repository.createQueryBuilder().insert().into(CertRevocationEntity).values(bean).orIgnore().execute();
@@ -104,7 +106,7 @@ export class CertRevocationService {
     if (req.projectId != null) {
       certWhere.projectId = req.projectId;
     }
-    const cert = await this.certInfoRepository.findOne({ where: certWhere, select: { id: true, status: true } });
+    const cert = await this.certInfoRepository.findOne({ where: certWhere, select: { id: true, status: true, certInfo: true } });
     if (!cert) {
       logger.warn(`[local-ca] revocation target mismatch ca=${req.caId} cert=${req.certInfoId} user=${req.userId} project=${req.projectId ?? "-"}`);
       throw new CodeException({ ...Constants.res.openCertNotFound, message: "证书记录与CA或序列号不匹配" });
@@ -116,7 +118,7 @@ export class CertRevocationService {
     }
     await runTransaction(manager, async tx => {
       await this.record(
-        { caId: req.caId, userId: req.userId, projectId: req.projectId, certInfoId: req.certInfoId, serialNumber: req.serialNumber, revokedTime, expiresTime: req.expiresTime, reason: req.reason },
+        { caId: req.caId, userId: req.userId, projectId: req.projectId, certInfoId: req.certInfoId, serialNumber: req.serialNumber, revokedTime, expiresTime: req.expiresTime, reason: req.reason, certPem: (() => { try { return JSON.parse(cert.certInfo || "{}").crt || undefined; } catch { return undefined; } })() },
         tx
       );
       await tx.getRepository(CertInfoEntity).update(certWhere, { status: CertStatus.revoked, revokeTime: revokedTime });

@@ -38,7 +38,7 @@ export class LocalCaAcmeBackend implements AcmeIssuerBackend {
   consumeAcmeEab(eabId: string, manager?: EntityManager) {
     return this.localCaService.consumeAcmeEab(eabId, manager);
   }
-  recordSystemCertRevocation(req: { caId: number; serialNumber: string; expiresTime?: number; userId?: number; projectId?: number }) {
+  recordSystemCertRevocation(req: { caId: number; serialNumber: string; expiresTime?: number; userId?: number; projectId?: number; certPem?: string }) {
     return this.localCaService.recordSystemCertRevocation(req);
   }
   assertCaOwner(req: { id: number; userId: number; projectId?: number }) {

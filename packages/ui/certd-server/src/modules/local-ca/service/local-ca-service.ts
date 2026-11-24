@@ -1149,7 +1149,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
    * 根CA的CRL条目是其下级中间CA签发的证书，故需在本CA及全部下级CA范围内查找；
    * 允许已归档CA（CRL永久公开，查看证书信息不受deleted限制）。 */
   async getCertPemBySerial(req: { id: number; userId: number; serial: string }): Promise<string | null> {
-    const serial = String(req.serial || "").trim();
+    const serial = String(req.serial || "").trim().replace(/[:\s]/g, "").toUpperCase();
     if (!serial) {
       return null;
     }
@@ -1171,12 +1171,16 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const cert = await this.certInfoService.findOne({ where: { localCaId: In(ids), serialNumber: serial } });
     if (cert?.certInfo) {
       try {
-        return JSON.parse(cert.certInfo).crt || null;
+        const crt = JSON.parse(cert.certInfo).crt;
+        if (crt) {
+          return crt;
+        }
       } catch {
-        return null;
+        // ignore
       }
     }
-    return null;
+    const revocation = await this.certRevocationService.findBySerial(ca.id, serial);
+    return revocation?.certPem || null;
   }
 
   async revokeIssuedCert(req: LocalCaScope & { certId: number }) {
@@ -1204,7 +1208,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   /**
    * ACME系统级证书（未绑定用户仓库）也需要写入CRL；此入口只允许ACME服务在完成协议授权后调用。
    */
-  async recordSystemCertRevocation(req: { caId: number; serialNumber: string; expiresTime?: number; userId?: number; projectId?: number; reason?: string }) {
+  async recordSystemCertRevocation(req: { caId: number; serialNumber: string; expiresTime?: number; userId?: number; projectId?: number; reason?: string; certPem?: string }) {
     const ca = await this.findOne({ where: { id: req.caId } });
     if (!ca) {
       throw new ValidateException("本地CA不存在");
@@ -1228,6 +1232,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
           revokedTime,
           expiresTime: req.expiresTime,
           reason: req.reason,
+          certPem: req.certPem,
         },
         tx
       );

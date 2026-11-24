@@ -182,6 +182,7 @@ CREATE TABLE `cd_cert_revocation`
   `revoked_time`  bigint      NOT NULL,
   `reason`        varchar(50)  NOT NULL DEFAULT 'unspecified',
   `expires_time`  bigint,
+  `cert_pem`      text,
   `create_time`   timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB ROW_FORMAT = DYNAMIC;
 CREATE UNIQUE INDEX `index_cert_revocation_ca_serial` ON `cd_cert_revocation` (`ca_id`, `serial_number`);

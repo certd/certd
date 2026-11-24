@@ -29,6 +29,6 @@ export interface AcmeIssuerBackend {
   getAcmeEabSecret(caId: number, kid: string): Promise<any>;
   getAcmeEabProfile(eabId: string, manager?: EntityManager): Promise<{ id: string; allowedDomains: string[] } | null>;
   consumeAcmeEab(eabId: string, manager?: EntityManager): Promise<boolean>;
-  recordSystemCertRevocation(req: { caId: number; serialNumber: string; expiresTime?: number; userId?: number; projectId?: number }): Promise<any>;
+  recordSystemCertRevocation(req: { caId: number; serialNumber: string; expiresTime?: number; userId?: number; projectId?: number; certPem?: string }): Promise<any>;
   assertCaOwner(req: { id: number; userId: number; projectId?: number }): Promise<void>;
 }
