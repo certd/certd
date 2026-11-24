@@ -7,12 +7,14 @@
           <a-list-item>
             <a-list-item-meta>
               <template #title
-                >{{ item.name }} <span class="archived-root-cn">{{ item.subjectCn }}</span></template
+                >{{ item.name }}
+                <a-tag :color="item.caType === 'root' ? 'purple' : 'blue'" style="margin-left: 6px">{{ item.caType === "root" ? t("certd.localCa.caTypeRoot") : t("certd.localCa.caTypeIntermediate") }}</a-tag>
+                <span class="archived-root-cn">{{ item.subjectCn }}</span></template
               >
               <template #description> {{ t("certd.localCa.archivedRootsCrlExpiry") }}: {{ formatTime(item.crlNextUpdate) }} </template>
             </a-list-item-meta>
             <template #actions>
-              <a-button size="small" type="primary" :loading="refreshingId === item.id" @click="refresh(item)">
+              <a-button v-if="item.caType === 'root'" size="small" type="primary" :loading="refreshingId === item.id" @click="refresh(item)">
                 {{ t("certd.localCa.archivedRootsRefresh") }}
               </a-button>
             </template>

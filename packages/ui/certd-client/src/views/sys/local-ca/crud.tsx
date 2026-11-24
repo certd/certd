@@ -23,7 +23,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     openRevokeIntermediate,
     openRotateIntermediate,
     openEnableCa,
-    openDeleteCa,
+    openArchiveCa,
     openArchivedRoots,
     openStepUp,
   } = useLocalCaDialogs(crudExpose, context.caViewRef);
@@ -120,7 +120,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   };
   const delRequest = async ({ row }: DelReq) => {
     try {
-      return await localCaApi.DelObj(row.id);
+      return await localCaApi.Archive(row.id);
     } catch (e: any) {
       notification.error({ message: String(e?.message || e) });
       throw e;
@@ -259,15 +259,19 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             order: 10,
             show: hasActionPermission("write"),
           },
-          remove: {
+          archive: {
             order: 20,
-            show: hasActionPermission("write"),
-            confirmFn: async ({ row }) => {
-              await openDeleteCa(row);
+            type: "link",
+            text: null,
+            tooltip: { title: t("certd.localCa.archiveCaTitle") },
+            icon: "ph:archive-box",
+            show: compute(({ row }) => hasActionPermission("write") && !row.deleted),
+            click: async ({ row }) => {
+              openArchiveCa(row);
             },
-            async afterRemove() {
-              notification.success({ message: t("certd.localCa.deleteSuccess") });
-            },
+          },
+          remove: {
+            show: false,
           },
         },
       },

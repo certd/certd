@@ -1116,7 +1116,7 @@ describe("LocalCaService", () => {
       },
     } as any;
 
-    await assert.rejects(() => service.deleteCa({ id, userId: 1 }), /流水线「内部证书自动化」引用/);
+    await assert.rejects(() => service.archiveCa({ id, userId: 1 }), /流水线「内部证书自动化」引用/);
   });
 
   it("跨用户不可访问，已签发证书的CA不能删除", async () => {
@@ -1137,7 +1137,7 @@ describe("LocalCaService", () => {
       },
     } as any;
     await service.setDisabled({ id, userId: 1, disabled: true });
-    await assert.rejects(() => service.deleteCa({ id, userId: 1 }), /未吊销且未过期/);
+    await assert.rejects(() => service.archiveCa({ id, userId: 1 }), /未吊销且未过期/);
   });
 
   it("禁用且所有证书已吊销后允许删除CA", async () => {
@@ -1155,7 +1155,7 @@ describe("LocalCaService", () => {
         return [{ id: 99, status: "revoked", expiresTime: Date.now() + 86400000 }];
       },
     } as any;
-    await service.deleteCa({ id, userId: 1 });
+    await service.archiveCa({ id, userId: 1 });
     assert.equal(store.get(id).deleted, true);
   });
 
@@ -1164,9 +1164,9 @@ describe("LocalCaService", () => {
     const { rootId, id } = await createIssuingCa(service, { name: "Archived Root Child" });
     const childSerial = getCertSerialNumber(store.get(id).certPem);
     await service.revokeIntermediate({ id, userId: 1 });
-    await service.deleteCa({ id, userId: 1 });
+    await service.archiveCa({ id, userId: 1 });
     await service.setDisabled({ id: rootId, userId: 1, disabled: true });
-    await service.deleteCa({ id: rootId, userId: 1 });
+    await service.archiveCa({ id: rootId, userId: 1 });
     assert.equal(store.get(rootId).deleted, true);
 
     const res = await service.refreshArchivedRootCrl({ id: rootId, userId: 1 });

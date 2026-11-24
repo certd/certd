@@ -56,9 +56,9 @@ export const localCaApi = {
     });
   },
 
-  async DelObj(id: number) {
+  async Archive(id: number) {
     return await req({
-      url: apiPrefix + "/delete",
+      url: apiPrefix + "/archive",
       method: "post",
       data: { id, verifyToken: getSecretAccessToken() },
     });

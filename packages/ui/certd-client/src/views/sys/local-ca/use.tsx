@@ -871,34 +871,20 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
-  async function openDeleteCa(row: any) {
-    await new Promise<void>((resolve, reject) => {
-      let settled = false;
-      Modal.confirm({
-        title: t("certd.localCa.deleteCaTitle"),
-        content: t("certd.localCa.deleteCaDesc", { name: row.name }),
-        okText: t("certd.common.confirm"),
-        okType: "danger",
-        cancelText: t("certd.common.cancel"),
-        async onOk() {
-          await openStepUp(
-            t("certd.localCa.deleteCaStepUpTitle"),
-            t("certd.localCa.deleteCaDesc", { name: row.name }),
-            async () => {
-              settled = true;
-              resolve();
-            },
-            () => {
-              if (!settled) {
-                reject(new Error("cancel"));
-              }
-            }
-          );
-        },
-        onCancel() {
-          reject(new Error("cancel"));
-        },
-      });
+  function openArchiveCa(row: any) {
+    Modal.confirm({
+      title: t("certd.localCa.archiveCaTitle"),
+      content: t("certd.localCa.archiveCaDesc", { name: row.name }),
+      okText: t("certd.localCa.archiveCaOk"),
+      okType: "danger",
+      cancelText: t("certd.common.cancel"),
+      async onOk() {
+        await openStepUp(t("certd.localCa.archiveCaStepUpTitle"), t("certd.localCa.archiveCaDesc", { name: row.name }), async () => {
+          await localCaApi.Archive(row.id);
+          notification.success({ message: t("certd.localCa.archiveSuccess") });
+          await crudExpose.doRefresh();
+        });
+      },
     });
   }
 
@@ -935,7 +921,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openRevokeIntermediate,
     openRotateIntermediate,
     openEnableCa,
-    openDeleteCa,
+    openArchiveCa,
     openStepUp,
     openArchivedRoots,
   };

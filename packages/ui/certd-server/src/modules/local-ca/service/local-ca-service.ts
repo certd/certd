@@ -1240,7 +1240,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   async listArchivedRoots(req: Omit<LocalCaScope, "id">) {
     const accesses = await this.adminRepository.find({ where: { adminUserId: req.userId } });
     const ids = accesses.map(item => item.caId);
-    const roots = ids.length ? await this.find({ where: { id: In(ids), deleted: true, caType: "root" }, order: { id: "DESC" } }) : [];
+    const roots = ids.length ? await this.find({ where: { id: In(ids), deleted: true }, order: { id: "DESC" } }) : [];
     return roots.map(root => {
       let nextUpdate: number | undefined;
       try {
@@ -1251,6 +1251,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       return {
         id: root.id,
         name: root.name,
+        caType: root.caType,
         subjectCn: root.subjectCn,
         notAfter: root.notAfter,
         crlNextUpdate: nextUpdate,
@@ -1408,7 +1409,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     logger.info(`[local-ca] ca ${req.disabled ? "disabled" : "enabled"} ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
   }
 
-  async deleteCa(req: LocalCaScope) {
+  async archiveCa(req: LocalCaScope) {
     const ca = await this.accessService.getOwnedCa(req, true);
     const pipelines = await this.pipelineRepository.find({
       where: {
@@ -1418,17 +1419,17 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     });
     const referenced = pipelines.find(item => this.pipelineUsesCa(item.content, ca.id));
     if (referenced) {
-      throw new ValidateException(`该本地CA已被流水线「${referenced.title}」引用，不能删除，请先修改流水线`);
+      throw new ValidateException(`该本地CA已被流水线「${referenced.title}」引用，不能归档，请先修改流水线`);
     }
     if (!ca.disabled) {
-      throw new ValidateException("请先禁用该本地CA，并确认所有已签发证书均已吊销或过期");
+      throw new ValidateException("请先禁用该本地CA，再归档");
     }
     if (ca.caType === "intermediate" && !ca.revoked) {
       throw new ValidateException("请先吊销该中间CA，再归档");
     }
     const children = await this.find({ where: { parentId: ca.id, deleted: false } });
     if (children.length > 0) {
-      throw new ValidateException("该CA下仍有中间CA，请先删除中间CA");
+      throw new ValidateException("该CA下仍有未归档的中间CA，请先归档中间CA");
     }
     const issued = await this.certInfoService.find({
       where: { localCaId: ca.id },
@@ -1437,7 +1438,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const now = Date.now();
     const blocking = issued.filter(item => item.status !== CertStatus.revoked && (!item.expiresTime || item.expiresTime > now));
     if (blocking.length > 0) {
-      throw new ValidateException("该本地CA仍有未吊销且未过期的证书，不能删除，请先吊销这些证书");
+      throw new ValidateException("该本地CA仍有未吊销且未过期的证书，不能归档，请先吊销这些证书");
     }
     // 未绑定用户仓库的ACME系统级证书不在cd_cert_info中，也需要按订单记录阻止删除
     const issuedSerials = new Set(issued.map(item => String(item.serialNumber || "").toUpperCase()));
@@ -1452,7 +1453,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       }
       const revoked = await this.certRevocationService.findBySerial(ca.id, serial);
       if (!revoked) {
-        throw new ValidateException(`该本地CA仍有未吊销且未过期的ACME证书(${serial})，不能删除，请先吊销这些证书`);
+        throw new ValidateException(`该本地CA仍有未吊销且未过期的ACME证书(${serial})，不能归档，请先吊销这些证书`);
       }
     }
     ca.deleted = true;

@@ -260,13 +260,13 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(true);
   }
 
-  @Post("/delete", { description: Constants.per.authOnly, summary: "删除本地CA" })
-  async delete(@Query("id") id: number, @Body(ALL) body?: { id: number; verifyToken: string }) {
+  @Post("/archive", { description: Constants.per.authOnly, summary: "归档本地CA（软删除，管理员永久可查）" })
+  async archive(@Query("id") id: number, @Body(ALL) body?: { id: number; verifyToken: string }) {
     const targetId = body?.id ?? id;
-    this.assertStepUp(body?.verifyToken, "删除本地CA");
+    this.assertStepUp(body?.verifyToken, "归档本地CA");
     const { userId, projectId } = await this.checkCaAccess(targetId, "write", true);
-    await this.service.deleteCa({ id: targetId, userId, projectId });
-    this.auditLog({ content: `删除了本地CA(ID:${targetId})` });
+    await this.service.archiveCa({ id: targetId, userId, projectId });
+    this.auditLog({ content: `归档了本地CA(ID:${targetId})` });
     return this.ok(true);
   }
 
