@@ -1297,10 +1297,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         const parentLimit = await this.resolveParentMaxValidityDays(parent);
         this.assertChildMaxValidity(days, parentLimit);
       }
-      const remainingDays = Math.max(0, Math.floor((Number(ca.notAfter) - Date.now()) / 86400000));
-      if (days > remainingDays) {
-        throw new ValidateException(`最大签发天数不能超过该CA证书剩余有效期(${remainingDays}天)`);
-      }
       ca.maxValidityDays = days;
     }
     if (req.allowedDomains != null) {

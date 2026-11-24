@@ -67,7 +67,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   });
 
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
-    const res = await localCaApi.GetList(query);
+    let res: any;
+    try {
+      res = await localCaApi.GetList(query);
+    } catch (e: any) {
+      notification.error({ message: String(e?.message || e) });
+      throw e;
+    }
     for (const row of res.records || []) {
       let list: string[] = [];
       try {
@@ -88,7 +94,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       .filter(Boolean);
     delete form.allowedDomainsText;
     try {
-      return await localCaApi.UpdateObj(form);
+      const res = await localCaApi.UpdateObj(form);
+      notification.success({ message: t("certd.localCa.updateSuccess") });
+      return res;
     } catch (e: any) {
       const message = String(e?.message || "");
       if (!/2FA|Passkey|验证/.test(message)) {
@@ -100,7 +108,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         throw e;
       }
       try {
-        return await localCaApi.UpdateObj(form);
+        const res = await localCaApi.UpdateObj(form);
+        notification.success({ message: t("certd.localCa.updateSuccess") });
+        return res;
       } catch (retryError: any) {
         notification.error({ message: String(retryError?.message || retryError) });
         throw retryError;

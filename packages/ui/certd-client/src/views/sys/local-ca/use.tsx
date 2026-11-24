@@ -1,6 +1,6 @@
 import { dict } from "@fast-crud/fast-crud";
-import { Modal, notification } from "ant-design-vue";
-import { createVNode, ref, render } from "vue";
+import { Alert, Button, Input, Modal, notification } from "ant-design-vue";
+import { h, ref } from "vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useModal } from "/@/use/use-modal";
 import { useI18n } from "/src/locales";
@@ -9,7 +9,6 @@ import LocalCaIssuedCerts from "./issued-certs.vue";
 import LocalCaAcmeAccounts from "./acme-accounts.vue";
 import LocalCaArchivedRoots from "./archived-roots.vue";
 import { localCaApi } from "./api";
-import StepUpVerify from "./step-up-verify.vue";
 
 function parseAllowedDomains(text: string) {
   return String(text || "")
@@ -677,24 +676,89 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       await action();
       return true;
     }
-    // 独立叠加弹窗，不替换原表单对话框，取消后可继续编辑原表单
+    // 使用Ant Modal叠加弹窗，不替换原表单对话框，取消后可继续编辑原表单
     return await new Promise<boolean>(resolve => {
-      const container = document.createElement("div");
-      document.body.appendChild(container);
+      let settled = false;
+      let modal: any;
+      const code = { value: "" };
       const finish = (ok: boolean) => {
-        render(null, container);
-        container.remove();
+        if (settled) return;
+        settled = true;
+        modal?.destroy();
         onClosed?.();
         resolve(ok);
       };
-      const vnode = createVNode(StepUpVerify, {
+      const runAction = async () => {
+        await action();
+        finish(true);
+      };
+      const verifyPasskey = async () => {
+        const options = await secretAccessApi.GeneratePasskeyAuthentication();
+        const credential = await (navigator.credentials as any).get({
+          publicKey: {
+            challenge: base64UrlToUint8Array(options.challenge),
+            rpId: options.rpId,
+            allowCredentials: (options.allowCredentials || []).map((item: any) => ({ ...item, id: base64UrlToUint8Array(item.id) })),
+            timeout: options.timeout || 60000,
+            userVerification: "required",
+          },
+        });
+        if (!credential) {
+          throw new Error(t("certd.localCa.passkeyCancelled"));
+        }
+        await secretAccessApi.VerifyPasskeySecretAccess(credential, options.challenge);
+        await runAction();
+      };
+      modal = Modal.confirm({
         title,
-        warning,
-        action,
-        onDone: () => finish(true),
-        onCancel: () => finish(false),
+        icon: null,
+        width: 440,
+        zIndex: 2000,
+        okText: t("certd.localCa.verifyAndContinue"),
+        cancelText: t("certd.common.cancel"),
+        content: h("div", [
+          h(Alert, { type: "warning", showIcon: true, message: warning, class: "mb-4" }),
+          h(Input, {
+            placeholder: t("certd.localCa.dynamicCodePlaceholder"),
+            onChange: (e: any) => {
+              code.value = e?.target?.value || "";
+            },
+          }),
+          passkeySupported
+            ? h(
+                Button,
+                {
+                  type: "link",
+                  block: true,
+                  onClick: async () => {
+                    try {
+                      await verifyPasskey();
+                    } catch (e: any) {
+                      notification.error({ message: e?.message || t("certd.localCa.passkeyFailed") });
+                    }
+                  },
+                },
+                () => t("certd.localCa.passkeyVerify")
+              )
+            : null,
+        ]),
+        async onOk() {
+          if (!code.value) {
+            notification.warning({ message: t("certd.localCa.dynamicCodeRequired") });
+            throw new Error(t("certd.localCa.dynamicCodeRequired"));
+          }
+          try {
+            await secretAccessApi.VerifySecretAccess(code.value);
+            await runAction();
+          } catch (e: any) {
+            notification.error({ message: e?.message || t("certd.localCa.passkeyFailed") });
+            throw e;
+          }
+        },
+        onCancel() {
+          finish(false);
+        },
       });
-      render(vnode, container);
     });
   }
 

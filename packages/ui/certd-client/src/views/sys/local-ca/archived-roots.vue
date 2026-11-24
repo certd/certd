@@ -2,7 +2,7 @@
   <div class="archived-roots">
     <a-empty v-if="!loading && list.length === 0" :description="t('certd.localCa.archivedRootsEmpty')" />
     <a-spin :spinning="loading">
-      <a-list :data-source="list" size="small">
+      <a-list v-if="list.length > 0" :data-source="list" size="small">
         <template #renderItem="{ item }">
           <a-list-item>
             <a-list-item-meta>
