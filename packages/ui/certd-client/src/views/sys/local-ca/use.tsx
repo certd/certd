@@ -710,8 +710,8 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     }
   }
 
-  async function openStepUp(title: string, warning: string, action: () => Promise<void>, onClosed?: () => void): Promise<boolean> {
-    if (secretAccessApi.HasSecretAccess()) {
+  async function openStepUp(title: string, warning: string, action: () => Promise<void>, onClosed?: () => void, forceFresh = true): Promise<boolean> {
+    if (!forceFresh && secretAccessApi.HasSecretAccess()) {
       await action();
       return true;
     }

@@ -485,8 +485,11 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   private assertStepUp(verifyToken: string | undefined, action: string) {
     const tokenUserId = verifyToken ? cache.get(`secret_access_2fa:${verifyToken}`) : undefined;
-    if (!verifyToken || tokenUserId !== this.getUserId()) {
-      throw new Error(`请先验证 2FA 或 Passkey 后再${action}`);
+    const issuedAt = verifyToken ? cache.get(`secret_access_2fa_ts:${verifyToken}`) : undefined;
+    // 敏感操作要求10秒内的新鲜验证令牌，避免复用旧令牌绕过二次确认
+    const fresh = typeof issuedAt === "number" && Date.now() - issuedAt <= 10 * 1000;
+    if (!verifyToken || tokenUserId !== this.getUserId() || !fresh) {
+      throw new Error(`请先验证 2FA 或 Passkey 后再${action}（需10秒内的新鲜验证）`);
     }
   }
 
