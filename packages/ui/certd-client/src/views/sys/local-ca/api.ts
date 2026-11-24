@@ -204,6 +204,22 @@ export const localCaApi = {
     });
   },
 
+  async GetAcmeAccess(id: number) {
+    return await req({
+      url: apiPrefix + "/acme/access/get",
+      method: "post",
+      data: { id },
+    });
+  },
+
+  async SetAcmeAccess(id: number, data: any, verifyToken: string) {
+    return await req({
+      url: apiPrefix + "/acme/access",
+      method: "post",
+      data: { id, ...data, verifyToken },
+    });
+  },
+
   async SetEabPrivileged(caId: number, eabId: string, privileged: boolean, verifyToken: string) {
     return await req({
       url: apiPrefix + "/eab/privileged",

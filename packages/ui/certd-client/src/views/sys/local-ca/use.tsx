@@ -8,6 +8,7 @@ import { createAccessApi, getSecretAccessToken } from "/@/views/certd/access/api
 import LocalCaIssuedCerts from "./issued-certs.vue";
 import LocalCaAcmeAccounts from "./acme-accounts.vue";
 import LocalCaEabManager from "./eab-manager.vue";
+import LocalCaAcmeAccess from "./acme-access.vue";
 import LocalCaArchivedRoots from "./archived-roots.vue";
 import { localCaApi } from "./api";
 
@@ -489,6 +490,21 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         });
         onCreated?.();
       },
+    });
+  }
+
+  async function openAcmeAccess(row: any) {
+    model.success({
+      title: `${t("certd.localCa.acmeAccessTitle")} - ${row.name}`,
+      maskClosable: true,
+      okText: t("certd.common.close"),
+      width: 720,
+      content: () => (
+        <LocalCaAcmeAccess
+          caId={row.id}
+          runStepUp={(action: () => Promise<void>) => openStepUp(t("certd.localCa.acmeAccessStepUpTitle"), t("certd.localCa.acmeAccessStepUpDesc"), action)}
+        />
+      ),
     });
   }
 
@@ -1002,6 +1018,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openIntermediate,
     openCreateEab,
     openEabManager,
+    openAcmeAccess,
     openImport,
     openView,
     openExport,

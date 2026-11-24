@@ -15,6 +15,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     openGenerate,
     openIntermediate,
     openEabManager,
+    openAcmeAccess,
     openImport,
     openView,
     openExport,
@@ -174,6 +175,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && row.acmeEnabled),
             click: async ({ row }) => {
               await openEabManager(row);
+            },
+          },
+          acmeAccess: {
+            text: t("certd.localCa.acmeAccessTitle"),
+            icon: "ph:shield-check",
+            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && row.acmeEnabled),
+            click: async ({ row }) => {
+              await openAcmeAccess(row);
             },
           },
           archivedRoots: {
