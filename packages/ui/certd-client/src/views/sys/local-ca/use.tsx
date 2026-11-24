@@ -7,6 +7,7 @@ import { useI18n } from "/src/locales";
 import { createAccessApi, getSecretAccessToken } from "/@/views/certd/access/api";
 import LocalCaIssuedCerts from "./issued-certs.vue";
 import LocalCaAcmeAccounts from "./acme-accounts.vue";
+import LocalCaEabManager from "./eab-manager.vue";
 import LocalCaArchivedRoots from "./archived-roots.vue";
 import { localCaApi } from "./api";
 
@@ -365,7 +366,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
-  async function openCreateEab() {
+  async function openCreateEab(onCreated?: () => void) {
     const allCas = await localCaApi.GetAdminOptions();
     const caOptions = (allCas || []).filter((item: any) => item.caType === "intermediate" && item.acmeEnabled && !item.disabled).map((item: any) => ({ label: `${item.name} (${item.subjectCn})`, value: item.id }));
     if (caOptions.length === 0) {
@@ -468,7 +469,26 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             </div>
           ),
         });
+        onCreated?.();
       },
+    });
+  }
+
+  async function openEabManager(row: any) {
+    const managerRef: any = { value: null };
+    model.success({
+      title: `${t("certd.localCa.eabManagerTitle")} - ${row.name}`,
+      maskClosable: true,
+      okText: t("certd.common.close"),
+      width: 1150,
+      content: () => (
+        <LocalCaEabManager
+          ref={(el: any) => (managerRef.value = el)}
+          caId={row.id}
+          onCreate={() => openCreateEab(() => managerRef.value?.load?.())}
+          runStepUp={(action: () => Promise<void>) => openStepUp(t("certd.localCa.eabStepUpTitle"), t("certd.localCa.eabStepUpDesc"), action)}
+        />
+      ),
     });
   }
 
@@ -963,6 +983,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openGenerate,
     openIntermediate,
     openCreateEab,
+    openEabManager,
     openImport,
     openView,
     openExport,

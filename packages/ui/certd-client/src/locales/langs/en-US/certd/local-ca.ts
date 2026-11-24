@@ -171,6 +171,11 @@ export default {
   acmeDisabledDesc: "Enable it to get a working ACME Directory URL. Only intermediate CAs support ACME.",
   enableAcme: "Enable ACME",
   eabCreate: "Create ACME Credential",
+  eabManagerTitle: "EAB credentials",
+  eabUses: "Uses",
+  eabExpires: "Expires",
+  eabInheritCa: "Inherit CA scope",
+  eabStatusChanged: "EAB status updated",
   eabCreateTitle: "Create ACME EAB Credential",
   eabCreateWarning: "EAB only authorizes ACME account registration",
   eabCreateWarningDesc:

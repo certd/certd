@@ -14,7 +14,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const {
     openGenerate,
     openIntermediate,
-    openCreateEab,
+    openEabManager,
     openImport,
     openView,
     openExport,
@@ -169,11 +169,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           eab: {
-            text: t("certd.localCa.eabCreate"),
+            text: t("certd.localCa.eabManagerTitle"),
             icon: "ph:key",
-            show: hasActionPermission("write"),
-            click: async () => {
-              await openCreateEab();
+            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && row.acmeEnabled),
+            click: async ({ row }) => {
+              await openEabManager(row);
             },
           },
           archivedRoots: {
