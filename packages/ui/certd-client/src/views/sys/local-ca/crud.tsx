@@ -347,6 +347,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             data: [
               { label: t("certd.localCa.statusNormal"), value: "normal", color: "green" },
               { label: t("certd.localCa.statusRotated"), value: "rotated", color: "default" },
+              { label: t("certd.localCa.statusDisabled"), value: "disabled", color: "red" },
             ],
           }),
           form: { show: false },

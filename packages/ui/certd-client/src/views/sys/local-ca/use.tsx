@@ -710,6 +710,25 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     }
   }
 
+  let passkeyAbort: AbortController | null = null;
+  function translatePasskeyError(e: any, t: any): string {
+    const name = e?.name || "";
+    const msg = String(e?.message || "");
+    if (name === "AbortError") {
+      return t("certd.localCa.passkeyCancelled");
+    }
+    if (name === "NotAllowedError" || /timed out or was not allowed/i.test(msg)) {
+      return t("certd.localCa.passkeyNotAllowed");
+    }
+    if (/already pending/i.test(msg)) {
+      return t("certd.localCa.passkeyPending");
+    }
+    if (name === "InvalidStateError" || /already pending/i.test(msg)) {
+      return t("certd.localCa.passkeyPending");
+    }
+    return msg || t("certd.localCa.passkeyFailed");
+  }
+
   async function openStepUp(title: string, warning: string, action: () => Promise<void>, onClosed?: () => void, forceFresh = true): Promise<boolean> {
     if (!forceFresh && secretAccessApi.HasSecretAccess()) {
       await action();
@@ -723,6 +742,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       const finish = (ok: boolean) => {
         if (settled) return;
         settled = true;
+        passkeyAbort?.abort();
         modal?.destroy();
         onClosed?.();
         resolve(ok);
@@ -733,15 +753,23 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       };
       const verifyPasskey = async () => {
         const options = await secretAccessApi.GeneratePasskeyAuthentication();
-        const credential = await (navigator.credentials as any).get({
-          publicKey: {
-            challenge: base64UrlToUint8Array(options.challenge),
-            rpId: options.rpId,
-            allowCredentials: (options.allowCredentials || []).map((item: any) => ({ ...item, id: base64UrlToUint8Array(item.id) })),
-            timeout: options.timeout || 60000,
-            userVerification: "required",
-          },
-        });
+        passkeyAbort?.abort();
+        passkeyAbort = new AbortController();
+        let credential: any;
+        try {
+          credential = await (navigator.credentials as any).get({
+            publicKey: {
+              challenge: base64UrlToUint8Array(options.challenge),
+              rpId: options.rpId,
+              allowCredentials: (options.allowCredentials || []).map((item: any) => ({ ...item, id: base64UrlToUint8Array(item.id) })),
+              timeout: options.timeout || 60000,
+              userVerification: "required",
+            },
+            signal: passkeyAbort.signal,
+          });
+        } catch (e: any) {
+          throw new Error(translatePasskeyError(e, t));
+        }
         if (!credential) {
           throw new Error(t("certd.localCa.passkeyCancelled"));
         }

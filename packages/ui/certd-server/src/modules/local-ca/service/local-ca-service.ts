@@ -1134,8 +1134,37 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       applyTime: item.applyTime,
       fromType: item.fromType,
       revokeTime: item.revokeTime,
+      crt: (() => {
+        try {
+          return JSON.parse(item.certInfo || "{}").crt || null;
+        } catch {
+          return null;
+        }
+      })(),
     }));
     return [...childRows, ...leafRows];
+  }
+
+  /** 按序列号查证书PEM（供CRL/订单查看证书信息），先查ACME订单再查用户证书仓库。 */
+  async getCertPemBySerial(req: LocalCaScope & { serial: string }): Promise<string | null> {
+    const ca = await this.accessService.getOwnedCa(req);
+    const serial = String(req.serial || "").trim();
+    if (!serial) {
+      return null;
+    }
+    const order = await this.acmeOrderRepository.findOne({ where: { caId: ca.id, serialNumber: serial } });
+    if (order?.certPem) {
+      return order.certPem;
+    }
+    const cert = await this.certInfoService.findOne({ where: { localCaId: ca.id, serialNumber: serial } });
+    if (cert?.certInfo) {
+      try {
+        return JSON.parse(cert.certInfo).crt || null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
   }
 
   async revokeIssuedCert(req: LocalCaScope & { certId: number }) {
@@ -1439,7 +1468,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!ca.disabled) {
       throw new ValidateException("请先禁用该本地CA，再归档");
     }
-    if (ca.caType === "intermediate" && !ca.revoked) {
+    if (ca.caType === "intermediate" && !ca.revoked && !ca.rotatedToId) {
       throw new ValidateException("请先吊销该中间CA，再归档");
     }
     const children = await this.find({ where: { parentId: ca.id, deleted: false } });
@@ -1452,23 +1481,26 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     });
     const now = Date.now();
     const blocking = issued.filter(item => item.status !== CertStatus.revoked && (!item.expiresTime || item.expiresTime > now));
-    if (blocking.length > 0) {
+    // 已轮换退役的CA允许直接归档：其已签发证书继续有效直至过期，CRL仍可访问，无需先吊销
+    if (!ca.rotatedToId && blocking.length > 0) {
       throw new ValidateException("该本地CA仍有未吊销且未过期的证书，不能归档，请先吊销这些证书");
     }
-    // 未绑定用户仓库的ACME系统级证书不在cd_cert_info中，也需要按订单记录阻止删除
-    const issuedSerials = new Set(issued.map(item => String(item.serialNumber || "").toUpperCase()));
-    const validOrders = await this.acmeOrderRepository.find({
-      where: { caId: ca.id, status: "valid" },
-      select: { serialNumber: true, expiresTime: true },
-    });
-    for (const order of validOrders || []) {
-      const serial = String(order.serialNumber || "").toUpperCase();
-      if (!serial || issuedSerials.has(serial) || !order.expiresTime || order.expiresTime <= now) {
-        continue;
-      }
-      const revoked = await this.certRevocationService.findBySerial(ca.id, serial);
-      if (!revoked) {
-        throw new ValidateException(`该本地CA仍有未吊销且未过期的ACME证书(${serial})，不能归档，请先吊销这些证书`);
+    // 未绑定用户仓库的ACME系统级证书不在cd_cert_info中，也需要按订单记录阻止归档（已轮换退役CA除外）
+    if (!ca.rotatedToId) {
+      const issuedSerials = new Set(issued.map(item => String(item.serialNumber || "").toUpperCase()));
+      const validOrders = await this.acmeOrderRepository.find({
+        where: { caId: ca.id, status: "valid" },
+        select: { serialNumber: true, expiresTime: true },
+      });
+      for (const order of validOrders || []) {
+        const serial = String(order.serialNumber || "").toUpperCase();
+        if (!serial || issuedSerials.has(serial) || !order.expiresTime || order.expiresTime <= now) {
+          continue;
+        }
+        const revoked = await this.certRevocationService.findBySerial(ca.id, serial);
+        if (!revoked) {
+          throw new ValidateException(`该本地CA仍有未吊销且未过期的ACME证书(${serial})，不能归档，请先吊销这些证书`);
+        }
       }
     }
     ca.deleted = true;

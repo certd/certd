@@ -57,6 +57,8 @@ export class LocalCaController extends CrudController<LocalCaService> {
           bq.andWhere("main.disabled = 0 AND main.rotated_to_id IS NULL");
         } else if (status === "rotated") {
           bq.andWhere("main.rotated_to_id IS NOT NULL");
+        } else if (status === "disabled") {
+          bq.andWhere("main.disabled = 1 AND main.rotated_to_id IS NULL");
         }
       },
     });
@@ -403,6 +405,13 @@ export class LocalCaController extends CrudController<LocalCaService> {
     const { userId, projectId } = await this.checkCaAccess(body.id, "read");
     const list = await this.service.listIssuedCerts({ id: body.id, userId, projectId });
     return this.ok(list);
+  }
+
+  @Post("/certBySerial", { description: Constants.per.authOnly, summary: "按序列号查询证书PEM（查看证书信息）" })
+  async certBySerial(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.checkCaAccess(body.id, "read");
+    const certPem = await this.service.getCertPemBySerial({ id: body.id, userId, projectId, serial: body.serial });
+    return this.ok({ certPem });
   }
 
   @Post("/revokeCert", { description: Constants.per.authOnly, summary: "吊销本地CA签发的证书" })

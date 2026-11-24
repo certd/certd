@@ -41,7 +41,6 @@ import dayjs from "dayjs";
 import { useI18n } from "/src/locales";
 import { useModal } from "/@/use/use-modal";
 import CertView from "/@/views/certd/pipeline/cert-view.vue";
-import { certInfoApi } from "/@/views/certd/monitor/cert/api";
 import { localCaApi } from "./api";
 
 defineOptions({
@@ -111,7 +110,12 @@ async function viewCert(record: any) {
     const res = await localCaApi.GetCertDetail(ca.certPem);
     cert = { crt: ca.certPem, key: "", ic: "", detail: res.detail };
   } else {
-    cert = await certInfoApi.GetCert(record.id);
+    if (!record.crt) {
+      notification.error({ message: t("certd.localCa.certNotFound") });
+      return;
+    }
+    const res = await localCaApi.GetCertDetail(record.crt);
+    cert = { crt: record.crt, key: "", ic: "", detail: res.detail };
   }
   if (!cert) {
     notification.error({ message: t("certd.localCa.certNotFound") });

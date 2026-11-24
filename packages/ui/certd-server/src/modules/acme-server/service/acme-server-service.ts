@@ -592,6 +592,7 @@ export class AcmeServerService {
       error: order.error,
       createTime: order.createTime,
       expiresTime: order.expiresTime,
+      certPem: order.certPem || null,
     }));
   }
 

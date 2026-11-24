@@ -75,6 +75,11 @@
       <a-table-column :title="t('certd.localCa.crlReason')">
         <template #default="{ record }">{{ reasonLabel(record.reason) }}</template>
       </a-table-column>
+      <a-table-column :title="t('certd.localCa.accessActions')" :width="120" align="center">
+        <template #default="{ record }">
+          <a-button type="link" size="small" @click="viewCrlCert(record)">{{ t("certd.localCa.viewCertInfo") }}</a-button>
+        </template>
+      </a-table-column>
     </a-table>
     <template #footer>
       <a-button @click="downloadCrl">{{ t("certd.localCa.downloadCrl") }}</a-button>
@@ -105,11 +110,12 @@
   </a-modal>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { computed, ref } from "vue";
 import { notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { useI18n } from "/src/locales";
+import { useModal } from "/@/use/use-modal";
 import CertView from "/@/views/certd/pipeline/cert-view.vue";
 import { localCaApi } from "./api";
 
@@ -124,6 +130,26 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+const model = useModal();
+async function viewCrlCert(record: any) {
+  try {
+    const res = await localCaApi.GetCertBySerial(row.value.id, record.serialNumber);
+    if (!res?.certPem) {
+      notification.warning({ message: t("certd.localCa.certNotFound") });
+      return;
+    }
+    const detail = await localCaApi.GetCertDetail(res.certPem);
+    model.success({
+      title: t("certd.localCa.viewTitle"),
+      maskClosable: true,
+      okText: t("certd.common.confirm"),
+      width: 800,
+      content: () => <CertView cert={{ crt: res.certPem, key: "", ic: "", detail: detail.detail }} />,
+    });
+  } catch (e: any) {
+    notification.error({ message: e?.message || t("certd.localCa.viewFailed") });
+  }
+}
 const visible = ref(false);
 const activeTab = ref("settings");
 const crlVisible = ref(false);

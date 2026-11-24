@@ -15,7 +15,9 @@
           <span v-if="record.userId > 0"
             >{{ userLabel(record.userId) }}<span v-if="record.projectId"> / {{ projectLabel(record.projectId) }}</span></span
           >
-          <a-tag v-else color="purple">{{ t("certd.localCa.systemLevel") }}</a-tag>
+          <a-tooltip v-else :title="t('certd.localCa.systemLevelHint')">
+            <a-tag color="purple">{{ t("certd.localCa.systemLevelTag") }}</a-tag>
+          </a-tooltip>
         </template>
       </a-table-column>
       <a-table-column :title="t('certd.localCa.acmeContact')" :width="180">
@@ -45,7 +47,9 @@
     <a-table :data-source="orders" :loading="ordersLoading" :pagination="{ pageSize: 10 }" size="small" row-key="id">
       <a-table-column :title="t('certd.localCa.acmeOrderStatus')" :width="110">
         <template #default="{ record }">
-          <a-tag :color="orderStatusColor(record.status)">{{ record.status }}</a-tag>
+          <a-tooltip :title="orderStatusHint(record.status)">
+            <a-tag :color="orderStatusColor(record.status)">{{ orderStatusLabel(record.status) }}</a-tag>
+          </a-tooltip>
         </template>
       </a-table-column>
       <a-table-column :title="t('certd.localCa.certDomain')" :width="220">
@@ -60,16 +64,24 @@
       <a-table-column :title="t('certd.common.createTime')" :width="170">
         <template #default="{ record }">{{ formatTime(record.createTime) }}</template>
       </a-table-column>
+      <a-table-column :title="t('certd.localCa.accessActions')" :width="120" align="center">
+        <template #default="{ record }">
+          <a-button v-if="record.certPem" type="link" size="small" @click="viewOrderCert(record)">{{ t("certd.localCa.viewCertInfo") }}</a-button>
+          <span v-else>-</span>
+        </template>
+      </a-table-column>
     </a-table>
   </a-modal>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { onMounted, ref } from "vue";
 import { Modal, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { useI18n } from "/src/locales";
 import { request } from "/@/api/service";
+import { useModal } from "/@/use/use-modal";
+import CertView from "/@/views/certd/pipeline/cert-view.vue";
 import { localCaApi } from "./api";
 
 defineOptions({
@@ -81,6 +93,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+const model = useModal();
 const accounts = ref<any[]>([]);
 const orders = ref<any[]>([]);
 const loading = ref(false);
@@ -156,6 +169,39 @@ function orderStatusColor(status: string) {
   if (status === "invalid") return "red";
   if (status === "ready") return "blue";
   return "orange";
+}
+function orderStatusLabel(status: string) {
+  const map: Record<string, string> = {
+    pending: t("certd.localCa.orderStatusPending"),
+    ready: t("certd.localCa.orderStatusReady"),
+    processing: t("certd.localCa.orderStatusProcessing"),
+    valid: t("certd.localCa.orderStatusValid"),
+    invalid: t("certd.localCa.orderStatusInvalid"),
+  };
+  return map[status] || status;
+}
+function orderStatusHint(status: string) {
+  const map: Record<string, string> = {
+    pending: t("certd.localCa.orderPendingHint"),
+    ready: t("certd.localCa.orderReadyHint"),
+    processing: t("certd.localCa.orderProcessingHint"),
+    valid: t("certd.localCa.orderValidHint"),
+    invalid: t("certd.localCa.orderInvalidHint"),
+  };
+  return map[status] || status;
+}
+async function viewOrderCert(record: any) {
+  if (!record.certPem) {
+    return;
+  }
+  const res = await localCaApi.GetCertDetail(record.certPem);
+  model.success({
+    title: t("certd.localCa.viewTitle"),
+    maskClosable: true,
+    okText: t("certd.common.confirm"),
+    width: 800,
+    content: () => <CertView cert={{ crt: record.certPem, key: "", ic: "", detail: res.detail }} />,
+  });
 }
 
 onMounted(async () => {

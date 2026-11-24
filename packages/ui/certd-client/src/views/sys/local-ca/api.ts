@@ -116,6 +116,14 @@ export const localCaApi = {
     return await ReadCertDetail(certPem);
   },
 
+  async GetCertBySerial(id: number, serial: string) {
+    return await req({
+      url: apiPrefix + "/certBySerial",
+      method: "post",
+      data: { id, serial },
+    });
+  },
+
   async ListAcmeAccounts(id: number) {
     return await req({
       url: apiPrefix + "/acme/accounts",
