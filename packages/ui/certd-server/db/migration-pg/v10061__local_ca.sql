@@ -164,6 +164,7 @@ CREATE TABLE "cd_acme_eab"
   "allowed_domains"    text,
   "expires_time"       bigint,
   "disabled"           boolean NOT NULL DEFAULT (false),
+  "remark"             varchar(255),
   "create_time"        timestamp     NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "update_time"        timestamp     NOT NULL DEFAULT (CURRENT_TIMESTAMP)
 );

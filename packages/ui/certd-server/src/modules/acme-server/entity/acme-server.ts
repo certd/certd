@@ -203,6 +203,9 @@ export class AcmeEabEntity {
   @Column({ default: false })
   disabled: boolean;
 
+  @Column({ length: 255, nullable: true })
+  remark: string;
+
   @Column({ name: "create_time", default: () => "CURRENT_TIMESTAMP" })
   createTime: Date;
 

@@ -7,7 +7,7 @@ import { EncryptService, ValidateException } from "@certd/lib-server";
 import { runTransaction } from "../../db/db-transaction.js";
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { LocalCaGrantEntity } from "../entity/local-ca-grant.js";
-import { AcmeEabEntity, AcmeOrderEntity } from "../../acme-server/entity/acme-server.js";
+import { AcmeAccountEntity, AcmeEabEntity, AcmeOrderEntity } from "../../acme-server/entity/acme-server.js";
 import { randomId } from "../../acme-server/protocol/acme-jws.js";
 import { LocalCaAccessService, LocalCaScope } from "./local-ca-access-service.js";
 import { LocalCaCrlService } from "./local-ca-crl-service.js";
@@ -162,7 +162,7 @@ export class LocalCaAcmeService {
     logger.info(`[local-ca] ${disableAcme ? "acme disabled" : "direct issue disabled"} ca=${ca.id}; unfinished direct orders invalidated`);
   }
 
-  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number }) {
+  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number; remark?: string }) {
     const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以创建ACME凭证");
@@ -195,6 +195,7 @@ export class LocalCaAcmeService {
       usedCount: 0,
       expiresTime: expiresDays > 0 ? Date.now() + expiresDays * 24 * 3600 * 1000 : null,
       disabled: false,
+      remark: String(req.remark || "").trim() || null,
     });
     const manager = this.repository.manager;
     if (!manager?.transaction) {
@@ -274,6 +275,13 @@ export class LocalCaAcmeService {
   async listAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number }) {
     const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
     const list = await this.acmeEabRepository.find({ where: { caId: ca.id }, order: { createTime: "DESC" } });
+    const accounts = await this.repository.manager.getRepository(AcmeAccountEntity).find({ where: { caId: ca.id }, select: { id: true, eabId: true } });
+    const countByEab = new Map<string, number>();
+    for (const acc of accounts) {
+      if (acc.eabId) {
+        countByEab.set(acc.eabId, (countByEab.get(acc.eabId) || 0) + 1);
+      }
+    }
     return list.map(item => ({
       id: item.id,
       name: item.name,
@@ -286,6 +294,8 @@ export class LocalCaAcmeService {
       grantId: item.grantId,
       userId: item.userId,
       projectId: item.projectId,
+      remark: item.remark,
+      accountCount: countByEab.get(item.id) || 0,
       createTime: item.createTime,
     }));
   }

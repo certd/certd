@@ -371,6 +371,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       expiresDays: body.expiresDays,
       allowedDomains: body.allowedDomains,
       grantId: body.grantId,
+      remark: body.remark,
     });
     this.auditLog({ content: `创建本地ACME EAB凭证「${res.name}」(KID:${res.kid})` });
     return this.ok(res);

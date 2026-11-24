@@ -879,7 +879,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.acmeService.setAcmeEnabled(req);
   }
 
-  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number }) {
+  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number; remark?: string }) {
     return await this.acmeService.createAcmeEab(req);
   }
 

@@ -164,6 +164,7 @@ CREATE TABLE `cd_acme_eab`
   `allowed_domains`    longtext,
   `expires_time`       bigint,
   `disabled`           boolean      NOT NULL DEFAULT 0,
+  `remark`             varchar(255),
   `create_time`        timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time`        timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB ROW_FORMAT = DYNAMIC;

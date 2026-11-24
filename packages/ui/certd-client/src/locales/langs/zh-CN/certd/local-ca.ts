@@ -172,6 +172,8 @@ export default {
   acmeDisabledDesc: "启用后才会生成可用的 ACME Directory URL；仅中间CA支持。",
   enableAcme: "启用ACME",
   eabCreate: "创建ACME凭证",
+  eabOwner: "所属用户/项目",
+  eabAccountCount: "账户数",
   eabManagerTitle: "EAB凭证管理",
   eabUses: "使用次数",
   eabExpires: "过期时间",

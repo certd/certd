@@ -435,6 +435,11 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           form: { col: { span: 12 }, component: { min: 0 } },
           helper: t("certd.localCa.eabExpiresDaysHelper"),
         },
+        remark: {
+          title: t("certd.localCa.fields.remark"),
+          type: "textarea",
+          form: { col: { span: 24 }, component: { rows: 2 } },
+        },
       },
       async onSubmit(form: any) {
         let res: any;
@@ -446,6 +451,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             expiresDays: form.expiresDays || 0,
             allowedDomains: parseAllowedDomains(form.allowedDomains),
             grantId: form.grantId || undefined,
+            remark: form.remark,
           });
         });
         if (!verified) {
