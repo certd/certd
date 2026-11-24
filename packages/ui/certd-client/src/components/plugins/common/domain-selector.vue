@@ -455,6 +455,11 @@ async function copySelectedDomains(event: MouseEvent) {
 
 <style lang="less">
 .domain-select {
+  .domain-select-input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+  }
   .domain-select-tag {
     font-size: 14px;
     height: 24px;
