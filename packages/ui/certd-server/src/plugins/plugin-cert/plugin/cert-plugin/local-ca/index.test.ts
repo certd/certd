@@ -77,7 +77,8 @@ function createPlugin(leaf: any, opts: { caDisabled?: boolean; caType?: string; 
   plugin.condition = async () => opts.old ?? null;
   plugin.readLastCert = async () => opts.old;
   plugin.output = async (reader: any, isNew: boolean) => {
-    calls.output = { isNew, cert: reader.toCertInfo() };
+    plugin.cert = reader.toCertInfo();
+    calls.output = { isNew, cert: plugin.cert };
   };
   plugin.registerSecret = () => {};
   plugin.clearLastStatus = () => {};
@@ -96,8 +97,9 @@ describe("CertApplyLocalCa", () => {
     assert.equal(calls.output.isNew, true);
     assert.equal(calls.issue.caId, 1);
     assert.equal(calls.issue.domains[0], "plugin.example.com");
-    assert.equal(calls.emit.localCaId, 1);
-    assert.equal(calls.emit.serialNumber, leaf.serialNumber);
+    assert.equal(calls.emit.extensions.issuer.type, "local-ca");
+    assert.equal(calls.emit.extensions.issuer.id, "1");
+    assert.equal(calls.emit.extensions.issuer.serialNumber, leaf.serialNumber);
   });
 
   it("证书未到期且输入未变化时跳过，并保留旧输出", async () => {

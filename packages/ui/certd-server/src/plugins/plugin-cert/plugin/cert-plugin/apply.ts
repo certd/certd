@@ -1,5 +1,4 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
-import { X509Certificate } from "node:crypto";
 import { getDnsPersistIssuer } from "@certd/acme-client";
 import { utils } from "@certd/basic";
 import { CustomAcmeProvider, NonRetryableException } from "@certd/lib-server";
@@ -14,8 +13,6 @@ import { EabAccess } from "../../access/index.js";
 import { DomainParser } from "@certd/plugin-lib";
 import { ossClientFactory } from "../../../plugin-lib/oss/factory.js";
 import { merge } from "lodash-es";
-import { verifyCertIssuedBy } from "../../../../modules/local-ca/service/local-ca-crypto.js";
-import { getLocalCaIdFromAcmeDirectory, isLocalCaDirectory, parseLocalCaDirectory } from "../../../../modules/local-ca/service/local-ca-directory.js";
 
 export type CnameRecordInput = {
   id: number;
@@ -777,29 +774,6 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       }));
   }
 
-  /**
-   * 通过内置ACME签发的证书也要在证书仓库中关联本地CA，否则删除保护、CRL信息、吊销都会失效。
-   * 目录地址中带有本地CA id，签发结果的叶子证书首张即为本地CA签发。
-   */
-  async emitCertApplySuccess() {
-    const candidate = parseLocalCaDirectory(this.acmeProvider?.directoryUrl);
-    if (!candidate || !this.cert?.crt) {
-      return await super.emitCertApplySuccess();
-    }
-    try {
-      const getter: any = await this.ctx.serviceGetter.get("localCaGetter");
-      const ca = await getter.getCa(candidate.caId);
-      if (!ca?.certPem || !verifyCertIssuedBy(this.cert.crt, ca.certPem)) {
-        this.logger.warn(`证书并非由本地CA(${candidate.caId})签发，不写入本地CA关联`);
-        return await super.emitCertApplySuccess();
-      }
-      const serialNumber = new X509Certificate(this.cert.crt).serialNumber.toUpperCase();
-      return await super.emitCertApplySuccess({ localCaId: candidate.caId, serialNumber });
-    } catch (e: any) {
-      this.logger.warn(`校验本地CA证书关联失败，不写入本地CA关联：${e?.message || e}`);
-      return await super.emitCertApplySuccess();
-    }
-  }
 
   private async resolveReusePrivateKey(): Promise<string | undefined> {
     if (!this.reuseKey) {
@@ -1055,17 +1029,6 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       domain = domain.replaceAll("*.", "");
       domainList.add(domain);
     }
-    // 本地CA直签开启时忽略域名管理中的校验方式，所有域名走直签
-    try {
-      const directCaId = await this.getDirectIssueLocalCaId(acmeAccount);
-      if (directCaId != null) {
-        this.logger.info(`本地CA【${directCaId}】开启EAB直签，自动匹配忽略域名校验计划`);
-        return {};
-      }
-    } catch (e) {
-      // 未开启直签/账号无 EAB 时继续按域名管理计划校验
-    }
-
     const domainVerifierGetter: IDomainVerifierGetter = await this.ctx.serviceGetter.get("domainVerifierGetter");
 
     const verifiers: DomainVerifiers = await domainVerifierGetter.getVerifiers([...domainList]);
@@ -1090,97 +1053,11 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     }
 
     if (missingDomains.length > 0) {
-      const localCaId = await this.getDirectIssueLocalCaId(acmeAccount);
-      if (localCaId != null) {
-        this.logger.info(`域名【${missingDomains.join(",")}】未配置校验方式，本地CA【${localCaId}】支持直接签发，跳过域名校验`);
-        return {};
-      }
-      const remoteDirectIssue = await this.isRemoteCertdDirectIssue(acmeAccount);
-      if (remoteDirectIssue) {
-        this.logger.info(`域名【${missingDomains.join(",")}】未配置校验方式，远程Certd ACME已开启EAB直签，跳过域名校验计划`);
-        return {};
-      }
       throw new Error(`没有找到与该域名（${missingDomains[0]}）匹配的校验方式，请先到‘域名管理’页面添加校验方式`);
     }
     return plan;
   }
 
-  private remoteDirectIssueCache?: boolean;
-
-  /**
-   * 自动匹配缺少校验方式时，探测远程Certd ACME目录是否声明EAB直签。
-   * 该元数据只用于规划，实际授权仍由远端服务器执行；失败则回退真实验证。
-   */
-  protected async isRemoteCertdDirectIssue(acmeAccount?: AcmeAccountInfo): Promise<boolean> {
-    if (this.remoteDirectIssueCache != null) {
-      return this.remoteDirectIssueCache;
-    }
-    if (!acmeAccount?.eab) {
-      return false;
-    }
-    const directoryUrl = this.acmeProvider?.directoryUrl;
-    const candidate = parseLocalCaDirectory(directoryUrl);
-    if (!directoryUrl || !candidate || this.acmeProvider?.builtIn === true) {
-      return false;
-    }
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-    try {
-      const response = await (globalThis as any).fetch(directoryUrl, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        signal: controller.signal,
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data = await response.json();
-      const meta = data?.meta?.certdLocalCa;
-      const directIssue = Number(meta?.caId) === candidate.caId && meta?.directIssue === true && meta?.eabRequired === true;
-      this.remoteDirectIssueCache = directIssue;
-      return directIssue;
-    } catch (e: any) {
-      this.remoteDirectIssueCache = false;
-      this.logger.warn(`读取远程ACME目录直签配置失败，按真实验证处理：${e?.message || e}`);
-      return false;
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-
-  protected async getDirectIssueLocalCaId(acmeAccount?: AcmeAccountInfo): Promise<number | null> {
-    const caId = getLocalCaIdFromAcmeDirectory(this.acmeProvider?.directoryUrl);
-    if (caId == null) {
-      return null;
-    }
-    const localCaGetter: any = await this.ctx.serviceGetter.get("localCaGetter");
-    if (!localCaGetter) {
-      throw new Error("当前颁发机构是本地CA，但未找到本地CA服务");
-    }
-    const ca = await localCaGetter.getCa(caId);
-    if (!ca || !isLocalCaDirectory(this.acmeProvider?.directoryUrl, ca, caId)) {
-      return null;
-    }
-    if (ca.disabled) {
-      throw new Error(`本地CA【${ca.name}】已禁用，无法直接签发`);
-    }
-    if (ca.caType !== "intermediate") {
-      throw new Error(`本地CA【${ca.name}】不是中间CA，无法签发叶子证书`);
-    }
-    if (!ca.acmeEnabled) {
-      throw new Error(`本地CA【${ca.name}】未启用ACME服务，无法直接签发`);
-    }
-    if (!ca.acmeDirectIssue) {
-      throw new Error(`本地CA【${ca.name}】未开启EAB直签，请先在CA设置中开启，或到‘域名管理’页面配置校验方式`);
-    }
-    if (!acmeAccount?.eab) {
-      throw new Error(`本地CA【${ca.name}】的ACME账号未通过EAB认证，无法跳过域名校验；请重新生成EAB账号`);
-    }
-    if (ca.notAfter && ca.notAfter < Date.now()) {
-      throw new Error(`本地CA【${ca.name}】已过期，无法直接签发`);
-    }
-    return caId;
-  }
 
   private async createDnsDomainVerifyPlan(planSetting: DnsVerifier, domain: string, mainDomain: string): Promise<DomainVerifyPlan> {
     const access = await this.getAccess(planSetting.dnsProviderAccessId);

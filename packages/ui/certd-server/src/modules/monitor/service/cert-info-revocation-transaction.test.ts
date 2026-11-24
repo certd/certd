@@ -3,7 +3,6 @@ import { DataSource } from "typeorm";
 import { CertInfoEntity, CertStatus } from "../entity/cert-info.js";
 import { CertRevocationEntity } from "../../local-ca/entity/cert-revocation.js";
 import { LocalCaEntity } from "../../local-ca/entity/local-ca.js";
-import { CertInfoService } from "./cert-info-service.js";
 import { CertRevocationService } from "../../local-ca/service/cert-revocation-service.js";
 
 async function createDataSource() {
@@ -41,7 +40,7 @@ async function addCert(repo: any, serialNumber: string) {
   );
 }
 
-describe("CertInfoService local revocation transaction", () => {
+describe("Local CA revocation transaction", () => {
   it("吊销记录与证书状态在同一事务提交", async function (this: any) {
     let ds: DataSource;
     try {
@@ -50,19 +49,17 @@ describe("CertInfoService local revocation transaction", () => {
       return this.skip();
     }
     try {
-      const service = new CertInfoService();
       const revocation = new CertRevocationService();
-      service.repository = ds.getRepository(CertInfoEntity);
       revocation.repository = ds.getRepository(CertRevocationEntity);
-      service.certRevocationService = revocation;
-      service.localCaRepository = {
+      revocation.certInfoRepository = ds.getRepository(CertInfoEntity);
+      revocation.localCaRepository = {
         async findOne() {
           return { id: 2 };
         },
       } as any;
 
-      const cert = await addCert(service.repository, "0A11");
-      await service.applyLocalRevocation({
+      const cert = await addCert(revocation.certInfoRepository, "0A11");
+      await revocation.revokeCertInfo({
         certInfoId: cert.id,
         caId: 2,
         userId: 1,
@@ -70,7 +67,7 @@ describe("CertInfoService local revocation transaction", () => {
         expiresTime: cert.expiresTime,
       });
 
-      const saved = await service.repository.findOneBy({ id: cert.id });
+      const saved = await revocation.certInfoRepository.findOneBy({ id: cert.id });
       assert.equal(saved.status, CertStatus.revoked);
       assert.ok(saved.revokeTime > 0);
       assert.equal(await revocation.listByCa(2).then(list => list.length), 1);
@@ -87,18 +84,16 @@ describe("CertInfoService local revocation transaction", () => {
       return this.skip();
     }
     try {
-      const service = new CertInfoService();
       const revocation = new CertRevocationService();
-      service.repository = ds.getRepository(CertInfoEntity);
       revocation.repository = ds.getRepository(CertRevocationEntity);
-      service.certRevocationService = revocation;
-      service.localCaRepository = {
+      revocation.certInfoRepository = ds.getRepository(CertInfoEntity);
+      revocation.localCaRepository = {
         async findOne() {
           return { id: 2 };
         },
       } as any;
 
-      const cert = await addCert(service.repository, "0A22");
+      const cert = await addCert(revocation.certInfoRepository, "0A22");
       await ds.query(`CREATE TRIGGER fail_local_cert_revoke
         BEFORE UPDATE ON cd_cert_info
         WHEN NEW.status = 'revoked'
@@ -107,7 +102,7 @@ describe("CertInfoService local revocation transaction", () => {
         END`);
       await assert.rejects(
         () =>
-          service.applyLocalRevocation({
+          revocation.revokeCertInfo({
             certInfoId: cert.id,
             caId: 2,
             userId: 1,
@@ -119,7 +114,7 @@ describe("CertInfoService local revocation transaction", () => {
 
       const list = await revocation.listByCa(2);
       assert.equal(list.length, 0);
-      const saved = await service.repository.findOneBy({ id: cert.id });
+      const saved = await revocation.certInfoRepository.findOneBy({ id: cert.id });
       assert.equal(saved.status, CertStatus.active);
     } finally {
       await ds.destroy();

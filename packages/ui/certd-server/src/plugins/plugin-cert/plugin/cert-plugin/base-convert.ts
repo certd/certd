@@ -80,7 +80,7 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
   abstract onInit(): Promise<void>;
 
   //必须output之后执行
-  async emitCertApplySuccess(extra?: { localCaId?: number; serialNumber?: string }) {
+  async emitCertApplySuccess(extra?: { extensions?: { issuer?: { type: string; id: string; serialNumber?: string } } }) {
     const emitter = this.ctx.emitter;
     const value = {
       cert: this.cert,

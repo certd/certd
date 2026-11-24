@@ -82,3 +82,42 @@ describe("CertRevocationService", () => {
     assert.equal(list[0].certInfoId, 11);
   });
 });
+describe("CertRevocationService.revokeCertInfo", () => {
+  function createService() {
+    const service = new CertRevocationService();
+    return service;
+  }
+  it("事务内写吊销记录、更新证书状态并失效CRL", async () => {
+    const service = createService();
+    let recorded: any = null;
+    let updated: any = null;
+    service.record = async (req: any) => { recorded = req; return req; };
+    service.localCaRepository = { async findOne() { return { id: 3 }; } } as any;
+    const certRepo = {
+      async findOne() { return { id: 1, status: "inactive" }; },
+      async update(where: any, set: any) { updated = { where, set }; return {} as any; },
+    };
+    service.certInfoRepository = {
+      ...certRepo,
+      manager: { async transaction(fn: any) { return await fn({ getRepository: (entity: any) => (entity?.name === "LocalCaEntity" ? { createQueryBuilder() { return { update() { return this; }, set() { return this; }, where() { return this; }, async execute() { return { affected: 1 }; } }; } } : certRepo) }); } },
+    } as any;
+    const t = await service.revokeCertInfo({ certInfoId: 1, caId: 3, userId: 2, serialNumber: "abc123" });
+    assert.ok(t > 0);
+    assert.equal(recorded.caId, 3);
+    assert.equal(updated.set.status, "revoked");
+  });
+  it("CA不存在时拒绝", async () => {
+    const service = createService();
+    service.localCaRepository = { async findOne() { return null; } } as any;
+    service.certInfoRepository = { async findOne() { return { id: 1 }; } } as any;
+    await assert.rejects(() => service.revokeCertInfo({ certInfoId: 1, caId: 99, userId: 2, serialNumber: "abc" }), /本地CA不存在/);
+  });
+  it("证书归属不匹配时拒绝", async () => {
+    const service = createService();
+    service.localCaRepository = { async findOne() { return { id: 3 }; } } as any;
+    let where: any = null;
+    service.certInfoRepository = { async findOne(args: any) { where = args.where; return null; } } as any;
+    await assert.rejects(() => service.revokeCertInfo({ certInfoId: 1, caId: 3, userId: 2, serialNumber: "abc123" }), /不匹配/);
+    assert.deepEqual(where, { id: 1, userId: 2, localCaId: 3, serialNumber: "ABC123" });
+  });
+});

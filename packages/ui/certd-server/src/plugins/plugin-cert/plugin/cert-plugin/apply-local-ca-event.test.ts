@@ -1,14 +1,11 @@
 import assert from "node:assert/strict";
 import { X509Certificate } from "node:crypto";
-import { EVENT_CERT_APPLY_SUCCESS } from "@certd/plugin-cert";
 import { createCsr, createRootCa, signCsr } from "../../../../modules/local-ca/service/local-ca-crypto.js";
 import { CertApplyPlugin } from "./apply.js";
+import { CertApplyLocalCa } from "./local-ca/index.js";
 
-function createPlugin(directoryUrl?: string, caCertPem?: string) {
-  const plugin: any = new CertApplyPlugin();
-  const events: any[] = [];
-  plugin.acmeProvider = directoryUrl ? { directoryUrl } : undefined;
-  plugin.ctx = {
+function mockCtx(events: any[], ca?: any) {
+  return {
     emitter: {
       async emit(event: string, value: any) {
         events.push({ event, value });
@@ -18,56 +15,60 @@ function createPlugin(directoryUrl?: string, caCertPem?: string) {
       async get() {
         return {
           async getCa() {
-            return caCertPem ? { certPem: caCertPem } : null;
+            return ca || null;
           },
         };
       },
     },
     pipeline: { id: 1 },
     step: { id: "apply" },
+    user: { role: "admin" },
   };
-  plugin.pfxPassword = "";
-  plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
-  return { plugin, events };
 }
 
-describe("CertApplyPlugin local CA event", () => {
-  it("内置本地ACME签发后事件携带 localCaId 与 serialNumber", async () => {
+describe("证书签发来源事件", () => {
+  it("通用CertApplyPlugin不再感知Local CA，不附加issuer", async () => {
+    const events: any[] = [];
+    const plugin: any = new CertApplyPlugin();
+    plugin.ctx = mockCtx(events);
+    plugin.pfxPassword = "";
+    plugin.cert = { crt: "dummy" };
+    plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
+    await plugin.emitCertApplySuccess();
+    assert.equal(events.length, 1);
+    assert.equal(events[0].value.extensions, undefined);
+  });
+
+  it("CertApplyLocalCa本地ACME明确附加issuer扩展", async () => {
     const ca = await createRootCa({ subject: { CN: "Event Root" }, keyType: "rsa2048", validityYears: 2 });
     const { csrPem } = await createCsr({ domains: ["event.example.com"], keyType: "rsa2048" });
     const signed = await signCsr({ caCertPem: ca.certPem, caPrivateKeyPem: ca.privateKeyPem, csrPem, validityDays: 30 });
-    const { plugin, events } = createPlugin("https://certd.example.com/api/acme/12/directory", ca.certPem);
+    const events: any[] = [];
+    const plugin: any = new CertApplyLocalCa();
+    plugin.mode = "local-acme";
+    plugin.caId = 12;
+    plugin.ctx = mockCtx(events, { id: 12, caType: "intermediate", acmeEnabled: true, disabled: false, revoked: false, certPem: ca.certPem, allowedDomains: null, notAfter: Date.now() + 86400000 });
+    plugin.pfxPassword = "";
     plugin.cert = { crt: signed.certPem };
-
+    plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
     await plugin.emitCertApplySuccess();
-
-    assert.equal(events.length, 1);
-    assert.equal(events[0].event, EVENT_CERT_APPLY_SUCCESS);
-    assert.equal(events[0].value.localCaId, 12);
-    assert.equal(events[0].value.serialNumber, new X509Certificate(signed.certPem).serialNumber.toUpperCase());
+    assert.equal(events[0].value.extensions.issuer.type, "local-ca");
+    assert.equal(events[0].value.extensions.issuer.id, "12");
+    assert.equal(events[0].value.extensions.issuer.serialNumber, new X509Certificate(signed.certPem).serialNumber.toUpperCase());
   });
 
-  it("非本地CA的目录地址不添加本地CA字段", async () => {
-    const ca = await createRootCa({ subject: { CN: "Public Root" }, keyType: "rsa2048", validityYears: 2 });
-    const { plugin, events } = createPlugin("https://acme-v02.api.letsencrypt.org/directory", ca.certPem);
-    plugin.cert = { crt: ca.certPem };
-
-    await plugin.emitCertApplySuccess();
-
-    assert.equal(events.length, 1);
-    assert.equal(events[0].value.localCaId, undefined);
-    assert.equal(events[0].value.serialNumber, undefined);
-  });
-
-  it("证书并非该CA签发时不关联本地CA", async () => {
-    const ca = await createRootCa({ subject: { CN: "Expected CA" }, keyType: "rsa2048", validityYears: 2 });
-    const other = await createRootCa({ subject: { CN: "Other CA" }, keyType: "rsa2048", validityYears: 2 });
-    const { plugin, events } = createPlugin("https://certd.example.com/api/acme/12/directory", ca.certPem);
+  it("本地ACME证书与CA不匹配时拒绝写入（fail-closed）", async () => {
+    const ca = await createRootCa({ subject: { CN: "Expected" }, keyType: "rsa2048", validityYears: 2 });
+    const other = await createRootCa({ subject: { CN: "Other" }, keyType: "rsa2048", validityYears: 2 });
+    const events: any[] = [];
+    const plugin: any = new CertApplyLocalCa();
+    plugin.mode = "local-acme";
+    plugin.caId = 12;
+    plugin.ctx = mockCtx(events, { id: 12, caType: "intermediate", acmeEnabled: true, disabled: false, revoked: false, certPem: ca.certPem, allowedDomains: null, notAfter: Date.now() + 86400000 });
+    plugin.pfxPassword = "";
     plugin.cert = { crt: other.certPem };
-
-    await plugin.emitCertApplySuccess();
-
-    assert.equal(events.length, 1);
-    assert.equal(events[0].value.localCaId, undefined);
+    plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
+    await assert.rejects(() => plugin.emitCertApplySuccess(), /不匹配/);
+    assert.equal(events.length, 0);
   });
 });

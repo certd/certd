@@ -9,7 +9,7 @@ import type { CertInfo } from "../acme.js";
 import type { EabAccess } from "../../../access/index.js";
 import type { LocalCaGetter } from "../../../../../modules/local-ca/service/local-ca-getter.js";
 import type { LocalCaSignerGetter } from "../../../../../modules/local-ca/service/local-ca-signer-getter.js";
-import { filterAllowedDomains, type LocalCaKeyType } from "../../../../../modules/local-ca/service/local-ca-crypto.js";
+import { filterAllowedDomains, verifyCertIssuedBy, type LocalCaKeyType } from "../../../../../modules/local-ca/service/local-ca-crypto.js";
 import { parseLocalCaDirectory } from "../../../../../modules/local-ca/service/local-ca-directory.js";
 import { isSameAcmeUrl } from "../../../../../modules/acme-server/service/acme-url.js";
 
@@ -26,6 +26,7 @@ type LocalCaSubscribeInfo = {
   acmeDirectIssue?: boolean;
   allowedDomains?: string | null;
   effectiveBaseUrl?: string;
+  certPem?: string;
 };
 
 const ACME_MODES: LocalCaApplyMode[] = ["local-acme", "remote-acme"];
@@ -284,11 +285,45 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   }
 
   async emitCertApplySuccess() {
-    if (this.mode === "local-direct" && this.directCertMeta) {
-      // 直接签发不走ACME，需要把本地CA关联信息直接写入证书事件
-      return await CertApplyBaseConvertPlugin.prototype.emitCertApplySuccess.call(this, this.directCertMeta);
+    // 由插件明确附加签发来源，通用基类不感知Local CA；本地模式关联失败必须报错，不能静默降级
+    const issuer = await this.resolveIssuer();
+    return await CertApplyBaseConvertPlugin.prototype.emitCertApplySuccess.call(this, issuer ? { extensions: { issuer } } : undefined);
+  }
+
+  private async resolveIssuer(): Promise<{ type: string; id: string; serialNumber?: string } | null> {
+    if (!this.cert?.crt) {
+      return null;
     }
-    return await super.emitCertApplySuccess();
+    const serialNumber = new crypto.X509Certificate(this.cert.crt).serialNumber.toUpperCase();
+    if (this.mode === "local-direct") {
+      if (!this.directCertMeta) {
+        throw new Error("本地CA直签缺少证书来源信息，拒绝写入证书仓库");
+      }
+      return { type: "local-ca", id: String(this.directCertMeta.localCaId), serialNumber: this.directCertMeta.serialNumber };
+    }
+    if (this.mode === "local-acme") {
+      const ca = await this.prepareLocalCa(true);
+      if (!verifyCertIssuedBy(this.cert.crt, ca.certPem)) {
+        throw new Error("本地ACME证书与所选CA不匹配，拒绝写入证书仓库");
+      }
+      return { type: "local-ca", id: String(ca.id), serialNumber };
+    }
+    // remote-acme：仅当远程目录确实是本实例Local CA且证书匹配时才关联；外部CA不写本地关联
+    const directoryUrl = await this.getResolvedDirectoryUrl();
+    const candidate = parseLocalCaDirectory(directoryUrl);
+    if (!candidate) {
+      return null;
+    }
+    try {
+      const getter = await this.ctx.serviceGetter.get<LocalCaGetter>("localCaGetter");
+      const ca = await getter.getCa(candidate.caId);
+      if (ca?.certPem && verifyCertIssuedBy(this.cert.crt, ca.certPem)) {
+        return { type: "local-ca", id: String(ca.id), serialNumber };
+      }
+    } catch (e: any) {
+      this.logger.warn(`远程ACME本地CA关联检查失败，按外部证书处理：${e?.message || e}`);
+    }
+    return null;
   }
 
   protected async getAcmeProvider(): Promise<CustomAcmeProvider> {
@@ -591,7 +626,5 @@ localCaInput.reverseProxy.mergeScript = `return {
 for (const key of ["certProfile", "preferredChain", "googleAccessId", "eabAccessId", "googleCommonEabAccessId", "googleCommonAcmeAccountAccessId", "zerosslCommonEabAccessId", "zerosslCommonAcmeAccountAccessId", "sslcomCommonEabAccessId", "sslcomCommonAcmeAccountAccessId", "litesslCommonEabAccessId", "litesslCommonAcmeAccountAccessId"]) {
   delete localCaInput[key];
 }
-localCaInput.eabAccessId.show = false;
-localCaInput.googleAccessId.show = false;
 localCaInput.certApplyRetryCount.mergeScript = `return { show: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode)) }`;
 }

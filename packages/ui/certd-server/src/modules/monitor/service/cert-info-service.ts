@@ -10,8 +10,6 @@ import { AcmeService } from "../../../plugins/plugin-cert/plugin/cert-plugin/acm
 import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
 import { UserSettingsService } from "../../mine/service/user-settings-service.js";
 import { CertRevocationService } from "../../local-ca/service/cert-revocation-service.js";
-import { LocalCaEntity } from "../../local-ca/entity/local-ca.js";
-import { runTransaction } from "../../db/db-transaction.js";
 
 export type UploadCertReq = {
   id?: number;
@@ -57,8 +55,6 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   @InjectEntityModel(PipelineEntity)
   pipelineRepository: Repository<PipelineEntity>;
 
-  @InjectEntityModel(LocalCaEntity)
-  localCaRepository: Repository<LocalCaEntity>;
 
   @Inject()
   userSettingsService: UserSettingsService;
@@ -518,71 +514,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   }
 
   async applyLocalRevocation(req: { certInfoId: number; caId: number; userId: number; projectId?: number; serialNumber: string; expiresTime?: number; reason?: string }) {
-    // CA由管理员全局维护，这里只校验CA存在，证书记录仍需匹配所属用户/项目/序列号
-    const ownedCa = await this.localCaRepository.findOne({
-      where: { id: req.caId, deleted: false },
-      select: { id: true },
-    });
-    if (!ownedCa) {
-      logger.warn(`[local-ca] revocation denied ca=${req.caId} cert=${req.certInfoId} user=${req.userId} project=${req.projectId ?? "-"}`);
-      throw new CodeException({
-        ...Constants.res.openCertNotFound,
-        message: "本地CA不存在或无访问权限",
-      });
-    }
-    const certWhere: any = {
-      id: req.certInfoId,
-      userId: req.userId,
-      localCaId: req.caId,
-      serialNumber: String(req.serialNumber || "").toUpperCase(),
-    };
-    if (req.projectId != null) {
-      certWhere.projectId = req.projectId;
-    }
-    const cert = await this.repository.findOne({
-      where: certWhere,
-      select: { id: true, status: true },
-    });
-    if (!cert) {
-      logger.warn(`[local-ca] revocation target mismatch ca=${req.caId} cert=${req.certInfoId} user=${req.userId} project=${req.projectId ?? "-"}`);
-      throw new CodeException({
-        ...Constants.res.openCertNotFound,
-        message: "证书记录与CA或序列号不匹配",
-      });
-    }
-    const revokedTime = Date.now();
-    const run = async (manager?: EntityManager) => {
-      await this.certRevocationService.record(
-        {
-          caId: req.caId,
-          userId: req.userId,
-          projectId: req.projectId,
-          certInfoId: req.certInfoId,
-          serialNumber: req.serialNumber,
-          revokedTime,
-          expiresTime: req.expiresTime,
-          reason: req.reason,
-        },
-        manager
-      );
-      const repository = this.getCertRepository(manager);
-      await repository.update(certWhere, { status: CertStatus.revoked, revokeTime: revokedTime });
-      const caRepository = manager ? manager.getRepository(LocalCaEntity) : this.repository.manager.getRepository(LocalCaEntity);
-      // 同时递增CRL序号并标记缓存失效。getCrl 只在“读取时的序号仍等于当前序号”时才写缓存，
-      // 因此吊销与CRL生成并发时，旧CRL不会覆盖新状态（RFC 5280允许序号跳跃）。
-      await caRepository
-        .createQueryBuilder()
-        .update()
-        .set({ lastCrlTime: -1, crlNumber: () => "crl_number + 1" } as any)
-        .where("id = :id", { id: req.caId })
-        .execute();
-    };
-    const manager = this.repository?.manager;
-    if (!manager?.transaction) {
-      throw new Error("数据库事务不可用，无法安全吊销证书");
-    }
-    await runTransaction(manager, async tx => run(tx));
-    return revokedTime;
+    // Local CA 专属吊销业务委托给 local-ca 模块，通用证书服务不实现CA逻辑
+    return await this.certRevocationService.revokeCertInfo(req);
   }
 
   protected getCertRepository(manager?: EntityManager) {
