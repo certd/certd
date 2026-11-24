@@ -506,7 +506,14 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (root.caType !== "root" || root.disabled) {
       throw new ValidateException("上级根CA不可用，不能轮换");
     }
-    const name = (req.name || `${old.name} G2`).trim();
+    const baseName = old.name.replace(/\s*G\d+$/, "").replace(/-rotated$/, "").trim();
+    const siblings = await this.getRepository().find({ where: { deleted: false, name: Like(`${baseName}%`) } });
+    let generation = 1;
+    for (const c of siblings) {
+      const m = c.name.match(/\sG(\d+)$/);
+      if (m) generation = Math.max(generation, Number(m[1]));
+    }
+    const name = (req.name || `${baseName} G${generation + 1}`).trim();
     await this.assertNameAvailable({ userId: req.userId, name });
     const rootPrivateKey = this.decryptCaPrivateKey(root);
     const subject = req.subject || (JSON.parse(old.subject) as LocalCaSubject);
