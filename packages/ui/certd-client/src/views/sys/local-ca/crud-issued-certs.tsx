@@ -21,10 +21,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     const caId = caIdRef.value;
     if (!caId) {
-      return { records: [], total: 0 };
+      return { records: [], total: 0, currentPage: 1, pageSize: 20 };
     }
     const records = ((await localCaApi.ListCerts(caId)) || []).map((item: any) => ({ ...item, rowKey: `${item.type}-${item.id}` }));
-    return { records, total: records.length };
+    return { records, total: records.length, currentPage: query.page?.currentPage || 1, pageSize: query.page?.pageSize || 20 };
   };
 
   async function viewCert(row: any) {

@@ -39,7 +39,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     const caId = caIdRef.value;
     if (!caId) {
-      return { records: [], total: 0 };
+      return { records: [], total: 0, currentPage: 1, pageSize: 20 };
     }
     const records = (await localCaApi.ListAcmeAccounts(caId)) || [];
     try {
@@ -53,7 +53,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     } catch {
       projects = [];
     }
-    return { records, total: records.length };
+    return { records, total: records.length, currentPage: query.page?.currentPage || 1, pageSize: query.page?.pageSize || 20 };
   };
 
   function orderStatusColor(status: string) {

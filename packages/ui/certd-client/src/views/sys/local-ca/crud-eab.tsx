@@ -71,7 +71,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     const caId = caIdRef.value;
     if (!caId) {
-      return { records: [], total: 0 };
+      return { records: [], total: 0, currentPage: 1, pageSize: 20 };
     }
     const [eabs, grantList] = await Promise.all([localCaApi.ListEab(caId), localCaApi.ListGrants(caId).catch(() => [])]);
     grants = grantList || [];
@@ -87,7 +87,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       projects = [];
     }
     const records = eabs || [];
-    return { records, total: records.length };
+    return { records, total: records.length, currentPage: query.page?.currentPage || 1, pageSize: query.page?.pageSize || 20 };
   };
 
   async function toggleDisabled(row: any, disabled: boolean) {
