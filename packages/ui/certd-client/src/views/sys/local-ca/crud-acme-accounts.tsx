@@ -1,4 +1,5 @@
 import { compute, CreateCrudOptionsProps, CreateCrudOptionsRet, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { h } from "vue";
 import { Button, Modal, Tag, Tooltip, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { useI18n } from "/src/locales";
@@ -272,22 +273,24 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "text",
           column: {
             width: 220,
-            cellRender({ row }) {
-              return (
-                <div class="local-ca-row-actions">
-                  {row.eabId ? (
-                    <Button type="link" size="small" onClick={() => viewEab(row)}>
-                      {t("certd.localCa.acmeViewEab")}
-                    </Button>
-                  ) : null}
-                  <Button type="link" size="small" onClick={() => viewOrders(row)}>
-                    {t("certd.localCa.acmeViewOrders")}
-                  </Button>
-                  <Button type="link" size="small" danger={row.status === "valid"} onClick={() => toggleStatus(row)}>
-                    {row.status === "valid" ? t("certd.common.disabled") : t("certd.common.enabled")}
-                  </Button>
-                </div>
-              );
+            component: {
+              name: {
+                props: { row: { type: Object, default: () => ({}) }, onViewEab: { type: Function, default: null }, onViewOrders: { type: Function, default: null }, onToggleStatus: { type: Function, default: null } },
+                setup(props: any) {
+                  return () =>
+                    h("div", { class: "local-ca-row-actions" }, [
+                      props.row?.eabId ? h(Button, { type: "link", size: "small", onClick: () => props.onViewEab?.(props.row) }, () => t("certd.localCa.acmeViewEab")) : null,
+                      h(Button, { type: "link", size: "small", onClick: () => props.onViewOrders?.(props.row) }, () => t("certd.localCa.acmeViewOrders")),
+                      h(Button, { type: "link", size: "small", danger: props.row?.status === "valid", onClick: () => props.onToggleStatus?.(props.row) }, () =>
+                        props.row?.status === "valid" ? t("certd.common.disabled") : t("certd.common.enabled")
+                      ),
+                    ]);
+                },
+              },
+              row: compute(({ row }) => row),
+              onViewEab: (row: any) => viewEab(row),
+              onViewOrders: (row: any) => viewOrders(row),
+              onToggleStatus: (row: any) => toggleStatus(row),
             },
           },
         },

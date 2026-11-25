@@ -1,4 +1,5 @@
 import { compute, CreateCrudOptionsProps, CreateCrudOptionsRet, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { h } from "vue";
 import { Button, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { useI18n } from "/src/locales";
@@ -260,17 +261,20 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "text",
           column: {
             width: 170,
-            cellRender({ row }) {
-              return (
-                <div class="local-ca-row-actions">
-                  <Button type="link" size="small" onClick={() => context.openEditEab(row, () => crudExpose.doRefresh())}>
-                    {t("common.edit")}
-                  </Button>
-                  <Button type="link" size="small" onClick={() => togglePrivileged(row)}>
-                    {row.privileged ? t("certd.localCa.eabDowngrade") : t("certd.localCa.eabUpgrade")}
-                  </Button>
-                </div>
-              );
+            component: {
+              name: {
+                props: { row: { type: Object, default: () => ({}) }, onEdit: { type: Function, default: null }, onToggle: { type: Function, default: null } },
+                setup(props: any) {
+                  return () =>
+                    h("div", { class: "local-ca-row-actions" }, [
+                      h(Button, { type: "link", size: "small", onClick: () => props.onEdit?.(props.row) }, () => t("common.edit")),
+                      h(Button, { type: "link", size: "small", onClick: () => props.onToggle?.(props.row) }, () => (props.row?.privileged ? t("certd.localCa.eabDowngrade") : t("certd.localCa.eabUpgrade"))),
+                    ]);
+                },
+              },
+              row: compute(({ row }) => row),
+              onEdit: (row: any) => context.openEditEab(row, () => crudExpose.doRefresh()),
+              onToggle: (row: any) => togglePrivileged(row),
             },
           },
         },
