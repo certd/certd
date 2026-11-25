@@ -188,6 +188,7 @@ export default {
   grantModeProject: "Project",
   grantTarget: "Grantee",
   selectProject: "Select project",
+  selectCaFirst: "Select a CA first",
   acmeAccessTitle: "ACME access control",
   acmeAccessHint: "Control who can access this CA ACME endpoints. Master switch off = no ACME response; IP allowlist works with all standard clients, Basic/custom headers only for clients that can customize requests.",
   acmeIpAllowlist: "Source IP/CIDR allowlist",
@@ -253,8 +254,8 @@ export default {
   acmeStatusConfirmHint: "A disabled account cannot request new certificates. Existing certificates are unaffected.",
   acmeStatusChanged: "ACME account status updated",
   acmeAccess: "ACME Access",
-  acmeAccessTitle: "Connect to Local ACME Service",
-  acmeAccessHint: "Only an intermediate CA supports ACME. The directory URL must be reachable by clients; both external clients and Certd use this URL.",
+  acmeConnectTitle: "Connect to Local ACME Service",
+  acmeConnectHint: "Only an intermediate CA supports ACME. The directory URL must be reachable by clients; both external clients and Certd use this URL.",
   acmeClientTab: "External Client",
   acmeClientHelp:
     "<div>1. Trust the root CA on the client.</div><div>2. Use the commands below. HTTP-01 requires port 80; use DNS-01 for wildcards.</div><div>3. The first request creates an ACME account and requires the EAB KID and base64url HMAC Key generated from the CA page.</div><div>4. When EAB Direct Issue is enabled, domain validation is skipped; otherwise HTTP-01/DNS-01 is really validated.</div>",

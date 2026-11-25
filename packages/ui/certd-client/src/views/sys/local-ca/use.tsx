@@ -494,6 +494,10 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   }
 
   async function openAcmeAccess(row: any) {
+    if (!row?.id) {
+      notification.warning({ message: t("certd.localCa.selectCaFirst") });
+      return;
+    }
     model.success({
       title: `${t("certd.localCa.acmeAccessTitle")} - ${row.name}`,
       maskClosable: true,
@@ -509,6 +513,10 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   }
 
   async function openEabManager(row: any) {
+    if (!row?.id) {
+      notification.warning({ message: t("certd.localCa.selectCaFirst") });
+      return;
+    }
     const managerRef: any = { value: null };
     model.success({
       title: `${t("certd.localCa.eabManagerTitle")} - ${row.name}`,
@@ -908,6 +916,10 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   }
 
   async function openAcmeAccounts(row: any) {
+    if (!row?.id) {
+      notification.warning({ message: t("certd.localCa.selectCaFirst") });
+      return;
+    }
     model.success({
       title: `${t("certd.localCa.acmeAccountsTitle")} - ${row.name}`,
       maskClosable: true,
@@ -1004,6 +1016,10 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
 
 
   async function openIssuedCerts(row: any) {
+    if (!row?.id) {
+      notification.warning({ message: t("certd.localCa.selectCaFirst") });
+      return;
+    }
     model.success({
       title: `${t("certd.localCa.issuedCertsTitle")} - ${row.name}`,
       maskClosable: true,

@@ -86,8 +86,8 @@
     </template>
   </a-modal>
 
-  <a-modal v-model:open="acmeHelpVisible" :title="t('certd.localCa.acmeAccessTitle')" width="860px">
-    <a-alert type="info" show-icon :message="t('certd.localCa.acmeAccessHint')" class="mb-3" />
+  <a-modal v-model:open="acmeHelpVisible" :title="t('certd.localCa.acmeConnectTitle')" width="860px">
+    <a-alert type="info" show-icon :message="t('certd.localCa.acmeConnectHint')" class="mb-3" />
     <a-descriptions bordered :column="1" size="small">
       <a-descriptions-item :label="t('certd.localCa.acmeDirectory')">
         <fs-copyable :model-value="acmeDirectoryUrl">{{ acmeDirectoryUrl }}</fs-copyable>

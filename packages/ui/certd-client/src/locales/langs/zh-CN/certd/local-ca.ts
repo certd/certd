@@ -189,6 +189,7 @@ export default {
   grantModeProject: "项目模式",
   grantTarget: "授权对象",
   selectProject: "请选择项目",
+  selectCaFirst: "请先选择CA",
   acmeAccessTitle: "ACME访问控制",
   acmeAccessHint: "控制谁可以访问该CA的ACME端点。总开关关闭时不响应任何ACME请求；IP白名单兼容所有标准客户端，Basic认证/自定义头仅适用于可自定义请求的客户端。",
   acmeIpAllowlist: "来源IP/CIDR白名单",
@@ -253,8 +254,8 @@ export default {
   acmeStatusConfirmHint: "停用后该账户将无法继续申请新证书，已签发证书不受影响。",
   acmeStatusChanged: "ACME账户状态已更新",
   acmeAccess: "ACME接入",
-  acmeAccessTitle: "接入本地 ACME 服务",
-  acmeAccessHint: "只有中间CA支持ACME。目录地址必须对客户端可达；本地客户端和 Certd 都通过该地址接入。",
+  acmeConnectTitle: "接入本地 ACME 服务",
+  acmeConnectHint: "只有中间CA支持ACME。目录地址必须对客户端可达；本地客户端和 Certd 都通过该地址接入。",
   acmeClientTab: "外部客户端",
   acmeClientHelp:
     "<div>1. 将根CA证书加入客户端信任库。</div><div>2. 使用下方命令申请证书；HTTP-01 需要服务器 80 端口可达，通配符请使用 DNS-01。</div><div>3. 首次申请会创建 ACME 账户，必须使用 CA 页面生成的 EAB KID 和 base64url HMAC Key。</div><div>4. CA 开启“EAB直签”时跳过域名校验；未开启时按 HTTP-01/DNS-01 真实验证。</div>",

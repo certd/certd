@@ -169,22 +169,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               await openImport();
             },
           },
-          eab: {
-            text: t("certd.localCa.eabManagerTitle"),
-            icon: "ph:key",
-            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && row.acmeEnabled),
-            click: async ({ row }) => {
-              await openEabManager(row);
-            },
-          },
-          acmeAccess: {
-            text: t("certd.localCa.acmeAccessTitle"),
-            icon: "ph:shield-check",
-            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && row.acmeEnabled),
-            click: async ({ row }) => {
-              await openAcmeAccess(row);
-            },
-          },
           archivedRoots: {
             text: t("certd.localCa.archivedRootsTitle"),
             type: "link",
@@ -262,6 +246,28 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: compute(({ row }) => row.caType === "intermediate" && row.acmeEnabled),
             click: async ({ row }) => {
               await openAcmeAccounts(row);
+            },
+          },
+          eab: {
+            order: 6,
+            type: "link",
+            text: null,
+            tooltip: { title: t("certd.localCa.eabManagerTitle") },
+            icon: "ph:key",
+            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && row.acmeEnabled),
+            click: async ({ row }) => {
+              await openEabManager(row);
+            },
+          },
+          acmeAccess: {
+            order: 7,
+            type: "link",
+            text: null,
+            tooltip: { title: t("certd.localCa.acmeAccessTitle") },
+            icon: "ph:shield-check",
+            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && row.acmeEnabled),
+            click: async ({ row }) => {
+              await openAcmeAccess(row);
             },
           },
           edit: {
@@ -511,7 +517,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             width: 100,
             align: "center",
-            show: compute(({ row }) => row.caType === "intermediate"),
             component: {
               name: "fs-dict-switch",
               vModel: "checked",
