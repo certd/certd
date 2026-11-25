@@ -5,6 +5,7 @@ import { useModal } from "/@/use/use-modal";
 import { useI18n } from "/src/locales";
 import { getSecretAccessToken } from "/@/views/certd/access/api";
 import LocalCaArchivedRoots from "./archived-roots.vue";
+import { request } from "/@/api/service";
 import { localCaApi } from "./api";
 import { useStepUp } from "./use-step-up";
 
@@ -379,13 +380,37 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       notification.error({ message: t("certd.localCa.eabNoCa") });
       return;
     }
+    let bindUsers: any[] = [];
+    let bindProjects: any[] = [];
+    try {
+      bindUsers = (await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST" })) || [];
+    } catch {
+      bindUsers = [];
+    }
+    try {
+      const projRes: any = await request({ url: "/sys/enterprise/project/page", method: "post", data: { page: { current: 1, size: 1000 } } });
+      bindProjects = projRes?.records || [];
+    } catch {
+      bindProjects = [];
+    }
+    const bindUserLabel = (id: number) => {
+      const u = bindUsers.find(x => Number(x.id) === Number(id));
+      return u ? u.nickName || u.username : `#${id}`;
+    };
+    const bindProjectLabel = (id: number) => {
+      const pr = bindProjects.find(x => Number(x.id) === Number(id));
+      return pr ? pr.name : `#${id}`;
+    };
     const grantOptions: any[] = [];
     for (const item of (allCas || []).filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !ca.disabled)) {
       try {
         const grants = await localCaApi.ListGrants(item.id);
         for (const grant of grants || []) {
           grantOptions.push({
-            label: `${item.name} - ${t("certd.localCa.grantUser")} #${grant.userId}${grant.projectId ? ` / ${t("certd.localCa.grantProject")} #${grant.projectId}` : ` / ${t("certd.localCa.allProjects")}`}`,
+            label:
+              Number(grant.userId) > 0
+                ? `${item.name} - ${t("certd.localCa.grantUser")}: ${bindUserLabel(grant.userId)}（${t("certd.localCa.allProjects")}）`
+                : `${item.name} - ${t("certd.localCa.grantProject")}: ${bindProjectLabel(grant.projectId)}`,
             value: grant.id,
           });
         }

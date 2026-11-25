@@ -430,7 +430,10 @@ export class LocalCaAcmeService {
   async listAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number }) {
     // 只读管理列表允许归档CA（legacy凭证管理入口）
     const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, false, true);
-    const list = await this.acmeEabRepository.find({ where: { caId: ca.id }, order: { createTime: "DESC" } });
+    const chain = await this.accessService.collectRotationChain(ca.id);
+    const chainCas = await this.repository.find({ where: { id: In(chain) } });
+    const caNameMap = new Map(chainCas.map(item => [item.id, item.name]));
+    const list = await this.acmeEabRepository.find({ where: { caId: In(chain) }, order: { createTime: "DESC" } });
     const accounts = await this.repository.manager.getRepository(AcmeAccountEntity).find({ where: { caId: ca.id }, select: { id: true, eabId: true } });
     const countByEab = new Map<string, number>();
     for (const acc of accounts) {
@@ -440,6 +443,8 @@ export class LocalCaAcmeService {
     }
     return list.map(item => ({
       id: item.id,
+      caId: item.caId,
+      caName: caNameMap.get(item.caId) || null,
       name: item.name,
       kid: item.kid,
       allowedDomains: item.allowedDomains,

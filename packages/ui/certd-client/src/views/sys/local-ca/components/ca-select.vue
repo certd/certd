@@ -57,8 +57,8 @@ async function load() {
     }
     let list = all;
     if (props.acmeOnly) {
-      // 保留已轮换/禁用/已归档(已轮换)CA作legacy管理入口；仅排除未轮换的归档CA
-      list = all.filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !(ca.deleted && !ca.rotatedToId));
+      // 仅展示当前有效（本地/标准档）中间CA；轮换/禁用/归档CA的凭证由最新CA继承管理
+      list = all.filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !ca.disabled && !ca.rotatedToId && !ca.deleted);
     }
     cas.value = list;
     options.value = list.map((ca: any) => ({ label: buildLabel(ca), value: Number(ca.id) }));

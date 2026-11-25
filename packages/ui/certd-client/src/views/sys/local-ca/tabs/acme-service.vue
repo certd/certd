@@ -10,7 +10,7 @@
           <fs-crud v-if="innerTab === 'eab'" ref="eabCrudRef" class="acme-service-crud" v-bind="eabCrudBinding" />
         </a-tab-pane>
         <a-tab-pane key="accounts" :tab="t('certd.localCa.acmeAccounts')">
-          <fs-crud v-if="innerTab === 'accounts'" ref="accountsCrudRef" class="acme-service-crud" v-bind="accountsCrudBinding" />
+          <AccountsTable v-if="innerTab === 'accounts'" ref="accountsTableRef" :ca-id="caId" />
         </a-tab-pane>
       </a-tabs>
     </template>
@@ -25,7 +25,7 @@ import { useI18n } from "/src/locales";
 import CaSelect from "../components/ca-select.vue";
 import LocalCaAcmeAccess from "../acme-access.vue";
 import createEabCrudOptions from "../crud-eab";
-import createAccountsCrudOptions from "../crud-acme-accounts";
+import AccountsTable from "../components/accounts-table.vue";
 import { useLocalCaDialogs } from "../use";
 import { useStepUp } from "../use-step-up";
 
@@ -45,9 +45,8 @@ const eabContext: any = {
   openEditEab,
   runStepUp: (action: () => Promise<void>) => openStepUp(t("certd.localCa.eabStepUpTitle"), t("certd.localCa.eabStepUpDesc"), action),
 };
-const accountsContext: any = { caIdRef: caId };
 const { crudBinding: eabCrudBinding, crudRef: eabCrudRef, crudExpose: eabCrudExpose } = useFs({ createCrudOptions: createEabCrudOptions, context: eabContext });
-const { crudBinding: accountsCrudBinding, crudRef: accountsCrudRef, crudExpose: accountsCrudExpose } = useFs({ createCrudOptions: createAccountsCrudOptions, context: accountsContext });
+const accountsTableRef = ref<any>();
 
 async function refreshInner() {
   if (!caId.value) {
@@ -57,7 +56,7 @@ async function refreshInner() {
   if (innerTab.value === "eab") {
     await eabCrudExpose.doRefresh();
   } else if (innerTab.value === "accounts") {
-    await accountsCrudExpose.doRefresh();
+    await accountsTableRef.value?.load?.();
   }
 }
 

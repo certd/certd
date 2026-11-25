@@ -559,7 +559,9 @@ export class AcmeServerService {
 
   async listAccounts(caId: number, userId: number, projectId?: number) {
     await this.issuer.assertCaOwner({ id: caId, userId, projectId }, true);
-    const accounts = await this.accountRepository.find({ where: { caId }, order: { createTime: "DESC" } });
+    const chain = await this.issuer.getRotationChainWithNames(caId);
+    const caNameMap = new Map(chain.map(item => [item.id, item.name]));
+    const accounts = await this.accountRepository.find({ where: { caId: In(chain.map(item => item.id)) }, order: { createTime: "DESC" } });
     const eabIds = [...new Set(accounts.map(item => item.eabId).filter(Boolean))];
     const eabs = eabIds.length ? await this.eabRepository.find({ where: { id: In(eabIds) } }) : [];
     const eabMap = new Map(eabs.map(item => [item.id, item]));
@@ -573,6 +575,8 @@ export class AcmeServerService {
         status: account.status,
         contact: account.contact ? JSON.parse(account.contact) : [],
         thumbprint: account.thumbprint,
+        caId: account.caId,
+        caName: caNameMap.get(account.caId) || null,
         eabId: account.eabId,
         eabKid: eab?.kid || null,
         eabName: eab?.name || null,

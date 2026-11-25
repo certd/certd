@@ -115,7 +115,39 @@ export class LocalCaAccessService {
 
   async listGrants(req: LocalCaScope) {
     const ca = await this.getOwnedCa(req, false, true);
-    return await this.grantRepository.find({ where: { caId: ca.id }, order: { id: "DESC" } });
+    const chain = await this.collectRotationChain(ca.id);
+    return await this.grantRepository.find({ where: { caId: In(chain) }, order: { id: "DESC" } });
+  }
+
+  /** 收集CA所在轮换链全部ID（祖先+自身+后继），visited守卫防环。 */
+  async collectRotationChain(caId: number): Promise<number[]> {
+    const chain: number[] = [];
+    const visited = new Set<number>();
+    let cursor: number | null = caId;
+    const ancestors: number[] = [];
+    while (cursor != null && !visited.has(cursor)) {
+      visited.add(cursor);
+      const parent = await this.repository.findOne({ where: { rotatedToId: cursor } as any });
+      if (!parent) {
+        break;
+      }
+      ancestors.push(parent.id);
+      cursor = parent.id;
+    }
+    chain.push(...ancestors.reverse(), caId);
+    cursor = caId;
+    const down = new Set<number>([caId]);
+    while (cursor != null) {
+      const current = await this.repository.findOne({ where: { id: cursor } });
+      const nextId = current?.rotatedToId;
+      if (nextId == null || down.has(nextId)) {
+        break;
+      }
+      down.add(nextId);
+      chain.push(nextId);
+      cursor = nextId;
+    }
+    return chain;
   }
 
   async findActiveGrant(caId: number, grantId: number) {
@@ -227,32 +259,6 @@ export class LocalCaAccessService {
     }
   }
 
-  /** 收集轮换链全部ID（委托LocalCaService实现，避免循环依赖由调用方注入） */
-  private async collectRotationChain(caId: number): Promise<number[]> {
-    const chain: number[] = [caId];
-    const visited = new Set<number>([caId]);
-    let cursor: number | null = caId;
-    const ancestors: number[] = [];
-    while (cursor != null && !visited.has(cursor)) {
-      visited.add(cursor);
-      const parent = await this.repository.findOne({ where: { rotatedToId: cursor } as any });
-      if (!parent) break;
-      ancestors.push(parent.id);
-      cursor = parent.id;
-    }
-    chain.unshift(...ancestors.reverse());
-    cursor = caId;
-    const down = new Set<number>([caId]);
-    while (cursor != null) {
-      const current = await this.repository.findOne({ where: { id: cursor } });
-      const nextId = current?.rotatedToId;
-      if (nextId == null || down.has(nextId)) break;
-      down.add(nextId);
-      chain.push(nextId);
-      cursor = nextId;
-    }
-    return chain;
-  }
 
   /**
    * 轮换中间CA时把旧CA的管理员（不含owner）与有效授权复制到新CA。

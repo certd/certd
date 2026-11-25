@@ -362,38 +362,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return ca;
   }
 
-  /** 收集CA所在轮换链的全部ID（祖先+自身+后继）。防重复轮换保证链为线性，visited守卫防环。 */
+  /** 收集CA所在轮换链的全部ID（祖先+自身+后继）。 */
   async collectRotationChain(caId: number, manager?: EntityManager): Promise<number[]> {
-    const repository = manager ? manager.getRepository(LocalCaEntity) : this.repository;
-    const chain: number[] = [];
-    const visited = new Set<number>();
-    let cursor: number | null = caId;
-    // 向上回溯祖先
-    const ancestors: number[] = [];
-    while (cursor != null && !visited.has(cursor)) {
-      visited.add(cursor);
-      const parent = await repository.findOne({ where: { rotatedToId: cursor } as any });
-      if (!parent) {
-        break;
-      }
-      ancestors.push(parent.id);
-      cursor = parent.id;
-    }
-    chain.push(...ancestors.reverse(), caId);
-    // 向下遍历后继
-    cursor = caId;
-    const downVisited = new Set<number>([caId]);
-    while (cursor != null) {
-      const current = await repository.findOne({ where: { id: cursor } });
-      const nextId = current?.rotatedToId;
-      if (nextId == null || downVisited.has(nextId)) {
-        break;
-      }
-      downVisited.add(nextId);
-      chain.push(nextId);
-      cursor = nextId;
-    }
-    return chain;
+    return await this.accessService.collectRotationChain(caId);
   }
 
   async infoSafe(req: LocalCaScope) {

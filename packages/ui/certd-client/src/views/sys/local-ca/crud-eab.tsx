@@ -39,9 +39,19 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     if (record.grantId) {
       const grant = grants.find(item => Number(item.id) === Number(record.grantId));
       if (grant) {
-        return `#${grant.id}`;
+        // 用户授权与项目授权互斥：展示绑定的 userId/projectId 对象名称
+        if (Number(grant.userId) > 0) {
+          return `${t("certd.localCa.grantUser")}: ${userLabel(grant.userId)}`;
+        }
+        return `${t("certd.localCa.grantProject")}: ${projectLabel(grant.projectId)}`;
       }
-      return `#${record.grantId}`;
+      if (Number(record.userId) > 0) {
+        return `${t("certd.localCa.grantUser")}: ${userLabel(record.userId)}`;
+      }
+      if (record.projectId) {
+        return `${t("certd.localCa.grantProject")}: ${projectLabel(record.projectId)}`;
+      }
+      return "-";
     }
     return t("certd.localCa.systemLevelTag");
   }
@@ -71,12 +81,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   let latestRequest: Promise<UserPageRes> | null = null;
   const fetchPage = async (query: UserPageQuery): Promise<UserPageRes> => {
-    const filterCaId = query.query?.caId != null && query.query?.caId !== "" ? Number(query.query.caId) : null;
-    const allCas = (await localCaApi.GetAdminOptions()) || [];
-    const cas = allCas.filter((ca: any) => ca.caType === "intermediate");
-    const targetCas = filterCaId ? cas.filter((ca: any) => Number(ca.id) === filterCaId) : cas;
-    const grantLists = await Promise.all(targetCas.map((ca: any) => localCaApi.ListGrants(ca.id).catch(() => [])));
-    grants = ([] as any[]).concat(...grantLists);
+    const caId = caIdRef.value;
+    if (!caId) {
+      return { records: [], total: 0, currentPage: 1, pageSize: 20 };
+    }
+    // 服务端按轮换链聚合：旧CA的EAB/授权归最新CA统一管理
+    const [eabs, grantList] = await Promise.all([localCaApi.ListEab(caId), localCaApi.ListGrants(caId).catch(() => [])]);
+    grants = grantList || [];
     try {
       users = (await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST" })) || [];
     } catch {
@@ -88,14 +99,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     } catch {
       projects = [];
     }
-    const collected: any[] = [];
-    for (const ca of targetCas) {
-      const eabs = (await localCaApi.ListEab(ca.id)) || [];
-      for (const item of eabs) {
-        collected.push({ ...item, caId: ca.id, caName: ca.name });
-      }
-    }
-    let records = collected;
+    let records = eabs || [];
     const nameKey = String(query.query?.name || "")
       .trim()
       .toLowerCase();
@@ -203,13 +207,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       columns: {
-        caId: {
-          title: t("certd.localCa.eabCa"),
-          type: "dict-select",
-          dict: dict({ data: context.caOptions || [] }),
-          search: { show: true, col: { span: 6 } },
-          column: { width: 140, ellipsis: true, cellRender: ({ row }) => row.caName || `#${row.caId}` },
-        },
         name: { title: t("certd.localCa.eabName"), type: "text", search: { show: true, col: { span: 6 } }, column: { width: 150, ellipsis: true } },
         kid: {
           title: "KID",

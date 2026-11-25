@@ -31,4 +31,5 @@ export interface AcmeIssuerBackend {
   consumeAcmeEab(eabId: string, manager?: EntityManager): Promise<boolean>;
   recordSystemCertRevocation(req: { caId: number; serialNumber: string; expiresTime?: number; userId?: number; projectId?: number; certPem?: string }): Promise<any>;
   assertCaOwner(req: { id: number; userId: number; projectId?: number }, includeDeleted?: boolean): Promise<void>;
+  getRotationChainWithNames(caId: number): Promise<{ id: number; name: string }[]>;
 }

@@ -1,5 +1,5 @@
 import { Inject, Provide } from "@midwayjs/core";
-import type { EntityManager } from "typeorm";
+import { In, type EntityManager } from "typeorm";
 import type { AcmeIssuerBackend } from "../../acme-server/acme-issuer-backend.js";
 import { LocalCaService } from "./local-ca-service.js";
 
@@ -54,5 +54,11 @@ export class LocalCaAcmeBackend implements AcmeIssuerBackend {
   }
   assertCaOwner(req: { id: number; userId: number; projectId?: number }, includeDeleted = false) {
     return this.localCaService.assertCaOwner(req, includeDeleted);
+  }
+
+  async getRotationChainWithNames(caId: number) {
+    const chain = await this.localCaService.collectRotationChain(caId);
+    const cas = await this.localCaService.getRepository().find({ where: { id: In(chain) } });
+    return cas.map(item => ({ id: item.id, name: item.name }));
   }
 }
