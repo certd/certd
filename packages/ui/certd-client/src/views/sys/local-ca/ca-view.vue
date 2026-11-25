@@ -264,14 +264,20 @@ async function downloadPublicKey() {
   try {
     const res = await localCaApi.GetPublicKey(row.value.id);
     downloadBlob(res.pem, res.filename);
+  } catch (e: any) {
+    notification.error({ message: String(e?.message || e) });
   } finally {
     publicKeyLoading.value = false;
   }
 }
 
 async function openCrl() {
-  crlInfo.value = await localCaApi.GetCrlInfo(row.value.id);
-  crlVisible.value = true;
+  try {
+    crlInfo.value = await localCaApi.GetCrlInfo(row.value.id);
+    crlVisible.value = true;
+  } catch (e: any) {
+    notification.error({ message: String(e?.message || e) });
+  }
 }
 
 function downloadCrl() {

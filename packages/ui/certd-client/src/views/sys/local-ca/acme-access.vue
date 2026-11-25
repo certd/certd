@@ -5,6 +5,14 @@
     <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.acmeAccessHint')" />
     <a-spin :spinning="loading">
       <a-form layout="vertical">
+        <a-form-item :label="t('certd.localCa.acmeClientIpSource')">
+          <a-select v-model:value="clientIpSource" :options="clientIpSourceOptions" class="acme-access-source" />
+          <div class="helper">{{ t("certd.localCa.acmeClientIpSourceHelper") }}</div>
+          <a-input v-if="clientIpSource === 'header'" v-model:value="clientIpHeader" placeholder="X-Real-IP" class="mb-2 mt-2" />
+          <a-textarea v-if="clientIpSource === 'xff'" v-model:value="trustProxyText" :rows="2" placeholder="127.0.0.0/8" class="mt-2" />
+          <div v-if="clientIpSource === 'xff'" class="helper">{{ t("certd.localCa.acmeTrustProxyHelper") }}</div>
+        </a-form-item>
+
         <a-form-item :label="t('certd.localCa.acmeIpAllowlist')">
           <a-textarea v-model:value="ipText" :rows="3" :placeholder="'10.0.0.0/8\n192.168.1.0/24\n2001:db8::/32'" />
           <div class="helper">{{ t("certd.localCa.acmeIpAllowlistHelper") }}</div>
@@ -25,7 +33,7 @@
           <div v-for="(h, i) in headers" :key="i" class="header-row">
             <a-input v-model:value="h.name" placeholder="X-ACME-AUTH" class="header-name" />
             <a-input v-model:value="h.value" placeholder="certd" class="header-value" />
-            <a-button type="link" danger size="small" @click="headers.splice(i, 1)">{{ t("certd.common.delete") }}</a-button>
+            <a-button type="link" danger size="small" @click="headers.splice(i, 1)">{{ t("common.delete") }}</a-button>
           </div>
           <a-button type="dashed" size="small" @click="headers.push({ name: '', value: '' })">+ {{ t("certd.localCa.acmeAddHeader") }}</a-button>
           <div class="helper warning">{{ t("certd.localCa.acmeCompatWarning") }}</div>
@@ -55,6 +63,14 @@ const { t } = useI18n();
 const loading = ref(false);
 const saving = ref(false);
 const acmeMode = ref<"local" | "standard">("standard");
+const clientIpSource = ref<"xff" | "socket" | "header">("xff");
+const clientIpHeader = ref("");
+const trustProxyText = ref("");
+const clientIpSourceOptions = [
+  { label: t("certd.localCa.acmeIpSourceXff"), value: "xff" },
+  { label: t("certd.localCa.acmeIpSourceSocket"), value: "socket" },
+  { label: t("certd.localCa.acmeIpSourceHeader"), value: "header" },
+];
 const ipText = ref("");
 const basicEnabled = ref(false);
 const basicUsername = ref("");
@@ -66,6 +82,9 @@ async function load() {
   try {
     const cfg = await localCaApi.GetAcmeAccess(props.caId);
     acmeMode.value = cfg.acmeMode === "local" ? "local" : "standard";
+    clientIpSource.value = cfg.clientIpSource === "socket" || cfg.clientIpSource === "header" ? cfg.clientIpSource : "xff";
+    clientIpHeader.value = cfg.clientIpHeader || "";
+    trustProxyText.value = (cfg.trustProxyCidrs || []).join("\n");
     ipText.value = (cfg.ipAllowlist || []).join("\n");
     basicEnabled.value = cfg.basicAuth?.enabled === true;
     basicUsername.value = cfg.basicAuth?.username || "";
@@ -89,7 +108,11 @@ async function save() {
       if (basicPassword.value) {
         basicAuth.password = basicPassword.value;
       }
-      await localCaApi.SetAcmeAccess(props.caId, { ipAllowlist, basicAuth, requiredHeaders }, getSecretAccessToken());
+      const trustProxyCidrs = trustProxyText.value
+        .split(/[\n,，\s]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+      await localCaApi.SetAcmeAccess(props.caId, { ipAllowlist, basicAuth, requiredHeaders, clientIpSource: clientIpSource.value, clientIpHeader: clientIpHeader.value, trustProxyCidrs }, getSecretAccessToken());
       notification.success({ message: t("certd.localCa.acmeAccessSaved") });
       await load();
     } finally {
@@ -106,7 +129,7 @@ async function save() {
 onMounted(load);
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
 .acme-access {
   .helper {
     font-size: 12px;
@@ -118,6 +141,10 @@ onMounted(load);
   }
   .basic-fields {
     margin-top: 8px;
+  }
+  .acme-access-source {
+    width: 320px;
+    max-width: 100%;
   }
   .header-row {
     display: flex;

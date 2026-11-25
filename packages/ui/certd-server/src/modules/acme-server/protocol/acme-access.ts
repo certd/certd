@@ -7,10 +7,17 @@ export function ipToBigInt(ip: string): bigint | null {
   if (!addr) {
     return null;
   }
-  // IPv4-mapped IPv6 (::ffff:1.2.3.4) 归一为IPv4
+  // IPv4-mapped IPv6 归一为IPv4（点分与十六进制两种形式）
   const mapped = addr.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
   if (mapped) {
     addr = mapped[1];
+  } else {
+    const mappedHex = addr.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
+    if (mappedHex) {
+      const hi = parseInt(mappedHex[1], 16);
+      const lo = parseInt(mappedHex[2], 16);
+      addr = `${(hi >> 8) & 255}.${hi & 255}.${(lo >> 8) & 255}.${lo & 255}`;
+    }
   }
   const version = net.isIP(addr);
   if (version === 4) {
@@ -86,36 +93,57 @@ export function isValidIpRule(rule: string): boolean {
   return net.isIP(text.replace(/^\[|\]$/g, "")) !== 0;
 }
 
-/** 判断IP是否匹配规则（精确/通配符/CIDR）。 */
+/** 将IPv4-mapped IPv6（点分/十六进制）归一为IPv4字符串，其余原样返回。 */
+export function normalizeMappedIp(ip: string): string {
+  const addr = String(ip || "").trim().replace(/^\[|\]$/g, "").replace(/%.*$/, "");
+  const dot = addr.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  if (dot) {
+    return dot[1];
+  }
+  const hex = addr.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
+  if (hex) {
+    const hi = parseInt(hex[1], 16);
+    const lo = parseInt(hex[2], 16);
+    return `${(hi >> 8) & 255}.${hi & 255}.${(lo >> 8) & 255}.${lo & 255}`;
+  }
+  return addr;
+}
+
+/** 判断IP是否匹配规则（精确/通配符/CIDR），跨地址族不匹配。 */
 export function matchesIpRule(ip: string, rule: string): boolean {
   const text = String(rule || "").trim();
-  const ipValue = ipToBigInt(ip);
+  const ipStr = normalizeMappedIp(ip);
+  const ipValue = ipToBigInt(ipStr);
   if (ipValue == null) {
     return false;
   }
+  const ipVersion = net.isIP(ipStr);
   if (text.includes("/")) {
     const [base, prefixStr] = text.split("/");
-    const baseValue = ipToBigInt(base);
+    const baseStr = normalizeMappedIp(base);
+    const baseValue = ipToBigInt(baseStr);
     const prefix = ruleBits(prefixStr);
     if (baseValue == null || prefix == null) {
       return false;
     }
-    const baseVersion = net.isIP(base.replace(/^\[|\]$/g, ""));
-    // IPv4-mapped归一后按v4比较
+    const baseVersion = net.isIP(baseStr);
+    // 地址族一致性：/0 掩码为零时跨族比较会恒匹配，须先排除
+    if (baseVersion !== ipVersion) {
+      return false;
+    }
     const totalBits = baseVersion === 4 ? 32 : 128;
     const mask = prefix === 0 ? 0n : ((1n << BigInt(prefix)) - 1n) << BigInt(totalBits - prefix);
     return (ipValue & mask) === (baseValue & mask);
   }
   if (text.includes("*")) {
-    const ipStr = String(ip).trim().replace(/^\[|\]$/g, "");
-    if (net.isIP(ipStr) !== 4) {
+    if (ipVersion !== 4) {
       return false;
     }
     const ipParts = ipStr.split(".");
     const ruleParts = text.split(".");
     return ruleParts.every((p, i) => p === "*" || p === ipParts[i]);
   }
-  const ruleValue = ipToBigInt(text);
+  const ruleValue = ipToBigInt(normalizeMappedIp(text));
   return ruleValue != null && ruleValue === ipValue;
 }
 
@@ -128,6 +156,28 @@ export function matchIpAllowlist(ip: string, allowlist: string[]): boolean {
 
 /** 未配置白名单时的默认放行范围：仅内网/回环地址。 */
 export const DEFAULT_INTRANET_RULES = ["127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "::1/128", "fc00::/7", "fe80::/10"];
+
+/**
+ * 解析真实客户端IP：TCP来源不在可信代理网段时直接使用socket地址（忽略XFF）；
+ * 在可信网段时自右向左跳过可信代理跳，取第一个不可信地址，防止左侧伪造值生效。
+ */
+export function resolveClientIp(socketIp: string, xff: string | undefined, trustedCidrs: string[]): string {
+  const socket = String(socketIp || "").trim();
+  const trusted = Array.isArray(trustedCidrs) && trustedCidrs.length ? trustedCidrs : ["127.0.0.0/8", "::1/128"];
+  if (!trusted.some(rule => matchesIpRule(socket, rule))) {
+    return socket;
+  }
+  const chain = String(xff || "")
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
+  for (let i = chain.length - 1; i >= 0; i--) {
+    if (!trusted.some(rule => matchesIpRule(chain[i], rule))) {
+      return chain[i];
+    }
+  }
+  return socket;
+}
 
 /** 规范化IP白名单：trim/去空/校验，上限50。 */
 export function normalizeIpAllowlist(list: any): string[] {
@@ -166,6 +216,9 @@ export function normalizeRequiredHeaders(list: any): RequiredHeader[] {
     const value = String(item?.value ?? "");
     if (!name || !/^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(name)) {
       throw new ValidateException(`自定义头名称不合法：${name}`);
+    }
+    if (!value.trim()) {
+      throw new ValidateException(`自定义头 ${name} 的值不能为空，否则门禁不会生效`);
     }
     result.push({ name, value });
   }

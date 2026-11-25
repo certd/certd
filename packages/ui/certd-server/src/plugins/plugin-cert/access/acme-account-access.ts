@@ -263,8 +263,25 @@ export class AcmeAccountAccess extends BaseAccess {
       return [];
     }
     const providers = (await customAcmeProviderService.getAll()) || [];
+    // 本地CA同步条目仅展示当前用户有权使用的CA，避免向未授权用户暴露内部颁发机构
+    let localAllowed: Set<number> | null = null;
+    try {
+      const getter: any = await this.ctx?.serviceGetter?.get("localCaGetter");
+      const usable = (await getter?.listOptions?.()) || [];
+      localAllowed = new Set(usable.map((item: any) => Number(item.id)));
+    } catch {
+      localAllowed = new Set();
+    }
     return providers
-      .filter(provider => provider.sslProvider && provider.title && provider.enabled !== false)
+      .filter(provider => {
+        if (!provider.sslProvider || !provider.title || provider.enabled === false) {
+          return false;
+        }
+        if (String(provider.sslProvider).startsWith("local-ca-")) {
+          return localAllowed.has(Number(provider.localCaId));
+        }
+        return true;
+      })
       .map(provider => ({
         value: provider.sslProvider,
         label: provider.builtIn ? provider.title : `${provider.title}（自定义ACME）`,

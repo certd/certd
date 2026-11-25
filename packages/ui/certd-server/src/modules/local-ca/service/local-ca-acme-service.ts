@@ -77,7 +77,11 @@ export class LocalCaAcmeService {
    */
   private async resolveEffectiveAcmeCa(id: number, manager?: EntityManager): Promise<LocalCaEntity> {
     const repository = manager ? manager.getRepository(LocalCaEntity) : this.repository;
-    let ca = await repository.findOne({ where: { id, deleted: false } });
+    let ca = await repository.findOne({ where: { id } });
+    // 已归档且未轮换的CA不再提供ACME；已轮换的归档CA保留旧ID→新CA映射，保证旧账户/旧Directory连续
+    if (ca?.deleted && !ca.rotatedToId) {
+      return null;
+    }
     let hops = 0;
     while (ca?.rotatedToId && hops < 5) {
       const next = await repository.findOne({ where: { id: ca.rotatedToId, deleted: false } });
@@ -97,7 +101,8 @@ export class LocalCaAcmeService {
    * 吊销接口允许CA已禁用：否则CA关闭后其历史证书将无法撤销，也无法安全归档删除。
    */
   async getCaForAcmeRevocation(id: number) {
-    const ca = await this.repository.findOne({ where: { id, deleted: false } });
+    // 吊销历史证书不受归档/禁用限制：密钥退役后仍须保证已签发证书可吊销
+    const ca = await this.repository.findOne({ where: { id } });
     if (!ca) {
       throw new ValidateException("本地CA不存在");
     }
@@ -193,6 +198,9 @@ export class LocalCaAcmeService {
     return {
       acmeEnabled: ca.acmeEnabled,
       acmeMode: this.resolveAcmeMode(config),
+      clientIpSource: config.clientIpSource === "socket" || config.clientIpSource === "header" ? config.clientIpSource : "xff",
+      clientIpHeader: config.clientIpHeader || "",
+      trustProxyCidrs: Array.isArray(config.trustProxyCidrs) ? config.trustProxyCidrs : [],
       ipAllowlist: Array.isArray(config.ipAllowlist) ? config.ipAllowlist : [],
       basicAuth: { enabled: config.basicAuth?.enabled === true, username: config.basicAuth?.username || "" },
       requiredHeaders: Array.isArray(config.requiredHeaders) ? config.requiredHeaders : [],
@@ -200,7 +208,7 @@ export class LocalCaAcmeService {
   }
 
   /** 设置ACME访问控制（IP白名单/Basic认证/自定义头），合并写入acmeConfig。 */
-  async setAcmeAccess(req: LocalCaScope & { caId: number; ipAllowlist?: any; basicAuth?: { enabled?: boolean; username?: string; password?: string }; requiredHeaders?: any }) {
+  async setAcmeAccess(req: LocalCaScope & { caId: number; ipAllowlist?: any; basicAuth?: { enabled?: boolean; username?: string; password?: string }; requiredHeaders?: any; clientIpSource?: string; clientIpHeader?: string; trustProxyCidrs?: any }) {
     const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以配置ACME访问控制");
@@ -211,6 +219,22 @@ export class LocalCaAcmeService {
     }
     if (req.requiredHeaders !== undefined) {
       config.requiredHeaders = normalizeRequiredHeaders(req.requiredHeaders);
+    }
+    if (req.clientIpSource !== undefined) {
+      if (!["xff", "socket", "header"].includes(req.clientIpSource)) {
+        throw new ValidateException("客户端IP来源不合法");
+      }
+      config.clientIpSource = req.clientIpSource;
+    }
+    if (req.clientIpHeader !== undefined) {
+      const header = String(req.clientIpHeader || "").trim();
+      if (header && !/^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(header)) {
+        throw new ValidateException("客户端IP请求头名称不合法");
+      }
+      config.clientIpHeader = header;
+    }
+    if (req.trustProxyCidrs !== undefined) {
+      config.trustProxyCidrs = normalizeIpAllowlist(req.trustProxyCidrs);
     }
     if (req.basicAuth !== undefined) {
       const enabled = req.basicAuth.enabled === true;

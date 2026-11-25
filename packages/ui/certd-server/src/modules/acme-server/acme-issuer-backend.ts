@@ -25,7 +25,7 @@ export interface AcmeIssuerBackend {
   getCaForAcmeRevocation(caId: number): Promise<AcmeCaView>;
   getCaBaseUrl(caId: number): Promise<string>;
   markBaseUrlLocked(caId: number, manager?: EntityManager): Promise<void>;
-  signCsrForAcme(caId: number, csrPem: string, validityDays: number): Promise<{ fullchainPem: string; serialNumber: string; certPem?: string }>;
+  signCsrForAcme(caId: number, csrPem: string, validityDays: number, manager?: EntityManager): Promise<{ fullchainPem: string; serialNumber: string; certPem?: string }>;
   getAcmeEabSecret(caId: number, kid: string): Promise<any>;
   getAcmeEabProfile(eabId: string, manager?: EntityManager): Promise<{ id: string; allowedDomains: string[]; privileged: boolean } | null>;
   consumeAcmeEab(eabId: string, manager?: EntityManager): Promise<boolean>;

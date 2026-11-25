@@ -75,6 +75,7 @@ class HttpClient {
 
     async request(url, method, opts = {}) {
         // 仅替换实际传输地址；signedRequest 已在映射前用 ACME 原始 URL 生成 JWS，协议要求两者保持一致。
+        let mapped = false;
         if (this.urlMapping && this.urlMapping.enabled && this.urlMapping.mappings) {
             // eslint-disable-next-line no-restricted-syntax
             for (const key in this.urlMapping.mappings) {
@@ -83,6 +84,7 @@ class HttpClient {
                     const newUrl = url.replace(key, value);
                     this.log(`use reverse proxy: ${newUrl}`);
                     url = newUrl;
+                    mapped = true;
                 }
             }
         }
@@ -94,7 +96,8 @@ class HttpClient {
         if (typeof opts.headers === 'undefined') {
             opts.headers = {};
         }
-        opts.headers = { ...this.extraHeaders, ...opts.headers };
+        // 经代理映射转发的请求不附加内部凭证头，防止凭证外带到代理主机
+        opts.headers = { ...(mapped ? {} : this.extraHeaders), ...opts.headers };
 
         opts.headers['Content-Type'] = 'application/jose+json';
 

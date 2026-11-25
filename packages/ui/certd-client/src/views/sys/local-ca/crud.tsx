@@ -60,14 +60,31 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     { label: t("certd.localCa.acmeStateStandard"), value: "standard" },
   ];
 
+  let acmeStateInFlight = false;
   async function changeAcmeState(row: any, value: string) {
+    if (acmeStateInFlight) {
+      return;
+    }
+    acmeStateInFlight = true;
+    try {
+      await doChangeAcmeState(row, value);
+    } finally {
+      acmeStateInFlight = false;
+    }
+  }
+
+  async function doChangeAcmeState(row: any, value: string) {
     if (row.caType !== "intermediate") {
       await crudExpose.doRefresh();
       return;
     }
     if (value === "off") {
-      await localCaApi.EnableAcme(row.id, false);
-      notification.success({ message: t("certd.localCa.acmeChanged") });
+      try {
+        await localCaApi.EnableAcme(row.id, false);
+        notification.success({ message: t("certd.localCa.acmeChanged") });
+      } catch (e: any) {
+        notification.error({ message: String(e?.message || e) });
+      }
       await crudExpose.doRefresh();
       return;
     }
@@ -399,8 +416,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                     await openEnableCa(row);
                     return;
                   }
-                  await localCaApi.Disable(row.id, true);
-                  notification.success({ message: t("certd.localCa.disabledSuccess") });
+                  try {
+                    await localCaApi.Disable(row.id, true);
+                    notification.success({ message: t("certd.localCa.disabledSuccess") });
+                  } catch (e: any) {
+                    notification.error({ message: String(e?.message || e) });
+                  }
                   await crudExpose.doRefresh();
                 },
               },

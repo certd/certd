@@ -334,10 +334,11 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   /** 轮换后签发自动指向新CA（与ACME重定向一致），保证引用旧CA的流水线无缝续期。 */
-  private async followRotation(ca: LocalCaEntity, req?: LocalCaScope): Promise<LocalCaEntity> {
+  private async followRotation(ca: LocalCaEntity, req?: LocalCaScope, manager?: EntityManager): Promise<LocalCaEntity> {
     let hops = 0;
+    const repository = manager ? manager.getRepository(LocalCaEntity) : this.repository;
     while (ca.rotatedToId && hops < 5) {
-      const next = await this.repository.findOne({ where: { id: ca.rotatedToId, deleted: false } });
+      const next = await repository.findOne({ where: { id: ca.rotatedToId, deleted: false } });
       if (!next) {
         break;
       }
@@ -373,6 +374,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       parentId: item.parentId,
       acmeEnabled: item.acmeEnabled,
       disabled: item.disabled,
+      revoked: item.revoked,
+      rotatedToId: item.rotatedToId,
       notAfter: item.notAfter,
       baseUrl: (item as any).effectiveBaseUrl,
     }));
@@ -397,9 +400,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async listAdminOptions(req: { adminUserId: number; searchKey?: string }) {
+    // 管理端页签（权限/签发证书/导入父CA）需要根CA与禁用/已轮换CA；可用性过滤由前端按页签语义执行
     const list = await this.listSafe({ adminUserId: req.adminUserId, searchKey: req.searchKey });
-    const usable = list.filter((item: any) => item.caType === "intermediate" && !item.disabled && !item.rotatedToId);
-    return this.toOptionList(usable as any);
+    return this.toOptionList(list as any);
   }
 
   async getOptionsByIds(req: { ids: number[]; userId: number; projectId?: number }) {
@@ -593,6 +596,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.acmeEnabled = old.acmeEnabled;
     bean.acmeConfig = old.acmeConfig;
     bean.baseUrl = old.baseUrl || root.baseUrl || null;
+    // 继承Base URL锁定状态：避免新CA首次签发时在finalize事务外更新已被事务锁定的CA行（PG锁等待闭环）
+    bean.baseUrlLocked = old.baseUrlLocked;
     bean.dnsServer = old.dnsServer;
     bean.pathLength = 0;
     bean.disabled = false;
@@ -774,8 +779,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   /**
    * CA 签发核心：流水线插件、独立签发、未来 ACME finalize 都走这里。
    */
-  async signCsr(req: LocalCaSignCsrReq) {
-    const ca = await this.followRotation(req.internal ? await this.findOne({ where: { id: req.id, deleted: false } }) : await this.accessService.getGrantedCa(req), req);
+  async signCsr(req: LocalCaSignCsrReq, manager?: EntityManager) {
+    const ca = await this.followRotation(req.internal ? await (manager ? manager.getRepository(LocalCaEntity) : this.repository).findOne({ where: { id: req.id, deleted: false } }) : await this.accessService.getGrantedCa(req), req, manager);
     if (!ca) {
       throw new ValidateException("本地CA不存在或无访问权限");
     }
@@ -804,17 +809,17 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       usage: (req.usage || ca.usage) as LocalCaUsage,
       crlDistributionPoint: await this.crlService.getCrlUrl(ca),
     });
-    await this.assertCaStillUsable(ca.id);
+    await this.assertCaStillUsable(ca.id, manager);
     if (!ca.baseUrlLocked) {
-      await this.markBaseUrlLocked(ca.id);
+      await this.markBaseUrlLocked(ca.id, manager);
       ca.baseUrlLocked = true;
     }
     logger.info(`[local-ca] leaf issued ca=${ca.id} serial=${result.serialNumber} user=${req.userId} project=${req.projectId ?? "-"}`);
     return result;
   }
 
-  async issueLeaf(req: LocalCaIssueReq) {
-    const ca = await this.followRotation(await this.accessService.getGrantedCa(req), req);
+  async issueLeaf(req: LocalCaIssueReq, manager?: EntityManager) {
+    const ca = await this.followRotation(await this.accessService.getGrantedCa(req), req, manager);
     if (ca.caType !== "intermediate") {
       throw new ValidateException("根CA不能直接签发叶子证书，请选择中间CA");
     }
@@ -841,9 +846,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       usage: (req.usage || ca.usage) as LocalCaUsage,
       crlDistributionPoint: await this.crlService.getCrlUrl(ca),
     });
-    await this.assertCaStillUsable(ca.id);
+    await this.assertCaStillUsable(ca.id, manager);
     if (!ca.baseUrlLocked) {
-      await this.markBaseUrlLocked(ca.id);
+      await this.markBaseUrlLocked(ca.id, manager);
       ca.baseUrlLocked = true;
     }
     logger.info(`[local-ca] leaf issued ca=${ca.id} serial=${result.serialNumber} domains=${req.domains.length} user=${req.userId} project=${req.projectId ?? "-"}`);
@@ -853,8 +858,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   /**
    * 签名期间CA可能被并发禁用/吊销；返回证书前再次确认，避免把已失效CA新签的证书交给调用方。
    */
-  private async assertCaStillUsable(caId: number) {
-    const ca = await this.findOne({ where: { id: caId, deleted: false } });
+  private async assertCaStillUsable(caId: number, manager?: EntityManager) {
+    const ca = await (manager ? manager.getRepository(LocalCaEntity) : this.repository).findOne({ where: { id: caId, deleted: false } });
     if (!ca || ca.disabled || ca.revoked) {
       throw new ValidateException("本地CA已被禁用或吊销，本次签发已取消");
     }
@@ -894,7 +899,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
    * ACME直签编排入口：组合ACME视图校验与签发核心。
    * 保留在facade以避免ACME子服务反向依赖LocalCaService造成循环。
    */
-  async signCsrForAcme(caId: number, csrPem: string, validityDays = 90) {
+  async signCsrForAcme(caId: number, csrPem: string, validityDays = 90, manager?: EntityManager) {
     const ca = await this.acmeService.getAcmeCa(caId);
     return await this.signCsr({
       id: ca.id,
@@ -902,7 +907,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       csrPem,
       validityDays,
       internal: true,
-    });
+    }, manager);
   }
 
   async setAcmeEnabled(req: LocalCaScope & { enabled: boolean; validityDays?: number; mode?: "local" | "standard" }) {
@@ -1028,6 +1033,25 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       await tx.getRepository(AcmeEabEntity).update({ grantId: In(grantIds) }, { disabled: true, updateTime: new Date() } as any);
       await this.acmeService.invalidateDirectOrdersByEabIds(tx, eabs.map(item => item.id), "用户授权已撤销，EAB凭证已禁用，请重新创建订单");
       await grantRepository.delete({ id: In(grantIds) } as any);
+      // 级联撤销轮换后继CA上复制的授权，避免旧CA撤权后用户仍经旧ID获得新CA授权
+      let successorId = ca.rotatedToId;
+      let hops = 0;
+      while (successorId && hops < 5) {
+        const succ = await tx.getRepository(LocalCaEntity).findOne({ where: { id: successorId } });
+        if (!succ) {
+          break;
+        }
+        const succGrants = await grantRepository.find({ where: { caId: succ.id, userId: grant.userId, projectId: grant.projectId } });
+        if (succGrants.length) {
+          const succGrantIds = succGrants.map(item => item.id);
+          const succEabs = await tx.getRepository(AcmeEabEntity).find({ where: { grantId: In(succGrantIds) }, select: { id: true } });
+          await tx.getRepository(AcmeEabEntity).update({ grantId: In(succGrantIds) }, { disabled: true, updateTime: new Date() } as any);
+          await this.acmeService.invalidateDirectOrdersByEabIds(tx, succEabs.map(item => item.id), "用户授权已撤销，EAB凭证已禁用，请重新创建订单");
+          await grantRepository.delete({ id: In(succGrantIds) } as any);
+        }
+        successorId = succ.rotatedToId;
+        hops++;
+      }
     });
   }
 
@@ -1545,12 +1569,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     });
     const now = Date.now();
     const blocking = issued.filter(item => item.status !== CertStatus.revoked && (!item.expiresTime || item.expiresTime > now));
-    // 已轮换退役的CA允许直接归档：其已签发证书继续有效直至过期，CRL仍可访问，无需先吊销
-    if (!ca.rotatedToId && blocking.length > 0) {
+    // 已轮换CA不豁免证书检查：归档前仍须吊销或等待过期，保证生命周期边界一致
+    if (blocking.length > 0) {
       throw new ValidateException("该本地CA仍有未吊销且未过期的证书，不能归档，请先吊销这些证书");
     }
-    // 未绑定用户仓库的ACME系统级证书不在cd_cert_info中，也需要按订单记录阻止归档（已轮换退役CA除外）
-    if (!ca.rotatedToId) {
+    // 未绑定用户仓库的ACME系统级证书不在cd_cert_info中，也需要按订单记录阻止归档
+    {
       const issuedSerials = new Set(issued.map(item => String(item.serialNumber || "").toUpperCase()));
       const validOrders = await this.acmeOrderRepository.find({
         where: { caId: ca.id, status: "valid" },

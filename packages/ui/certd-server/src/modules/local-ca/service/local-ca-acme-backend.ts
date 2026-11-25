@@ -29,8 +29,8 @@ export class LocalCaAcmeBackend implements AcmeIssuerBackend {
   markBaseUrlLocked(caId: number, manager?: EntityManager) {
     return this.localCaService.markBaseUrlLocked(caId, manager);
   }
-  signCsrForAcme(caId: number, csrPem: string, validityDays: number) {
-    return this.localCaService.signCsrForAcme(caId, csrPem, validityDays);
+  signCsrForAcme(caId: number, csrPem: string, validityDays: number, manager?: EntityManager) {
+    return this.localCaService.signCsrForAcme(caId, csrPem, validityDays, manager);
   }
   getAcmeEabSecret(caId: number, kid: string) {
     return this.localCaService.getAcmeEabSecret(caId, kid);

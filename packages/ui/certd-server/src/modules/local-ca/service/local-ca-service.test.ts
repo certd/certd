@@ -1435,3 +1435,68 @@ describe("LocalCaService", () => {
   });
 
 });
+
+describe("LocalCaService 轮换生命周期与权限级联回归", () => {
+  async function createIssuingCa(service: any, opts: { name: string }) {
+    const root = await service.generateCa({ userId: 1, name: `${opts.name} Root`, subject: { CN: `${opts.name} Root` }, keyType: "rsa2048", validityYears: 2 });
+    const intermediate = await service.generateIntermediateCa({ rootId: root.id, maxValidityDays: 365, userId: 1, name: opts.name, subject: { CN: opts.name }, keyType: "rsa2048", validityYears: 1 });
+    return { rootId: root.id, id: intermediate.id };
+  }
+
+  it("轮换继承baseUrlLocked，避免新CA首签事务外更新锁行", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Lock Rotate CA" });
+    store.get(id).baseUrlLocked = true;
+    const res = await service.rotateIntermediateCa({ id, userId: 1 });
+    assert.equal(store.get(res.id).baseUrlLocked, true);
+  });
+
+  it("旧CA撤销用户授权级联删除新CA复制授权，旧ID入口拒绝", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Grant Cascade CA" });
+    const grant = await service.addGrant({ id, userId: 1, grantUserId: 2 });
+    const res = await service.rotateIntermediateCa({ id, userId: 1 });
+    await service.removeGrant({ id, userId: 1, grantId: grant.id });
+    await assert.rejects(() => service.accessService.getGrantedCa({ id: res.id, userId: 2 }), /无访问权限/);
+    await assert.rejects(() => service.accessService.getGrantedCa({ id, userId: 2 }), /无访问权限/);
+  });
+
+  it("旧CA移除操作员级联移除新CA复制操作员", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Admin Cascade CA" });
+    await service.addCaAdmin({ id, userId: 1, adminUserId: 3, role: "operator" });
+    const res = await service.rotateIntermediateCa({ id, userId: 1 });
+    await service.removeCaAdmin({ id, userId: 1, adminUserId: 3 });
+    const remaining = await service.adminRepository.find({ where: { caId: res.id, adminUserId: 3 } });
+    assert.equal(remaining.length, 0);
+  });
+
+  it("已轮换CA禁止新增授权/管理员，须在新CA管理", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Rotated Add CA" });
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    await assert.rejects(() => service.addGrant({ id, userId: 1, grantUserId: 2 }), /已轮换/);
+    await assert.rejects(() => service.addCaAdmin({ id, userId: 1, adminUserId: 3 }), /已轮换/);
+  });
+
+  it("已轮换CA归档不豁免未过期ACME证书检查", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Rotated Archive CA" });
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    (service as any).acmeOrderRepository.find = async () => [
+      { id: "order-rot-1", caId: id, status: "valid", serialNumber: "AABBCC", expiresTime: Date.now() + 86400000 },
+    ];
+    await assert.rejects(() => service.archiveCa({ id, userId: 1 }), /未吊销且未过期/);
+  });
+
+  it("归档的已轮换CA仍沿旧ID指向新CA（ACME连续性）", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Archived Follow CA" });
+    const res = await service.rotateIntermediateCa({ id, userId: 1 });
+    store.get(id).deleted = true;
+    const effective = await service.acmeService.getAcmeAccessView(id);
+    assert.equal(effective?.id, res.id);
+    const revocationCa = await service.acmeService.getCaForAcmeRevocation(id);
+    assert.equal(revocationCa.id, id);
+  });
+});

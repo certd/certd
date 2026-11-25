@@ -77,8 +77,9 @@ export class LocalCaAccessService {
   }
 
   async getGrantedCa(req: LocalCaScope) {
-    const ca = await this.repository.findOne({ where: { id: req.id, deleted: false } });
-    if (!ca) {
+    const ca = await this.repository.findOne({ where: { id: req.id } });
+    // 已归档且未轮换的CA拒绝访问；已轮换的归档CA保留旧ID入口，由调用方沿rotatedToId指向新CA
+    if (!ca || (ca.deleted && !ca.rotatedToId)) {
       throw new ValidateException("本地CA不存在或无访问权限");
     }
     if (req.userId > 0) {
@@ -140,6 +141,9 @@ export class LocalCaAccessService {
       projectId = 0;
     }
     const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    if (ca.rotatedToId) {
+      throw new ValidateException("该CA已轮换，请在新一代CA上管理用户授权");
+    }
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只能授权中间CA");
     }
@@ -190,6 +194,9 @@ export class LocalCaAccessService {
       throw new ValidateException("本地CA仅允许创建者作为所有者，不能添加其他所有者");
     }
     const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    if (ca.rotatedToId) {
+      throw new ValidateException("该CA已轮换，请在新一代CA上管理管理员");
+    }
     const existing = await this.findAdminAccess(ca.id, req.adminUserId);
     if (existing?.role === "owner") {
       return existing;
@@ -207,6 +214,21 @@ export class LocalCaAccessService {
       throw new ValidateException("不能移除CA的创建管理员");
     }
     await this.adminRepository.delete({ id: access.id });
+    // 级联移除轮换后继CA上复制的操作员，避免旧CA撤权后仍经旧ID访问新CA
+    let successorId = ca.rotatedToId;
+    let hops = 0;
+    while (successorId && hops < 5) {
+      const succ = await this.repository.findOne({ where: { id: successorId } });
+      if (!succ) {
+        break;
+      }
+      const succAdmins = await this.adminRepository.find({ where: { caId: succ.id, adminUserId: req.adminUserId, role: "operator" } });
+      for (const item of succAdmins) {
+        await this.adminRepository.delete({ id: item.id });
+      }
+      successorId = succ.rotatedToId;
+      hops++;
+    }
   }
 
   /**

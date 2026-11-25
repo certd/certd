@@ -1,6 +1,6 @@
 <template>
   <div class="ca-access">
-    <a-tabs v-model:activeKey="activeKey">
+    <a-tabs v-model:active-key="activeKey">
       <a-tab-pane key="admins" :tab="t('certd.localCa.admins')">
         <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.adminHint')" />
         <div class="ca-access-add">
@@ -98,12 +98,11 @@ function projectLabel(id: number) {
 async function load() {
   loading.value = true;
   try {
-    const [adminList, grantList] = await Promise.all([
-      localCaApi.ListAdmins(props.caId),
-      props.caType === "intermediate" ? localCaApi.ListGrants(props.caId) : Promise.resolve([]),
-    ]);
+    const [adminList, grantList] = await Promise.all([localCaApi.ListAdmins(props.caId), props.caType === "intermediate" ? localCaApi.ListGrants(props.caId) : Promise.resolve([])]);
     admins.value = adminList || [];
     grants.value = grantList || [];
+  } catch (e: any) {
+    notification.error({ message: String(e?.message || e) });
   } finally {
     loading.value = false;
   }
@@ -175,7 +174,7 @@ async function addGrant() {
 function removeGrant(record: any) {
   Modal.confirm({
     title: t("certd.localCa.grantRemoveTitle"),
-    content: t("certd.localCa.grantRemoveContent", { user: userLabel(record.userId) }),
+    content: t("certd.localCa.grantRemoveContent", { user: record.userId > 0 ? userLabel(record.userId) : projectLabel(record.projectId) }),
     async onOk() {
       await props.runStepUp(t("certd.localCa.grantStepUpTitle"), t("certd.localCa.grantStepUpDesc"), async () => {
         await localCaApi.RemoveGrant(props.caId, record.id);
@@ -205,17 +204,19 @@ onMounted(async () => {
 });
 </script>
 
-<style lang="less" scoped>
-.ca-access-add {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.ca-access-user {
-  flex: 1;
-  min-width: 180px;
-}
-.ca-access-project {
-  width: 200px;
+<style lang="less">
+.ca-access {
+  .ca-access-add {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .ca-access-user {
+    flex: 1;
+    min-width: 180px;
+  }
+  .ca-access-project {
+    width: 200px;
+  }
 }
 </style>

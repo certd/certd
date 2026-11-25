@@ -56,11 +56,11 @@ export const localCaApi = {
     });
   },
 
-  async Archive(id: number, force = false) {
+  async Archive(id: number, force = false, verifyToken?: string) {
     return await req({
       url: apiPrefix + "/archive",
       method: "post",
-      data: { id, force, verifyToken: getSecretAccessToken() },
+      data: { id, force, verifyToken: verifyToken || getSecretAccessToken() },
     });
   },
 

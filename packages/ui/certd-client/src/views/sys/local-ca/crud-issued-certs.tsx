@@ -18,13 +18,25 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const model = useModal();
   const caIdRef = context.caIdRef;
 
-  const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
+  let latestRequest: Promise<UserPageRes> | null = null;
+  const fetchPage = async (query: UserPageQuery): Promise<UserPageRes> => {
     const caId = caIdRef.value;
     if (!caId) {
       return { records: [], total: 0, currentPage: 1, pageSize: 20 };
     }
     const records = ((await localCaApi.ListCerts(caId)) || []).map((item: any) => ({ ...item, rowKey: `${item.type}-${item.id}` }));
     return { records, total: records.length, currentPage: query.page?.currentPage || 1, pageSize: query.page?.pageSize || 20 };
+  };
+
+  // 快速切换CA时旧响应不得覆盖新数据：过期请求等待最新请求结果
+  const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
+    const task = fetchPage(query);
+    latestRequest = task;
+    const res = await task;
+    if (latestRequest !== task) {
+      return await latestRequest;
+    }
+    return res;
   };
 
   async function viewCert(row: any) {
@@ -73,6 +85,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       search: { show: false },
       toolbar: { show: false },
       actionbar: { show: false },
+      pagination: { show: false },
       table: { rowKey: "rowKey" },
       rowHandle: {
         width: 150,

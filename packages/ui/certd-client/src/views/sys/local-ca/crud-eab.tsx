@@ -68,7 +68,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     return userLabel(record.userId);
   }
 
-  const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
+  let latestRequest: Promise<UserPageRes> | null = null;
+  const fetchPage = async (query: UserPageQuery): Promise<UserPageRes> => {
     const caId = caIdRef.value;
     if (!caId) {
       return { records: [], total: 0, currentPage: 1, pageSize: 20 };
@@ -104,25 +105,42 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     return { records, total: records.length, currentPage: query.page?.currentPage || 1, pageSize: query.page?.pageSize || 20 };
   };
 
+  // 快速切换CA时旧响应不得覆盖新数据：过期请求等待最新请求结果
+  const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
+    const task = fetchPage(query);
+    latestRequest = task;
+    const res = await task;
+    if (latestRequest !== task) {
+      return await latestRequest;
+    }
+    return res;
+  };
+
   async function toggleDisabled(row: any, disabled: boolean) {
     const action = async () => {
-      await localCaApi.SetEabStatus(caIdRef.value, row.id, disabled, getSecretAccessToken());
-      notification.success({ message: t("certd.localCa.eabStatusChanged") });
-      await crudExpose.doRefresh();
+      try {
+        await localCaApi.SetEabStatus(caIdRef.value, row.id, disabled, getSecretAccessToken());
+        notification.success({ message: t("certd.localCa.eabStatusChanged") });
+      } catch (e: any) {
+        notification.error({ message: String(e?.message || e) });
+      } finally {
+        await crudExpose.doRefresh();
+      }
     };
-    // 停用EAB影响客户注册，需要二次验证；重新启用直接执行
-    if (disabled) {
-      await context.runStepUp(action);
-    } else {
-      await action();
-    }
+    // 启停均影响签发能力，服务端强制二次验证
+    await context.runStepUp(action);
   }
 
   async function togglePrivileged(row: any) {
     await context.runStepUp(async () => {
-      await localCaApi.SetEabPrivileged(caIdRef.value, row.id, !row.privileged, getSecretAccessToken());
-      notification.success({ message: t("certd.localCa.eabPrivilegedChanged") });
-      await crudExpose.doRefresh();
+      try {
+        await localCaApi.SetEabPrivileged(caIdRef.value, row.id, !row.privileged, getSecretAccessToken());
+        notification.success({ message: t("certd.localCa.eabPrivilegedChanged") });
+      } catch (e: any) {
+        notification.error({ message: String(e?.message || e) });
+      } finally {
+        await crudExpose.doRefresh();
+      }
     });
   }
 

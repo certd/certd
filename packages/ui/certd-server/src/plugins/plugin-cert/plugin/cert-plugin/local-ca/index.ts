@@ -260,6 +260,9 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       throw new Error("远程ACME模式已移除：请改用通用『证书申请(CertApply)』任务，由管理员在系统设置-流水线设置中配置自定义ACME颁发机构");
     }
     if (this.mode === "local-acme") {
+      // 本地ACME与本机服务通信，禁止用户可控代理：避免内部凭证随urlMapping外带到第三方主机
+      this.reverseProxy = "";
+      this.useProxy = false;
       await this.ensureLocalAcmeCaId();
       await this.prepareLocalCa(true);
     }
@@ -373,7 +376,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       directoryUrl,
       builtIn: false,
       needEAB: true,
-      reverseProxy: this.reverseProxy || "",
+      reverseProxy: this.mode === "local-acme" ? "" : this.reverseProxy || "",
       extraHeaders,
     } as any;
   }
@@ -566,7 +569,16 @@ if (localCaInput.sslProvider) {
   localCaInput.sslProvider.title = "中间CA颁发机构";
   localCaInput.sslProvider.mergeScript = `return {
     show: ctx.compute(({ form }) => form.mode === 'local-acme'),
-    required: ctx.compute(({ form }) => form.mode === 'local-acme')
+    required: ctx.compute(({ form }) => form.mode === 'local-acme'),
+    component: {
+      on: {
+        selectedChange: (scope) => {
+          let form = scope.form || {};
+          form = form.input || form.body || form;
+          form.acmeAccountAccessId = null;
+        }
+      }
+    }
   }`;
 }
 if (localCaInput.version) localCaInput.version.show = false;

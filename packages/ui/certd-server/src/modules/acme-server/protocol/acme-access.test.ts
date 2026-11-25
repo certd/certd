@@ -51,3 +51,35 @@ describe("acme-access IP/CIDR matching", () => {
     assert.throws(() => normalizeRequiredHeaders("nope" as any), /必须是数组/);
   });
 });
+describe("acme-access 跨地址族与代理链安全回归", () => {
+  it("CIDR /0 不跨地址族匹配", () => {
+    assert.equal(matchesIpRule("2001:4860::1", "0.0.0.0/0"), false);
+    assert.equal(matchesIpRule("8.8.8.8", "::/0"), false);
+    assert.equal(matchesIpRule("8.8.8.8", "0.0.0.0/0"), true);
+    assert.equal(matchesIpRule("2001:4860::1", "::/0"), true);
+  });
+  it("IPv4-mapped IPv6 十六进制形式归一匹配", () => {
+    assert.equal(matchesIpRule("::ffff:7f00:1", "127.0.0.0/8"), true);
+    assert.equal(matchesIpRule("::ffff:7f00:1", "127.0.0.1"), true);
+    assert.equal(matchesIpRule("::ffff:808:808", "0.0.0.0/0"), true);
+    assert.equal(matchesIpRule("::ffff:808:808", "::/0"), false);
+    assert.equal(matchesIpRule("::ffff:7f00:1", "192.168.*.*"), false);
+  });
+  it("resolveClientIp 忽略不可信来源的XFF伪造", async () => {
+    const { resolveClientIp } = await import("./acme-access.js");
+    const trusted = ["127.0.0.0/8", "::1/128"];
+    // 直连外部攻击者伪造XFF：socket不可信 → 用socket
+    assert.equal(resolveClientIp("203.0.113.9", "127.0.0.1", trusted), "203.0.113.9");
+    // 经本机反代：自右向左跳过可信跳，取真实客户端
+    assert.equal(resolveClientIp("127.0.0.1", "127.0.0.1, 203.0.113.9", trusted), "203.0.113.9");
+    assert.equal(resolveClientIp("127.0.0.1", "10.0.0.5, 127.0.0.1", trusted), "10.0.0.5");
+    // 真实本机客户端经反代：全可信 → socket
+    assert.equal(resolveClientIp("127.0.0.1", "127.0.0.1", trusted), "127.0.0.1");
+    assert.equal(resolveClientIp("127.0.0.1", undefined, trusted), "127.0.0.1");
+  });
+  it("拒绝空值的必需请求头", () => {
+    assert.throws(() => normalizeRequiredHeaders([{ name: "X-ACME-AUTH", value: "" }]), /不能为空/);
+    assert.throws(() => normalizeRequiredHeaders([{ name: "X-ACME-AUTH", value: "   " }]), /不能为空/);
+    assert.deepEqual(normalizeRequiredHeaders([{ name: "X-ACME-AUTH", value: "certd" }]), [{ name: "X-ACME-AUTH", value: "certd" }]);
+  });
+});

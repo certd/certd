@@ -1,6 +1,6 @@
 <template>
   <div class="custom-acme-provider-list">
-    <div v-for="(provider, index) in props.modelValue" :key="index" class="custom-acme-provider-row">
+    <div v-for="(provider, index) in props.modelValue" :key="provider.sslProvider || index" class="custom-acme-provider-row">
       <a-tag v-if="provider.builtIn" color="blue">{{ t("certd.sys.settings.customAcmeBuiltIn") }}</a-tag>
       <a-tag v-else-if="provider.localCaId != null" color="green">{{ t("certd.sys.settings.customAcmeLocalCaTag") }}</a-tag>
       <a-tag v-else color="orange">{{ t("certd.sys.settings.customAcmeTag") }}</a-tag>
@@ -87,7 +87,7 @@ function buildColumns(editing: CustomAcmeProviderForm | null) {
         rules: [{ required: true, message: t("certd.sys.settings.customAcmeSaveCheck") }],
         helper: t("certd.sys.settings.customAcmeSslProviderHelper"),
         component: {
-          disabled: computed(() => editing?.sslProvider),
+          disabled: computed(() => !!editing?.sslProvider),
         },
       },
     },
@@ -157,7 +157,9 @@ async function openEditor(index?: number) {
       // 内置/同步条目：仅更新反向代理地址，其他字段（含 localCaId/enabled）保留
       if (isLocked) {
         const list = [...props.modelValue];
-        list[index!] = { ...editing, reverseProxy: form.reverseProxy || "" };
+        // 提交时重读当前快照，避免对话框开启期间列表变化导致旧数据覆盖
+        const current = list[index!] || editing;
+        list[index!] = { ...current, reverseProxy: form.reverseProxy || "" };
         emit("update:modelValue", list);
         return;
       }

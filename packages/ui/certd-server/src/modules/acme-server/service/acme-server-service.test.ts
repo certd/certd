@@ -58,7 +58,7 @@ describe("AcmeServerService CA isolation", () => {
 
   it("CA B 的接口拒绝 CA A 的账号kid", async () => {
     const service: any = new AcmeServerService();
-    service.issuer = { async getAcmeCa() {} };
+    service.issuer = { async getAcmeCa() {}, async getCaBaseUrl() { return "https://certd.example.com"; } };
     let lookupCalled = false;
     service.accountRepository = {
       async findOne() {
@@ -74,7 +74,7 @@ describe("AcmeServerService CA isolation", () => {
 
   it("kid路径必须符合 /api/acme/{caId}/account/{id} 格式", async () => {
     const service: any = new AcmeServerService();
-    service.issuer = { async getAcmeCa() {} };
+    service.issuer = { async getAcmeCa() {}, async getCaBaseUrl() { return "https://certd.example.com"; } };
     let lookupCalled = false;
     service.accountRepository = {
       async findOne() {
@@ -90,7 +90,7 @@ describe("AcmeServerService CA isolation", () => {
 
   it("kid中的CA ID必须是正十进制数字", async () => {
     const service: any = new AcmeServerService();
-    service.issuer = { async getAcmeCa() {} };
+    service.issuer = { async getAcmeCa() {}, async getCaBaseUrl() { return "https://certd.example.com"; } };
     let lookupCalled = false;
     service.accountRepository = {
       async findOne() {
@@ -106,7 +106,7 @@ describe("AcmeServerService CA isolation", () => {
 
   it("账号kid中的CA路径匹配时，查询仍带URL中的CA id", async () => {
     const service: any = new AcmeServerService();
-    service.issuer = { async getAcmeCa() {} };
+    service.issuer = { async getAcmeCa() {}, async getCaBaseUrl() { return "https://certd.example.com"; } };
     let lookupWhere: any = null;
     service.accountRepository = {
       async findOne(args: any) {
@@ -157,7 +157,7 @@ describe("AcmeServerService CA isolation", () => {
       payload: base64urlEncode(JSON.stringify(jwk)),
       signature: base64urlEncode("signature"),
     };
-    await assert.rejects(() => service.verifyExternalAccountBinding(102, eab, jwkThumbprint(jwk)), /EAB凭证不存在或已禁用/);
+    await assert.rejects(() => service.verifyExternalAccountBinding(102, eab, jwkThumbprint(jwk)), /EAB凭证不可用/);
     assert.deepEqual(calls, [[102, "eab-from-ca-a"]]);
   });
 });
@@ -204,6 +204,7 @@ describe("AcmeServerService ACME三档门禁", () => {
   function createCtx(ip: string, headers: Record<string, string> = {}) {
     return {
       ip,
+      req: { socket: { remoteAddress: ip } },
       get(name: string) {
         return headers[name.toLowerCase()] || "";
       },
@@ -242,5 +243,70 @@ describe("AcmeServerService ACME三档门禁", () => {
     // 回环来源不在白名单内仍被拒绝
     await assert.rejects(() => service.assertAccess(createCtx("127.0.0.1"), 2), /白名单/);
     await service.assertAccess(createCtx("10.1.2.3", { "x-certd-acme-token": "tok" }), 2);
+  });
+});
+
+describe("AcmeServerService 门禁XFF伪造与吊销豁免回归", () => {
+  function createGate(acmeConfig: any, socketIp: string, headers: Record<string, string> = {}) {
+    const service: any = new AcmeServerService();
+    service.issuer = {
+      async getAcmeAccessView() {
+        return { id: 2, caType: "intermediate", acmeEnabled: true, acmeConfig: acmeConfig == null ? null : JSON.stringify(acmeConfig) };
+      },
+    };
+    const ctx = {
+      req: { socket: { remoteAddress: socketIp } },
+      get(name: string) {
+        return headers[name.toLowerCase()] || "";
+      },
+      set() {},
+    };
+    return { service, ctx };
+  }
+
+  it("local档：直连伪造XFF回环被拒绝", async () => {
+    const { service, ctx } = createGate({ acmeMode: "local", internalToken: "tok" }, "203.0.113.9", { "x-forwarded-for": "127.0.0.1" });
+    await assert.rejects(() => service.assertAccess(ctx, 2), /仅本地模式/);
+  });
+
+  it("local档：经反代伪造XFF左侧回环被拒绝", async () => {
+    const { service, ctx } = createGate({ acmeMode: "local", internalToken: "tok" }, "127.0.0.1", { "x-forwarded-for": "127.0.0.1, 203.0.113.9" });
+    await assert.rejects(() => service.assertAccess(ctx, 2), /仅本地模式/);
+  });
+
+  it("local档：真实本机经反代放行", async () => {
+    const { service, ctx } = createGate({ acmeMode: "local", internalToken: "tok" }, "127.0.0.1", { "x-forwarded-for": "127.0.0.1" });
+    await service.assertAccess(ctx, 2);
+  });
+
+  it("standard档：默认内网白名单不被伪造XFF绕过", async () => {
+    const { service, ctx } = createGate(null, "203.0.113.9", { "x-forwarded-for": "10.0.0.5" });
+    await assert.rejects(() => service.assertAccess(ctx, 2), /白名单/);
+    const viaProxy = createGate(null, "127.0.0.1", { "x-forwarded-for": "10.0.0.5, 203.0.113.9" });
+    await assert.rejects(() => viaProxy.service.assertAccess(viaProxy.ctx, 2), /白名单/);
+  });
+
+  it("socket模式不信任任何转发头", async () => {
+    const { service, ctx } = createGate({ acmeMode: "local", internalToken: "tok", clientIpSource: "socket" }, "127.0.0.1", { "x-forwarded-for": "203.0.113.9" });
+    await service.assertAccess(ctx, 2);
+  });
+
+  it("header模式取指定头（CDN/反代注入）", async () => {
+    const denied = createGate({ acmeMode: "local", internalToken: "tok", clientIpSource: "header", clientIpHeader: "X-Real-IP" }, "127.0.0.1", { "x-real-ip": "203.0.113.9" });
+    await assert.rejects(() => denied.service.assertAccess(denied.ctx, 2), /仅本地模式/);
+    const allowed = createGate({ acmeMode: "local", internalToken: "tok", clientIpSource: "header", clientIpHeader: "X-Real-IP" }, "127.0.0.1", { "x-real-ip": "127.0.0.1" });
+    await allowed.service.assertAccess(allowed.ctx, 2);
+  });
+
+  it("关闭ACME后吊销端点仍可通过门禁", async () => {
+    const service: any = new AcmeServerService();
+    service.issuer = {
+      async getAcmeAccessView() {
+        return { id: 2, caType: "intermediate", acmeEnabled: false, disabled: true, acmeConfig: null };
+      },
+    };
+    const ctx = { req: { socket: { remoteAddress: "127.0.0.1" } }, get: () => "", set() {} };
+    await assert.rejects(() => service.assertAccess(ctx, 2), /ACME服务未启用/);
+    await service.assertAccess(ctx, 2, { revoke: true });
   });
 });

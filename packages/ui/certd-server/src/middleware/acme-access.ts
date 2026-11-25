@@ -32,8 +32,10 @@ export class AcmeAccessMiddleware implements IWebMiddleware {
         return;
       }
       const caId = Number(segment);
+      // 吊销端点保留历史证书吊销能力：签发服务关闭/CA禁用后仍允许（账户认证与网络门禁不变）
+      const isRevoke = /\/revoke-cert\/?$/.test(decodedPath);
       try {
-        await service.assertAccess(ctx, caId);
+        await service.assertAccess(ctx, caId, { revoke: isRevoke });
       } catch (e: any) {
         const problem = e instanceof AcmeProblem ? e : new AcmeProblem("serverInternal", e?.message || "ACME访问校验失败", 500);
         service.respondError(ctx, problem);

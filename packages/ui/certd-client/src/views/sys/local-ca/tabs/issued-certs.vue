@@ -8,7 +8,7 @@
 </template>
 
 <script lang="tsx" setup>
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import { useI18n } from "/src/locales";
 import CaSelect from "../components/ca-select.vue";
@@ -31,6 +31,7 @@ const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context 
 
 async function onCaChange() {
   if (caId.value) {
+    await nextTick();
     await crudExpose.doRefresh();
   }
 }

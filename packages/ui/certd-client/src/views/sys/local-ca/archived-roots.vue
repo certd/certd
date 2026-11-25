@@ -24,7 +24,7 @@
         </template>
       </a-table-column>
     </a-table>
-    <LocalCaView ref="caViewRef" />
+    <LocalCaView ref="caViewRef" :on-export="exportArchived" :on-acme-enable="enableArchivedAcme" />
   </div>
 </template>
 
@@ -48,6 +48,20 @@ const list = ref<any[]>([]);
 const loading = ref(false);
 const refreshingId = ref<number | null>(null);
 const caViewRef = ref<any>();
+
+async function exportArchived(row: any) {
+  if (!props.runStepUp) {
+    return;
+  }
+  await props.runStepUp(async () => {
+    const res = await localCaApi.Export(row.id, getSecretAccessToken());
+    notification.success({ message: t("certd.localCa.exportSaved", { path: res.path }) });
+  });
+}
+
+async function enableArchivedAcme() {
+  notification.warning({ message: t("certd.localCa.archivedAcmeEnableDenied") });
+}
 
 function formatTime(value?: number) {
   return value ? dayjs(Number(value)).format("YYYY-MM-DD HH:mm:ss") : t("certd.localCa.archivedRootsNoCrl");

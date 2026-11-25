@@ -153,11 +153,6 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             helper: t("certd.localCa.fields.exportDisabledHelper"),
           },
         },
-        dnsServer: {
-          title: t("certd.localCa.fields.dnsServer"),
-          type: "text",
-          form: { col: { span: 24 }, component: { placeholder: "10.0.0.53:5353" }, helper: t("certd.localCa.fields.dnsServerHelper") },
-        },
         remark: {
           title: t("certd.localCa.fields.remark"),
           type: "textarea",
@@ -166,33 +161,39 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       },
       async onSubmit(form: any) {
         const doGenerate = async () => {
-          await localCaApi.Generate({
-            name: form.name,
-            subject: {
-              CN: form.subjectCn,
-              O: form.subjectO,
-              OU: form.subjectOU,
-              C: form.subjectC,
-              ST: form.subjectST,
-              L: form.subjectL,
-            },
-            keyType: form.keyType,
-            validityYears: form.validityYears,
-            usage: form.usage,
-            allowedDomains: parseAllowedDomains(form.allowedDomains),
-            maxValidityDays: form.maxValidityDays || 0,
-            baseUrl: form.baseUrl,
-            remark: form.remark,
-            exportDisabled: form.exportDisabled === true,
-            dnsServer: form.dnsServer,
-          });
-          notification.success({ message: t("certd.localCa.generateSuccess") });
-          await crudExpose.doRefresh();
+          try {
+            await localCaApi.Generate({
+              name: form.name,
+              subject: {
+                CN: form.subjectCn,
+                O: form.subjectO,
+                OU: form.subjectOU,
+                C: form.subjectC,
+                ST: form.subjectST,
+                L: form.subjectL,
+              },
+              keyType: form.keyType,
+              validityYears: form.validityYears,
+              usage: form.usage,
+              allowedDomains: parseAllowedDomains(form.allowedDomains),
+              maxValidityDays: form.maxValidityDays || 0,
+              baseUrl: form.baseUrl,
+              remark: form.remark,
+              exportDisabled: form.exportDisabled === true,
+              dnsServer: form.dnsServer,
+              verifyToken: getSecretAccessToken(),
+            });
+            notification.success({ message: t("certd.localCa.generateSuccess") });
+            await crudExpose.doRefresh();
+          } catch (e: any) {
+            notification.error({ message: String(e?.message || e) });
+            throw e;
+          }
         };
-        if (String(form.dnsServer || "").trim()) {
-          await openStepUp(t("certd.localCa.dnsStepUpTitle"), t("certd.localCa.dnsStepUpDesc"), doGenerate);
-        } else {
-          await doGenerate();
+        // 根CA生成属敏感操作：统一二次验证后提交（服务端强制校验新鲜令牌）
+        const verified = await openStepUp(t("certd.localCa.generateStepUpTitle"), t("certd.localCa.generateStepUpDesc"), doGenerate);
+        if (!verified) {
+          return false;
         }
       },
     });
@@ -353,7 +354,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           await crudExpose.doRefresh();
         });
         if (!verified) {
-          throw new Error(t("certd.localCa.stepUpCancelled"));
+          return false;
         }
       },
     });
@@ -460,7 +461,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           });
         });
         if (!verified) {
-          return;
+          return false;
         }
         model.success({
           title: t("certd.localCa.eabCreatedTitle"),
@@ -668,7 +669,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           });
         });
         if (!verified) {
-          return;
+          return false;
         }
         notification.success({ message: t("certd.localCa.importSuccess") });
         await crudExpose.doRefresh();
@@ -741,6 +742,14 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   }
 
   function openArchiveCa(row: any) {
+    if (!row.disabled) {
+      notification.warning({ message: t("certd.localCa.archivePrecheckDisabled") });
+      return;
+    }
+    if (row.caType === "intermediate" && !row.revoked && !row.rotatedToId) {
+      notification.warning({ message: t("certd.localCa.archivePrecheckRevoked") });
+      return;
+    }
     Modal.confirm({
       title: t("certd.localCa.archiveCaTitle"),
       content: t("certd.localCa.archiveCaDesc", { name: row.name }),
@@ -767,7 +776,10 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
               if (!confirmed) {
                 throw e;
               }
-              await localCaApi.Archive(row.id, true);
+              // 一次性令牌已被首次归档消费，强制重试须重新验证
+              await openStepUp(t("certd.localCa.archiveCaStepUpTitle"), t("certd.localCa.archiveCaDesc", { name: row.name }), async () => {
+                await localCaApi.Archive(row.id, true, getSecretAccessToken());
+              });
             } else {
               throw e;
             }

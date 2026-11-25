@@ -38,10 +38,15 @@ function buildLabel(ca: any) {
   return `${ca.name}${cn} 【${typeLabel}】`;
 }
 
+let loadSeq = 0;
 async function load() {
+  const seq = ++loadSeq;
   loading.value = true;
   try {
     const all = (await localCaApi.GetAdminOptions()) || [];
+    if (seq !== loadSeq) {
+      return;
+    }
     let list = all;
     if (props.acmeOnly) {
       list = all.filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !ca.disabled && !ca.revoked && !ca.rotatedToId);
@@ -69,7 +74,9 @@ async function load() {
       emit("change", undefined);
     }
   } finally {
-    loading.value = false;
+    if (seq === loadSeq) {
+      loading.value = false;
+    }
   }
 }
 

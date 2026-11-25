@@ -2,7 +2,7 @@ import crypto, { X509Certificate } from "node:crypto";
 import dns from "node:dns/promises";
 import { createCustomResolver } from "@certd/acme-client";
 import net from "node:net";
-import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { Config, Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { logger } from "@certd/basic";
 import { In, LessThan, MoreThan, Not, Repository } from "typeorm";
@@ -11,7 +11,7 @@ import type { AcmeIssuedCertificateStore } from "../acme-issued-certificate-stor
 import { getCsrDomains, matchAllowedDomains, normalizeDomains, verifyCertIssuedBy } from "../../cert/service/cert-utils.js";
 import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeEabEntity, AcmeOrderEntity } from "../entity/acme-server.js";
 import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "../protocol/acme-jws.js";
-import { DEFAULT_INTRANET_RULES, matchIpAllowlist, matchesIpRule } from "../protocol/acme-access.js";
+import { DEFAULT_INTRANET_RULES, matchIpAllowlist, matchesIpRule, resolveClientIp } from "../protocol/acme-access.js";
 import bcrypt from "bcryptjs";
 import { fetchHttpChallenge } from "../protocol/acme-network.js";
 import { isSameAcmeUrl } from "../protocol/acme-url.js";
@@ -62,6 +62,9 @@ export class AcmeServerService {
   @Inject("acmeIssuerBackend")
   issuer: AcmeIssuerBackend;
 
+  @Config("koa")
+  koaConfig: any;
+
   @Inject("acmeIssuedCertificateStore")
   certificateStore: AcmeIssuedCertificateStore;
 
@@ -87,7 +90,10 @@ export class AcmeServerService {
 
   respondError(ctx: any, error: any) {
     this.prepareResponse(ctx);
-    const problem = error instanceof AcmeProblem ? error : new AcmeProblem("serverInternal", error?.message || "服务器内部错误", 500);
+    if (!(error instanceof AcmeProblem)) {
+      logger.error(`[acme] internal error: ${error?.message || error}`);
+    }
+    const problem = error instanceof AcmeProblem ? error : new AcmeProblem("serverInternal", "服务器内部错误", 500);
     ctx.status = problem.status;
     ctx.type = "application/problem+json";
     ctx.body = {
@@ -123,7 +129,7 @@ export class AcmeServerService {
   async newAccount(ctx: any, caId: number, body: any) {
     await this.issuer.getAcmeCa(caId);
     const jws = decodeJws(body);
-    this.assertUrl(jws, ctx);
+    await this.assertUrl(jws, ctx, caId);
     if (!jws.header.jwk) {
       throw new AcmeProblem("malformed", "new-account必须使用jwk签名");
     }
@@ -171,7 +177,7 @@ export class AcmeServerService {
       await runTransaction(manager, async tx => {
         const consumed = await this.issuer.consumeAcmeEab(eab.id, tx);
         if (!consumed) {
-          throw new AcmeProblem("unauthorized", "EAB凭证使用次数已耗尽", 401);
+          throw new AcmeProblem("unauthorized", "EAB凭证不可用", 401);
         }
         await tx.getRepository(AcmeAccountEntity).save(account);
       });
@@ -398,7 +404,7 @@ export class AcmeServerService {
 
       let signed;
       try {
-        signed = await this.issuer.signCsrForAcme(freshCa.id, csrPem, freshConfig.validityDays);
+        signed = await this.issuer.signCsrForAcme(freshCa.id, csrPem, freshConfig.validityDays, tx);
       } catch (e: any) {
         logger.warn(`[acme] finalize signing failed ca=${ca.id} order=${order.id} account=${account.id}: ${e?.message || e}`);
         throw new AcmeProblem("serverInternal", `证书签发失败：${e.message}`, 500);
@@ -438,7 +444,7 @@ export class AcmeServerService {
   async revokeCertificate(ctx: any, caId: number, body: any) {
     let ca = await this.issuer.getCaForAcmeRevocation(caId);
     const jws = decodeJws(body);
-    this.assertUrl(jws, ctx);
+    await this.assertUrl(jws, ctx, caId);
     let account: AcmeAccountEntity | null = null;
     if (jws.header.jwk) {
       if (!verifyJwsSignature(jws, jws.header.jwk)) {
@@ -536,13 +542,13 @@ export class AcmeServerService {
     }
     const info = await this.issuer.getAcmeEabSecret(caId, header.kid);
     if (!info || info.disabled) {
-      throw new AcmeProblem("unauthorized", "EAB凭证不存在或已禁用", 401);
+      throw new AcmeProblem("unauthorized", "EAB凭证不可用", 401);
     }
     if (info.expiresTime && info.expiresTime <= Date.now()) {
-      throw new AcmeProblem("unauthorized", "EAB凭证已过期", 401);
+      throw new AcmeProblem("unauthorized", "EAB凭证不可用", 401);
     }
     if (info.maxUses > 0 && info.usedCount >= info.maxUses) {
-      throw new AcmeProblem("unauthorized", "EAB凭证使用次数已耗尽", 401);
+      throw new AcmeProblem("unauthorized", "EAB凭证不可用", 401);
     }
     const expected = crypto.createHmac("sha256", Buffer.from(info.hmacKey, "base64url")).update(`${eab.protected}.${eab.payload}`).digest();
     const actual = base64urlDecode(eab.signature);
@@ -627,7 +633,7 @@ export class AcmeServerService {
   private async verifyAccount(ctx: any, caId: number, body: any, consume = true) {
     await this.issuer.getAcmeCa(caId);
     const jws = decodeJws(body);
-    this.assertUrl(jws, ctx);
+    await this.assertUrl(jws, ctx, caId);
     const account = await this.resolveAccount(jws, caId);
     if (!verifyJwsSignature(jws, JSON.parse(account.jwk))) {
       throw new AcmeProblem("unauthorized", "JWS签名验证失败", 401);
@@ -700,12 +706,13 @@ export class AcmeServerService {
     return account;
   }
 
-  private assertUrl(jws: any, ctx: any) {
+  private async assertUrl(jws: any, ctx: any, caId: number) {
     const url = jws.header?.url;
     if (typeof url !== "string") {
       throw new AcmeProblem("malformed", "JWS缺少url");
     }
-    const expectedUrl = `${ctx.origin || `${ctx.protocol}://${ctx.host}`}${ctx.path}`;
+    // 期望地址取CA配置的Base URL，不信任可伪造的X-Forwarded-Host/Proto
+    const expectedUrl = `${await this.issuer.getCaBaseUrl(caId)}${ctx.path}`;
     if (!isSameAcmeUrl(url, expectedUrl)) {
       throw new AcmeProblem("unauthorized", "JWS url与请求地址不匹配", 401);
     }
@@ -816,6 +823,7 @@ export class AcmeServerService {
     if (order.status === "valid" || order.status === "invalid") {
       return;
     }
+    const readStatus = order.status;
     const authzIds = JSON.parse(order.authzIds);
     const authzs = await Promise.all(authzIds.map((id: string) => this.authzRepository.findOne({ where: { id } })));
     if (authzs.some(item => item?.status === "invalid")) {
@@ -825,7 +833,8 @@ export class AcmeServerService {
       order.status = "ready";
     }
     order.updateTime = new Date();
-    await this.orderRepository.save(order);
+    // 条件更新：仅当状态仍为读取时的非终态才回写，避免与finalize并发把valid覆盖回ready
+    await this.orderRepository.update({ id: orderId, status: readStatus } as any, { status: order.status, error: order.error, updateTime: order.updateTime } as any);
   }
 
   private assertNotExpired(entity: { expiresTime?: number }, message: string) {
@@ -926,7 +935,7 @@ export class AcmeServerService {
   }
 
   private parseAcmeConfig(value?: string) {
-    const defaults = { validityDays: 90, maxPendingOrders: 20, maxOrdersPerMinute: 10, acmeMode: "standard", internalToken: "", ipAllowlist: [] as string[], basicAuth: { enabled: false, username: "", passwordHash: "" }, requiredHeaders: [] as { name: string; value: string }[] };
+    const defaults = { validityDays: 90, maxPendingOrders: 20, maxOrdersPerMinute: 10, acmeMode: "standard", internalToken: "", clientIpSource: "xff", clientIpHeader: "", trustProxyCidrs: null as string[] | null, ipAllowlist: [] as string[], basicAuth: { enabled: false, username: "", passwordHash: "" }, requiredHeaders: [] as { name: string; value: string }[] };
     if (!value) {
       return defaults;
     }
@@ -939,6 +948,9 @@ export class AcmeServerService {
         // 缺省standard兼容legacy数据；local=仅本地（回环IP或Certd内部凭证）
         acmeMode: parsed.acmeMode === "local" ? "local" : "standard",
         internalToken: String(parsed.internalToken || ""),
+        clientIpSource: parsed.clientIpSource === "socket" || parsed.clientIpSource === "header" ? parsed.clientIpSource : "xff",
+        clientIpHeader: String(parsed.clientIpHeader || ""),
+        trustProxyCidrs: Array.isArray(parsed.trustProxyCidrs) ? parsed.trustProxyCidrs : null,
         ipAllowlist: Array.isArray(parsed.ipAllowlist) ? parsed.ipAllowlist : [],
         basicAuth: parsed.basicAuth && typeof parsed.basicAuth === "object" ? { enabled: parsed.basicAuth.enabled === true, username: String(parsed.basicAuth.username || ""), passwordHash: String(parsed.basicAuth.passwordHash || "") } : defaults.basicAuth,
         requiredHeaders: Array.isArray(parsed.requiredHeaders) ? parsed.requiredHeaders : [],
@@ -949,13 +961,19 @@ export class AcmeServerService {
   }
 
   /** ACME端点访问门禁：总开关→IP白名单→Basic认证→自定义头。任一不满足抛AcmeProblem。 */
-  async assertAccess(ctx: any, caId: number) {
+  async assertAccess(ctx: any, caId: number, opts?: { revoke?: boolean }) {
     const ca = await this.issuer.getAcmeAccessView(caId);
-    if (!ca || ca.caType !== "intermediate" || !ca.acmeEnabled) {
+    if (!ca || ca.caType !== "intermediate") {
       throw new AcmeProblem("unauthorized", "ACME服务未启用", 403);
     }
-    if (ca.revoked || ca.disabled || (ca.notAfter && Number(ca.notAfter) <= Date.now())) {
-      throw new AcmeProblem("unauthorized", "CA不可用", 403);
+    // 吊销历史证书不随签发服务关闭而禁止：保留账户认证/所有权校验与网络门禁
+    if (!opts?.revoke) {
+      if (!ca.acmeEnabled) {
+        throw new AcmeProblem("unauthorized", "ACME服务未启用", 403);
+      }
+      if (ca.revoked || ca.disabled || (ca.notAfter && Number(ca.notAfter) <= Date.now())) {
+        throw new AcmeProblem("unauthorized", "CA不可用", 403);
+      }
     }
     // 配置损坏fail-closed：有acmeConfig但解析失败时拒绝，避免门禁静默放行
     if (ca.acmeConfig) {
@@ -966,9 +984,9 @@ export class AcmeServerService {
       }
     }
     const config = this.parseAcmeConfig(ca.acmeConfig);
-    const ip = String(ctx.ip || "");
+    const ip = this.resolveGateClientIp(ctx, config);
     const token = String(ctx.get("x-certd-acme-token") || "");
-    const internalTrusted = config.acmeMode === "local" && !!config.internalToken && token === config.internalToken;
+    const internalTrusted = config.acmeMode === "local" && !!config.internalToken && this.constantTimeEquals(token, config.internalToken);
     // 仅本地档：只放行本机回环来源或携带内部凭证的Certd流水线请求
     if (config.acmeMode === "local") {
       const loopback = matchesIpRule(ip, "127.0.0.0/8") || matchesIpRule(ip, "::1/128");
@@ -1002,15 +1020,40 @@ export class AcmeServerService {
       const idx = decoded.indexOf(":");
       const user = idx >= 0 ? decoded.slice(0, idx) : "";
       const pass = idx >= 0 ? decoded.slice(idx + 1) : "";
-      if (user !== config.basicAuth.username || !config.basicAuth.passwordHash || !bcrypt.compareSync(pass, config.basicAuth.passwordHash)) {
+      if (!this.constantTimeEquals(user, config.basicAuth.username) || !config.basicAuth.passwordHash || !bcrypt.compareSync(pass, config.basicAuth.passwordHash)) {
         fail();
       }
     }
     for (const h of config.requiredHeaders) {
-      if (String(ctx.get(h.name) || "") !== h.value) {
+      if (!this.constantTimeEquals(String(ctx.get(h.name) || ""), h.value)) {
         throw new AcmeProblem("unauthorized", `缺少必需的请求头或值不匹配：${h.name}`, 403);
       }
     }
+  }
+
+  /** 常量时间字符串比较，避免门禁凭证/头值的计时侧信道。 */
+  private constantTimeEquals(a: string, b: string) {
+    const ba = Buffer.from(String(a));
+    const bb = Buffer.from(String(b));
+    if (ba.length !== bb.length) {
+      return false;
+    }
+    return crypto.timingSafeEqual(ba, bb);
+  }
+
+  /** 门禁客户端IP：socket直连不信任XFF；xff仅解析可信代理链；header取指定头（CDN/反代注入）。 */
+  private resolveGateClientIp(ctx: any, config: any) {
+    const socketIp = String(ctx.req?.socket?.remoteAddress || "");
+    if (config.clientIpSource === "socket") {
+      return socketIp;
+    }
+    if (config.clientIpSource === "header") {
+      const headerName = String(config.clientIpHeader || "").trim();
+      const value = headerName ? String(ctx.get(headerName) || "").trim() : "";
+      return value || socketIp;
+    }
+    const trusted = config.trustProxyCidrs || this.koaConfig?.trustProxyCidrs || ["127.0.0.0/8", "::1/128"];
+    return resolveClientIp(socketIp, ctx.get("x-forwarded-for"), trusted);
   }
 
   async cleanupExpired() {
