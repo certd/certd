@@ -397,9 +397,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async infoSafe(req: LocalCaScope) {
-    const safe = this.toSafe(await this.accessService.getOwnedCa(req));
+    const ca = await this.accessService.getOwnedCa(req);
+    const safe = this.toSafe(ca);
     delete (safe as any).dnsServer;
     (safe as any).effectiveBaseUrl = await this.crlService.resolveBaseUrl(safe as any);
+    (safe as any).effectiveDnsServer = await this.resolveEffectiveDnsServer(ca);
+    (safe as any).parentDnsServer = ca.parentId != null ? (await this.repository.findOne({ where: { id: ca.parentId } }))?.dnsServer || null : null;
     return safe;
   }
 
