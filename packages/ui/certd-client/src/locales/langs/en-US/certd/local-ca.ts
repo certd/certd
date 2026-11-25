@@ -292,6 +292,7 @@ export default {
   acmeContact: "Contact",
   acmeOrders: "Orders",
   acmeIssued: "Issued",
+  acmeToggleStatus: "Enable/Disable",
   acmeViewOrders: "View Orders",
   acmeOrdersTitle: "ACME Order Records",
   acmeOrderStatus: "Status",

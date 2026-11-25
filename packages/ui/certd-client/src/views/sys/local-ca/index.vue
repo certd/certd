@@ -116,6 +116,12 @@ function onTabChange(value: string) {
     color: rgba(255, 255, 255, 0.45);
   }
 }
+.page-local-ca .ant-table-tbody td.ant-table-cell:last-child {
+  white-space: nowrap;
+  .ant-btn-link {
+    padding: 0 4px;
+  }
+}
 .local-ca-row-actions {
   display: flex;
   align-items: center;

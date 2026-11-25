@@ -171,7 +171,37 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
       },
-      rowHandle: { show: false },
+      rowHandle: {
+        width: 200,
+        buttons: {
+          view: { show: false },
+          edit: {
+            type: "link",
+            text: t("common.edit"),
+            click: async ({ row }) => {
+              await context.openEditEab(row, () => crudExpose.doRefresh());
+            },
+          },
+          remove: { show: false },
+          copy: { show: false },
+          upgrade: {
+            type: "link",
+            text: t("certd.localCa.eabUpgrade"),
+            show: compute(({ row }) => !row.privileged),
+            click: async ({ row }) => {
+              await togglePrivileged(row);
+            },
+          },
+          downgrade: {
+            type: "link",
+            text: t("certd.localCa.eabDowngrade"),
+            show: compute(({ row }) => row.privileged === true),
+            click: async ({ row }) => {
+              await togglePrivileged(row);
+            },
+          },
+        },
+      },
       columns: {
         caId: {
           title: t("certd.localCa.eabCa"),
@@ -255,28 +285,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.common.createTime"),
           type: "datetime",
           column: { width: 170, cellRender: ({ value }) => formatTime(value) },
-        },
-        ops: {
-          title: t("certd.localCa.accessActions"),
-          type: "text",
-          column: {
-            width: 170,
-            component: {
-              name: {
-                props: { row: { type: Object, default: () => ({}) }, onEdit: { type: Function, default: null }, onToggle: { type: Function, default: null } },
-                setup(props: any) {
-                  return () =>
-                    h("div", { class: "local-ca-row-actions" }, [
-                      h(Button, { type: "link", size: "small", onClick: () => props.onEdit?.(props.row) }, () => t("common.edit")),
-                      h(Button, { type: "link", size: "small", onClick: () => props.onToggle?.(props.row) }, () => (props.row?.privileged ? t("certd.localCa.eabDowngrade") : t("certd.localCa.eabUpgrade"))),
-                    ]);
-                },
-              },
-              row: compute(({ row }) => row),
-              onEdit: (row: any) => context.openEditEab(row, () => crudExpose.doRefresh()),
-              onToggle: (row: any) => togglePrivileged(row),
-            },
-          },
         },
       },
     },

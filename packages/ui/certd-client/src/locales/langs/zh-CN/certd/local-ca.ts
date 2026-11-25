@@ -279,6 +279,7 @@ export default {
   acmeContact: "联系方式",
   acmeOrders: "订单数",
   acmeIssued: "已签发",
+  acmeToggleStatus: "启停",
   acmeViewOrders: "查看订单",
   acmeOrdersTitle: "ACME订单记录",
   acmeOrderStatus: "状态",

@@ -193,7 +193,37 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       toolbar: { show: false },
       actionbar: { show: false },
       table: { rowKey: "id" },
-      rowHandle: { show: false },
+      rowHandle: {
+        width: 240,
+        buttons: {
+          view: { show: false },
+          edit: { show: false },
+          remove: { show: false },
+          copy: { show: false },
+          viewEab: {
+            type: "link",
+            text: t("certd.localCa.acmeViewEab"),
+            show: compute(({ row }) => !!row.eabId),
+            click: async ({ row }) => {
+              await viewEab(row);
+            },
+          },
+          orders: {
+            type: "link",
+            text: t("certd.localCa.acmeViewOrders"),
+            click: async ({ row }) => {
+              await viewOrders(row);
+            },
+          },
+          status: {
+            type: "link",
+            text: t("certd.localCa.acmeToggleStatus"),
+            click: async ({ row }) => {
+              toggleStatus(row);
+            },
+          },
+        },
+      },
       columns: {
         status: {
           title: t("certd.localCa.acmeStatus"),
@@ -267,32 +297,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.common.createTime"),
           type: "datetime",
           column: { width: 170, cellRender: ({ value }) => formatTime(value) },
-        },
-        ops: {
-          title: t("certd.localCa.certActions"),
-          type: "text",
-          column: {
-            width: 220,
-            component: {
-              name: {
-                props: { row: { type: Object, default: () => ({}) }, onViewEab: { type: Function, default: null }, onViewOrders: { type: Function, default: null }, onToggleStatus: { type: Function, default: null } },
-                setup(props: any) {
-                  return () =>
-                    h("div", { class: "local-ca-row-actions" }, [
-                      props.row?.eabId ? h(Button, { type: "link", size: "small", onClick: () => props.onViewEab?.(props.row) }, () => t("certd.localCa.acmeViewEab")) : null,
-                      h(Button, { type: "link", size: "small", onClick: () => props.onViewOrders?.(props.row) }, () => t("certd.localCa.acmeViewOrders")),
-                      h(Button, { type: "link", size: "small", danger: props.row?.status === "valid", onClick: () => props.onToggleStatus?.(props.row) }, () =>
-                        props.row?.status === "valid" ? t("certd.common.disabled") : t("certd.common.enabled")
-                      ),
-                    ]);
-                },
-              },
-              row: compute(({ row }) => row),
-              onViewEab: (row: any) => viewEab(row),
-              onViewOrders: (row: any) => viewOrders(row),
-              onToggleStatus: (row: any) => toggleStatus(row),
-            },
-          },
         },
       },
     },
