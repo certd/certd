@@ -19,7 +19,8 @@ import { LocalCaService } from "../../../local-ca/service/local-ca-service.js";
 
 const serviceNames = ["ocrService", "certInfoService", "customAcmeProviderService"];
 // 服务端可信插件类型白名单：仅这些插件类型可获取本地CA签发能力（不信任插件自声明）
-const TRUSTED_LOCAL_CA_PLUGINS = new Set(["CertApplyLocalCa"]);
+// acmeAccount为内置授权类型，仅经handle控制器授予只读localCaGetter（用于仅本地档账号生成携带内部凭证）
+const TRUSTED_LOCAL_CA_PLUGINS = new Set(["CertApplyLocalCa", "acmeAccount"]);
 export class TaskServiceGetter implements IServiceGetter {
   private userId: number;
   private projectId: number;
@@ -142,11 +143,13 @@ export class TaskServiceBuilder {
   create(req: TaskServiceCreateReq) {
     const userId = req.userId;
     const projectId = req.projectId;
-    return new TaskServiceGetter(userId, projectId, this.appCtx);
+    return new TaskServiceGetter(userId, projectId, this.appCtx, req.pluginType, req.capabilities);
   }
 }
 
 export type TaskServiceCreateReq = {
   userId: number;
   projectId?: number;
+  pluginType?: string;
+  capabilities?: string[];
 };

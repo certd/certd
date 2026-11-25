@@ -61,7 +61,14 @@ export class HandleController extends BaseController {
     }
     const getAccessById = this.accessService.getById.bind(this.accessService);
     const accessGetter = new AccessGetter(userId, projectId, getAccessById);
-    const serviceGetter = this.taskServiceBuilder.create({ userId, projectId });
+    // 内置acmeAccount授权生成local-ca账号时需读取CA内部凭证，仅授予只读能力
+    const isBuiltinAcmeAccount = body.typeName === "acmeAccount";
+    const serviceGetter = this.taskServiceBuilder.create({
+      userId,
+      projectId,
+      pluginType: isBuiltinAcmeAccount ? body.typeName : undefined,
+      capabilities: isBuiltinAcmeAccount ? ["localCaGetter"] : undefined,
+    });
     const accessContext = {
       http,
       logger,
