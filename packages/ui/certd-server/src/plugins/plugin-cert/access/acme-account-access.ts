@@ -235,6 +235,10 @@ export class AcmeAccountAccess extends BaseAccess {
       return this.directoryUrl;
     }
     const provider = await this.getProvider();
+    // 软停用的颁发机构拒绝生成/刷新账号（配置保留，运行时同样拒绝）
+    if (provider?.enabled === false) {
+      throw new Error(`颁发机构【${provider.title || this.caType}】已停用，请到「系统设置-流水线设置」中启用后再生成账号`);
+    }
     if (provider?.builtIn) {
       return acme.getDirectoryUrl({ sslProvider: this.caType, pkType: "rsa_2048" });
     }
@@ -260,7 +264,7 @@ export class AcmeAccountAccess extends BaseAccess {
     }
     const providers = (await customAcmeProviderService.getAll()) || [];
     return providers
-      .filter(provider => provider.sslProvider && provider.title)
+      .filter(provider => provider.sslProvider && provider.title && provider.enabled !== false)
       .map(provider => ({
         value: provider.sslProvider,
         label: provider.builtIn ? provider.title : `${provider.title}（自定义ACME）`,

@@ -13,6 +13,7 @@ import bcrypt from "bcryptjs";
 import { randomId } from "../../acme-server/protocol/acme-jws.js";
 import { LocalCaAccessService, LocalCaScope } from "./local-ca-access-service.js";
 import { LocalCaCrlService } from "./local-ca-crl-service.js";
+import { LocalCaProviderSyncService } from "./local-ca-provider-sync-service.js";
 import { normalizeAllowedDomains, sha256Hex } from "./local-ca-crypto.js";
 
 function randomEabHmacKey() {
@@ -44,6 +45,9 @@ export class LocalCaAcmeService {
 
   @Inject()
   crlService: LocalCaCrlService;
+
+  @Inject()
+  providerSync: LocalCaProviderSyncService;
 
   private assertAcmeCaUsable(ca: LocalCaEntity | null) {
     if (!ca || ca.caType !== "intermediate" || !ca.acmeEnabled) {
@@ -135,6 +139,7 @@ export class LocalCaAcmeService {
       // 关闭ACME时原子关闭直签并失效未完成直签订单，避免重新启用后旧订单复活
       await this.invalidateAllDirectOrders(ca, true);
       ca.acmeEnabled = false;
+      await this.providerSync.removeForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync remove failed ca=${ca.id}: ${e?.message || e}`));
       logger.info(`[local-ca] acme disabled ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
       return;
     }
@@ -146,6 +151,7 @@ export class LocalCaAcmeService {
     }
     ca.updateTime = new Date();
     await this.repository.save(ca);
+    await this.providerSync.syncForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${ca.id}: ${e?.message || e}`));
     logger.info(`[local-ca] acme enabled ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
   }
 

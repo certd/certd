@@ -62,10 +62,22 @@ describe("AutoFix", () => {
         return true;
       },
     } as any;
+    autoFix.localCaProviderAdoptFix = {
+      async init() {
+        calls.push("local-ca-provider-adopt");
+        return true;
+      },
+    } as any;
+    autoFix.localCaAcmeAccountCaTypeFix = {
+      async init() {
+        calls.push("local-ca-account-catype");
+        return true;
+      },
+    } as any;
 
     await autoFix.init();
 
-    assert.deepEqual(calls, ["google", "cert", "suite", "legacy-acme", "common-eab-acme", "reverse-proxy"]);
+    assert.deepEqual(calls, ["google", "cert", "suite", "legacy-acme", "common-eab-acme", "reverse-proxy", "local-ca-provider-adopt", "local-ca-account-catype"]);
     assert.equal(savedSetting.fixed["google-common-eab-account-key"], true);
     assert.equal(savedSetting.fixed["oauth-subtype-bound-type"], true);
     assert.equal(savedSetting.fixed["cert-info-wildcard-domain-count"], true);
@@ -73,6 +85,8 @@ describe("AutoFix", () => {
     assert.equal(savedSetting.fixed["legacy-acme-account-access"], true);
     assert.equal(savedSetting.fixed["common-eab-to-acme-account"], true);
     assert.equal(savedSetting.fixed["reverse-proxy-migrate"], true);
+    assert.equal(savedSetting.fixed["local-ca-provider-adopt"], true);
+    assert.equal(savedSetting.fixed["local-ca-acme-account-catype"], true);
   });
 
   it("initializes missing fixed map", async () => {
@@ -90,6 +104,8 @@ describe("AutoFix", () => {
     autoFix.legacyAcmeAccountAccessFix = { async init() {} } as any;
     autoFix.commonEabToAcmeAccountFix = { async init() {} } as any;
     autoFix.reverseProxyMigrateFix = { async init() {} } as any;
+    autoFix.localCaProviderAdoptFix = { async init() {} } as any;
+    autoFix.localCaAcmeAccountCaTypeFix = { async init() {} } as any;
 
     await autoFix.init();
   });

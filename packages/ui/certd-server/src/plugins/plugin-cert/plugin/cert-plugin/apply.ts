@@ -747,6 +747,10 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     if (!provider) {
       throw new Error(`未找到颁发机构【${this.sslProvider}】的配置，请到「系统设置-流水线设置」中检查自定义ACME配置`);
     }
+    // 软停用：enabled=false 的颁发机构保留配置但拒绝选用（本地CA同步条目可单独暂停）
+    if (provider.enabled === false) {
+      throw new Error(`颁发机构【${provider.title || this.sslProvider}】已停用，请到「系统设置-流水线设置」中启用后再申请`);
+    }
     return provider;
   }
 
@@ -757,7 +761,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     const customAcmeProviderService: any = await this.ctx.serviceGetter.get("customAcmeProviderService");
     const providers = (await customAcmeProviderService.getAll()) || [];
     return providers
-      .filter(provider => provider.sslProvider && provider.title)
+      .filter(provider => provider.sslProvider && provider.title && provider.enabled !== false)
       .map(provider => ({
         value: provider.sslProvider,
         label: provider.builtIn ? provider.title : `${provider.title}（自定义ACME）`,

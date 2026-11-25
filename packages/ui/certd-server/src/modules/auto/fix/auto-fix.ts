@@ -7,6 +7,8 @@ import { SuiteContentWildcardDomainCountFix } from "./suite-content-wildcard-dom
 import { LegacyAcmeAccountAccessFix } from "./legacy-acme-account-access-fix.js";
 import { CommonEabToAcmeAccountFix } from "./common-eab-to-acme-account-fix.js";
 import { ReverseProxyMigrateFix } from "./reverse-proxy-migrate-fix.js";
+import { LocalCaProviderAdoptFix } from "./local-ca-provider-adopt-fix.js";
+import { LocalCaAcmeAccountCaTypeFix } from "./local-ca-acme-account-catype-fix.js";
 
 type AutoFixTask = {
   key: string;
@@ -42,6 +44,12 @@ export class AutoFix {
   @Inject()
   reverseProxyMigrateFix: ReverseProxyMigrateFix;
 
+  @Inject()
+  localCaProviderAdoptFix: LocalCaProviderAdoptFix;
+
+  @Inject()
+  localCaAcmeAccountCaTypeFix: LocalCaAcmeAccountCaTypeFix;
+
   async init() {
     const setting = await this.sysSettingsService.getSetting<SysAutoFixSetting>(SysAutoFixSetting);
     setting.fixed = setting.fixed || {};
@@ -73,6 +81,14 @@ export class AutoFix {
       {
         key: "reverse-proxy-migrate",
         fix: this.reverseProxyMigrateFix,
+      },
+      {
+        key: "local-ca-provider-adopt",
+        fix: this.localCaProviderAdoptFix,
+      },
+      {
+        key: "local-ca-acme-account-catype",
+        fix: this.localCaAcmeAccountCaTypeFix,
       },
     ];
 

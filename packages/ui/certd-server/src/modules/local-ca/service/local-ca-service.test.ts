@@ -220,7 +220,7 @@ function createService() {
   const accessService = new LocalCaAccessService();
   const crlService = new LocalCaCrlService();
   const acmeService = new LocalCaAcmeService();
-  const sharedKeys = ["repository", "pipelineRepository", "adminRepository", "grantRepository", "acmeEabRepository", "acmeOrderRepository", "encryptService", "certInfoService", "certRevocationService", "sysSettingsService"];
+  const sharedKeys = ["repository", "pipelineRepository", "adminRepository", "grantRepository", "acmeEabRepository", "acmeOrderRepository", "encryptService", "certInfoService", "certRevocationService", "sysSettingsService", "providerSync"];
   for (const sub of [accessService, crlService, acmeService]) {
     for (const key of sharedKeys) {
       Object.defineProperty(sub, key, {
@@ -238,6 +238,13 @@ function createService() {
   service.accessService = accessService;
   service.crlService = crlService;
   service.acmeService = acmeService;
+  // 颁发机构同步钩子为best-effort，单测用no-op mock（同步逻辑由local-ca-provider-sync-service.test.ts覆盖）
+  service.providerSync = {
+    async syncForCa() {},
+    async removeForCa() {},
+    async onRotated() {},
+    async reconcileAll() {},
+  } as any;
 
   return { service, store, encryptService, revocations };
 }

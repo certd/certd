@@ -20,6 +20,7 @@ import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
 import { LocalCaAccessService, LocalCaScope } from "./local-ca-access-service.js";
 import { LocalCaCrlService, normalizeBaseUrl } from "./local-ca-crl-service.js";
 import { LocalCaAcmeService } from "./local-ca-acme-service.js";
+import { LocalCaProviderSyncService } from "./local-ca-provider-sync-service.js";
 import {
   createIntermediateCa,
   createRootCa,
@@ -203,6 +204,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   @Inject()
   acmeService: LocalCaAcmeService;
+
+  @Inject()
+  providerSync: LocalCaProviderSyncService;
 
   //@ts-ignore
   getRepository() {
@@ -579,6 +583,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     old.rotatedToId = res.id;
     old.remark = `已轮换到新CA(ID:${res.id})，ACME自动指向新CA`;
     await this.update(old);
+    await this.providerSync.onRotated(old.id, res.id).catch(e => logger.error(`[local-ca] provider rotate sync failed ${old.id}->${res.id}: ${e?.message || e}`));
     logger.info(`[local-ca] intermediate rotated old=${old.id} new=${res.id} root=${root.id} admin=${req.userId}`);
     return { id: res.id, oldId: old.id };
   }
@@ -1091,6 +1096,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       ca.exportDisabled = req.exportDisabled === true;
     }
     await this.update(ca);
+    await this.providerSync.syncForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${ca.id}: ${e?.message || e}`));
   }
 
   async listIssuedCerts(req: LocalCaScope) {
@@ -1387,6 +1393,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       throw e;
     }
 
+    await this.providerSync.removeForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync remove failed ca=${ca.id}: ${e?.message || e}`));
     logger.info(`[local-ca] intermediate revoked ca=${ca.id} root=${root.id} serial=${serialNumber} crl=${crlNumber} user=${req.userId}`);
     return { serialNumber, crlNumber };
   }
@@ -1478,6 +1485,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     ca.disabled = req.disabled;
     await this.update(ca);
+    await this.providerSync.syncForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${ca.id}: ${e?.message || e}`));
     logger.info(`[local-ca] ca ${req.disabled ? "disabled" : "enabled"} ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
   }
 
@@ -1537,6 +1545,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     ca.deleted = true;
     ca.disabled = true;
     await this.update(ca);
+    await this.providerSync.removeForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync remove failed ca=${ca.id}: ${e?.message || e}`));
     logger.info(`[local-ca] ca archived ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
   }
 
