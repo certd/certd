@@ -29,6 +29,7 @@ export const useUserStore = defineStore({
   state: (): UserState => ({
     // user info
     userInfo: null,
+    localCaAccessible: false,
     // token
     token: undefined,
   }),
@@ -115,6 +116,16 @@ export const useUserStore = defineStore({
     async getUserInfoAction(): Promise<UserInfoRes> {
       const userInfo = await UserApi.mine();
       this.setUserInfo(userInfo);
+      // 分公司维护员/被授权用户可见本地CA入口（数据由后端CA ACL scoped）
+      try {
+        const [adminCas, grantedCas] = await Promise.all([
+          request({ url: "/sys/local-ca/adminOptions", method: "post", data: {} }).catch(() => []),
+          request({ url: "/sys/local-ca/options", method: "post", data: {} }).catch(() => []),
+        ]);
+        this.localCaAccessible = (adminCas || []).length > 0 || (grantedCas || []).length > 0;
+      } catch {
+        this.localCaAccessible = false;
+      }
       return userInfo;
     },
 

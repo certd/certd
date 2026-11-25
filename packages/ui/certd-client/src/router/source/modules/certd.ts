@@ -1,4 +1,5 @@
 import { useProjectStore } from "/@/store/project";
+import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 
 export const certdResources = [
@@ -13,6 +14,21 @@ export const certdResources = [
       order: 0,
     },
     children: [
+      {
+        title: "certd.navigation.sysResources.localCa",
+        name: "CertdLocalCaManager",
+        path: "/cert/local-ca",
+        component: "/sys/local-ca/index.vue",
+        meta: {
+          show: () => {
+            const userStore = useUserStore();
+            return userStore.isAdmin || userStore.localCaAccessible;
+          },
+          icon: "ph:certificate",
+          auth: true,
+          keepAlive: true,
+        },
+      },
       {
         title: "certd.navigation.sysResources.myProjectManager",
         name: "MyProjectManager",
