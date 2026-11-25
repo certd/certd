@@ -86,11 +86,14 @@ function createPlugin(leaf: any, opts: { caDisabled?: boolean; caType?: string; 
   return { plugin, calls };
 }
 
-function setTrustedProviders(plugin: any, urls: string[]) {
+function setProviderService(plugin: any, providers: any[]) {
   const orig = plugin.ctx.serviceGetter.get.bind(plugin.ctx.serviceGetter);
   plugin.ctx.serviceGetter.get = async (name: string) => {
     if (name === "customAcmeProviderService") {
-      return { getAll: async () => urls.map(u => ({ directoryUrl: u })) };
+      return {
+        getAll: async () => providers,
+        getBySslProvider: async (sslProvider: string) => providers.find(item => item.sslProvider === sslProvider),
+      };
     }
     return orig(name);
   };
@@ -169,15 +172,64 @@ describe("CertApplyLocalCa", () => {
     assert.equal(called, false);
   });
 
-  it("远程ACME账号绑定特权EAB时自动匹配返回空计划", async () => {
+  it("存量remote-acme任务运行时给出明确迁移引导报错", async () => {
     const leaf = await createLeaf();
     const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
-    plugin.mode = "remote-acme";
-    plugin.directoryUrl = "https://remote.example.com/api/acme/9/directory";
+    (plugin as any).mode = "remote-acme";
+    await assert.rejects(() => plugin.onInit(), /远程ACME模式已移除/);
+  });
+
+  it("本地ACME由所选颁发机构localCaId推导caId，覆盖旧caId避免冲突", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "local-acme";
+    plugin.caId = 1;
+    (plugin as any).sslProvider = "local-ca-2";
+    setProviderService(plugin, [{ sslProvider: "local-ca-2", localCaId: 2, directoryUrl: "https://certd.example.com/api/acme/2/directory" }]);
+    await (plugin as any).ensureLocalAcmeCaId();
+    assert.equal(plugin.caId, 2);
+  });
+
+  it("颁发机构无localCaId标记时从Directory URL解析caId", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "local-acme";
+    plugin.caId = 0;
+    (plugin as any).sslProvider = "local-ca-7";
+    setProviderService(plugin, [{ sslProvider: "local-ca-7", directoryUrl: "https://certd.example.com/api/acme/7/directory" }]);
+    await (plugin as any).ensureLocalAcmeCaId();
+    assert.equal(plugin.caId, 7);
+  });
+
+  it("legacy任务未选颁发机构时从账号Directory URL推导caId", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "local-acme";
+    plugin.caId = 0;
     plugin.acmeAccountAccessId = 1;
-    (plugin as any).isDirectIssueMode = async () => true;
-    const plan = await (plugin as any).createDomainsVerifyPlanByAuto(["remote.example.com"], null);
-    assert.deepEqual(plan, {});
+    (plugin as any).getAccess = async () => ({ account: JSON.stringify({ directoryUrl: "https://certd.example.com/api/acme/3/directory", accountKey: "k", accountUri: "https://certd.example.com/api/acme/3/account/1" }) });
+    await (plugin as any).ensureLocalAcmeCaId();
+    assert.equal(plugin.caId, 3);
+  });
+
+  it("颁发机构下拉仅列已同步、启用且有权使用的中间CA，并带标记", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    setProviderService(plugin, [
+      { sslProvider: "local-ca-1", localCaId: 1, title: "北京分公司中间CA G2", enabled: true },
+      { sslProvider: "local-ca-2", localCaId: 2, title: "停用CA", enabled: false },
+      { sslProvider: "extca", title: "外部CA" },
+      { sslProvider: "local-ca-3", localCaId: 3, title: "无权CA" },
+    ]);
+    const orig = plugin.ctx.serviceGetter.get.bind(plugin.ctx.serviceGetter);
+    plugin.ctx.serviceGetter.get = async (name: string) => {
+      if (name === "localCaGetter") {
+        return { listOptions: async () => [{ id: 1 }, { id: 2 }] };
+      }
+      return orig(name);
+    };
+    const options = await plugin.onSslProviderList();
+    assert.deepEqual(options, [{ value: "local-ca-1", label: "北京分公司中间CA G2 【local-ca-1】【中间CA】" }]);
   });
 
   it("即使旧证书未到期，直接签发模式也会先拒绝已禁用的CA", async () => {
@@ -188,88 +240,12 @@ describe("CertApplyLocalCa", () => {
     await assert.rejects(() => plugin.condition(), /本地CA已禁用/);
   });
 
-  it("普通用户不能把远程ACME指向本机/链路本地地址（须用可信颁发机构）", async () => {
-    const leaf = await createLeaf();
-    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
-    plugin.mode = "remote-acme";
-    plugin.directoryUrl = "http://127.0.0.1:7001/api/acme/9/directory";
-    (plugin.ctx.user as any).role = "user";
-    await assert.rejects(() => (plugin as any).getResolvedDirectoryUrl(), /普通用户远程ACME必须使用管理员/);
-  });
-
-  it("普通用户使用完全匹配的可信Directory URL允许通过", async () => {
-    const leaf = await createLeaf();
-    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
-    plugin.mode = "remote-acme";
-    plugin.directoryUrl = "https://acme.example.com/acme/directory";
-    (plugin.ctx.user as any).role = "user";
-    setTrustedProviders(plugin, ["https://acme.example.com/acme/directory"]);
-    assert.equal(await (plugin as any).getResolvedDirectoryUrl(), "https://acme.example.com/acme/directory");
-  });
-
-  it("普通用户相同origin不同path不被视为可信", async () => {
-    const leaf = await createLeaf();
-    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
-    plugin.mode = "remote-acme";
-    plugin.directoryUrl = "https://acme.example.com/another/path";
-    (plugin.ctx.user as any).role = "user";
-    setTrustedProviders(plugin, ["https://acme.example.com/acme/directory"]);
-    await assert.rejects(() => (plugin as any).getResolvedDirectoryUrl(), /普通用户远程ACME必须使用管理员/);
-  });
-
-  it("普通用户不同端口不被视为可信", async () => {
-    const leaf = await createLeaf();
-    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
-    plugin.mode = "remote-acme";
-    plugin.directoryUrl = "https://acme.example.com:8443/acme/directory";
-    (plugin.ctx.user as any).role = "user";
-    setTrustedProviders(plugin, ["https://acme.example.com/acme/directory"]);
-    await assert.rejects(() => (plugin as any).getResolvedDirectoryUrl(), /普通用户远程ACME必须使用管理员/);
-  });
-
-  it("可信URL规范化忽略尾部斜杠与默认端口", async () => {
-    const leaf = await createLeaf();
-    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
-    plugin.mode = "remote-acme";
-    plugin.directoryUrl = "https://acme.example.com:443/acme/directory/";
-    (plugin.ctx.user as any).role = "user";
-    setTrustedProviders(plugin, ["https://acme.example.com/acme/directory"]);
-    assert.equal(await (plugin as any).getResolvedDirectoryUrl(), "https://acme.example.com:443/acme/directory/");
-  });
-
-  it("管理员非可信内网Directory URL仍被SSRF拦截", async () => {
-    const leaf = await createLeaf();
-    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
-    plugin.mode = "remote-acme";
-    plugin.directoryUrl = "http://127.0.0.1:7001/api/acme/9/directory";
-    (plugin.ctx.user as any).role = "admin";
-    await assert.rejects(() => (plugin as any).getResolvedDirectoryUrl(), /本机\/私网\/链路本地/);
-  });
-
-  it("管理员配置的可信内网Directory URL允许使用", async () => {
-    const leaf = await createLeaf();
-    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
-    plugin.mode = "remote-acme";
-    plugin.directoryUrl = "http://127.0.0.1:7001/api/acme/9/directory";
-    (plugin.ctx.user as any).role = "admin";
-    setTrustedProviders(plugin, ["http://127.0.0.1:7001/api/acme/9/directory"]);
-    assert.equal(await (plugin as any).getResolvedDirectoryUrl(), "http://127.0.0.1:7001/api/acme/9/directory");
-  });
-
   it("缺少有效账户凭证时不判定为直签", async () => {
     const leaf = await createLeaf();
     const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
-    plugin.mode = "remote-acme";
-    plugin.directoryUrl = "https://acme.example.com/acme/directory";
+    plugin.mode = "local-acme";
     plugin.acmeAccountAccessId = 1;
-    setTrustedProviders(plugin, ["https://acme.example.com/acme/directory"]);
-    const originalFetch = (globalThis as any).fetch;
-    (globalThis as any).fetch = async () => ({ status: 302, ok: false, async json() { return {}; } });
-    try {
-      assert.equal(await (plugin as any).isDirectIssueMode({ id: 1 }), false);
-    } finally {
-      (globalThis as any).fetch = originalFetch;
-    }
+    assert.equal(await (plugin as any).isDirectIssueMode({ id: 1 }), false);
   });
 
   it("真实续期判断不会因域名过滤而每次重签", async () => {

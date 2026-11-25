@@ -12,11 +12,8 @@ import { filterAllowedDomains, verifyCertIssuedBy, type LocalCaKeyType } from ".
 import { parseLocalCaDirectory } from "../../../../../modules/local-ca/service/local-ca-directory.js";
 import { isSameAcmeUrl } from "../../../../../modules/acme-server/protocol/acme-url.js";
 import * as acme from "@certd/acme-client";
-import net from "node:net";
-import dns from "node:dns/promises";
-import { isBlockedAddress } from "./ssrf.js";
 
-export type LocalCaApplyMode = "local-direct" | "local-acme" | "remote-acme";
+export type LocalCaApplyMode = "local-direct" | "local-acme";
 
 type LocalCaSubscribeInfo = {
   id: number;
@@ -33,7 +30,7 @@ type LocalCaSubscribeInfo = {
 };
 
 
-const ACME_MODES: LocalCaApplyMode[] = ["local-acme", "remote-acme"];
+const ACME_MODES: LocalCaApplyMode[] = ["local-acme"];
 
 @IsTaskPlugin({
   name: "CertApplyLocalCa",
@@ -41,7 +38,7 @@ const ACME_MODES: LocalCaApplyMode[] = ["local-acme", "remote-acme"];
   title: "本地CA证书申请",
   group: pluginGroups.cert.key,
   serviceCapabilities: ["localCaGetter", "localCaSignerGetter"],
-  desc: "支持本地CA直接签发、本地ACME与远程ACME三种模式；客户端需信任对应根CA，建议用于内部/测试环境",
+  desc: "支持本地CA直接签发与本地ACME两种模式；客户端需信任对应根CA，建议用于内部/测试环境。远程ACME请用通用证书申请任务+管理员配置的自定义颁发机构",
   default: {
     strategy: {
       runStrategy: RunStrategy.AlwaysRun,
@@ -50,21 +47,19 @@ const ACME_MODES: LocalCaApplyMode[] = ["local-acme", "remote-acme"];
   i18n: {
     "en-US": {
       title: "Request Certificate (Local CA)",
-      desc: "Issue certificates through local direct signing, local ACME, or a remote ACME server. Clients must trust the corresponding root CA.",
+      desc: "Issue certificates through local direct signing or local ACME. Clients must trust the corresponding root CA. For remote ACME use the generic CertApply task with an admin-configured custom provider.",
       input: {
         mode: {
           title: "Issuance Mode",
           optionsMapping: {
             "local-direct": "Local Direct Signing",
             "local-acme": "Local ACME",
-            "remote-acme": "Remote ACME",
           },
-          helper: "Local direct signing skips ACME/domain validation. Local/remote ACME follows the ACME protocol and can skip validation only when the server enables EAB direct issue.",
+          helper: "Local direct signing skips ACME/domain validation. Local ACME follows the ACME protocol and can skip validation only when the EAB is privileged.",
         },
         caId: { title: "CA", helper: "Local direct signing requires an intermediate CA. Local ACME requires ACME to be enabled on that CA." },
         keyType: { title: "Key Type" },
         validityDays: { title: "Validity (Days)", helper: "Capped by the CA's remaining validity." },
-        directoryUrl: { title: "ACME Directory URL", helper: "Remote ACME directory. Loopback/link-local addresses are admin-only. Example: https://certd.example.com/api/acme/12/directory" },
         renewDays: { title: "Renew Before (Days)", helper: "Reissue when the current certificate expires within this window." },
         privateKeyType: { title: "Key Algorithm" },
       },
@@ -81,12 +76,11 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       options: [
         { value: "local-direct", label: "本地CA直接签发" },
         { value: "local-acme", label: "本地ACME服务" },
-        { value: "remote-acme", label: "远程ACME服务" },
       ],
     },
     required: true,
     order: -10000,
-    helper: "直接签发不经过ACME和域名校验；本地/远程ACME走标准协议，仅当服务端开启EAB直签时可跳过域名校验。远程ACME填写公网地址，本机/链路本地地址仅管理员可用",
+    helper: "直接签发不经过ACME和域名校验；本地ACME走标准协议，仅当EAB为特权凭证时可跳过域名校验。远程ACME请改用通用证书申请任务",
   })
   mode: LocalCaApplyMode = "local-direct";
 
@@ -204,25 +198,30 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   })
   validityDays = 365;
 
-  @TaskInput({
-    title: "远程ACME Directory URL",
-    helper: "远程ACME模式必填；本机/链路本地地址仅管理员可用。例如 https://certd.example.com/api/acme/12/directory",
-    component: {
-      placeholder: "https://your-certd.example.com/api/acme/12/directory",
-    },
-    order: -9980,
-  })
-  directoryUrl = "";
-
-
   private localCa?: LocalCaSubscribeInfo;
   private resolvedDirectoryUrl?: string;
   private directCertMeta?: { localCaId: number; serialNumber: string };
   private directIssueCache?: boolean;
 
-  /** 本地ACME模式：ACME账号已绑定中间CA，未选caId时自动从账号Directory URL推导，避免重复选择。 */
+  /** 本地ACME：caId由所选颁发机构(local-ca-N)推导，兼容旧任务从账号Directory URL推导，避免双选冲突。 */
   private async ensureLocalAcmeCaId() {
-    if (this.mode === "local-acme" && !this.caId && this.acmeAccountAccessId) {
+    if (this.mode !== "local-acme") {
+      return;
+    }
+    if (this.sslProvider && String(this.sslProvider).startsWith("local-ca-")) {
+      try {
+        const service: any = await this.ctx.serviceGetter.get("customAcmeProviderService");
+        const provider = await service?.getBySslProvider?.(this.sslProvider);
+        const caId = provider?.localCaId ?? parseLocalCaDirectory(provider?.directoryUrl)?.caId;
+        if (caId) {
+          this.caId = Number(caId);
+          return;
+        }
+      } catch {
+        // 落到账号推导
+      }
+    }
+    if (!this.caId && this.acmeAccountAccessId) {
       try {
         const access: any = await this.getAccess(this.acmeAccountAccessId);
         const account = this.parseAcmeAccount(access.account);
@@ -236,12 +235,27 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     }
   }
 
+  /** 本地ACME颁发机构下拉：仅列已同步(localCaId)、启用、且当前用户有权使用的中间CA。 */
+  async onSslProviderList() {
+    const service: any = await this.ctx.serviceGetter.get("customAcmeProviderService");
+    const providers = (await service?.getAll?.()) || [];
+    const getter: any = await this.ctx.serviceGetter.get("localCaGetter");
+    const usable = (await getter?.listOptions?.()) || [];
+    const usableIds = new Set(usable.map((item: any) => Number(item.id)));
+    return providers
+      .filter((provider: any) => provider.localCaId != null && provider.enabled !== false && usableIds.has(Number(provider.localCaId)))
+      .map((provider: any) => ({
+        value: provider.sslProvider,
+        label: `${provider.title} 【local-ca-${provider.localCaId}】【中间CA】`,
+      }));
+  }
+
   async onInit() {
     if (!this.mode) {
       this.mode = "local-direct";
     }
-    if (this.mode === "remote-acme") {
-      await this.assertRemoteUrlAllowed();
+    if ((this.mode as string) === "remote-acme") {
+      throw new Error("远程ACME模式已移除：请改用通用『证书申请(CertApply)』任务，由管理员在系统设置-流水线设置中配置自定义ACME颁发机构");
     }
     if (this.mode === "local-acme") {
       await this.ensureLocalAcmeCaId();
@@ -252,11 +266,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   getCheckChangeInputKeys(): string[] {
     // 仅纳入任务输入中稳定存在的字段，避免插件默认空字符串(pfxPassword/directoryUrl)
     // 与任务输入缺失字段不一致导致每次运行都误判参数变化而重签。
-    const keys = ["domains", "mode", "caId", "keyType", "validityDays"];
-    if (this.mode === "remote-acme") {
-      keys.push("directoryUrl");
-    }
-    return keys;
+    return ["domains", "mode", "caId", "keyType", "validityDays"];
   }
 
   async condition() {
@@ -279,9 +289,6 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   async doCertApply(): Promise<CertReader> {
     if (this.mode === "local-direct") {
       return await this.doLocalDirect();
-    }
-    if (this.mode === "remote-acme") {
-      await this.assertRemoteUrlAllowed();
     }
     await this.ensureLocalAcmeCaId();
     const directoryUrl = await this.getResolvedDirectoryUrl();
@@ -329,22 +336,6 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     return await CertApplyBaseConvertPlugin.prototype.emitCertApplySuccess.call(this, issuer ? { extensions: { issuer } } : undefined);
   }
 
-  private async isTrustedAcmeProvider(url: URL): Promise<boolean> {
-    try {
-      const service: any = await this.ctx.serviceGetter.get("customAcmeProviderService");
-      const providers = (await service?.getAll?.()) || [];
-      return providers.some((provider: any) => {
-        try {
-          return provider?.directoryUrl && isSameAcmeUrl(url.href, provider.directoryUrl);
-        } catch {
-          return false;
-        }
-      });
-    } catch {
-      return false;
-    }
-  }
-
   private async resolveIssuer(): Promise<{ type: string; id: string; serialNumber?: string } | null> {
     if (!this.cert?.crt) {
       return null;
@@ -363,21 +354,6 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       }
       return { type: "local-ca", id: String(ca.id), serialNumber };
     }
-    // remote-acme：仅当远程目录确实是本实例Local CA且证书匹配时才关联；外部CA不写本地关联
-    const directoryUrl = await this.getResolvedDirectoryUrl();
-    const candidate = parseLocalCaDirectory(directoryUrl);
-    if (!candidate) {
-      return null;
-    }
-    try {
-      const getter = await this.ctx.serviceGetter.get<LocalCaGetter>("localCaGetter");
-      const ca = await getter.getCa(candidate.caId);
-      if (ca?.certPem && verifyCertIssuedBy(this.cert.crt, ca.certPem)) {
-        return { type: "local-ca", id: String(ca.id), serialNumber };
-      }
-    } catch (e: any) {
-      this.logger.warn(`远程ACME本地CA关联检查失败，按外部证书处理：${e?.message || e}`);
-    }
     return null;
   }
 
@@ -385,7 +361,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     const directoryUrl = await this.getResolvedDirectoryUrl();
     this.sslProvider = this.buildSslProvider(directoryUrl) as any;
     return {
-      title: this.mode === "local-acme" ? "本地ACME" : "远程ACME",
+      title: "本地ACME",
       sslProvider: "custom",
       directoryUrl,
       builtIn: false,
@@ -423,51 +399,6 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   }
 
 
-  /**
-   * 远程Directory URL由任务配置直接指定，仅允许系统管理员使用，避免普通用户借ACME客户端发起内网请求。
-   */
-  private async assertRemoteUrlAllowed() {
-    const text = String(this.directoryUrl || "").trim();
-    if (!text) {
-      return;
-    }
-    let url: URL;
-    try {
-      url = new URL(text);
-    } catch {
-      throw new Error("远程ACME Directory URL格式不正确");
-    }
-    if (!["http:", "https:"].includes(url.protocol)) {
-      throw new Error("远程ACME Directory URL仅支持 http/https");
-    }
-    if (url.username || url.password || url.hash) {
-      throw new Error("远程ACME Directory URL不允许包含用户名、密码或fragment");
-    }
-    // 管理员显式配置的完整Directory URL（规范化后精确匹配，非仅origin）视为可信，允许内部地址
-    if (await this.isTrustedAcmeProvider(url)) {
-      return;
-    }
-    if (!this.isAdmin()) {
-      throw new Error("普通用户远程ACME必须使用管理员在系统设置中配置的自定义ACME颁发机构（完整Directory URL）");
-    }
-    // 管理员非可信源：仍须通过SSRF地址检查（含DNS解析后的所有A/AAAA），避免访问内网/保留地址
-    const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
-    const blockedHost = host === "localhost" || host.endsWith(".localhost") || host === "metadata.google.internal" || host === "100.100.100.200" || host === "169.254.169.254";
-    if (blockedHost || isBlockedAddress(host)) {
-      throw new Error("远程ACME Directory URL指向本机/私网/链路本地/保留地址，禁止访问；如需内部ACME请在系统设置中配置可信颁发机构");
-    }
-    if (!net.isIP(host)) {
-      let addresses: { address: string }[] = [];
-      try {
-        addresses = await dns.lookup(host, { all: true, verbatim: true });
-      } catch {
-        throw new Error("远程ACME Directory URL域名解析失败");
-      }
-      if (!addresses.length || addresses.some(item => isBlockedAddress(item.address))) {
-        throw new Error("远程ACME Directory URL解析到受限地址，禁止访问");
-      }
-    }
-  }
 
 
   private async doLocalDirect(): Promise<CertReader> {
@@ -555,26 +486,15 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   }
 
   private async getResolvedDirectoryUrl(): Promise<string> {
-    if (this.mode === "remote-acme") {
-      await this.assertRemoteUrlAllowed();
-    }
     if (this.resolvedDirectoryUrl) {
       return this.resolvedDirectoryUrl;
     }
-    let directoryUrl: string;
-    if (this.mode === "remote-acme") {
-      directoryUrl = String(this.directoryUrl || "").trim();
-      if (!directoryUrl) {
-        throw new Error("远程ACME模式请填写Directory URL");
-      }
-    } else {
-      const ca = await this.prepareLocalCa(true);
-      const baseUrl = String(ca.effectiveBaseUrl || "").replace(/\/+$/, "");
-      if (!baseUrl) {
-        throw new Error("无法解析本地CA的访问地址，请先在CA设置中配置Base URL");
-      }
-      directoryUrl = `${baseUrl}/api/acme/${ca.id}/directory`;
+    const ca = await this.prepareLocalCa(true);
+    const baseUrl = String(ca.effectiveBaseUrl || "").replace(/\/+$/, "");
+    if (!baseUrl) {
+      throw new Error("无法解析本地CA的访问地址，请先在CA设置中配置Base URL");
     }
+    const directoryUrl = `${baseUrl}/api/acme/${ca.id}/directory`;
     this.resolvedDirectoryUrl = directoryUrl;
     return directoryUrl;
   }
@@ -590,13 +510,6 @@ export class CertApplyLocalCa extends CertApplyPlugin {
         (this.acmeAccountAccessId ? this.parseAcmeAccount((await this.getAccess(this.acmeAccountAccessId)).account) : null);
       if (!account?.accountKey || !account?.accountUri) {
         return false;
-      }
-      if (this.mode === "remote-acme") {
-        await this.assertRemoteUrlAllowed();
-        // 仅Certd本地CA形目录可能携带特权EAB；纯第三方ACME走标准校验
-        if (!parseLocalCaDirectory(await this.getResolvedDirectoryUrl())) {
-          return false;
-        }
       }
       // 签名POST-as-GET读取账户资源上的新鲜EAB特权状态（服务端裁决，客户端仅规划）
       const client = new acme.Client({
@@ -624,8 +537,8 @@ const localCaInput = (CertApplyLocalCa as any).define?.input;
 if (localCaInput) {
 localCaInput.mode.order = -10000;
 if (localCaInput.caId) localCaInput.caId.mergeScript = `return {
-  show: ctx.compute(({ form }) => form.mode !== 'remote-acme'),
-  required: ctx.compute(({ form }) => form.mode !== 'remote-acme')
+  show: ctx.compute(({ form }) => form.mode === 'local-direct'),
+  required: ctx.compute(({ form }) => form.mode === 'local-direct')
 }`;
 if (localCaInput.keyType) localCaInput.keyType.mergeScript = `return {
   show: ctx.compute(({ form }) => form.mode === 'local-direct'),
@@ -635,12 +548,14 @@ if (localCaInput.validityDays) localCaInput.validityDays.mergeScript = `return {
   show: ctx.compute(({ form }) => form.mode === 'local-direct'),
   required: ctx.compute(({ form }) => form.mode === 'local-direct')
 }`;
-if (localCaInput.directoryUrl) localCaInput.directoryUrl.mergeScript = `return {
-  show: ctx.compute(({ form }) => form.mode === 'remote-acme'),
-  required: ctx.compute(({ form }) => form.mode === 'remote-acme')
-}`;
 if (localCaInput.email) localCaInput.email.mergeScript = `return { show: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode)), required: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode)) }`;
-if (localCaInput.sslProvider) localCaInput.sslProvider.show = false;
+if (localCaInput.sslProvider) {
+  localCaInput.sslProvider.title = "中间CA颁发机构";
+  localCaInput.sslProvider.mergeScript = `return {
+    show: ctx.compute(({ form }) => form.mode === 'local-acme'),
+    required: ctx.compute(({ form }) => form.mode === 'local-acme')
+  }`;
+}
 if (localCaInput.version) localCaInput.version.show = false;
 const acmeModes = JSON.stringify(ACME_MODES);
 if (localCaInput.challengeType) localCaInput.challengeType.value = "auto";
@@ -677,21 +592,17 @@ if (localCaInput.domainsVerifyPlan) localCaInput.domainsVerifyPlan.mergeScript =
   })
 }`;
 if (localCaInput.privateKeyType) localCaInput.privateKeyType.mergeScript = `return { show: ctx.compute(({ form }) => ${acmeModes}.includes(form.mode)) }`;
-if (localCaInput.acmeAccountAccessId) localCaInput.acmeAccountAccessId.required = false;
 if (localCaInput.acmeAccountAccessId) localCaInput.acmeAccountAccessId.mergeScript = `return {
   show: ctx.compute(({ form }) => ${acmeModes}.includes(form.mode)),
-  required: false,
+  required: ctx.compute(({ form }) => form.mode === 'local-acme'),
   component: { subtype: ctx.compute(({ form }) => form.sslProvider || 'custom') }
 }`;
 if (localCaInput.reuseKey) localCaInput.reuseKey.mergeScript = `return { show: ctx.compute(({ form }) => ${acmeModes}.includes(form.mode)) }`;
 if (localCaInput.skipLocalVerify) localCaInput.skipLocalVerify.mergeScript = `return { show: ctx.compute(({ form }) => ${acmeModes}.includes(form.mode)) }`;
 if (localCaInput.maxCheckRetryCount) localCaInput.maxCheckRetryCount.mergeScript = `return { show: ctx.compute(({ form }) => ${acmeModes}.includes(form.mode)) }`;
 if (localCaInput.waitDnsDiffuseTime) localCaInput.waitDnsDiffuseTime.mergeScript = `return { show: ctx.compute(({ form }) => ${acmeModes}.includes(form.mode)) }`;
-if (localCaInput.useProxy) localCaInput.useProxy.mergeScript = `return { show: ctx.compute(({ form }) => form.mode === 'remote-acme') }`;
-if (localCaInput.reverseProxy) localCaInput.reverseProxy.mergeScript = `return {
-  show: ctx.compute(({ form }) => form.mode === 'remote-acme'),
-  component: { placeholder: 'certd.yourproxy.com' }
-}`;
+if (localCaInput.useProxy) localCaInput.useProxy.show = false;
+if (localCaInput.reverseProxy) localCaInput.reverseProxy.show = false;
 // 本地CA插件不需要通用ACME的厂商/链配置，直接移除避免冗余
 for (const key of ["certProfile", "preferredChain", "googleAccessId", "eabAccessId", "googleCommonEabAccessId", "googleCommonAcmeAccountAccessId", "zerosslCommonEabAccessId", "zerosslCommonAcmeAccountAccessId", "sslcomCommonEabAccessId", "sslcomCommonAcmeAccountAccessId", "litesslCommonEabAccessId", "litesslCommonAcmeAccountAccessId"]) {
   delete localCaInput[key];
