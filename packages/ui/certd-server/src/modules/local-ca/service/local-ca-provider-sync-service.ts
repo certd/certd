@@ -6,6 +6,7 @@ import { SysSettingsService } from "@certd/lib-server";
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { LocalCaCrlService } from "./local-ca-crl-service.js";
 import { parseLocalCaDirectory } from "./local-ca-directory.js";
+import { localCaMutex, PROVIDER_SYNC_KEY, caConfigKey } from "./local-ca-mutex.js";
 
 /**
  * 本地中间CA ↔ 系统「自定义ACME颁发机构」自动同步。
@@ -54,15 +55,22 @@ export class LocalCaProviderSyncService {
     if (this.lineageOf(ca) === sslProvider) {
       return;
     }
-    let config: any = {};
-    try {
-      config = JSON.parse(ca.acmeConfig || "{}");
-    } catch {
-      config = {};
-    }
-    config.acmeLineageProvider = sslProvider;
-    ca.acmeConfig = JSON.stringify(config);
-    await this.repository.save(ca);
+    await localCaMutex.runExclusive(caConfigKey(ca.id), async () => {
+      // 锁内重读最新acmeConfig，避免与并发的ACME配置写入相互覆盖
+      const fresh = await this.repository.findOne({ where: { id: ca.id } });
+      let config: any = {};
+      try {
+        config = JSON.parse(fresh?.acmeConfig || "{}");
+      } catch {
+        config = {};
+      }
+      if (config.acmeLineageProvider === sslProvider) {
+        return;
+      }
+      config.acmeLineageProvider = sslProvider;
+      await this.repository.update({ id: ca.id }, { acmeConfig: JSON.stringify(config) });
+      ca.acmeConfig = JSON.stringify(config);
+    });
   }
 
   private async buildEntry(ca: LocalCaEntity, existing?: any) {
@@ -86,6 +94,10 @@ export class LocalCaProviderSyncService {
 
   /** 按CA当前状态 upsert 或移除其同步条目。 */
   async syncForCa(caId: number) {
+    await localCaMutex.runExclusive(PROVIDER_SYNC_KEY, () => this.syncForCaUnlocked(caId));
+  }
+
+  private async syncForCaUnlocked(caId: number) {
     const ca = await this.repository.findOne({ where: { id: caId } });
     const privateSetting = await this.sysSettingsService.getPrivateSettings();
     const providers = [...(privateSetting.customAcmeProviders || [])];
@@ -120,59 +132,65 @@ export class LocalCaProviderSyncService {
   }
 
   async removeForCa(caId: number) {
-    const privateSetting = await this.sysSettingsService.getPrivateSettings();
-    const providers = (privateSetting.customAcmeProviders || []).filter(item => !this.isSyncedEntry(item, caId));
-    if (providers.length !== (privateSetting.customAcmeProviders || []).length) {
-      privateSetting.customAcmeProviders = providers;
-      await this.sysSettingsService.savePrivateSettings(privateSetting);
-      logger.info(`[local-ca] provider removed ca=${caId}`);
-    }
+    await localCaMutex.runExclusive(PROVIDER_SYNC_KEY, async () => {
+      const privateSetting = await this.sysSettingsService.getPrivateSettings();
+      const providers = (privateSetting.customAcmeProviders || []).filter(item => !this.isSyncedEntry(item, caId));
+      if (providers.length !== (privateSetting.customAcmeProviders || []).length) {
+        privateSetting.customAcmeProviders = providers;
+        await this.sysSettingsService.savePrivateSettings(privateSetting);
+        logger.info(`[local-ca] provider removed ca=${caId}`);
+      }
+    });
   }
 
   /** 轮换：稳定 sslProvider  lineage 键，更新 localCaId/title/directoryUrl 指向新CA，保留 enabled/reverseProxy。 */
   async onRotated(oldId: number, newId: number) {
-    const newCa = await this.repository.findOne({ where: { id: newId } });
-    const privateSetting = await this.sysSettingsService.getPrivateSettings();
-    const providers = [...(privateSetting.customAcmeProviders || [])];
-    const idx = providers.findIndex(item => this.isSyncedEntry(item, oldId));
-    let changed = false;
-    if (idx >= 0 && newCa) {
-      const existing = providers[idx];
-      const entry = await this.buildEntry(newCa, { ...existing, sslProvider: existing.sslProvider });
-      entry.localCaId = newId;
-      providers[idx] = entry;
-      changed = true;
-      await this.persistLineage(newCa, entry.sslProvider);
-    }
-    if (changed) {
-      privateSetting.customAcmeProviders = providers;
-      await this.sysSettingsService.savePrivateSettings(privateSetting);
-      logger.info(`[local-ca] provider rotated ${oldId}->${newId}`);
-    }
-    // 新CA若启用ACME但无条目（旧CA曾关ACME），补建
-    await this.syncForCa(newId);
+    await localCaMutex.runExclusive(PROVIDER_SYNC_KEY, async () => {
+      const newCa = await this.repository.findOne({ where: { id: newId } });
+      const privateSetting = await this.sysSettingsService.getPrivateSettings();
+      const providers = [...(privateSetting.customAcmeProviders || [])];
+      const idx = providers.findIndex(item => this.isSyncedEntry(item, oldId));
+      let changed = false;
+      if (idx >= 0 && newCa) {
+        const existing = providers[idx];
+        const entry = await this.buildEntry(newCa, { ...existing, sslProvider: existing.sslProvider });
+        entry.localCaId = newId;
+        providers[idx] = entry;
+        changed = true;
+        await this.persistLineage(newCa, entry.sslProvider);
+      }
+      if (changed) {
+        privateSetting.customAcmeProviders = providers;
+        await this.sysSettingsService.savePrivateSettings(privateSetting);
+        logger.info(`[local-ca] provider rotated ${oldId}->${newId}`);
+      }
+      // 新CA若启用ACME但无条目（旧CA曾关ACME），补建（复用同一把锁，避免重入死锁）
+      await this.syncForCaUnlocked(newId);
+    });
   }
 
   /** 启动对账：按全部CA状态重建同步条目集合，清理孤儿。 */
   async reconcileAll() {
-    const cas = await this.repository.find({ where: { deleted: false } });
-    const privateSetting = await this.sysSettingsService.getPrivateSettings();
-    const kept = (privateSetting.customAcmeProviders || []).filter(item => !this.isSyncedEntry(item));
-    const synced: any[] = [];
-    for (const ca of cas) {
-      if (this.usable(ca)) {
-        const baseUrl = String((await this.crlService.resolveBaseUrl(ca)) || "").replace(/\/+$/, "");
-        if (baseUrl) {
-          const existing = (privateSetting.customAcmeProviders || []).find(item => this.isSyncedEntry(item, ca.id));
-          synced.push(await this.buildEntry(ca, existing));
+    await localCaMutex.runExclusive(PROVIDER_SYNC_KEY, async () => {
+      const cas = await this.repository.find({ where: { deleted: false } });
+      const privateSetting = await this.sysSettingsService.getPrivateSettings();
+      const kept = (privateSetting.customAcmeProviders || []).filter(item => !this.isSyncedEntry(item));
+      const synced: any[] = [];
+      for (const ca of cas) {
+        if (this.usable(ca)) {
+          const baseUrl = String((await this.crlService.resolveBaseUrl(ca)) || "").replace(/\/+$/, "");
+          if (baseUrl) {
+            const existing = (privateSetting.customAcmeProviders || []).find(item => this.isSyncedEntry(item, ca.id));
+            synced.push(await this.buildEntry(ca, existing));
+          }
         }
       }
-    }
-    const next = [...kept, ...synced];
-    if (JSON.stringify(next) !== JSON.stringify(privateSetting.customAcmeProviders || [])) {
-      privateSetting.customAcmeProviders = next;
-      await this.sysSettingsService.savePrivateSettings(privateSetting);
-      logger.info(`[local-ca] provider reconciled count=${synced.length}`);
-    }
+      const next = [...kept, ...synced];
+      if (JSON.stringify(next) !== JSON.stringify(privateSetting.customAcmeProviders || [])) {
+        privateSetting.customAcmeProviders = next;
+        await this.sysSettingsService.savePrivateSettings(privateSetting);
+        logger.info(`[local-ca] provider reconciled count=${synced.length}`);
+      }
+    });
   }
 }

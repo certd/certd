@@ -16,24 +16,28 @@ export class LocalCaSignerGetter {
     this.service = service;
   }
 
-  async signCsr(req: { caId: number; csrPem: string; validityDays?: number; usage?: LocalCaUsage }) {
+  async signCsr(req: { caId: number; csrPem: string; validityDays?: number; usage?: LocalCaUsage; notBefore?: number; notAfter?: number }) {
     return await this.service.signCsr({
       id: req.caId,
       csrPem: req.csrPem,
       validityDays: req.validityDays,
       usage: req.usage,
+      notBefore: req.notBefore,
+      notAfter: req.notAfter,
       userId: this.userId,
       projectId: this.projectId,
     });
   }
 
-  async issueLeaf(req: { caId: number; domains: string[]; keyType?: LocalCaKeyType; validityDays?: number; usage?: LocalCaUsage }) {
+  async issueLeaf(req: { caId: number; domains: string[]; keyType?: LocalCaKeyType; validityDays?: number; usage?: LocalCaUsage; notBefore?: number; notAfter?: number }) {
     return await this.service.issueLeaf({
       id: req.caId,
       domains: req.domains,
       keyType: req.keyType,
       validityDays: req.validityDays,
       usage: req.usage,
+      notBefore: req.notBefore,
+      notAfter: req.notAfter,
       userId: this.userId,
       projectId: this.projectId,
     });

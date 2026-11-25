@@ -371,15 +371,18 @@ function sanExtension(domains: string[], critical = false) {
   return new x509.SubjectAlternativeNameExtension(names, critical);
 }
 
-export async function createRootCa(req: { subject: LocalCaSubject; keyType: LocalCaKeyType; validityYears: number }): Promise<CreatedRootCa> {
+export async function createRootCa(req: { subject: LocalCaSubject; keyType: LocalCaKeyType; validityYears: number; notBefore?: number; notAfter?: number }): Promise<CreatedRootCa> {
   if (!req.subject?.CN) {
     throw new Error("CA名称(CN)不能为空");
   }
   const validityYears = Math.max(1, Math.min(20, req.validityYears || 10));
   const keyType = req.keyType || "rsa2048";
   const { keys, privateKeyPem, keySize, signingAlgorithm } = await generateKeyPair(keyType);
-  const notBefore = new Date(Date.now() - 5 * 60 * 1000);
-  const notAfter = new Date(notBefore.getTime() + validityYears * 365 * 24 * 3600 * 1000);
+  const notBefore = req.notBefore != null ? new Date(req.notBefore) : new Date(Date.now() - 5 * 60 * 1000);
+  const notAfter = req.notAfter != null ? new Date(req.notAfter) : new Date(notBefore.getTime() + validityYears * 365 * 24 * 3600 * 1000);
+  if (notAfter.getTime() <= notBefore.getTime()) {
+    throw new Error("CA失效时间必须晚于生效时间");
+  }
   const name = buildName(req.subject);
   const cert = await x509.X509CertificateGenerator.createSelfSigned(
     {
@@ -478,6 +481,8 @@ export async function createIntermediateCa(req: {
   keyType?: LocalCaKeyType;
   validityYears?: number;
   crlDistributionPoint?: string;
+  notBefore?: number;
+  notAfter?: number;
 }): Promise<CreatedRootCa> {
   if (!req.subject?.CN) {
     throw new Error("中间CA名称(CN)不能为空");
@@ -493,10 +498,17 @@ export async function createIntermediateCa(req: {
   const keyType = req.keyType || "rsa2048";
   const { keys, privateKeyPem, keySize } = await generateKeyPair(keyType);
   const now = Date.now();
-  const notBefore = new Date(now - 5 * 60 * 1000);
+  const notBefore = req.notBefore != null ? new Date(req.notBefore) : new Date(now - 5 * 60 * 1000);
+  if (notBefore.getTime() < rootCert.notBefore.getTime() - 5 * 60 * 1000) {
+    throw new Error("中间CA生效时间不能早于上级CA的生效时间");
+  }
   const requestedYears = Math.max(1, Math.min(10, req.validityYears || 5));
   const rootLimit = rootCert.notAfter.getTime() - 24 * 3600 * 1000;
-  const notAfter = new Date(Math.min(notBefore.getTime() + requestedYears * 365 * 24 * 3600 * 1000, rootLimit));
+  const defaultEnd = Math.min(notBefore.getTime() + requestedYears * 365 * 24 * 3600 * 1000, rootLimit);
+  const notAfter = req.notAfter != null ? new Date(Math.min(req.notAfter, rootLimit)) : new Date(defaultEnd);
+  if (req.notAfter != null && req.notAfter > rootCert.notAfter.getTime()) {
+    throw new Error("中间CA失效时间不能晚于上级CA的失效时间");
+  }
   if (notAfter.getTime() <= notBefore.getTime()) {
     throw new Error("上级CA剩余有效期不足，无法签发中间CA");
   }
@@ -791,6 +803,9 @@ export async function signCsr(req: {
   allowedDomains?: string[];
   usage?: LocalCaUsage;
   crlDistributionPoint?: string;
+  /** 私有CA完全可自定义起止时间（支持backdate模拟历史证书） */
+  notBefore?: number;
+  notAfter?: number;
 }): Promise<SignCsrResult> {
   const caCertPem = normalizePem(req.caCertPem);
   const caCert = new x509.X509Certificate(caCertPem);
@@ -826,10 +841,17 @@ export async function signCsr(req: {
   const requestedDays = Math.max(1, Math.floor(req.validityDays || 90));
   const maxDays = req.maxValidityDays && req.maxValidityDays > 0 ? req.maxValidityDays : requestedDays;
   const days = Math.min(requestedDays, maxDays);
-  const notBefore = new Date(now - 5 * 60 * 1000);
+  const notBefore = req.notBefore != null ? new Date(req.notBefore) : new Date(now - 5 * 60 * 1000);
+  if (notBefore.getTime() < caCert.notBefore.getTime() - 5 * 60 * 1000) {
+    throw new Error("证书生效时间不能早于签发CA的生效时间");
+  }
   // 叶证书到期日硬上限为签发CA到期日，并预留7天余量用于续期/轮换/部署回滚
   const caLimit = caCert.notAfter.getTime() - 7 * 24 * 3600 * 1000;
-  const notAfter = new Date(Math.min(now + days * 24 * 3600 * 1000, caLimit));
+  const defaultEnd = Math.min(now + days * 24 * 3600 * 1000, caLimit);
+  const notAfter = req.notAfter != null ? new Date(Math.min(req.notAfter, caLimit)) : new Date(defaultEnd);
+  if (req.notAfter != null && req.notAfter > caCert.notAfter.getTime()) {
+    throw new Error("证书失效时间不能晚于签发CA的失效时间");
+  }
   if (notAfter.getTime() <= notBefore.getTime()) {
     throw new Error("CA证书剩余有效期不足，无法签发");
   }
@@ -895,6 +917,8 @@ export async function issueLeafCertificate(req: {
   allowedDomains?: string[];
   usage?: LocalCaUsage;
   crlDistributionPoint?: string;
+  notBefore?: number;
+  notAfter?: number;
 }): Promise<IssueLeafResult> {
   const { csrPem, privateKeyPem } = await createCsr({
     domains: req.domains,
@@ -910,6 +934,8 @@ export async function issueLeafCertificate(req: {
     allowedDomains: req.allowedDomains,
     usage: req.usage,
     crlDistributionPoint: req.crlDistributionPoint,
+    notBefore: req.notBefore,
+    notAfter: req.notAfter,
   });
   return {
     ...signed,

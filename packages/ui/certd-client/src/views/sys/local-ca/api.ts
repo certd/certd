@@ -228,6 +228,14 @@ export const localCaApi = {
     });
   },
 
+  async RotateInternalToken(id: number, verifyToken: string) {
+    return await req({
+      url: apiPrefix + "/acme/rotateToken",
+      method: "post",
+      data: { id, verifyToken },
+    });
+  },
+
   async SetEabPrivileged(caId: number, eabId: string, privileged: boolean, verifyToken: string) {
     return await req({
       url: apiPrefix + "/eab/privileged",

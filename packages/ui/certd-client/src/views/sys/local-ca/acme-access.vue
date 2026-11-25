@@ -1,6 +1,10 @@
 <template>
   <div class="acme-access">
     <a-alert v-if="acmeMode === 'local'" type="success" show-icon class="mb-3" :message="t('certd.localCa.acmeModeLocalHint')" />
+    <div v-if="acmeMode === 'local'" class="acme-access-token mb-3">
+      <a-button danger :loading="rotating" @click="rotateToken">{{ t("certd.localCa.acmeRotateToken") }}</a-button>
+      <div class="helper warning">{{ t("certd.localCa.acmeRotateTokenHelper") }}</div>
+    </div>
     <a-alert v-else type="warning" show-icon class="mb-3" :message="t('certd.localCa.acmeModeStandardRisk')" :description="t('certd.localCa.acmeModeStandardRiskDesc')" />
     <a-spin :spinning="loading">
       <a-form v-if="acmeMode === 'standard'" layout="vertical">
@@ -47,7 +51,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
 import { localCaApi } from "./api";
 import { getSecretAccessToken } from "/@/views/certd/access/api";
@@ -62,6 +66,7 @@ const props = defineProps<{
 const { t } = useI18n();
 const loading = ref(false);
 const saving = ref(false);
+const rotating = ref(false);
 const acmeMode = ref<"local" | "standard">("standard");
 const clientIpSource = ref<"xff" | "socket" | "header">("xff");
 const clientIpHeader = ref("");
@@ -126,11 +131,43 @@ async function save() {
   }
 }
 
+function rotateToken() {
+  Modal.confirm({
+    title: t("certd.localCa.acmeRotateToken"),
+    content: t("certd.localCa.acmeRotateTokenConfirm"),
+    okText: t("certd.common.confirm"),
+    cancelText: t("certd.common.cancel"),
+    okButtonProps: { danger: true },
+    async onOk() {
+      const action = async () => {
+        rotating.value = true;
+        try {
+          await localCaApi.RotateInternalToken(props.caId, getSecretAccessToken());
+          notification.success({ message: t("certd.localCa.acmeRotateTokenSuccess") });
+          await load();
+        } finally {
+          rotating.value = false;
+        }
+      };
+      if (props.runStepUp) {
+        await props.runStepUp(action);
+      } else {
+        await action();
+      }
+    },
+  });
+}
+
 onMounted(load);
 </script>
 
 <style lang="less">
 .acme-access {
+  .acme-access-token {
+    .helper {
+      margin-top: 6px;
+    }
+  }
   .helper {
     font-size: 12px;
     color: var(--text-color-3, #999);

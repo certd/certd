@@ -36,6 +36,10 @@ export class AcmeAccessMiddleware implements IWebMiddleware {
       const isRevoke = /\/revoke-cert\/?$/.test(decodedPath);
       try {
         await service.assertAccess(ctx, caId, { revoke: isRevoke });
+        // 未认证引导端点额外按来源IP限速，防止nonce耗尽与账户批量注册滥用
+        if (/\/(directory|new-nonce|new-account)\/?$/.test(decodedPath)) {
+          await service.assertBootstrapRateLimit(ctx, caId);
+        }
       } catch (e: any) {
         const problem = e instanceof AcmeProblem ? e : new AcmeProblem("serverInternal", e?.message || "ACME访问校验失败", 500);
         service.respondError(ctx, problem);

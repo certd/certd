@@ -16,9 +16,12 @@ import bcrypt from "bcryptjs";
 import { fetchHttpChallenge } from "../protocol/acme-network.js";
 import { isSameAcmeUrl } from "../protocol/acme-url.js";
 import { acmeNonceStore } from "../protocol/acme-nonce.js";
+import { acmeBootstrapRateLimiter } from "../protocol/acme-rate-limit.js";
 import { runTransaction } from "../../db/db-transaction.js";
 
 const ORDER_TTL = 7 * 24 * 3600 * 1000;
+// 已签发订单在证书到期后额外保留30天，供客户端补下载/吊销，超期后清理
+const TERMINAL_ORDER_RETENTION = 30 * 24 * 3600 * 1000;
 const PRIVATE_JWK_FIELDS = ["d", "p", "q", "dp", "dq", "qi", "oth"];
 
 export function sanitizePublicJwk(jwk: any) {
@@ -561,14 +564,15 @@ export class AcmeServerService {
     await this.issuer.assertCaOwner({ id: caId, userId, projectId }, true);
     const chain = await this.issuer.getRotationChainWithNames(caId);
     const caNameMap = new Map(chain.map(item => [item.id, item.name]));
-    const accounts = await this.accountRepository.find({ where: { caId: In(chain.map(item => item.id)) }, order: { createTime: "DESC" } });
+    const chainIds = chain.map(item => item.id);
+    const accounts = await this.accountRepository.find({ where: { caId: In(chainIds) }, order: { createTime: "DESC" } });
     const eabIds = [...new Set(accounts.map(item => item.eabId).filter(Boolean))];
     const eabs = eabIds.length ? await this.eabRepository.find({ where: { id: In(eabIds) } }) : [];
     const eabMap = new Map(eabs.map(item => [item.id, item]));
     const result = [];
     for (const account of accounts) {
-      const orderCount = await this.orderRepository.count({ where: { caId, accountId: account.id } });
-      const issuedCount = await this.orderRepository.count({ where: { caId, accountId: account.id, status: "valid" } });
+      const orderCount = await this.orderRepository.count({ where: { caId: In(chainIds), accountId: account.id } });
+      const issuedCount = await this.orderRepository.count({ where: { caId: In(chainIds), accountId: account.id, status: "valid" } });
       const eab = account.eabId ? eabMap.get(account.eabId) : undefined;
       result.push({
         id: account.id,
@@ -594,12 +598,15 @@ export class AcmeServerService {
 
   async listAccountOrders(caId: number, accountId: string, userId: number, projectId?: number) {
     await this.issuer.assertCaOwner({ id: caId, userId, projectId }, true);
-    const account = await this.accountRepository.findOne({ where: { id: accountId, caId } });
+    // 轮换后账户/订单可能归属链上旧CA，按整条轮换链查找，避免误判“账户不存在”
+    const chain = await this.issuer.getRotationChainWithNames(caId);
+    const chainIds = chain.map(item => item.id);
+    const account = await this.accountRepository.findOne({ where: { id: accountId, caId: In(chainIds) } });
     if (!account) {
       throw new AcmeProblem("unauthorized", "ACME账户不存在", 404);
     }
     const orders = await this.orderRepository.find({
-      where: { caId, accountId },
+      where: { caId: In(chainIds), accountId },
       order: { createTime: "DESC" },
     });
     return orders.map(order => ({
@@ -620,7 +627,8 @@ export class AcmeServerService {
     if (!["valid", "deactivated"].includes(status)) {
       throw new AcmeProblem("malformed", "账户状态不合法");
     }
-    const account = await this.accountRepository.findOne({ where: { id: accountId, caId } });
+    const chain = await this.issuer.getRotationChainWithNames(caId);
+    const account = await this.accountRepository.findOne({ where: { id: accountId, caId: In(chain.map(item => item.id)) } });
     if (!account) {
       throw new AcmeProblem("unauthorized", "ACME账户不存在", 404);
     }
@@ -1059,6 +1067,27 @@ export class AcmeServerService {
     return resolveClientIp(socketIp, ctx.get("x-forwarded-for"), trusted);
   }
 
+  /**
+   * 未认证引导端点（directory/new-nonce/new-account）按来源IP限速。
+   * 已通过内部凭证鉴别的Certd自身请求不受限，避免批量续期被误伤。
+   */
+  async assertBootstrapRateLimit(ctx: any, caId: number) {
+    const ca = await this.issuer.getAcmeAccessView(caId);
+    const config = this.parseAcmeConfig(ca?.acmeConfig);
+    const token = String(ctx.get("x-certd-acme-token") || "");
+    const internalTrusted = config.acmeMode === "local" && !!config.internalToken && this.constantTimeEquals(token, config.internalToken);
+    if (internalTrusted) {
+      return;
+    }
+    const ip = this.resolveGateClientIp(ctx, config);
+    const key = `${caId}:${ip}`;
+    const remaining = acmeBootstrapRateLimiter.take(key);
+    if (remaining < 0) {
+      ctx.set("Retry-After", String(acmeBootstrapRateLimiter.retryAfterSeconds(key)));
+      throw new AcmeProblem("rateLimited", "请求过于频繁，请稍后再试", 429);
+    }
+  }
+
   async cleanupExpired() {
     const now = Date.now();
     const expired = await this.orderRepository.find({
@@ -1066,6 +1095,28 @@ export class AcmeServerService {
       select: { id: true },
     });
     const ids = expired.map(item => item.id);
+    // 已签发(valid)订单在证书到期并超过保留期后清理：证书本体已独立持久化于证书仓库，
+    // 吊销/下载依赖证书仓库而非订单，清理订单不影响历史证书吊销。仅扫描订单本身已过期的记录，避免触及活跃订单。
+    const terminalValid = await this.orderRepository.find({
+      where: { expiresTime: LessThan(now), status: "valid" },
+      select: { id: true, certPem: true },
+    });
+    for (const order of terminalValid) {
+      if (!order.certPem) {
+        ids.push(order.id);
+        continue;
+      }
+      try {
+        const cert = new X509Certificate(order.certPem);
+        const certEnd = new Date(cert.validTo).getTime();
+        if (certEnd + TERMINAL_ORDER_RETENTION < now) {
+          ids.push(order.id);
+        }
+      } catch {
+        // 证书PEM损坏的终态订单无法再被使用，直接清理
+        ids.push(order.id);
+      }
+    }
     if (ids.length === 0) {
       return;
     }

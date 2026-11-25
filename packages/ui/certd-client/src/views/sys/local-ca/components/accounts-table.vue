@@ -153,7 +153,13 @@ async function viewEab(row: any) {
 }
 
 async function viewOrders(row: any) {
-  const orders = (await localCaApi.ListAcmeOrders(props.caId, row.id)) || [];
+  let orders: any[] = [];
+  try {
+    orders = (await localCaApi.ListAcmeOrders(props.caId, row.id)) || [];
+  } catch (e: any) {
+    notification.error({ message: String(e?.message || e) });
+    return;
+  }
   const orderStatus = (status: string) => {
     const map: Record<string, string> = {
       pending: t("certd.localCa.orderStatusPending"),
@@ -181,7 +187,7 @@ async function viewOrders(row: any) {
     maskClosable: true,
     okText: t("certd.common.close"),
     width: 1000,
-    zIndex: 1000,
+    zIndex: 1200,
     content: () => (
       <a-table dataSource={orders} pagination={{ pageSize: 10 }} size="small" rowKey="id">
         <a-table-column title={t("certd.localCa.acmeOrderStatus")} width={110}>

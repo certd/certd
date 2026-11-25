@@ -200,6 +200,36 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   })
   validityDays = 365;
 
+  @TaskInput({
+    title: "生效时间(可选)",
+    helper: "自定义证书生效时间，可早于当前时间以补签历史证书；不得早于签发CA的生效时间。留空则默认立即生效。",
+    component: {
+      name: "a-date-picker",
+      vModel: "value",
+      showTime: true,
+      valueFormat: "x",
+    },
+    required: false,
+    order: 92,
+    col: { span: 12 },
+  })
+  notBefore?: number;
+
+  @TaskInput({
+    title: "失效时间(可选)",
+    helper: "自定义证书失效时间，不得晚于签发CA的失效时间。留空则按有效期天数计算。",
+    component: {
+      name: "a-date-picker",
+      vModel: "value",
+      showTime: true,
+      valueFormat: "x",
+    },
+    required: false,
+    order: 93,
+    col: { span: 12 },
+  })
+  notAfter?: number;
+
   private localCa?: LocalCaSubscribeInfo;
   private resolvedDirectoryUrl?: string;
   private directCertMeta?: { localCaId: number; serialNumber: string };
@@ -444,6 +474,8 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       domains: this.domains,
       keyType: this.keyType,
       validityDays: Math.max(1, Number(this.validityDays || 365)),
+      notBefore: Number(this.notBefore) || undefined,
+      notAfter: Number(this.notAfter) || undefined,
     });
     this.directCertMeta = { localCaId: ca.id, serialNumber: result.serialNumber };
     this.registerSecret(result.key);

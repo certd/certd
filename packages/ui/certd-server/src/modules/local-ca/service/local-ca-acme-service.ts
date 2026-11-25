@@ -15,6 +15,7 @@ import { LocalCaAccessService, LocalCaScope } from "./local-ca-access-service.js
 import { LocalCaCrlService } from "./local-ca-crl-service.js";
 import { LocalCaProviderSyncService } from "./local-ca-provider-sync-service.js";
 import { normalizeAllowedDomains, sha256Hex } from "./local-ca-crypto.js";
+import { localCaMutex, caConfigKey } from "./local-ca-mutex.js";
 
 function randomEabHmacKey() {
   // RFC 8555 EAB HMAC key：统一使用无填充的 base64url
@@ -149,23 +150,51 @@ export class LocalCaAcmeService {
       return;
     }
     ca.acmeEnabled = true;
-    const config = this.readAcmeConfigObject(ca.acmeConfig);
-    if (req.validityDays) {
-      config.validityDays = Math.max(1, Math.min(3650, req.validityDays));
-    }
-    // 三档模式：关闭=acmeEnabled false；仅本地=local（回环IP或内部凭证）；标准=standard（完整门禁）。
-    // 未传mode时保留原配置，legacy数据缺省按standard（兼容旧行为）
-    if (req.mode === "local" || req.mode === "standard") {
-      config.acmeMode = req.mode;
-    }
-    if (this.resolveAcmeMode(config) === "local" && !config.internalToken) {
-      config.internalToken = crypto.randomBytes(24).toString("base64url");
-    }
-    ca.acmeConfig = JSON.stringify(config);
-    ca.updateTime = new Date();
-    await this.repository.save(ca);
+    await localCaMutex.runExclusive(caConfigKey(ca.id), async () => {
+      const config = this.readAcmeConfigObject(ca.acmeConfig);
+      if (req.validityDays) {
+        config.validityDays = Math.max(1, Math.min(3650, req.validityDays));
+      }
+      // 三档模式：关闭=acmeEnabled false；仅本地=local（回环IP或内部凭证）；标准=standard（完整门禁）。
+      // 未传mode时保留原配置，legacy数据缺省按standard（兼容旧行为）
+      if (req.mode === "local" || req.mode === "standard") {
+        config.acmeMode = req.mode;
+      }
+      if (this.resolveAcmeMode(config) === "local" && !config.internalToken) {
+        config.internalToken = crypto.randomBytes(24).toString("base64url");
+      }
+      ca.acmeConfig = JSON.stringify(config);
+      ca.updateTime = new Date();
+      await this.repository.save(ca);
+    });
     await this.providerSync.syncForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${ca.id}: ${e?.message || e}`));
-    logger.info(`[local-ca] acme enabled ca=${ca.id} mode=${this.resolveAcmeMode(config)} user=${req.userId} project=${req.projectId ?? "-"}`);
+    logger.info(`[local-ca] acme enabled ca=${ca.id} mode=${this.resolveAcmeMode(this.readAcmeConfigObject(ca.acmeConfig))} user=${req.userId} project=${req.projectId ?? "-"}`);
+  }
+
+  /**
+   * 轮换仅本地档内部凭证（internalToken）。
+   * 旧凭证立即失效，正在使用旧凭证的流水线需重新获取；用于凭证泄露后的应急处置。
+   */
+  async rotateInternalToken(req: LocalCaScope & { caId: number }) {
+    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, true);
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("只有中间CA可以轮换内部凭证");
+    }
+    let token = "";
+    await localCaMutex.runExclusive(caConfigKey(ca.id), async () => {
+      const config = this.readAcmeConfigObject(ca.acmeConfig);
+      if (this.resolveAcmeMode(config) !== "local") {
+        throw new ValidateException("仅本地模式才有内部凭证，标准模式无需轮换");
+      }
+      token = crypto.randomBytes(24).toString("base64url");
+      config.internalToken = token;
+      ca.acmeConfig = JSON.stringify(config);
+      ca.updateTime = new Date();
+      await this.repository.save(ca);
+    });
+    await this.providerSync.syncForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${ca.id}: ${e?.message || e}`));
+    logger.info(`[local-ca] acme internal token rotated ca=${ca.id} user=${req.userId}`);
+    return { internalToken: token };
   }
 
   /** 读取ACME模式：缺省standard（legacy兼容），仅local为仅本地档。 */
@@ -213,49 +242,51 @@ export class LocalCaAcmeService {
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以配置ACME访问控制");
     }
-    const config = this.readAcmeConfigObject(ca.acmeConfig);
-    if (req.ipAllowlist !== undefined) {
-      config.ipAllowlist = normalizeIpAllowlist(req.ipAllowlist);
-    }
-    if (req.requiredHeaders !== undefined) {
-      config.requiredHeaders = normalizeRequiredHeaders(req.requiredHeaders);
-    }
-    if (req.clientIpSource !== undefined) {
-      if (!["xff", "socket", "header"].includes(req.clientIpSource)) {
-        throw new ValidateException("客户端IP来源不合法");
+    await localCaMutex.runExclusive(caConfigKey(ca.id), async () => {
+      const config = this.readAcmeConfigObject(ca.acmeConfig);
+      if (req.ipAllowlist !== undefined) {
+        config.ipAllowlist = normalizeIpAllowlist(req.ipAllowlist);
       }
-      config.clientIpSource = req.clientIpSource;
-    }
-    if (req.clientIpHeader !== undefined) {
-      const header = String(req.clientIpHeader || "").trim();
-      if (header && !/^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(header)) {
-        throw new ValidateException("客户端IP请求头名称不合法");
+      if (req.requiredHeaders !== undefined) {
+        config.requiredHeaders = normalizeRequiredHeaders(req.requiredHeaders);
       }
-      config.clientIpHeader = header;
-    }
-    if (req.trustProxyCidrs !== undefined) {
-      config.trustProxyCidrs = normalizeIpAllowlist(req.trustProxyCidrs);
-    }
-    if (req.basicAuth !== undefined) {
-      const enabled = req.basicAuth.enabled === true;
-      const username = String(req.basicAuth.username || "").trim();
-      const prev = config.basicAuth || {};
-      let passwordHash = String(prev.passwordHash || "");
-      if (enabled) {
-        if (!username) {
-          throw new ValidateException("启用Basic认证必须设置用户名");
+      if (req.clientIpSource !== undefined) {
+        if (!["xff", "socket", "header"].includes(req.clientIpSource)) {
+          throw new ValidateException("客户端IP来源不合法");
         }
-        if (req.basicAuth.password) {
-          passwordHash = bcrypt.hashSync(String(req.basicAuth.password), 10);
-        } else if (!passwordHash) {
-          throw new ValidateException("启用Basic认证必须设置密码");
-        }
+        config.clientIpSource = req.clientIpSource;
       }
-      config.basicAuth = { enabled, username: enabled ? username : "", passwordHash: enabled ? passwordHash : "" };
-    }
-    ca.acmeConfig = JSON.stringify(config);
-    ca.updateTime = new Date();
-    await this.repository.save(ca);
+      if (req.clientIpHeader !== undefined) {
+        const header = String(req.clientIpHeader || "").trim();
+        if (header && !/^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(header)) {
+          throw new ValidateException("客户端IP请求头名称不合法");
+        }
+        config.clientIpHeader = header;
+      }
+      if (req.trustProxyCidrs !== undefined) {
+        config.trustProxyCidrs = normalizeIpAllowlist(req.trustProxyCidrs);
+      }
+      if (req.basicAuth !== undefined) {
+        const enabled = req.basicAuth.enabled === true;
+        const username = String(req.basicAuth.username || "").trim();
+        const prev = config.basicAuth || {};
+        let passwordHash = String(prev.passwordHash || "");
+        if (enabled) {
+          if (!username) {
+            throw new ValidateException("启用Basic认证必须设置用户名");
+          }
+          if (req.basicAuth.password) {
+            passwordHash = bcrypt.hashSync(String(req.basicAuth.password), 10);
+          } else if (!passwordHash) {
+            throw new ValidateException("启用Basic认证必须设置密码");
+          }
+        }
+        config.basicAuth = { enabled, username: enabled ? username : "", passwordHash: enabled ? passwordHash : "" };
+      }
+      ca.acmeConfig = JSON.stringify(config);
+      ca.updateTime = new Date();
+      await this.repository.save(ca);
+    });
     logger.info(`[local-ca] acme access updated ca=${ca.id} user=${req.userId}`);
     return await this.getAcmeAccess({ id: req.caId, userId: req.userId, projectId: req.projectId, caId: req.caId });
   }

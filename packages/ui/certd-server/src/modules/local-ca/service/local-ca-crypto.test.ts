@@ -120,6 +120,90 @@ describe("local-ca-crypto", () => {
     assert.equal(issued.crt.split("BEGIN CERTIFICATE").length - 1, 2);
   });
 
+  it("自定义起止时间：可补签历史证书并受CA有效期约束", async () => {
+    const rootStart = Date.UTC(2015, 0, 1);
+    const rootEnd = Date.UTC(2040, 0, 1);
+    const root = await createRootCa({
+      subject: { CN: "Backdate Root CA" },
+      keyType: "rsa2048",
+      validityYears: 10,
+      notBefore: rootStart,
+      notAfter: rootEnd,
+    });
+    const rootCert = new X509Certificate(root.certPem);
+    assert.equal(new Date(rootCert.validFrom).getTime(), rootStart);
+    assert.equal(new Date(rootCert.validTo).getTime(), rootEnd);
+
+    const interStart = Date.UTC(2015, 0, 2);
+    const interEnd = Date.UTC(2035, 0, 1);
+    const intermediate = await createIntermediateCa({
+      rootCertPem: root.certPem,
+      rootPrivateKeyPem: root.privateKeyPem,
+      subject: { CN: "Backdate Intermediate CA" },
+      keyType: "rsa2048",
+      validityYears: 5,
+      notBefore: interStart,
+      notAfter: interEnd,
+    });
+    const interCert = new X509Certificate(intermediate.certPem);
+    assert.equal(new Date(interCert.validFrom).getTime(), interStart);
+    assert.equal(new Date(interCert.validTo).getTime(), interEnd);
+
+    // 补签一张2016年的历史叶子证书
+    const leafStart = Date.UTC(2016, 5, 1);
+    const leafEnd = Date.UTC(2017, 5, 1);
+    const issued = await issueLeafCertificate({
+      caCertPem: intermediate.certPem,
+      caPrivateKeyPem: intermediate.privateKeyPem,
+      domains: ["history.example.com"],
+      keyType: "rsa2048",
+      validityDays: 365,
+      notBefore: leafStart,
+      notAfter: leafEnd,
+    });
+    const leaf = new X509Certificate(issued.certPem);
+    assert.equal(new Date(leaf.validFrom).getTime(), leafStart);
+    assert.equal(new Date(leaf.validTo).getTime(), leafEnd);
+    assert.equal(leaf.verify(interCert.publicKey), true);
+
+    // 生效时间早于CA生效时间 → 拒绝
+    await assert.rejects(
+      issueLeafCertificate({
+        caCertPem: intermediate.certPem,
+        caPrivateKeyPem: intermediate.privateKeyPem,
+        domains: ["bad.example.com"],
+        keyType: "rsa2048",
+        notBefore: Date.UTC(2014, 0, 1),
+        notAfter: Date.UTC(2016, 0, 1),
+      }),
+      /生效时间不能早于/
+    );
+    // 失效时间晚于CA失效时间 → 拒绝
+    await assert.rejects(
+      issueLeafCertificate({
+        caCertPem: intermediate.certPem,
+        caPrivateKeyPem: intermediate.privateKeyPem,
+        domains: ["bad2.example.com"],
+        keyType: "rsa2048",
+        notBefore: Date.UTC(2034, 0, 1),
+        notAfter: Date.UTC(2036, 0, 1),
+      }),
+      /失效时间不能晚于/
+    );
+    // 中间CA生效时间早于根CA → 拒绝
+    await assert.rejects(
+      createIntermediateCa({
+        rootCertPem: root.certPem,
+        rootPrivateKeyPem: root.privateKeyPem,
+        subject: { CN: "Bad Intermediate" },
+        keyType: "rsa2048",
+        notBefore: Date.UTC(2014, 0, 1),
+        notAfter: Date.UTC(2020, 0, 1),
+      }),
+      /生效时间不能早于/
+    );
+  });
+
   it("支持 ECDSA 根CA、中间CA、叶子和 CRL", async () => {
     const root = await createRootCa({
       subject: { CN: "ECDSA Root CA" },

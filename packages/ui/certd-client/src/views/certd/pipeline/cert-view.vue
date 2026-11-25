@@ -3,7 +3,7 @@
     <div class="cert-detail mt-4">
       <a-descriptions class="w-full" bordered :column="2" size="small">
         <a-descriptions-item label="主域名">
-          <a-tag color="blue">{{ props.cert.detail?.domains?.commonName || "-" }}</a-tag>
+          <a-tag color="blue">{{ mainDomain || "-" }}</a-tag>
         </a-descriptions-item>
         <a-descriptions-item label="颁发机构">
           <a-tag color="green">{{ props.cert.detail?.issuer?.commonName || "-" }}</a-tag>
@@ -82,10 +82,18 @@ const props = defineProps<{
 }>();
 
 const isLocalCa = computed(() => Boolean(props.cert.localCaId || props.cert.x509));
-const altNames = computed(() => {
+// ACME等场景CSR可能不含CN，主域名回退到首个SAN域名，避免显示为空
+const mainDomain = computed(() => {
   const commonName = props.cert.detail?.domains?.commonName;
+  if (commonName) {
+    return commonName;
+  }
   const list = props.cert.detail?.domains?.altNames || [];
-  return [...new Set(list.filter((item: string) => item !== commonName))];
+  return list[0] || "";
+});
+const altNames = computed(() => {
+  const list = props.cert.detail?.domains?.altNames || [];
+  return [...new Set(list.filter((item: string) => item !== mainDomain.value))];
 });
 const certSerialNumber = computed(() => props.cert.x509?.serialNumber || props.cert.serialNumber || "-");
 const statusLabel = computed(() => {

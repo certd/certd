@@ -92,6 +92,8 @@ export class LocalCaController extends CrudController<LocalCaService> {
       remark: body.remark,
       exportDisabled: body.exportDisabled,
       dnsServer: body.dnsServer,
+      notBefore: body.notBefore,
+      notAfter: body.notAfter,
     });
     this.auditLog({ content: `生成根CA「${body.name}」(ID:${res.id})` });
     return this.ok(res);
@@ -148,6 +150,8 @@ export class LocalCaController extends CrudController<LocalCaService> {
       remark: body.remark,
       exportDisabled: body.exportDisabled,
       dnsServer: body.dnsServer,
+      notBefore: body.notBefore,
+      notAfter: body.notAfter,
     });
     this.auditLog({ content: `经step-up验证，根CA(ID:${body.rootId})签发中间CA「${body.name}」(ID:${res.id})` });
     return this.ok(res);
@@ -254,6 +258,15 @@ export class LocalCaController extends CrudController<LocalCaService> {
       requiredHeaders: body.requiredHeaders,
     });
     this.auditLog({ content: `更新了本地CA的ACME访问控制(ID:${body.id})` });
+    return this.ok(res);
+  }
+
+  @Post("/acme/rotateToken", { description: Constants.per.authOnly, summary: "轮换仅本地ACME内部凭证（需CA所有者+2FA/Passkey）" })
+  async rotateInternalToken(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "轮换ACME内部凭证");
+    const { userId, projectId } = await this.checkCaAccess(body.id, "write", true);
+    const res = await this.service.rotateInternalToken({ id: body.id, caId: body.id, userId, projectId });
+    this.auditLog({ content: `轮换了本地CA的ACME内部凭证(ID:${body.id})` });
     return this.ok(res);
   }
 

@@ -66,6 +66,8 @@ export type LocalCaGenerateReq = {
   remark?: string;
   exportDisabled?: boolean;
   dnsServer?: string;
+  notBefore?: number;
+  notAfter?: number;
 };
 
 export type LocalCaIntermediateReq = Omit<LocalCaScope, "id"> & {
@@ -81,6 +83,8 @@ export type LocalCaIntermediateReq = Omit<LocalCaScope, "id"> & {
   remark?: string;
   exportDisabled?: boolean;
   dnsServer?: string;
+  notBefore?: number;
+  notAfter?: number;
 };
 
 export type LocalCaImportReq = {
@@ -106,6 +110,8 @@ export type LocalCaIssueReq = LocalCaScope & {
   keyType?: LocalCaKeyType;
   validityDays?: number;
   usage?: LocalCaUsage;
+  notBefore?: number;
+  notAfter?: number;
 };
 
 export type LocalCaSignCsrReq = LocalCaScope & {
@@ -113,6 +119,8 @@ export type LocalCaSignCsrReq = LocalCaScope & {
   validityDays?: number;
   usage?: LocalCaUsage;
   internal?: boolean;
+  notBefore?: number;
+  notAfter?: number;
 };
 
 export type LocalCaSafe = Omit<LocalCaEntity, "privateKeyEncrypted" | "privateKeyHash">;
@@ -467,6 +475,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       subject: req.subject,
       keyType,
       validityYears: req.validityYears || 10,
+      notBefore: req.notBefore,
+      notAfter: req.notAfter,
     });
     const bean = new LocalCaEntity();
     bean.name = req.name.trim();
@@ -526,6 +536,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       keyType: req.keyType,
       validityYears: req.validityYears,
       crlDistributionPoint: await this.crlService.getCrlUrl(root),
+      notBefore: req.notBefore,
+      notAfter: req.notAfter,
     });
     const bean = new LocalCaEntity();
     bean.name = req.name.trim();
@@ -848,6 +860,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       allowedDomains: parseAllowedDomains(ca.allowedDomains),
       usage: (req.usage || ca.usage) as LocalCaUsage,
       crlDistributionPoint: await this.crlService.getCrlUrl(ca),
+      notBefore: req.notBefore,
+      notAfter: req.notAfter,
     });
     await this.assertCaStillUsable(ca.id, manager);
     if (!ca.baseUrlLocked) {
@@ -888,6 +902,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       allowedDomains: parseAllowedDomains(ca.allowedDomains),
       usage: (req.usage || ca.usage) as LocalCaUsage,
       crlDistributionPoint: await this.crlService.getCrlUrl(ca),
+      notBefore: req.notBefore,
+      notAfter: req.notAfter,
     });
     await this.assertCaStillUsable(ca.id, manager);
     if (!ca.baseUrlLocked) {
@@ -963,6 +979,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   async setAcmeAccess(req: LocalCaScope & { caId: number; ipAllowlist?: any; basicAuth?: any; requiredHeaders?: any }) {
     return await this.acmeService.setAcmeAccess(req);
+  }
+
+  async rotateInternalToken(req: LocalCaScope & { caId: number }) {
+    return await this.acmeService.rotateInternalToken(req);
   }
 
   async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number; remark?: string; privileged?: boolean }) {

@@ -210,7 +210,31 @@ class HttpClient {
             throw new Error(`Unable to locate API resource URL in ACME directory: "${resource}"，获取ACME接口地址信息失败，可能网络不稳定或该证书颁发机构服务器崩溃，目录地址：${this.directoryUrl}，请测试地址是否可以正常访问并显示json格式的URL地址列表`);
         }
 
-        return dir[resource];
+        const resourceUrl = dir[resource];
+        this.assertResourceSameOrigin(resource, resourceUrl);
+        return resourceUrl;
+    }
+
+    /**
+     * 出站策略：目录返回的资源URL须与管理员配置的目录地址同源，
+     * 防止被篡改/恶意的目录把携带账户密钥签名的请求引导至其它主机（凭证外泄/SSRF）。
+     * 显式启用反向代理URL映射时视为管理员主动改写出站目标，跳过同源约束。
+     */
+    assertResourceSameOrigin(resource, resourceUrl) {
+        if (this.urlMapping && this.urlMapping.enabled) {
+            return;
+        }
+        let dirOrigin;
+        let resOrigin;
+        try {
+            dirOrigin = new URL(this.directoryUrl).origin;
+            resOrigin = new URL(resourceUrl).origin;
+        } catch {
+            throw new Error(`ACME目录资源地址不合法：${resource}=${resourceUrl}`);
+        }
+        if (resOrigin !== dirOrigin) {
+            throw new Error(`ACME目录资源「${resource}」与目录地址不同源，已拒绝出站：${resourceUrl}`);
+        }
     }
 
     /**
