@@ -1,5 +1,5 @@
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { notification, Tag } from "ant-design-vue";
+import { Modal, notification, Tag } from "ant-design-vue";
 import dayjs from "dayjs";
 import { localCaApi } from "./api";
 import { useLocalCaDialogs } from "./use";
@@ -20,7 +20,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   if (context.caAcmeEnableHandler) {
     context.caAcmeEnableHandler.value = async (row: any) => {
       return await openStepUp(t("certd.localCa.acmeStepUpTitle"), t("certd.localCa.acmeStepUpDesc"), async () => {
-        await localCaApi.EnableAcme(row.id, true, getSecretAccessToken());
+        await localCaApi.EnableAcme(row.id, true, getSecretAccessToken(), "local");
       });
     };
   }
@@ -71,6 +71,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         list = [];
       }
       row.allowedDomainsText = list.join("\n");
+      // ACME三档：关闭/仅本地/标准（legacy数据缺省标准，兼容旧行为）
+      if (!row.acmeEnabled) {
+        row.acmeState = "off";
+      } else if (row.acmeMode === "local") {
+        row.acmeState = "local";
+      } else {
+        row.acmeState = "standard";
+      }
     }
     return res;
   };
@@ -454,23 +462,24 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         },
-        acmeEnabled: {
+        acmeState: {
           title: t("certd.localCa.fields.acmeEnabled"),
-          type: "dict-switch",
+          type: "dict-select",
           dict: dict({
             data: [
-              { label: t("common.enabled"), value: true, color: "green" },
-              { label: t("common.disabled"), value: false, color: "default" },
+              { label: t("certd.localCa.acmeStateOff"), value: "off", color: "default" },
+              { label: t("certd.localCa.acmeStateLocal"), value: "local", color: "green" },
+              { label: t("certd.localCa.acmeStateStandard"), value: "standard", color: "orange" },
             ],
           }),
           form: { show: false },
           search: { show: false },
           column: {
-            width: 100,
+            width: 110,
             align: "center",
             component: {
-              name: "fs-dict-switch",
-              vModel: "checked",
+              name: "fs-dict-select",
+              vModel: "value",
               disabled: compute(({ row }) => row.caType !== "intermediate" || !!row.rotatedToId || !!row.revoked),
               on: {
                 async change({ row, $event }) {
@@ -478,16 +487,36 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                     await crudExpose.doRefresh();
                     return;
                   }
-                  if ($event === true) {
-                    const verified = await openStepUp(t("certd.localCa.acmeStepUpTitle"), t("certd.localCa.acmeStepUpDesc"), async () => {
-                      await localCaApi.EnableAcme(row.id, true, getSecretAccessToken());
+                  if ($event === "off") {
+                    await localCaApi.EnableAcme(row.id, false);
+                    notification.success({ message: t("certd.localCa.acmeChanged") });
+                    await crudExpose.doRefresh();
+                    return;
+                  }
+                  // 开放标准ACME意味着外部客户端可访问，先做风险提示并建议白名单限制
+                  if ($event === "standard") {
+                    const confirmed = await new Promise<boolean>(resolve => {
+                      Modal.confirm({
+                        title: t("certd.localCa.acmeStandardRiskTitle"),
+                        content: t("certd.localCa.acmeStandardRiskContent"),
+                        okText: t("certd.localCa.acmeStandardRiskOk"),
+                        okType: "danger",
+                        cancelText: t("certd.common.cancel"),
+                        onOk: () => resolve(true),
+                        onCancel: () => resolve(false),
+                      });
                     });
-                    if (!verified) {
+                    if (!confirmed) {
                       await crudExpose.doRefresh();
                       return;
                     }
-                  } else {
-                    await localCaApi.EnableAcme(row.id, false);
+                  }
+                  const verified = await openStepUp(t("certd.localCa.acmeStepUpTitle"), t("certd.localCa.acmeStepUpDesc"), async () => {
+                    await localCaApi.EnableAcme(row.id, true, getSecretAccessToken(), $event);
+                  });
+                  if (!verified) {
+                    await crudExpose.doRefresh();
+                    return;
                   }
                   notification.success({ message: t("certd.localCa.acmeChanged") });
                   await crudExpose.doRefresh();

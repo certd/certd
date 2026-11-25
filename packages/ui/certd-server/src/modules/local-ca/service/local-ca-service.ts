@@ -245,6 +245,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       const safe = item as any;
       delete safe.privateKeyEncrypted;
       delete safe.privateKeyHash;
+      // acmeConfig含密码哈希/内部凭证，列表只暴露派生的acmeMode，配置走专用脱敏接口
+      const config = this.readAcmeConfig(safe.acmeConfig);
+      safe.acmeMode = this.acmeService.resolveAcmeMode(config);
+      delete safe.acmeConfig;
     }
     await this.attachParentNames(records as any[]);
     return {
@@ -305,7 +309,28 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const ca = await this.followRotation(await this.accessService.getGrantedCa(req), req);
     const safe = this.toSafe(ca);
     (safe as any).effectiveBaseUrl = await this.crlService.resolveBaseUrl(safe as any);
+    // 仅本地ACME档的内部凭证只经服务端getter下发给插件，不进入任何HTTP DTO（toSafe已删acmeConfig）
+    const config = this.readAcmeConfig(ca.acmeConfig);
+    if (this.acmeService.resolveAcmeMode(config) === "local" && config.internalToken) {
+      (safe as any).localAcmeToken = config.internalToken;
+    }
+    (safe as any).acmeMode = this.acmeService.resolveAcmeMode(config);
     return safe;
+  }
+
+  private readAcmeConfig(value?: string): any {
+    if (!value) {
+      return {};
+    }
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === "object") {
+        return parsed;
+      }
+      return {};
+    } catch {
+      return {};
+    }
   }
 
   /** 轮换后签发自动指向新CA（与ACME重定向一致），保证引用旧CA的流水线无缝续期。 */
@@ -880,7 +905,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     });
   }
 
-  async setAcmeEnabled(req: LocalCaScope & { enabled: boolean; validityDays?: number }) {
+  async setAcmeEnabled(req: LocalCaScope & { enabled: boolean; validityDays?: number; mode?: "local" | "standard" }) {
     return await this.acmeService.setAcmeEnabled(req);
   }
 

@@ -95,6 +95,8 @@ type AcmeServiceOptions = {
    * 自定义ACME Directory URL（sslProvider=custom 时必填，其他颁发机构缺省使用内置端点）
    */
   directoryUrl?: string;
+  /** 附加到每个ACME请求的自定义头（如本地CA仅本地模式的内部凭证） */
+  extraHeaders?: Record<string, string>;
 };
 
 export class AcmeService {
@@ -239,6 +241,7 @@ export class AcmeService {
       urlMapping,
       signal: this.options.signal,
       logger: this.logger,
+      extraHeaders: this.options.extraHeaders,
     });
 
     if (conf.accountUrl == null) {
@@ -287,6 +290,7 @@ export class AcmeService {
       urlMapping,
       signal: this.options.signal,
       logger: this.logger,
+      extraHeaders: this.options.extraHeaders,
     });
   }
 
@@ -645,6 +649,7 @@ export class AcmeService {
       accountKey: cert.key,
       urlMapping,
       logger: this.logger,
+      extraHeaders: this.options.extraHeaders,
     });
     // 使用证书私钥签名吊销请求（JWS header 携带证书公钥 jwk，而非账号 kid）
     await client.revokeCertificate(cert.crt, {}, { includeJwsKid: false });

@@ -106,7 +106,7 @@ class AcmeClient {
 
         const cacheNonce = true
         // const cacheNonce = this.sslProvider === 'litessl';
-        this.http = new HttpClient(this.opts.directoryUrl, this.opts.accountKey, this.opts.externalAccountBinding, this.opts.urlMapping, opts.logger, cacheNonce);
+        this.http = new HttpClient(this.opts.directoryUrl, this.opts.accountKey, this.opts.externalAccountBinding, this.opts.urlMapping, opts.logger, cacheNonce, this.opts.extraHeaders);
         this.api = new AcmeApi(this.http, this.opts.accountUrl);
         this.logger = opts.logger;
     }
@@ -270,6 +270,7 @@ class AcmeClient {
             this.opts.urlMapping,
             this.logger,
             true,
+            this.opts.extraHeaders,
         );
         const newApiClient = new AcmeApi(newHttpClient, accountUrl);
 

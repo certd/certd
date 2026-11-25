@@ -712,6 +712,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       subDomainsGetter: subDomainsGetter,
       waitDnsDiffuseTime: this.waitDnsDiffuseTime,
       dnsServers: await this.resolveDnsServers(),
+      extraHeaders: (this.acmeProvider as any)?.extraHeaders,
     });
     return this.acme;
   }

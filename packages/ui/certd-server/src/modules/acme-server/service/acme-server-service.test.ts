@@ -190,3 +190,57 @@ describe("AcmeServerService finalize authorization", () => {
     await assert.rejects(() => service.assertOrderStillAuthorized({ allowedDomains: null }, account, order), /不在该CA允许签发的范围内/);
   });
 });
+
+describe("AcmeServerService ACME三档门禁", () => {
+  function createGateService(acmeConfig: any) {
+    const service: any = new AcmeServerService();
+    service.issuer = {
+      async getAcmeAccessView() {
+        return { id: 2, caType: "intermediate", acmeEnabled: true, acmeConfig: acmeConfig == null ? null : JSON.stringify(acmeConfig) };
+      },
+    };
+    return service;
+  }
+  function createCtx(ip: string, headers: Record<string, string> = {}) {
+    return {
+      ip,
+      get(name: string) {
+        return headers[name.toLowerCase()] || "";
+      },
+      set() {},
+    };
+  }
+
+  it("仅本地档拒绝外部IP，放行回环IPv4/IPv6", async () => {
+    const service = createGateService({ acmeMode: "local", internalToken: "tok" });
+    await assert.rejects(() => service.assertAccess(createCtx("203.0.113.9"), 2), /仅本地模式/);
+    await service.assertAccess(createCtx("127.0.0.1"), 2);
+    await service.assertAccess(createCtx("::1"), 2);
+    await service.assertAccess(createCtx("::ffff:127.0.0.1"), 2);
+  });
+
+  it("仅本地档携带正确内部凭证的外部IP放行，错误凭证拒绝", async () => {
+    const service = createGateService({ acmeMode: "local", internalToken: "tok" });
+    await service.assertAccess(createCtx("203.0.113.9", { "x-certd-acme-token": "tok" }), 2);
+    await assert.rejects(() => service.assertAccess(createCtx("203.0.113.9", { "x-certd-acme-token": "wrong" }), 2), /仅本地模式/);
+  });
+
+  it("标准档（含legacy缺省）未配置白名单时默认仅内网，0.0.0.0/0显式放行全部", async () => {
+    const legacy = createGateService(null);
+    await legacy.assertAccess(createCtx("10.1.2.3"), 2);
+    await legacy.assertAccess(createCtx("127.0.0.1"), 2);
+    await assert.rejects(() => legacy.assertAccess(createCtx("203.0.113.9"), 2), /白名单/);
+    const open = createGateService({ acmeMode: "standard", ipAllowlist: ["0.0.0.0/0"] });
+    await open.assertAccess(createCtx("203.0.113.9"), 2);
+    const standard = createGateService({ acmeMode: "standard", ipAllowlist: ["10.0.0.0/8"] });
+    await standard.assertAccess(createCtx("10.1.2.3"), 2);
+    await assert.rejects(() => standard.assertAccess(createCtx("203.0.113.9"), 2), /白名单/);
+  });
+
+  it("仅本地档与IP白名单叠加生效", async () => {
+    const service = createGateService({ acmeMode: "local", internalToken: "tok", ipAllowlist: ["10.0.0.0/8"] });
+    // 回环来源不在白名单内仍被拒绝
+    await assert.rejects(() => service.assertAccess(createCtx("127.0.0.1"), 2), /白名单/);
+    await service.assertAccess(createCtx("10.1.2.3", { "x-certd-acme-token": "tok" }), 2);
+  });
+});

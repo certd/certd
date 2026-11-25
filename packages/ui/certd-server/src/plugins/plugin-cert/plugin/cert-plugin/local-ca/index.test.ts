@@ -289,3 +289,25 @@ describe("CertApplyLocalCa", () => {
     assert.equal(plugin.sslProvider, "custom");
   });
 });
+
+describe("CertApplyLocalCa 仅本地ACME凭证", () => {
+  it("仅本地档ACME请求携带内部凭证头", async () => {
+    const { CertApplyLocalCa } = await import("./index.js");
+    const plugin: any = new CertApplyLocalCa();
+    plugin.mode = "local-acme";
+    plugin.localCa = { id: 1, localAcmeToken: "tok-123" };
+    plugin.resolvedDirectoryUrl = "https://certd.example.com/api/acme/1/directory";
+    const provider = await plugin.getAcmeProvider();
+    assert.deepEqual(provider.extraHeaders, { "x-certd-acme-token": "tok-123" });
+  });
+
+  it("标准档不携带内部凭证头", async () => {
+    const { CertApplyLocalCa } = await import("./index.js");
+    const plugin: any = new CertApplyLocalCa();
+    plugin.mode = "local-acme";
+    plugin.localCa = { id: 1 };
+    plugin.resolvedDirectoryUrl = "https://certd.example.com/api/acme/1/directory";
+    const provider = await plugin.getAcmeProvider();
+    assert.equal(provider.extraHeaders, undefined);
+  });
+});

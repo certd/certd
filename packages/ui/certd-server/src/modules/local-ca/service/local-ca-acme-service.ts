@@ -130,7 +130,7 @@ export class LocalCaAcmeService {
     return ca;
   }
 
-  async setAcmeEnabled(req: LocalCaScope & { enabled: boolean; validityDays?: number }) {
+  async setAcmeEnabled(req: LocalCaScope & { enabled: boolean; validityDays?: number; mode?: "local" | "standard" }) {
     const ca = await this.accessService.getOwnedCa(req);
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以启用ACME服务");
@@ -144,15 +144,31 @@ export class LocalCaAcmeService {
       return;
     }
     ca.acmeEnabled = true;
+    const config = this.readAcmeConfigObject(ca.acmeConfig);
     if (req.validityDays) {
-      const config = this.readAcmeConfigObject(ca.acmeConfig);
       config.validityDays = Math.max(1, Math.min(3650, req.validityDays));
-      ca.acmeConfig = JSON.stringify(config);
     }
+    // 三档模式：关闭=acmeEnabled false；仅本地=local（回环IP或内部凭证）；标准=standard（完整门禁）。
+    // 未传mode时保留原配置，legacy数据缺省按standard（兼容旧行为）
+    if (req.mode === "local" || req.mode === "standard") {
+      config.acmeMode = req.mode;
+    }
+    if (this.resolveAcmeMode(config) === "local" && !config.internalToken) {
+      config.internalToken = crypto.randomBytes(24).toString("base64url");
+    }
+    ca.acmeConfig = JSON.stringify(config);
     ca.updateTime = new Date();
     await this.repository.save(ca);
     await this.providerSync.syncForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${ca.id}: ${e?.message || e}`));
-    logger.info(`[local-ca] acme enabled ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
+    logger.info(`[local-ca] acme enabled ca=${ca.id} mode=${this.resolveAcmeMode(config)} user=${req.userId} project=${req.projectId ?? "-"}`);
+  }
+
+  /** 读取ACME模式：缺省standard（legacy兼容），仅local为仅本地档。 */
+  resolveAcmeMode(config: any): "local" | "standard" {
+    if (config?.acmeMode === "local") {
+      return "local";
+    }
+    return "standard";
   }
 
   /**
@@ -176,6 +192,7 @@ export class LocalCaAcmeService {
     const config = this.readAcmeConfigObject(ca.acmeConfig);
     return {
       acmeEnabled: ca.acmeEnabled,
+      acmeMode: this.resolveAcmeMode(config),
       ipAllowlist: Array.isArray(config.ipAllowlist) ? config.ipAllowlist : [],
       basicAuth: { enabled: config.basicAuth?.enabled === true, username: config.basicAuth?.username || "" },
       requiredHeaders: Array.isArray(config.requiredHeaders) ? config.requiredHeaders : [],

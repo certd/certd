@@ -23,6 +23,8 @@ type LocalCaSubscribeInfo = {
   revoked?: boolean;
   notAfter?: number;
   acmeEnabled?: boolean;
+  acmeMode?: "local" | "standard";
+  localAcmeToken?: string;
   allowedDomains?: string | null;
   effectiveBaseUrl?: string;
   certPem?: string;
@@ -360,6 +362,11 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   protected async getAcmeProvider(): Promise<CustomAcmeProvider> {
     const directoryUrl = await this.getResolvedDirectoryUrl();
     this.sslProvider = this.buildSslProvider(directoryUrl) as any;
+    // 仅本地档ACME门禁要求内部凭证头；凭证经服务端getter下发，外部客户端无法获得
+    let extraHeaders: Record<string, string> | undefined;
+    if (this.localCa?.localAcmeToken) {
+      extraHeaders = { "x-certd-acme-token": this.localCa.localAcmeToken };
+    }
     return {
       title: "本地ACME",
       sslProvider: "custom",
@@ -367,6 +374,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       builtIn: false,
       needEAB: true,
       reverseProxy: this.reverseProxy || "",
+      extraHeaders,
     } as any;
   }
 

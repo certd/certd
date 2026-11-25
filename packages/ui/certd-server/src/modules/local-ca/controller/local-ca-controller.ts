@@ -229,6 +229,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       projectId,
       enabled: body.enabled === true,
       validityDays: body.validityDays,
+      mode: body.mode === "local" || body.mode === "standard" ? body.mode : undefined,
     });
     this.auditLog({ content: `${body.enabled ? "启用" : "停用"}了本地CA的ACME服务(ID:${body.id})` });
     return this.ok(true);

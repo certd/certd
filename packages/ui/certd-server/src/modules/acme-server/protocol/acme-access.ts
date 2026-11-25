@@ -126,6 +126,9 @@ export function matchIpAllowlist(ip: string, allowlist: string[]): boolean {
   return allowlist.some(rule => matchesIpRule(ip, rule));
 }
 
+/** 未配置白名单时的默认放行范围：仅内网/回环地址。 */
+export const DEFAULT_INTRANET_RULES = ["127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "::1/128", "fc00::/7", "fe80::/10"];
+
 /** 规范化IP白名单：trim/去空/校验，上限50。 */
 export function normalizeIpAllowlist(list: any): string[] {
   if (list == null) {

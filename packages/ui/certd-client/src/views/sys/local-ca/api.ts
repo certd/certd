@@ -80,11 +80,11 @@ export const localCaApi = {
     });
   },
 
-  async EnableAcme(id: number, enabled: boolean, verifyToken?: string) {
+  async EnableAcme(id: number, enabled: boolean, verifyToken?: string, mode?: "local" | "standard") {
     return await req({
       url: apiPrefix + "/acme",
       method: "post",
-      data: { id, enabled, verifyToken },
+      data: { id, enabled, verifyToken, mode },
     });
   },
 

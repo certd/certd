@@ -1250,6 +1250,30 @@ describe("LocalCaService", () => {
     );
   });
 
+  it("ACME三档：legacy缺省标准，显式local生成内部凭证并经getter下发", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Mode CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    let config = JSON.parse(store.get(id).acmeConfig || "{}");
+    assert.equal(config.acmeMode, undefined);
+    assert.equal(service.acmeService.resolveAcmeMode(config), "standard");
+
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true, mode: "local" });
+    config = JSON.parse(store.get(id).acmeConfig);
+    assert.equal(config.acmeMode, "local");
+    assert.ok(config.internalToken);
+
+    const safe: any = await service.getUserCa({ id, userId: 1 });
+    assert.equal(safe.localAcmeToken, config.internalToken);
+    assert.equal(safe.acmeMode, "local");
+    assert.equal(safe.acmeConfig, undefined);
+
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true, mode: "standard" });
+    const safe2: any = await service.getUserCa({ id, userId: 1 });
+    assert.equal(safe2.acmeMode, "standard");
+    assert.equal(safe2.localAcmeToken, undefined);
+  });
+
   it("敏感更新会被识别为需要Step-up", async () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "StepUp CA" });

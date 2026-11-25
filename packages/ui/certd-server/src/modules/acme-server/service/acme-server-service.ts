@@ -11,7 +11,7 @@ import type { AcmeIssuedCertificateStore } from "../acme-issued-certificate-stor
 import { getCsrDomains, matchAllowedDomains, normalizeDomains, verifyCertIssuedBy } from "../../cert/service/cert-utils.js";
 import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeOrderEntity } from "../entity/acme-server.js";
 import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "../protocol/acme-jws.js";
-import { matchIpAllowlist } from "../protocol/acme-access.js";
+import { DEFAULT_INTRANET_RULES, matchIpAllowlist, matchesIpRule } from "../protocol/acme-access.js";
 import bcrypt from "bcryptjs";
 import { fetchHttpChallenge } from "../protocol/acme-network.js";
 import { isSameAcmeUrl } from "../protocol/acme-url.js";
@@ -915,7 +915,7 @@ export class AcmeServerService {
   }
 
   private parseAcmeConfig(value?: string) {
-    const defaults = { validityDays: 90, maxPendingOrders: 20, maxOrdersPerMinute: 10, ipAllowlist: [] as string[], basicAuth: { enabled: false, username: "", passwordHash: "" }, requiredHeaders: [] as { name: string; value: string }[] };
+    const defaults = { validityDays: 90, maxPendingOrders: 20, maxOrdersPerMinute: 10, acmeMode: "standard", internalToken: "", ipAllowlist: [] as string[], basicAuth: { enabled: false, username: "", passwordHash: "" }, requiredHeaders: [] as { name: string; value: string }[] };
     if (!value) {
       return defaults;
     }
@@ -925,6 +925,9 @@ export class AcmeServerService {
         validityDays: parsed.validityDays || 90,
         maxPendingOrders: Math.max(1, Number(parsed.maxPendingOrders) || 20),
         maxOrdersPerMinute: Math.max(1, Number(parsed.maxOrdersPerMinute) || 10),
+        // 缺省standard兼容legacy数据；local=仅本地（回环IP或Certd内部凭证）
+        acmeMode: parsed.acmeMode === "local" ? "local" : "standard",
+        internalToken: String(parsed.internalToken || ""),
         ipAllowlist: Array.isArray(parsed.ipAllowlist) ? parsed.ipAllowlist : [],
         basicAuth: parsed.basicAuth && typeof parsed.basicAuth === "object" ? { enabled: parsed.basicAuth.enabled === true, username: String(parsed.basicAuth.username || ""), passwordHash: String(parsed.basicAuth.passwordHash || "") } : defaults.basicAuth,
         requiredHeaders: Array.isArray(parsed.requiredHeaders) ? parsed.requiredHeaders : [],
@@ -952,7 +955,22 @@ export class AcmeServerService {
       }
     }
     const config = this.parseAcmeConfig(ca.acmeConfig);
-    if (config.ipAllowlist.length && !matchIpAllowlist(ctx.ip || "", config.ipAllowlist)) {
+    const ip = String(ctx.ip || "");
+    const token = String(ctx.get("x-certd-acme-token") || "");
+    const internalTrusted = config.acmeMode === "local" && !!config.internalToken && token === config.internalToken;
+    // 仅本地档：只放行本机回环来源或携带内部凭证的Certd流水线请求
+    if (config.acmeMode === "local") {
+      const loopback = matchesIpRule(ip, "127.0.0.0/8") || matchesIpRule(ip, "::1/128");
+      if (!loopback && !internalTrusted) {
+        throw new AcmeProblem("unauthorized", "该CA的ACME服务为仅本地模式，禁止外部访问", 403);
+      }
+    }
+    // 未配置白名单时默认仅允许内网访问；内部凭证已鉴别Certd自身，不受默认限制（显式白名单仍生效）
+    let allowlist = config.ipAllowlist;
+    if (!allowlist.length && !internalTrusted) {
+      allowlist = DEFAULT_INTRANET_RULES;
+    }
+    if (allowlist.length && !matchIpAllowlist(ip, allowlist)) {
       throw new AcmeProblem("unauthorized", "来源IP不在白名单内", 403);
     }
     if (config.basicAuth.enabled) {

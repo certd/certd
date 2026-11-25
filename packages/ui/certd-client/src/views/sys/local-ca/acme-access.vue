@@ -1,5 +1,7 @@
 <template>
   <div class="acme-access">
+    <a-alert v-if="acmeMode === 'local'" type="success" show-icon class="mb-3" :message="t('certd.localCa.acmeModeLocalHint')" />
+    <a-alert v-else type="warning" show-icon class="mb-3" :message="t('certd.localCa.acmeModeStandardRisk')" :description="t('certd.localCa.acmeModeStandardRiskDesc')" />
     <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.acmeAccessHint')" />
     <a-spin :spinning="loading">
       <a-form layout="vertical">
@@ -52,6 +54,7 @@ const props = defineProps<{
 const { t } = useI18n();
 const loading = ref(false);
 const saving = ref(false);
+const acmeMode = ref<"local" | "standard">("standard");
 const ipText = ref("");
 const basicEnabled = ref(false);
 const basicUsername = ref("");
@@ -62,6 +65,7 @@ async function load() {
   loading.value = true;
   try {
     const cfg = await localCaApi.GetAcmeAccess(props.caId);
+    acmeMode.value = cfg.acmeMode === "local" ? "local" : "standard";
     ipText.value = (cfg.ipAllowlist || []).join("\n");
     basicEnabled.value = cfg.basicAuth?.enabled === true;
     basicUsername.value = cfg.basicAuth?.username || "";
@@ -76,7 +80,10 @@ async function save() {
   const action = async () => {
     saving.value = true;
     try {
-      const ipAllowlist = ipText.value.split(/[\n,，\s]+/).map(s => s.trim()).filter(Boolean);
+      const ipAllowlist = ipText.value
+        .split(/[\n,，\s]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
       const requiredHeaders = headers.value.filter(h => h.name.trim()).map(h => ({ name: h.name.trim(), value: h.value }));
       const basicAuth: any = { enabled: basicEnabled.value, username: basicUsername.value };
       if (basicPassword.value) {

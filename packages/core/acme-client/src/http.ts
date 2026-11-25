@@ -20,7 +20,7 @@ import { getJwk } from './crypto/index.js';
  */
 
 class HttpClient {
-    constructor(directoryUrl, accountKey, externalAccountBinding = {}, urlMapping = {}, logger, cacheNonce= false) {
+    constructor(directoryUrl, accountKey, externalAccountBinding = {}, urlMapping = {}, logger, cacheNonce= false, extraHeaders = {}) {
         this.directoryUrl = directoryUrl;
         this.accountKey = accountKey;
         this.externalAccountBinding = externalAccountBinding;
@@ -35,6 +35,8 @@ class HttpClient {
         this.log = logger ? logger.info.bind(logger) : log;
         this.nonces = [];
         this.cacheNonce = cacheNonce;
+        // 每个请求附加的自定义头（如本地ACME内部凭证），调用方头优先
+        this.extraHeaders = extraHeaders || {};
     }
 
     pushNonce(nonce) {
@@ -92,6 +94,7 @@ class HttpClient {
         if (typeof opts.headers === 'undefined') {
             opts.headers = {};
         }
+        opts.headers = { ...this.extraHeaders, ...opts.headers };
 
         opts.headers['Content-Type'] = 'application/jose+json';
 
