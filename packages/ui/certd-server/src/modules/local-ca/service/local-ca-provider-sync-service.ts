@@ -37,11 +37,39 @@ export class LocalCaProviderSyncService {
     return false;
   }
 
+  private lineageOf(ca: LocalCaEntity): string | null {
+    try {
+      const config = JSON.parse(ca.acmeConfig || "{}");
+      if (typeof config?.acmeLineageProvider === "string" && config.acmeLineageProvider) {
+        return config.acmeLineageProvider;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** 持久化稳定lineage标识，保证禁用/重启用、轮换后账号与流水线零迁移。 */
+  private async persistLineage(ca: LocalCaEntity, sslProvider: string) {
+    if (this.lineageOf(ca) === sslProvider) {
+      return;
+    }
+    let config: any = {};
+    try {
+      config = JSON.parse(ca.acmeConfig || "{}");
+    } catch {
+      config = {};
+    }
+    config.acmeLineageProvider = sslProvider;
+    ca.acmeConfig = JSON.stringify(config);
+    await this.repository.save(ca);
+  }
+
   private async buildEntry(ca: LocalCaEntity, existing?: any) {
     const baseUrl = String((await this.crlService.resolveBaseUrl(ca)) || "").replace(/\/+$/, "");
     return {
       ...(existing || {}),
-      sslProvider: existing?.sslProvider || `local-ca-${ca.id}`,
+      sslProvider: existing?.sslProvider || this.lineageOf(ca) || `local-ca-${ca.id}`,
       title: ca.name,
       directoryUrl: `${baseUrl}/api/acme/${ca.id}/directory`,
       needEAB: true,
@@ -70,6 +98,7 @@ export class LocalCaProviderSyncService {
         return;
       }
       const entry = await this.buildEntry(ca, existing);
+      await this.persistLineage(ca, entry.sslProvider);
       if (idx >= 0) {
         if (JSON.stringify(providers[idx]) !== JSON.stringify(entry)) {
           providers[idx] = entry;
@@ -113,6 +142,7 @@ export class LocalCaProviderSyncService {
       entry.localCaId = newId;
       providers[idx] = entry;
       changed = true;
+      await this.persistLineage(newCa, entry.sslProvider);
     }
     if (changed) {
       privateSetting.customAcmeProviders = providers;

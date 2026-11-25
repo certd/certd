@@ -27,6 +27,15 @@ function createService(cas: any[], providers: any[]) {
     async find() {
       return cas.filter(item => !item.deleted);
     },
+    async save(ca: any) {
+      const idx = cas.findIndex(item => Number(item.id) === Number(ca.id));
+      if (idx >= 0) {
+        cas[idx] = ca;
+      } else {
+        cas.push(ca);
+      }
+      return ca;
+    },
   };
   (service as any).sysSettingsService = {
     async getPrivateSettings() {
@@ -158,6 +167,22 @@ describe("LocalCaProviderSyncService", () => {
     await service.reconcileAll();
     await service.reconcileAll();
     assert.equal(saves.length, 1);
+  });
+
+  it("轮换后禁用再启用ACME仍恢复稳定sslProvider lineage", async () => {
+    const oldCa = createCa();
+    const newCa = createCa({ id: 9, name: "G2" });
+    const { service, settings } = createService([oldCa, newCa], []);
+    await service.syncForCa(4);
+    oldCa.disabled = true;
+    oldCa.rotatedToId = 9;
+    await service.onRotated(4, 9);
+    await service.removeForCa(9);
+    assert.equal(settings.customAcmeProviders.length, 0);
+    await service.syncForCa(9);
+    assert.equal(settings.customAcmeProviders.length, 1);
+    assert.equal(settings.customAcmeProviders[0].sslProvider, "local-ca-4");
+    assert.equal(settings.customAcmeProviders[0].localCaId, 9);
   });
 
   it("根CA不同步", async () => {
