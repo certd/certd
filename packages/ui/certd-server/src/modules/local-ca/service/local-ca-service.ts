@@ -390,7 +390,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     const list = await this.find({ where: { id: In(allowedIds), caType: "intermediate", deleted: false }, order: { id: "DESC" } });
     // 选择器仅展示可用中间CA：排除已轮换退役/禁用/归档的CA
-    const usable = list.filter(item => !item.disabled && !item.rotatedToId);
+    const usable = list.filter(item => !item.disabled && !item.rotatedToId && !item.revoked);
     const filtered = usable.filter(item => !req.searchKey || item.name.toLowerCase().includes(req.searchKey.toLowerCase()) || item.subjectCn.toLowerCase().includes(req.searchKey.toLowerCase()));
     const safeList = filtered.map(item => this.toSafe(item));
     for (const item of safeList) {
