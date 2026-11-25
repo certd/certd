@@ -639,6 +639,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.disabled = false;
     bean.remark = `轮换自CA(ID:${old.id})`;
     bean.exportDisabled = old.exportDisabled;
+    bean.allowDirectSign = old.allowDirectSign === true;
     bean.deleted = false;
     bean.revoked = false;
     await this.crlService.refreshRootCrlCache(root, rootPrivateKey);
@@ -1206,9 +1207,13 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async listIssuedCerts(req: LocalCaScope) {
-    const ca = await this.accessService.getOwnedCa(req);
+    const ca = await this.accessService.getOwnedCa(req, false, true);
+    // 轮换链集中展示：旧CA签发的证书归最新CA视图，标注实际签发CA
+    const chain = await this.accessService.collectRotationChain(ca.id);
+    const chainCas = await this.repository.find({ where: { id: In(chain) } });
+    const caNameMap = new Map(chainCas.map(item => [item.id, item.name]));
     const list = await this.certInfoService.find({
-      where: { localCaId: ca.id },
+      where: { localCaId: In(chain) },
       order: { id: "DESC" },
     });
     const children = await this.find({ where: { parentId: ca.id, deleted: false }, order: { id: "DESC" } });
@@ -1229,6 +1234,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const leafRows = list.map(item => ({
       id: item.id,
       type: "leaf",
+      caId: item.localCaId,
+      caName: caNameMap.get(item.localCaId) || null,
       userId: item.userId,
       projectId: item.projectId,
       caType: undefined,

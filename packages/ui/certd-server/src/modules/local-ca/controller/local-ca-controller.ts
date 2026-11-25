@@ -26,7 +26,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询本地CA分页列表" })
   async page(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
     body.query = body.query ?? {};
     const userId = this.getUserId();
     const name = body.query.name;
@@ -67,7 +66,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/list", { description: Constants.per.authOnly, summary: "查询本地CA列表" })
   async list(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
     const userId = this.getUserId();
     const list = await this.service.listSafe({
       adminUserId: userId,
@@ -157,7 +155,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/intermediate/rotate", { description: Constants.per.authOnly, summary: "轮换中间CA（生成新中间CA并停用旧CA）" })
   async rotateIntermediate(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
     this.assertStepUp(body.verifyToken, "轮换中间CA");
     const userId = this.getUserId();
     await this.checkCaAccess(body.id, "write", true);
@@ -317,7 +314,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/adminOptions", { description: Constants.per.authOnly, summary: "查询管理员本地CA选项" })
   async adminOptions(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
     const userId = this.getUserId();
     return this.ok(await this.service.listAdminOptions({ adminUserId: userId, searchKey: body?.searchKey }));
   }
@@ -475,8 +471,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/certBySerial", { description: Constants.per.authOnly, summary: "按序列号查询证书PEM（查看证书信息）" })
   async certBySerial(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
-    const userId = this.getUserId();
+    const { userId } = await this.checkCaAccess(body.id, "read", false, true);
     const certPem = await this.service.getCertPemBySerial({ id: body.id, userId, serial: body.serial });
     return this.ok({ certPem });
   }
@@ -499,7 +494,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/grants/add", { description: Constants.per.authOnly, summary: "授权用户使用中间CA" })
   async addGrant(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
     this.assertStepUp(body.verifyToken, "授权用户使用中间CA");
     const userId = this.getUserId();
     const res = await this.service.addGrant({ id: body.id, userId, grantUserId: body.grantUserId, grantProjectId: body.grantProjectId });
@@ -510,7 +504,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/grants/remove", { description: Constants.per.authOnly, summary: "移除CA用户授权" })
   async removeGrant(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
     this.assertStepUp(body.verifyToken, "移除CA用户授权");
     const userId = this.getUserId();
     await this.service.removeGrant({ id: body.id, userId, grantId: body.grantId });
@@ -526,7 +519,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/admins/add", { description: Constants.per.authOnly, summary: "添加CA管理员" })
   async addAdmin(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
     this.assertStepUp(body.verifyToken, "添加CA管理员");
     const userId = this.getUserId();
     const res = await this.service.addCaAdmin({ id: body.id, userId, adminUserId: body.adminUserId, role: body.role });
@@ -536,7 +528,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/admins/remove", { description: Constants.per.authOnly, summary: "移除CA管理员" })
   async removeAdmin(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
     this.assertStepUp(body.verifyToken, "移除CA管理员");
     const userId = this.getUserId();
     await this.service.removeCaAdmin({ id: body.id, userId, adminUserId: body.adminUserId });
@@ -545,7 +536,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
   }
 
   private async checkCaAccess(id: number, mode: "read" | "write" = "read", requireOwner = false, includeDeleted = false) {
-    this.assertSystemAdmin();
+    // 企业场景：分公司维护员可为非系统管理员的CA owner/operator，边界由CA ACL判定
     const userId = this.getUserId();
     await this.service.assertAdminCa(id, userId, requireOwner, includeDeleted);
     return { userId, projectId: undefined as number | undefined };

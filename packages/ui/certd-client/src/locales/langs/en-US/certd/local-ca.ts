@@ -68,6 +68,7 @@ export default {
   certStatus: "Status",
   certExpires: "Expires",
   certApplyTime: "Issued At",
+  certIssuedBy: "Issued By",
   certGroupCount: "Certs",
   certKeywordPlaceholder: "Search domain/serial",
   certFilterAll: "All statuses",

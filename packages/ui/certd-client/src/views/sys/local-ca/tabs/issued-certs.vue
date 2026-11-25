@@ -15,6 +15,9 @@
       <a-table-column :title="t('certd.localCa.certDomain')" :width="260" ellipsis>
         <template #default="{ record }">{{ record.domainsText }}</template>
       </a-table-column>
+      <a-table-column :title="t('certd.localCa.certIssuedBy')" :width="160" ellipsis>
+        <template #default="{ record }">{{ record.caName || "-" }}</template>
+      </a-table-column>
       <a-table-column :title="t('certd.localCa.certGroupCount')" :width="90" align="center">
         <template #default="{ record }">{{ record.items.length }}</template>
       </a-table-column>
@@ -40,6 +43,9 @@
             <template #default="{ record: item }">
               <a-tag :color="statusColor(item)">{{ statusLabel(item) }}</a-tag>
             </template>
+          </a-table-column>
+          <a-table-column :title="t('certd.localCa.certIssuedBy')" :width="160" ellipsis>
+            <template #default="{ record: item }">{{ item.caName || "-" }}</template>
           </a-table-column>
           <a-table-column :title="t('certd.localCa.certOwner')" :width="160" ellipsis>
             <template #default="{ record: item }">{{ ownerLabel(item) }}</template>
@@ -175,6 +181,7 @@ const groups = computed(() => {
       result.push({
         key: `ca-${item.id}`,
         type: "ca",
+        caName: item.caName || item.domain,
         domainsText: item.domain,
         items: [{ ...item, rowKey: `ca-${item.id}` }],
         activeCount: b === "active" ? 1 : 0,
@@ -195,6 +202,7 @@ const groups = computed(() => {
       leafMap.set(key, {
         key: `leaf-${key}`,
         type: "leaf",
+        caName: null as string | null,
         domainsText: domainList.join(", "),
         items: [],
         activeCount: 0,
@@ -206,6 +214,9 @@ const groups = computed(() => {
     }
     const group = leafMap.get(key);
     group.items.push({ ...item, rowKey: `leaf-${item.id}` });
+    if (!group.caName) {
+      group.caName = item.caName || null;
+    }
     const b = bucket(item);
     if (b === "active") {
       group.activeCount++;

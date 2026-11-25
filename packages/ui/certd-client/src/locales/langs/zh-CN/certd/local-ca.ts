@@ -67,6 +67,7 @@ export default {
   certStatus: "状态",
   certExpires: "过期时间",
   certApplyTime: "签发时间",
+  certIssuedBy: "签发CA",
   certGroupCount: "证书数",
   certKeywordPlaceholder: "搜索域名/序列号",
   certFilterAll: "全部状态",

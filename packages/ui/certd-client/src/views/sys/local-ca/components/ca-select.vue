@@ -55,10 +55,11 @@ async function load() {
     if (seq !== loadSeq) {
       return;
     }
-    let list = all;
+    // 轮换的中间CA折叠到最新一代：选择器仅显根CA与最新中间CA
+    let list = all.filter((ca: any) => !(ca.caType === "intermediate" && ca.rotatedToId));
     if (props.acmeOnly) {
       // 仅展示当前有效（本地/标准档）中间CA；轮换/禁用/归档CA的凭证由最新CA继承管理
-      list = all.filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !ca.disabled && !ca.rotatedToId && !ca.deleted);
+      list = list.filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !ca.disabled && !ca.deleted);
     }
     cas.value = list;
     options.value = list.map((ca: any) => ({ label: buildLabel(ca), value: Number(ca.id) }));
