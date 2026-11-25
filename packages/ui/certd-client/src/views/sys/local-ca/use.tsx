@@ -1,16 +1,12 @@
 import { dict } from "@fast-crud/fast-crud";
-import { Alert, Button, Input, Modal, notification } from "ant-design-vue";
-import { h, ref } from "vue";
+import { Modal, notification } from "ant-design-vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useModal } from "/@/use/use-modal";
 import { useI18n } from "/src/locales";
-import { createAccessApi, getSecretAccessToken } from "/@/views/certd/access/api";
-import LocalCaIssuedCerts from "./issued-certs.vue";
-import LocalCaAcmeAccounts from "./acme-accounts.vue";
-import LocalCaEabManager from "./eab-manager.vue";
-import LocalCaAcmeAccess from "./acme-access.vue";
+import { getSecretAccessToken } from "/@/views/certd/access/api";
 import LocalCaArchivedRoots from "./archived-roots.vue";
 import { localCaApi } from "./api";
+import { useStepUp } from "./use-step-up";
 
 function parseAllowedDomains(text: string) {
   return String(text || "")
@@ -23,11 +19,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   const { t } = useI18n();
   const { openFormDialog } = useFormDialog();
   const model = useModal();
-  const secretAccessApi = createAccessApi("user");
-  const passkeySupported = typeof window !== "undefined" && "PublicKeyCredential" in window && "credentials" in navigator;
-  const passkeyLoading = ref(false);
-  const verifyDialogRef = ref<any>(null);
-  let pendingStepUpAction: (() => Promise<void>) | null = null;
+  const { openStepUp } = useStepUp();
 
   async function openGenerate() {
     await openFormDialog({
@@ -174,28 +166,28 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       },
       async onSubmit(form: any) {
         const doGenerate = async () => {
-        await localCaApi.Generate({
-          name: form.name,
-          subject: {
-            CN: form.subjectCn,
-            O: form.subjectO,
-            OU: form.subjectOU,
-            C: form.subjectC,
-            ST: form.subjectST,
-            L: form.subjectL,
-          },
-          keyType: form.keyType,
-          validityYears: form.validityYears,
-          usage: form.usage,
-          allowedDomains: parseAllowedDomains(form.allowedDomains),
-          maxValidityDays: form.maxValidityDays || 0,
-          baseUrl: form.baseUrl,
-          remark: form.remark,
-          exportDisabled: form.exportDisabled === true,
-          dnsServer: form.dnsServer,
-        });
-        notification.success({ message: t("certd.localCa.generateSuccess") });
-        await crudExpose.doRefresh();
+          await localCaApi.Generate({
+            name: form.name,
+            subject: {
+              CN: form.subjectCn,
+              O: form.subjectO,
+              OU: form.subjectOU,
+              C: form.subjectC,
+              ST: form.subjectST,
+              L: form.subjectL,
+            },
+            keyType: form.keyType,
+            validityYears: form.validityYears,
+            usage: form.usage,
+            allowedDomains: parseAllowedDomains(form.allowedDomains),
+            maxValidityDays: form.maxValidityDays || 0,
+            baseUrl: form.baseUrl,
+            remark: form.remark,
+            exportDisabled: form.exportDisabled === true,
+            dnsServer: form.dnsServer,
+          });
+          notification.success({ message: t("certd.localCa.generateSuccess") });
+          await crudExpose.doRefresh();
         };
         if (String(form.dnsServer || "").trim()) {
           await openStepUp(t("certd.localCa.dnsStepUpTitle"), t("certd.localCa.dnsStepUpDesc"), doGenerate);
@@ -367,7 +359,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
-  async function openCreateEab(onCreated?: () => void) {
+  async function openCreateEab(onCreated?: () => void, initialCaId?: number) {
     const allCas = await localCaApi.GetAdminOptions();
     const caOptions = (allCas || []).filter((item: any) => item.caType === "intermediate" && item.acmeEnabled && !item.disabled).map((item: any) => ({ label: `${item.name} (${item.subjectCn})`, value: item.id }));
     if (caOptions.length === 0) {
@@ -392,7 +384,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       title: t("certd.localCa.eabCreateTitle"),
       wrapper: { width: 600 },
       body: () => <a-alert type="warning" show-icon message={t("certd.localCa.eabCreateWarning")} description={t("certd.localCa.eabCreateWarningDesc")} class="mb-4" />,
-      initialForm: { maxUses: 1, expiresDays: 3650, privileged: false },
+      initialForm: { caId: initialCaId, maxUses: 1, expiresDays: 3650, privileged: false },
       columns: {
         caId: {
           title: t("certd.localCa.eabCa"),
@@ -490,47 +482,6 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         });
         onCreated?.();
       },
-    });
-  }
-
-  async function openAcmeAccess(row: any) {
-    if (!row?.id) {
-      notification.warning({ message: t("certd.localCa.selectCaFirst") });
-      return;
-    }
-    model.success({
-      title: `${t("certd.localCa.acmeAccessTitle")} - ${row.name}`,
-      maskClosable: true,
-      okText: t("certd.common.close"),
-      width: 720,
-      content: () => (
-        <LocalCaAcmeAccess
-          caId={row.id}
-          runStepUp={(action: () => Promise<void>) => openStepUp(t("certd.localCa.acmeAccessStepUpTitle"), t("certd.localCa.acmeAccessStepUpDesc"), action)}
-        />
-      ),
-    });
-  }
-
-  async function openEabManager(row: any) {
-    if (!row?.id) {
-      notification.warning({ message: t("certd.localCa.selectCaFirst") });
-      return;
-    }
-    const managerRef: any = { value: null };
-    model.success({
-      title: `${t("certd.localCa.eabManagerTitle")} - ${row.name}`,
-      maskClosable: true,
-      okText: t("certd.common.close"),
-      width: 1150,
-      content: () => (
-        <LocalCaEabManager
-          ref={(el: any) => (managerRef.value = el)}
-          caId={row.id}
-          onCreate={() => openCreateEab(() => managerRef.value?.load?.())}
-          runStepUp={(action: () => Promise<void>) => openStepUp(t("certd.localCa.eabStepUpTitle"), t("certd.localCa.eabStepUpDesc"), action)}
-        />
-      ),
     });
   }
 
@@ -729,171 +680,9 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     caViewRef?.value?.open(row);
   }
 
-  function base64UrlToUint8Array(value: string) {
-    const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
-    return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-  }
-
   async function downloadExport(row: any) {
     const res = await localCaApi.Export(row.id, getSecretAccessToken());
     notification.success({ message: t("certd.localCa.exportSaved", { path: res.path }), duration: 15 });
-  }
-
-  async function handlePasskeyVerify() {
-    if (!passkeySupported) {
-      notification.error({ message: t("certd.localCa.passkeyNotSupported") });
-      return;
-    }
-    passkeyLoading.value = true;
-    try {
-      const options = await secretAccessApi.GeneratePasskeyAuthentication();
-      const credential = await (navigator.credentials as any).get({
-        publicKey: {
-          challenge: base64UrlToUint8Array(options.challenge),
-          rpId: options.rpId,
-          allowCredentials: (options.allowCredentials || []).map((item: any) => ({
-            ...item,
-            id: base64UrlToUint8Array(item.id),
-          })),
-          timeout: options.timeout || 60000,
-          userVerification: "required",
-        },
-      });
-      if (!credential) {
-        throw new Error(t("certd.localCa.passkeyCancelled"));
-      }
-      await secretAccessApi.VerifyPasskeySecretAccess(credential, options.challenge);
-      await pendingStepUpAction?.();
-      verifyDialogRef.value?.close?.();
-    } catch (e: any) {
-      notification.error({ message: e.message || t("certd.localCa.passkeyFailed") });
-    } finally {
-      passkeyLoading.value = false;
-    }
-  }
-
-  let passkeyAbort: AbortController | null = null;
-  function translatePasskeyError(e: any, t: any): string {
-    const name = e?.name || "";
-    const msg = String(e?.message || "");
-    if (name === "AbortError") {
-      return t("certd.localCa.passkeyCancelled");
-    }
-    if (name === "NotAllowedError" || /timed out or was not allowed/i.test(msg)) {
-      return t("certd.localCa.passkeyNotAllowed");
-    }
-    if (/already pending/i.test(msg)) {
-      return t("certd.localCa.passkeyPending");
-    }
-    if (name === "InvalidStateError" || /already pending/i.test(msg)) {
-      return t("certd.localCa.passkeyPending");
-    }
-    return msg || t("certd.localCa.passkeyFailed");
-  }
-
-  async function openStepUp(title: string, warning: string, action: () => Promise<void>, onClosed?: () => void, forceFresh = true): Promise<boolean> {
-    if (!forceFresh && secretAccessApi.HasSecretAccess()) {
-      await action();
-      return true;
-    }
-    // 使用Ant Modal叠加弹窗，不替换原表单对话框，取消后可继续编辑原表单
-    return await new Promise<boolean>(resolve => {
-      let settled = false;
-      let modal: any;
-      const code = { value: "" };
-      const finish = (ok: boolean) => {
-        if (settled) return;
-        settled = true;
-        passkeyAbort?.abort();
-        modal?.destroy();
-        onClosed?.();
-        resolve(ok);
-      };
-      const runAction = async () => {
-        await action();
-        finish(true);
-      };
-      const verifyPasskey = async () => {
-        const options = await secretAccessApi.GeneratePasskeyAuthentication();
-        passkeyAbort?.abort();
-        passkeyAbort = new AbortController();
-        let credential: any;
-        try {
-          credential = await (navigator.credentials as any).get({
-            publicKey: {
-              challenge: base64UrlToUint8Array(options.challenge),
-              rpId: options.rpId,
-              allowCredentials: (options.allowCredentials || []).map((item: any) => ({ ...item, id: base64UrlToUint8Array(item.id) })),
-              timeout: options.timeout || 60000,
-              userVerification: "required",
-            },
-            signal: passkeyAbort.signal,
-          });
-        } catch (e: any) {
-          throw new Error(translatePasskeyError(e, t));
-        }
-        if (!credential) {
-          throw new Error(t("certd.localCa.passkeyCancelled"));
-        }
-        await secretAccessApi.VerifyPasskeySecretAccess(credential, options.challenge);
-        await runAction();
-      };
-      modal = Modal.confirm({
-        title,
-        icon: null,
-        width: 440,
-        zIndex: 2000,
-        okText: t("certd.localCa.verifyAndContinue"),
-        cancelText: t("certd.common.cancel"),
-        content: h("div", [
-          h(Alert, { type: "warning", showIcon: true, message: warning, class: "mb-4" }),
-          h("div", { class: "mb-2" }, t("certd.localCa.dynamicCode")),
-          h(Input, {
-            size: "large",
-            placeholder: t("certd.localCa.dynamicCodePlaceholder"),
-            onChange: (e: any) => {
-              code.value = e?.target?.value || "";
-            },
-          }),
-          passkeySupported
-            ? h(
-                "div",
-                { class: "mt-3 text-center" },
-                h(
-                Button,
-                {
-                  type: "link",
-                  onClick: async () => {
-                    try {
-                      await verifyPasskey();
-                    } catch (e: any) {
-                      notification.error({ message: e?.message || t("certd.localCa.passkeyFailed") });
-                    }
-                  },
-                },
-                () => t("certd.localCa.passkeyVerify")
-                )
-              )
-            : null,
-        ]),
-        async onOk() {
-          if (!code.value) {
-            notification.warning({ message: t("certd.localCa.dynamicCodeRequired") });
-            throw new Error(t("certd.localCa.dynamicCodeRequired"));
-          }
-          try {
-            await secretAccessApi.VerifySecretAccess(code.value);
-            await runAction();
-          } catch (e: any) {
-            notification.error({ message: e?.message || t("certd.localCa.passkeyFailed") });
-            throw e;
-          }
-        },
-        onCancel() {
-          finish(false);
-        },
-      });
-    });
   }
 
   async function openExport(row: any) {
@@ -913,20 +702,6 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       },
       () => crudExpose.doRefresh()
     );
-  }
-
-  async function openAcmeAccounts(row: any) {
-    if (!row?.id) {
-      notification.warning({ message: t("certd.localCa.selectCaFirst") });
-      return;
-    }
-    model.success({
-      title: `${t("certd.localCa.acmeAccountsTitle")} - ${row.name}`,
-      maskClosable: true,
-      okText: t("certd.common.close"),
-      width: 1050,
-      content: () => <LocalCaAcmeAccounts caId={row.id} />,
-    });
   }
 
   function openRotateIntermediate(row: any) {
@@ -1014,32 +789,13 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
-
-  async function openIssuedCerts(row: any) {
-    if (!row?.id) {
-      notification.warning({ message: t("certd.localCa.selectCaFirst") });
-      return;
-    }
-    model.success({
-      title: `${t("certd.localCa.issuedCertsTitle")} - ${row.name}`,
-      maskClosable: true,
-      okText: t("certd.common.confirm"),
-      width: 1000,
-      content: () => <LocalCaIssuedCerts caId={row.id} runStepUp={(action: () => Promise<void>) => openStepUp(t("certd.localCa.revokeCertStepUpTitle"), t("certd.localCa.revokeCertStepUpDesc"), action)} />,
-    });
-  }
-
   return {
     openGenerate,
     openIntermediate,
     openCreateEab,
-    openEabManager,
-    openAcmeAccess,
     openImport,
     openView,
     openExport,
-    openIssuedCerts,
-    openAcmeAccounts,
     openRevokeIntermediate,
     openRotateIntermediate,
     openEnableCa,

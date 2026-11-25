@@ -1,6 +1,13 @@
 export default {
   title: "本地CA管理",
   description: "管理本地根CA，签发内部/测试证书；客户端需要信任对应根CA",
+  tabCaManage: "CA管理",
+  tabAcmeService: "ACME服务",
+  tabIssuedCerts: "签发证书管理",
+  caSelect: "选择CA",
+  caSelectEmpty: "暂无可用CA，请先在「CA管理」页签生成或导入CA",
+  acmeCaSelectEmpty: "暂无已启用ACME的中间CA，请先在「CA管理」页签为中间CA开启ACME",
+  permissionsTabHint: "管理员可维护该CA（operator）；授权用户/项目可使用该中间CA申请证书。管理员/授权变更均需二次验证。",
   generate: "生成根CA",
   intermediate: "新建中间CA",
   intermediateTitle: "新建中间CA",
@@ -78,7 +85,7 @@ export default {
   archiveCaStepUpTitle: "验证后归档本地CA",
   archiveSuccess: "本地CA已归档，管理员可在「已归档CA」中永久查看",
   archiveCaDesc: "归档本地CA「{name}」后将停用并隐藏，但不会物理删除，管理员可永久查看，且需先验证动态码或Passkey。",
-  
+
   crlMissing: "该中间CA证书缺少有效的CRL地址，不能导入",
   crlMismatch: "该中间CA证书的CRL地址与本系统Root CRL不匹配，不能导入",
   externalCrlTitle: "中间CA使用外部CRL地址",
@@ -102,7 +109,7 @@ export default {
   archivedRootsSuccess: "已归档Root CRL已刷新",
   archivedRootsCrlExpiry: "CRL有效期",
   archivedRootsNoCrl: "尚未生成CRL",
-  
+
   generateSuccess: "根CA生成成功",
   importSuccess: "根CA导入成功",
   disabledSuccess: "已禁用本地CA",
@@ -269,7 +276,8 @@ export default {
   acmeDirectIssueNo: "未开启",
   acmeEnabledYes: "已启用",
   acmeEnabledNo: "未启用",
-  acmeDirectory: "ACME目录地址",  grants: "授权用户",
+  acmeDirectory: "ACME目录地址",
+  grants: "授权用户",
   grantsTitle: "用户授权",
   grantHint: "仅中间CA可以授权。用户模式与项目模式互斥二选一：用户模式授权指定用户（其全部项目可用）；项目模式授权指定项目（项目内全部用户可用）。",
   grantUser: "用户",
@@ -333,5 +341,4 @@ export default {
 
   dnsStepUpTitle: "验证后设置CA DNS",
   dnsStepUpDesc: "设置CA专用DNS服务器会影响域名解析校验，需要先验证动态码或Passkey。",
-
 };

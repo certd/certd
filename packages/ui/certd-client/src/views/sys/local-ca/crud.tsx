@@ -6,28 +6,14 @@ import { useLocalCaDialogs } from "./use";
 import { useI18n } from "/src/locales";
 import { useCrudPermission } from "/@/plugin/permission";
 import { getSecretAccessToken } from "/@/views/certd/access/api";
-import LocalCaAccess from "./ca-access.vue";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const { hasActionPermission } = useCrudPermission(context);
-  const {
-    openGenerate,
-    openIntermediate,
-    openEabManager,
-    openAcmeAccess,
-    openImport,
-    openView,
-    openExport,
-    openIssuedCerts,
-    openAcmeAccounts,
-    openRevokeIntermediate,
-    openRotateIntermediate,
-    openEnableCa,
-    openArchiveCa,
-    openArchivedRoots,
-    openStepUp,
-  } = useLocalCaDialogs(crudExpose, context.caViewRef);
+  const { openGenerate, openIntermediate, openImport, openView, openExport, openRevokeIntermediate, openRotateIntermediate, openEnableCa, openArchiveCa, openArchivedRoots, openStepUp } = useLocalCaDialogs(
+    crudExpose,
+    context.caViewRef
+  );
   if (context.caExportHandler) {
     context.caExportHandler.value = openExport;
   }
@@ -181,44 +167,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       rowHandle: {
-        width: 360,
+        width: 200,
+        fixed: "right",
+        dropdown: {
+          show: true,
+        },
         buttons: {
           copy: { show: false },
-          intermediate: {
-            order: 0,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.intermediate") },
-            icon: "ph:git-branch",
-            show: compute(({ row }) => hasActionPermission("write") && row.caType === "root"),
-            click: async ({ row }) => {
-              await openIntermediate(row);
-            },
-          },
-          rotate: {
-            order: 1,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.rotateIntermediate") },
-            icon: "ph:arrows-clockwise",
-            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled && !row.revoked),
-            click: async ({ row }) => {
-              openRotateIntermediate(row);
-            },
-          },
-          revokeIntermediate: {
-            order: 2,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.revokeIntermediate") },
-            icon: "ph:prohibit",
-            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled && !row.revoked),
-            click: async ({ row }) => {
-              openRevokeIntermediate(row);
-            },
-          },
           view: {
-            order: 3,
+            order: 1,
             type: "link",
             text: null,
             tooltip: { title: t("certd.localCa.view") },
@@ -227,59 +184,49 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               await openView(row);
             },
           },
-          certs: {
-            order: 4,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.issuedCerts") },
-            icon: "ph:file-text",
-            click: async ({ row }) => {
-              await openIssuedCerts(row);
-            },
-          },
-          acmeAccounts: {
-            order: 5,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.acmeAccounts") },
-            icon: "ph:users-three",
-            show: compute(({ row }) => row.caType === "intermediate" && row.acmeEnabled),
-            click: async ({ row }) => {
-              await openAcmeAccounts(row);
-            },
-          },
-          eab: {
-            order: 6,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.eabManagerTitle") },
-            icon: "ph:key",
-            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && row.acmeEnabled),
-            click: async ({ row }) => {
-              await openEabManager(row);
-            },
-          },
-          acmeAccess: {
-            order: 7,
-            type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.acmeAccessTitle") },
-            icon: "ph:shield-check",
-            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && row.acmeEnabled),
-            click: async ({ row }) => {
-              await openAcmeAccess(row);
-            },
-          },
           edit: {
-            order: 10,
+            order: 2,
             show: hasActionPermission("write"),
           },
-          archive: {
-            order: 20,
+          intermediate: {
+            order: 10,
             type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.archiveCaTitle") },
+            text: t("certd.localCa.intermediate"),
+            icon: "ph:git-branch",
+            dropdown: true,
+            show: compute(({ row }) => hasActionPermission("write") && row.caType === "root"),
+            click: async ({ row }) => {
+              await openIntermediate(row);
+            },
+          },
+          rotate: {
+            order: 11,
+            type: "link",
+            text: t("certd.localCa.rotateIntermediate"),
+            icon: "ph:arrows-clockwise",
+            dropdown: true,
+            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled && !row.revoked),
+            click: async ({ row }) => {
+              openRotateIntermediate(row);
+            },
+          },
+          revokeIntermediate: {
+            order: 12,
+            type: "link",
+            text: t("certd.localCa.revokeIntermediate"),
+            icon: "ph:prohibit",
+            dropdown: true,
+            show: compute(({ row }) => hasActionPermission("write") && row.caType === "intermediate" && !row.disabled && !row.revoked),
+            click: async ({ row }) => {
+              openRevokeIntermediate(row);
+            },
+          },
+          archive: {
+            order: 13,
+            type: "link",
+            text: t("certd.localCa.archiveCaTitle"),
             icon: "ph:archive-box",
+            dropdown: true,
             show: compute(({ row }) => hasActionPermission("write") && !row.deleted),
             click: async ({ row }) => {
               openArchiveCa(row);
@@ -326,7 +273,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 <span style={{ paddingLeft: row.level ? "18px" : "0", color: inactive ? "#999" : undefined, textDecoration: inactive ? "line-through" : undefined }}>
                   {row.level ? "↳ " : ""}
                   {value}
-                  {rotated ? <Tag style={{ marginLeft: 6, textDecoration: "none" }}>{t("certd.localCa.rotatedTag")}</Tag> : row.disabled ? <Tag style={{ marginLeft: 6, textDecoration: "none" }}>{t("common.disabled")}</Tag> : null}
+                  {rotated ? (
+                    <Tag style={{ marginLeft: 6, textDecoration: "none" }}>{t("certd.localCa.rotatedTag")}</Tag>
+                  ) : row.disabled ? (
+                    <Tag style={{ marginLeft: 6, textDecoration: "none" }}>{t("common.disabled")}</Tag>
+                  ) : null}
                 </span>
               );
             },
@@ -544,21 +495,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               },
             },
           },
-        },
-        permissions: {
-          title: t("certd.localCa.permissions"),
-          form: {
-            show: compute(({ form }) => !!form.id),
-            col: { span: 24 },
-            component: {
-              name: LocalCaAccess,
-              caId: compute(({ form }) => form.id),
-              caType: compute(({ form }) => form.caType),
-              runStepUp: (title: string, desc: string, action: () => Promise<void>) => openStepUp(title, desc, action),
-            },
-          },
-          search: { show: false },
-          column: { show: false },
         },
         remark: {
           title: t("certd.localCa.fields.remark"),

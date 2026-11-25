@@ -4,50 +4,104 @@
       <div class="title">{{ t("certd.localCa.title") }}</div>
       <div class="sub">{{ t("certd.localCa.description") }}</div>
     </template>
-    <fs-crud ref="crudRef" v-bind="crudBinding"></fs-crud>
-    <LocalCaView ref="caViewRef" :on-export="row => caExportHandler?.(row)" :on-acme-enable="row => caAcmeEnableHandler?.(row)" :on-changed="() => crudExpose.doRefresh()" />
+    <div class="local-ca-body">
+      <a-tabs :active-key="activeTab" type="card" class="local-ca-tabs" @update:active-key="onTabChange">
+        <a-tab-pane key="ca" :tab="t('certd.localCa.tabCaManage')">
+          <TabCaList v-if="activeTab === 'ca'" />
+        </a-tab-pane>
+        <a-tab-pane key="permissions" :tab="t('certd.localCa.permissions')">
+          <TabPermissions v-if="activeTab === 'permissions'" />
+        </a-tab-pane>
+        <a-tab-pane key="acme" :tab="t('certd.localCa.tabAcmeService')">
+          <TabAcmeService v-if="activeTab === 'acme'" />
+        </a-tab-pane>
+        <a-tab-pane key="certs" :tab="t('certd.localCa.tabIssuedCerts')">
+          <TabIssuedCerts v-if="activeTab === 'certs'" />
+        </a-tab-pane>
+      </a-tabs>
+    </div>
   </fs-page>
 </template>
 
 <script lang="ts" setup>
-import { useFs } from "@fast-crud/fast-crud";
-import createCrudOptions from "./crud";
-import LocalCaView from "./ca-view.vue";
-import { useMounted } from "/@/use/use-mounted";
-import { useI18n } from "/src/locales";
 import { ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "/src/locales";
+import TabCaList from "./tabs/ca-list.vue";
+import TabPermissions from "./tabs/permissions.vue";
+import TabAcmeService from "./tabs/acme-service.vue";
+import TabIssuedCerts from "./tabs/issued-certs.vue";
 
 defineOptions({
   name: "LocalCaManager",
 });
 
 const { t } = useI18n();
-const caViewRef = ref<any>();
-const caExportHandler = ref<any>();
-const caAcmeEnableHandler = ref<any>();
-const context: any = {
-  caViewRef,
-  caExportHandler,
-  caAcmeEnableHandler,
-};
-const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
+const route = useRoute();
+const router = useRouter();
+const activeTab = ref((route.query.tab as string) || "ca");
 
-useMounted(async () => {
-  await crudExpose.doRefresh();
-});
+function onTabChange(value: string) {
+  activeTab.value = value;
+  const query: any = { ...route.query };
+  delete query.caId;
+  if (value !== "ca") {
+    query.tab = value;
+  } else {
+    delete query.tab;
+  }
+  router.replace({ path: route.path, query });
+}
 </script>
 
 <style lang="less">
 .page-local-ca {
+  display: flex;
+  min-height: 0;
+
+  .fs-page-content {
+    display: flex;
+    min-height: 0;
+  }
+
   .title {
     font-size: 18px;
     font-weight: 600;
   }
+
   .sub {
     margin-top: 4px;
     font-size: 12px;
     color: rgba(0, 0, 0, 0.45);
   }
+
+  .local-ca-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    padding: 12px 20px 20px;
+  }
+
+  .local-ca-tabs {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+
+    .ant-tabs-content-holder,
+    .ant-tabs-content,
+    .ant-tabs-tabpane {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .ant-tabs-tabpane {
+      flex-direction: column;
+    }
+  }
+
   .ant-switch-disabled {
     opacity: 0.45;
     cursor: not-allowed;

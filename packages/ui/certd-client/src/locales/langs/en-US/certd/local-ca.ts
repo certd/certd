@@ -1,6 +1,13 @@
 export default {
   title: "Local CA Management",
   description: "Manage local root CAs and issue internal/test certificates. Clients must trust the corresponding root CA.",
+  tabCaManage: "CA Management",
+  tabAcmeService: "ACME Service",
+  tabIssuedCerts: "Issued Certificates",
+  caSelect: "Select CA",
+  caSelectEmpty: "No CA available. Generate or import a CA in the CA Management tab first.",
+  acmeCaSelectEmpty: "No intermediate CA with ACME enabled. Enable ACME for an intermediate CA in the CA Management tab first.",
+  permissionsTabHint: "Admins (operators) can maintain this CA; granted users/projects can use this intermediate CA to apply certificates. Admin/grant changes require step-up verification.",
   generate: "Generate Root CA",
   intermediate: "New Intermediate CA",
   intermediateTitle: "New Intermediate CA",
@@ -76,7 +83,7 @@ export default {
   archiveCaStepUpTitle: "Verify before archiving the local CA",
   archiveSuccess: "Local CA archived; admins can view it permanently under Archived CAs",
   archiveCaDesc: 'Archiving local CA "{name}" disables and hides it without physical deletion; admins can view it permanently. Requires TOTP or Passkey verification.',
-  
+
   crlMissing: "This intermediate CA has no valid CRL distribution point and cannot be imported",
   crlMismatch: "The CRL distribution point does not match this system root CRL and cannot be imported",
   externalCrlTitle: "Intermediate CA uses an external CRL URL",
@@ -100,7 +107,7 @@ export default {
   archivedRootsSuccess: "Archived Root CRL refreshed",
   archivedRootsCrlExpiry: "CRL valid until",
   archivedRootsNoCrl: "CRL not generated yet",
-  
+
   generateSuccess: "Root CA generated",
   importSuccess: "Root CA imported",
   disabledSuccess: "Local CA disabled",
@@ -158,7 +165,8 @@ export default {
     status: "Status",
     parentCa: "Parent CA",
     baseUrl: "Base URL",
-    baseUrlHelper: "Root CA: leave empty to use the current site {origin}; CRL/ACME URLs use this address. Intermediate CA inherits the root CA address and is immutable. After root changes, old certificates still point to the old address until they expire",
+    baseUrlHelper:
+      "Root CA: leave empty to use the current site {origin}; CRL/ACME URLs use this address. Intermediate CA inherits the root CA address and is immutable. After root changes, old certificates still point to the old address until they expire",
     caPath: "Hierarchy",
     acmeEnabled: "ACME",
     acmeDirectIssue: "EAB Direct Issue",
@@ -192,7 +200,8 @@ export default {
   acmeAccessTitle: "ACME access control",
   acmeAccessHint: "Control who can access this CA ACME endpoints. Master switch off = no ACME response; IP allowlist works with all standard clients, Basic/custom headers only for clients that can customize requests.",
   acmeIpAllowlist: "Source IP/CIDR allowlist",
-  acmeIpAllowlistHelper: "One per line: bare IP, CIDR (10.0.0.0/8), IPv4 wildcard (192.168.*.*); empty = unrestricted. Note: reliable only behind a trusted reverse proxy; X-Forwarded-For is spoofable if directly exposed.",
+  acmeIpAllowlistHelper:
+    "One per line: bare IP, CIDR (10.0.0.0/8), IPv4 wildcard (192.168.*.*); empty = unrestricted. Note: reliable only behind a trusted reverse proxy; X-Forwarded-For is spoofable if directly exposed.",
   acmeBasicAuth: "HTTP Basic auth",
   acmeBasicUsername: "Username",
   acmeBasicPassword: "Password",
@@ -269,7 +278,8 @@ export default {
   acmeDirectIssueNo: "Disabled",
   acmeEnabledYes: "Enabled",
   acmeEnabledNo: "Disabled",
-  acmeDirectory: "ACME Directory URL",  grants: "User Grants",
+  acmeDirectory: "ACME Directory URL",
+  grants: "User Grants",
   grantsTitle: "User Grants",
   grantHint: "Only intermediate CAs can be granted. User mode and project mode are mutually exclusive: user mode grants a specific user (all their projects); project mode grants a specific project (all users in it).",
   grantUser: "User",
@@ -333,5 +343,4 @@ export default {
 
   dnsStepUpTitle: "Verify to set CA DNS",
   dnsStepUpDesc: "Setting a CA-specific DNS server affects domain validation. Verify with 2FA or Passkey first.",
-
 };
