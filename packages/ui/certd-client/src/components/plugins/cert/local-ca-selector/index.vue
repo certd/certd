@@ -33,6 +33,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   "update:modelValue": (value: number) => void;
+  "ca-change": (ca: any) => void;
 }>();
 
 const router = useRouter();
@@ -47,6 +48,7 @@ function toOption(item: any) {
     label: `${item.name} (${item.subjectCn}) [${type}]${item.disabled ? " [已禁用]" : ""}`,
     value: item.id,
     disabled: item.disabled === true,
+    raw: item,
   };
 }
 
@@ -59,8 +61,15 @@ async function load(searchKey?: string) {
       data: { searchKey },
     });
     options.value = (list || []).filter((item: any) => item.caType === "intermediate").map(toOption);
+    syncCaInfo();
   } finally {
     loading.value = false;
+  }
+}
+
+function syncCaInfo() {
+  if (props.modelValue != null) {
+    emit("ca-change", options.value.find(item => item.value === props.modelValue)?.raw || null);
   }
 }
 
@@ -79,6 +88,7 @@ async function loadByIds(ids: number[]) {
       options.value.push(toOption(item));
     }
   }
+  syncCaInfo();
 }
 
 function onSearch(value: string) {
@@ -91,8 +101,14 @@ function onOpen(open: boolean) {
   }
 }
 
+watch(
+  () => props.modelValue,
+  () => syncCaInfo()
+);
+
 function onChange(value: any) {
   emit("update:modelValue", value);
+  emit("ca-change", options.value.find(item => item.value === value)?.raw || null);
 }
 
 function openManage(event: MouseEvent) {

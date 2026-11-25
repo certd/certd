@@ -116,6 +116,16 @@ function onTabChange(value: string) {
     color: rgba(255, 255, 255, 0.45);
   }
 }
+.local-ca-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: nowrap;
+  .ant-btn {
+    padding: 0 4px;
+    height: auto;
+  }
+}
 .local-ca-settings {
   width: 100%;
   table-layout: fixed;

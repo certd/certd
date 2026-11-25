@@ -84,6 +84,9 @@ export class LocalCaEntity {
   @Column({ name: "export_disabled", comment: "禁止导出CA（含私钥）", default: false })
   exportDisabled: boolean;
 
+  @Column({ name: "allow_direct_sign", comment: "允许本地直签（默认关闭，关闭时仅本地ACME可签发）", default: false })
+  allowDirectSign: boolean;
+
   @Column({ name: "last_crl_pem", comment: "最近一次成功生成的CRL", type: "text", nullable: true })
   lastCrlPem: string;
 

@@ -63,8 +63,8 @@ export class LocalCaAccessService {
     await this.getOwnedCa(req);
   }
 
-  private async getAccessibleCa(req: LocalCaScope, requireOwner = false) {
-    const ca = await this.repository.findOne({ where: { id: req.id, deleted: false } });
+  private async getAccessibleCa(req: LocalCaScope, requireOwner = false, includeDeleted = false) {
+    const ca = await this.repository.findOne({ where: includeDeleted ? { id: req.id } : { id: req.id, deleted: false } });
     if (!ca) {
       throw new ValidateException("本地CA不存在或无访问权限");
     }
@@ -72,8 +72,8 @@ export class LocalCaAccessService {
     return ca;
   }
 
-  async getOwnedCa(req: LocalCaScope, requireOwner = false) {
-    return await this.getAccessibleCa(req, requireOwner);
+  async getOwnedCa(req: LocalCaScope, requireOwner = false, includeDeleted = false) {
+    return await this.getAccessibleCa(req, requireOwner, includeDeleted);
   }
 
   async getGrantedCa(req: LocalCaScope) {
@@ -214,21 +214,44 @@ export class LocalCaAccessService {
       throw new ValidateException("不能移除CA的创建管理员");
     }
     await this.adminRepository.delete({ id: access.id });
-    // 级联移除轮换后继CA上复制的操作员，避免旧CA撤权后仍经旧ID访问新CA
-    let successorId = ca.rotatedToId;
-    let hops = 0;
-    while (successorId && hops < 5) {
-      const succ = await this.repository.findOne({ where: { id: successorId } });
-      if (!succ) {
-        break;
+    // 跨轮换链统一移除操作员：链上所有CA的复制记录一并删除
+    const chain = await this.collectRotationChain(ca.id);
+    for (const chainCaId of chain) {
+      if (chainCaId === ca.id) {
+        continue;
       }
-      const succAdmins = await this.adminRepository.find({ where: { caId: succ.id, adminUserId: req.adminUserId, role: "operator" } });
-      for (const item of succAdmins) {
+      const chainAdmins = await this.adminRepository.find({ where: { caId: chainCaId, adminUserId: req.adminUserId, role: "operator" } });
+      for (const item of chainAdmins) {
         await this.adminRepository.delete({ id: item.id });
       }
-      successorId = succ.rotatedToId;
-      hops++;
     }
+  }
+
+  /** 收集轮换链全部ID（委托LocalCaService实现，避免循环依赖由调用方注入） */
+  private async collectRotationChain(caId: number): Promise<number[]> {
+    const chain: number[] = [caId];
+    const visited = new Set<number>([caId]);
+    let cursor: number | null = caId;
+    const ancestors: number[] = [];
+    while (cursor != null && !visited.has(cursor)) {
+      visited.add(cursor);
+      const parent = await this.repository.findOne({ where: { rotatedToId: cursor } as any });
+      if (!parent) break;
+      ancestors.push(parent.id);
+      cursor = parent.id;
+    }
+    chain.unshift(...ancestors.reverse());
+    cursor = caId;
+    const down = new Set<number>([caId]);
+    while (cursor != null) {
+      const current = await this.repository.findOne({ where: { id: cursor } });
+      const nextId = current?.rotatedToId;
+      if (nextId == null || down.has(nextId)) break;
+      down.add(nextId);
+      chain.push(nextId);
+      cursor = nextId;
+    }
+    return chain;
   }
 
   /**

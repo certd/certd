@@ -468,7 +468,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "text",
           form: {
             col: { span: 24 },
-            component: { placeholder: "10.0.0.53:5353, 10.0.0.54" },
+            component: {
+              placeholder: "10.0.0.53:5353, 10.0.0.54",
+              disabled: compute(({ form }) => !!form.parentDnsServer),
+            },
             helper: t("certd.localCa.fields.dnsServerHelper"),
           },
           search: { show: false },
@@ -544,6 +547,24 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               );
             },
           },
+        },
+        allowDirectSign: {
+          title: t("certd.localCa.fields.allowDirectSign"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("certd.localCa.allowDirectSignYes"), value: true, color: "green" },
+              { label: t("certd.localCa.allowDirectSignNo"), value: false, color: "default" },
+            ],
+          }),
+          form: {
+            show: compute(({ form }) => form.caType === "intermediate"),
+            col: { span: 12 },
+            value: false,
+            helper: t("certd.localCa.fields.allowDirectSignHelper"),
+          },
+          search: { show: false },
+          column: { show: false },
         },
         remark: {
           title: t("certd.localCa.fields.remark"),

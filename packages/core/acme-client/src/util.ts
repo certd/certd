@@ -312,7 +312,11 @@ async function getAuthoritativeDnsResolver(recordName, logger = log, customServe
         const nsRecords = await baseResolver.resolveNs(domain);
         logger(`域名权威NS服务器：${nsRecords}`);
         const nsAddrArray = await Promise.all(nsRecords.map(async (r) => baseResolver.resolve4(r)));
-        const nsAddresses = [].concat(...nsAddrArray).filter((a) => a);
+        let nsAddresses = [].concat(...nsAddrArray).filter((a) => a);
+        // 权威NS默认仅接受公网地址；管理员显式配置的可信DNS除外
+        if (!customServers?.length) {
+            nsAddresses = nsAddresses.filter((a) => isPublicUnicastIp(a));
+        }
 
         if (!nsAddresses.length) {
             throw new Error(`Unable to locate any valid authoritative NS addresses for domain（获取权威服务器IP失败）: ${domain}`);
@@ -402,5 +406,34 @@ export {
     resolveDomainBySoaRecord
 };
 
-
-
+/** 判断IP是否为公网单播地址（拒绝私网/回环/链路本地/保留/文档/ULA等）。 */
+export function isPublicUnicastIp(ip) {
+    const addr = String(ip || '').trim().replace(/^\[|\]$/g, '').replace(/%.*$/, '');
+    const mapped = addr.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+    const v4 = mapped ? mapped[1] : addr;
+    if (net.isIP(v4) === 4) {
+        const p = v4.split('.').map(Number);
+        const [a, b] = p;
+        if (a === 0 || a === 10 || a === 127) return false;
+        if (a === 100 && b >= 64 && b <= 127) return false;
+        if (a === 169 && b === 254) return false;
+        if (a === 172 && b >= 16 && b <= 31) return false;
+        if (a === 192 && (b === 168 || b === 0)) return false;
+        if (a === 198 && (b === 18 || b === 19)) return false;
+        if (a === 192 && b === 0 && p[2] === 2) return false;
+        if (a === 198 && b === 51 && p[2] === 100) return false;
+        if (a === 203 && b === 0 && p[2] === 113) return false;
+        if (a >= 224) return false;
+        return true;
+    }
+    if (net.isIP(addr) === 6) {
+        const lower = addr.toLowerCase();
+        if (lower === '::' || lower === '::1') return false;
+        if (lower.startsWith('fc') || lower.startsWith('fd')) return false;
+        if (lower.startsWith('fe8') || lower.startsWith('fe9') || lower.startsWith('fea') || lower.startsWith('feb')) return false;
+        if (lower.startsWith('2001:db8')) return false;
+        if (lower.startsWith('::ffff:')) return false;
+        return true;
+    }
+    return false;
+}

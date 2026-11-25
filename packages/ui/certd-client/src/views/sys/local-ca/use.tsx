@@ -8,6 +8,18 @@ import LocalCaArchivedRoots from "./archived-roots.vue";
 import { localCaApi } from "./api";
 import { useStepUp } from "./use-step-up";
 
+function formatDomainsText(value: any) {
+  if (!value) {
+    return "";
+  }
+  try {
+    const arr = typeof value === "string" ? JSON.parse(value) : value;
+    return Array.isArray(arr) ? arr.join("\n") : "";
+  } catch {
+    return "";
+  }
+}
+
 function parseAllowedDomains(text: string) {
   return String(text || "")
     .split(/[,，\s]+/)
@@ -486,6 +498,70 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
+  async function openEditEab(row: any, onUpdated?: () => void) {
+    if (!row?.id) {
+      notification.warning({ message: t("certd.localCa.selectCaFirst") });
+      return;
+    }
+    const remainingDays = row.expiresTime ? Math.max(0, Math.round((Number(row.expiresTime) - Date.now()) / 86400000)) : 0;
+    await openFormDialog({
+      title: t("certd.localCa.eabEditTitle"),
+      wrapper: { width: 600 },
+      initialForm: {
+        name: row.name,
+        remark: row.remark || "",
+        allowedDomains: formatDomainsText(row.allowedDomains),
+        maxUses: row.maxUses || 0,
+        expiresDays: remainingDays,
+      },
+      columns: {
+        name: {
+          title: t("certd.localCa.eabName"),
+          type: "text",
+          form: { required: true, col: { span: 24 }, rules: [{ required: true, message: t("certd.common.required") }] },
+        },
+        allowedDomains: {
+          title: t("certd.localCa.eabAllowedDomains"),
+          type: "textarea",
+          form: { col: { span: 24 }, component: { rows: 3 }, helper: t("certd.localCa.eabAllowedDomainsHelper") },
+        },
+        maxUses: {
+          title: t("certd.localCa.eabMaxUses"),
+          type: "number",
+          form: { col: { span: 12 }, component: { min: 0 }, helper: t("certd.localCa.eabMaxUsesHelper") },
+        },
+        expiresDays: {
+          title: t("certd.localCa.eabExpiresDays"),
+          type: "number",
+          form: { col: { span: 12 }, component: { min: 0 }, helper: t("certd.localCa.eabExpiresDaysEditHelper") },
+        },
+        remark: {
+          title: t("certd.localCa.fields.remark"),
+          type: "textarea",
+          form: { col: { span: 24 }, component: { rows: 2 } },
+        },
+      },
+      async onSubmit(form: any) {
+        const verified = await openStepUp(t("certd.localCa.eabStepUpTitle"), t("certd.localCa.eabStepUpDesc"), async () => {
+          await localCaApi.UpdateEab({
+            caId: row.caId,
+            eabId: row.id,
+            name: form.name,
+            remark: form.remark,
+            allowedDomains: parseAllowedDomains(form.allowedDomains),
+            maxUses: form.maxUses || 0,
+            expiresDays: form.expiresDays || 0,
+          });
+        });
+        if (!verified) {
+          return false;
+        }
+        notification.success({ message: t("certd.localCa.eabUpdated") });
+        onUpdated?.();
+      },
+    });
+  }
+
   async function openImport() {
     const allCas = await localCaApi.GetAdminOptions();
     const rootOptions = (allCas || []).filter((item: any) => item.caType === "root" && !item.disabled).map((item: any) => ({ label: `${item.name} (${item.subjectCn})`, value: item.id }));
@@ -805,6 +881,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openGenerate,
     openIntermediate,
     openCreateEab,
+    openEditEab,
     openImport,
     openView,
     openExport,

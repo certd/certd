@@ -38,10 +38,11 @@ const { openStepUp } = useStepUp();
 const caId = ref<number | undefined>();
 const innerTab = ref("access");
 
-const { openCreateEab } = useLocalCaDialogs({});
+const { openCreateEab, openEditEab } = useLocalCaDialogs({});
 const eabContext: any = {
   caIdRef: caId,
   openCreateEab,
+  openEditEab,
   runStepUp: (action: () => Promise<void>) => openStepUp(t("certd.localCa.eabStepUpTitle"), t("certd.localCa.eabStepUpDesc"), action),
 };
 const accountsContext: any = { caIdRef: caId };

@@ -92,7 +92,8 @@ export class CertRevocationService {
    * 该业务属于Local CA，通用证书服务仅委托调用。
    */
   async revokeCertInfo(req: { certInfoId: number; caId: number; userId: number; projectId?: number; serialNumber: string; expiresTime?: number; reason?: string }) {
-    const ca = await this.localCaRepository.findOne({ where: { id: req.caId, deleted: false }, select: { id: true } });
+    // 吊销不受归档限制：归档CA仍须保留紧急吊销能力（归属由证书记录userId校验）
+    const ca = await this.localCaRepository.findOne({ where: { id: req.caId }, select: { id: true } });
     if (!ca) {
       logger.warn(`[local-ca] revocation denied ca=${req.caId} cert=${req.certInfoId} user=${req.userId} project=${req.projectId ?? "-"}`);
       throw new CodeException({ ...Constants.res.openCertNotFound, message: "本地CA不存在或无访问权限" });

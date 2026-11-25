@@ -1,5 +1,6 @@
 <template>
   <div class="ca-access">
+    <a-alert v-if="caType === 'root'" type="info" show-icon class="mb-3" :message="t('certd.localCa.rootGrantHint')" />
     <a-tabs v-model:active-key="activeKey">
       <a-tab-pane key="admins" :tab="t('certd.localCa.admins')">
         <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.adminHint')" />

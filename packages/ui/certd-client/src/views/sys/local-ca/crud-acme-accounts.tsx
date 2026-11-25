@@ -5,6 +5,7 @@ import { useI18n } from "/src/locales";
 import { request } from "/@/api/service";
 import { useModal } from "/@/use/use-modal";
 import CertView from "/@/views/certd/pipeline/cert-view.vue";
+import { getSecretAccessToken } from "/@/views/certd/access/api";
 import { localCaApi } from "./api";
 
 function formatTime(value: any) {
@@ -111,6 +112,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       maskClosable: true,
       okText: t("certd.common.confirm"),
       width: 800,
+      zIndex: 1200,
       content: () => <CertView cert={{ crt: record.certPem, key: "", ic: "", detail: res.detail }} />,
     });
   }
@@ -122,7 +124,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       title: `${t("certd.localCa.acmeOrdersTitle")} - ${record.id}`,
       maskClosable: true,
       okText: t("certd.common.close"),
-      width: 900,
+      width: 1000,
+      zIndex: 1000,
       content: () => (
         <a-table dataSource={orders} pagination={{ pageSize: 10 }} size="small" rowKey="id">
           <a-table-column title={t("certd.localCa.acmeOrderStatus")} width={110}>
@@ -143,8 +146,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               default: ({ record: order }: any) => <a-tag color={order.directIssue ? "green" : "default"}>{order.directIssue ? t("certd.localCa.orderDirectIssueYes") : t("certd.localCa.orderDirectIssueNo")}</a-tag>,
             }}
           </a-table-column>
-          <a-table-column title={t("certd.common.createTime")} width={170}>
-            {{ default: ({ record: order }: any) => formatTime(order.createTime) }}
+          <a-table-column title={t("certd.common.createTime")} width={180}>
+            {{ default: ({ record: order }: any) => <span style={{ whiteSpace: "nowrap" }}>{formatTime(order.createTime)}</span> }}
           </a-table-column>
           <a-table-column title={t("certd.localCa.accessActions")} width={120} align="center">
             {{
@@ -175,7 +178,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       okText: t("certd.common.confirm"),
       cancelText: t("certd.common.cancel"),
       async onOk() {
-        await localCaApi.SetAcmeAccountStatus(caIdRef.value, row.id, status);
+        await localCaApi.SetAcmeAccountStatus(caIdRef.value, row.id, status, status === "valid" ? getSecretAccessToken() : undefined);
         notification.success({ message: t("certd.localCa.acmeStatusChanged") });
         await crudExpose.doRefresh();
       },
@@ -189,38 +192,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       toolbar: { show: false },
       actionbar: { show: false },
       table: { rowKey: "id" },
-      rowHandle: {
-        width: 180,
-        buttons: {
-          view: { show: false },
-          edit: { show: false },
-          remove: { show: false },
-          copy: { show: false },
-          orders: {
-            type: "link",
-            text: t("certd.localCa.acmeViewOrders"),
-            click: async ({ row }) => {
-              await viewOrders(row);
-            },
-          },
-          disable: {
-            type: "link",
-            text: t("certd.common.disabled"),
-            show: compute(({ row }) => row.status === "valid"),
-            click: async ({ row }) => {
-              toggleStatus(row);
-            },
-          },
-          enable: {
-            type: "link",
-            text: t("certd.common.enabled"),
-            show: compute(({ row }) => row.status !== "valid"),
-            click: async ({ row }) => {
-              toggleStatus(row);
-            },
-          },
-        },
-      },
+      rowHandle: { show: false },
       columns: {
         status: {
           title: t("certd.localCa.acmeStatus"),
@@ -294,6 +266,30 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.common.createTime"),
           type: "datetime",
           column: { width: 170, cellRender: ({ value }) => formatTime(value) },
+        },
+        actions: {
+          title: t("certd.localCa.certActions"),
+          type: "text",
+          column: {
+            width: 220,
+            cellRender({ row }) {
+              return (
+                <div class="local-ca-row-actions">
+                  {row.eabId ? (
+                    <a-button type="link" size="small" onClick={() => viewEab(row)}>
+                      {t("certd.localCa.acmeViewEab")}
+                    </a-button>
+                  ) : null}
+                  <a-button type="link" size="small" onClick={() => viewOrders(row)}>
+                    {t("certd.localCa.acmeViewOrders")}
+                  </a-button>
+                  <a-button type="link" size="small" danger={row.status === "valid"} onClick={() => toggleStatus(row)}>
+                    {row.status === "valid" ? t("certd.common.disabled") : t("certd.common.enabled")}
+                  </a-button>
+                </div>
+              );
+            },
+          },
         },
       },
     },

@@ -62,11 +62,15 @@ export function matchAllowedDomains(domains: string[], allowedDomains: string[] 
     const host = isWildcard ? domain.slice(2) : domain;
     const matched = rules.some(rule => {
       if (rule.wildcard) {
-        // *.example.com 授权 *.example.com 及其子域，但不授权 apex example.com
+        // RFC 6125/9525：*.example.com 仅匹配单层子域，不含 apex、不含多级子域
         if (host === rule.suffix) {
           return isWildcard;
         }
-        return host.endsWith(`.${rule.suffix}`);
+        if (!host.endsWith(`.${rule.suffix}`)) {
+          return false;
+        }
+        const prefix = host.slice(0, host.length - rule.suffix.length - 1);
+        return prefix.length > 0 && !prefix.includes(".");
       }
       return host === rule.suffix || host.endsWith(`.${rule.suffix}`);
     });
@@ -78,7 +82,12 @@ export function matchAllowedDomains(domains: string[], allowedDomains: string[] 
 
 export function readCsrDomains(csr: x509.Pkcs10CertificateRequest) {
   const san = csr.extensions.find(ext => ext.type === "2.5.29.17") as x509.SubjectAlternativeNameExtension | undefined;
-  const sanDomains = san?.names?.items?.map(item => item.value) ?? [];
+  // 仅接受 DNS/IP 类型的 SAN，拒绝 email/URI 等可伪造或无关类型
+  const sanItems = (san?.names?.items ?? []).filter((item: any) => {
+    const type = String(item?.type || "").toLowerCase();
+    return type === "dns" || type === "ip" || type === "dnsname" || type === "ipaddress" || type === "2" || type === "7";
+  });
+  const sanDomains = sanItems.map((item: any) => item.value);
   if (sanDomains.length > 0) {
     return normalizeDomains(sanDomains);
   }

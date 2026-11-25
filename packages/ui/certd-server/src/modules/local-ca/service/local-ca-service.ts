@@ -287,6 +287,17 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return safeList;
   }
 
+  /** 有效DNS服务器：根CA配置优先覆盖中间CA自身配置（不删除中间CA记录）。 */
+  async resolveEffectiveDnsServer(ca: LocalCaEntity): Promise<string | null> {
+    if (ca.parentId != null) {
+      const parent = await this.repository.findOne({ where: { id: ca.parentId } });
+      if (parent?.dnsServer) {
+        return parent.dnsServer;
+      }
+    }
+    return ca.dnsServer || null;
+  }
+
   private async attachParentNames(list: any[]) {
     const parentIds = [...new Set(list.map(item => item.parentId).filter(id => id != null))];
     if (parentIds.length === 0) {
@@ -294,10 +305,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     const parents = await this.repository.find({
       where: { id: In(parentIds) },
-      select: { id: true, name: true, subjectCn: true },
+      select: { id: true, name: true, subjectCn: true, dnsServer: true },
     });
     const nameMap = new Map(parents.map(item => [item.id, item.name]));
+    const dnsMap = new Map(parents.map(item => [item.id, item.dnsServer || null]));
     for (const item of list) {
+      (item as any).parentDnsServer = item.parentId != null ? dnsMap.get(item.parentId) || null : null;
       item.parentName = item.parentId != null ? nameMap.get(item.parentId) || "" : "";
       item.caPath = item.parentName ? `${item.parentName} / ${item.name}` : item.name;
       item.level = item.parentId != null ? 1 : 0;
@@ -315,6 +328,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       (safe as any).localAcmeToken = config.internalToken;
     }
     (safe as any).acmeMode = this.acmeService.resolveAcmeMode(config);
+    (safe as any).effectiveDnsServer = await this.resolveEffectiveDnsServer(ca);
     return safe;
   }
 
@@ -335,17 +349,51 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   /** 轮换后签发自动指向新CA（与ACME重定向一致），保证引用旧CA的流水线无缝续期。 */
   private async followRotation(ca: LocalCaEntity, req?: LocalCaScope, manager?: EntityManager): Promise<LocalCaEntity> {
-    let hops = 0;
     const repository = manager ? manager.getRepository(LocalCaEntity) : this.repository;
-    while (ca.rotatedToId && hops < 5) {
+    const visited = new Set<number>([ca.id]);
+    while (ca.rotatedToId && !visited.has(ca.rotatedToId)) {
       const next = await repository.findOne({ where: { id: ca.rotatedToId, deleted: false } });
       if (!next) {
         break;
       }
+      visited.add(next.id);
       ca = req && !(req as any).internal ? await this.accessService.getGrantedCa({ ...req, id: next.id }) : next;
-      hops++;
     }
     return ca;
+  }
+
+  /** 收集CA所在轮换链的全部ID（祖先+自身+后继）。防重复轮换保证链为线性，visited守卫防环。 */
+  async collectRotationChain(caId: number, manager?: EntityManager): Promise<number[]> {
+    const repository = manager ? manager.getRepository(LocalCaEntity) : this.repository;
+    const chain: number[] = [];
+    const visited = new Set<number>();
+    let cursor: number | null = caId;
+    // 向上回溯祖先
+    const ancestors: number[] = [];
+    while (cursor != null && !visited.has(cursor)) {
+      visited.add(cursor);
+      const parent = await repository.findOne({ where: { rotatedToId: cursor } as any });
+      if (!parent) {
+        break;
+      }
+      ancestors.push(parent.id);
+      cursor = parent.id;
+    }
+    chain.push(...ancestors.reverse(), caId);
+    // 向下遍历后继
+    cursor = caId;
+    const downVisited = new Set<number>([caId]);
+    while (cursor != null) {
+      const current = await repository.findOne({ where: { id: cursor } });
+      const nextId = current?.rotatedToId;
+      if (nextId == null || downVisited.has(nextId)) {
+        break;
+      }
+      downVisited.add(nextId);
+      chain.push(nextId);
+      cursor = nextId;
+    }
+    return chain;
   }
 
   async infoSafe(req: LocalCaScope) {
@@ -376,6 +424,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       disabled: item.disabled,
       revoked: item.revoked,
       rotatedToId: item.rotatedToId,
+      allowDirectSign: item.allowDirectSign === true,
       notAfter: item.notAfter,
       baseUrl: (item as any).effectiveBaseUrl,
     }));
@@ -402,6 +451,16 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   async listAdminOptions(req: { adminUserId: number; searchKey?: string }) {
     // 管理端页签（权限/签发证书/导入父CA）需要根CA与禁用/已轮换CA；可用性过滤由前端按页签语义执行
     const list = await this.listSafe({ adminUserId: req.adminUserId, searchKey: req.searchKey });
+    // 已归档但已轮换的CA保留legacy管理入口（旧EAB/账户/吊销管理）
+    const accesses = await this.adminRepository.find({ where: { adminUserId: req.adminUserId } });
+    const ids = accesses.map(item => item.caId);
+    if (ids.length) {
+      const archivedRotated = await this.find({ where: { id: In(ids), deleted: true, caType: "intermediate" } });
+      const retired = archivedRotated.filter(item => !!item.rotatedToId);
+      const searchKey = String(req.searchKey || "").trim().toLowerCase();
+      const filtered = retired.filter(item => !searchKey || item.name.toLowerCase().includes(searchKey));
+      return this.toOptionList([...list, ...filtered] as any);
+    }
     return this.toOptionList(list as any);
   }
 
@@ -549,6 +608,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     if (old.revoked) {
       throw new ValidateException("该中间CA已吊销，不能轮换");
+    }
+    if (old.rotatedToId) {
+      throw new ValidateException("该中间CA已轮换，仅允许最新一代CA执行轮换");
     }
     const root = await this.accessService.getOwnedCa({ id: old.parentId, userId: req.userId }, true);
     if (root.caType !== "root" || root.disabled) {
@@ -793,6 +855,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (ca.disabled) {
       throw new ValidateException("该本地CA已禁用");
     }
+    if (!req.internal && !ca.allowDirectSign) {
+      throw new ValidateException("该CA未开启本地直签，请改用本地ACME签发，或联系管理员开启本地直签");
+    }
     await this.crlService.assertCaNotRevokedByParent(ca);
     const maxValidityDays = await this.resolveEffectiveMaxValidityDays(ca);
     if (maxValidityDays <= 0) {
@@ -828,6 +893,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     if (ca.disabled) {
       throw new ValidateException("该本地CA已禁用");
+    }
+    if (!ca.allowDirectSign) {
+      throw new ValidateException("该CA未开启本地直签，请改用本地ACME签发，或联系管理员开启本地直签");
     }
     await this.crlService.assertCaNotRevokedByParent(ca);
     const maxValidityDays = await this.resolveEffectiveMaxValidityDays(ca);
@@ -930,6 +998,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.acmeService.setAcmeEabPrivileged(req);
   }
 
+  async updateAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; name?: string; remark?: string; allowedDomains?: string[]; maxUses?: number; expiresDays?: number }) {
+    return await this.acmeService.updateAcmeEab(req);
+  }
+
   async setAcmeEabDisabled(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; disabled: boolean }) {
     return await this.acmeService.setAcmeEabDisabled(req);
   }
@@ -977,7 +1049,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.crlService.refreshArchivedRootCrl(req);
   }
 
-  async requiresStepUpForUpdate(req: LocalCaScope & { usage?: string; maxValidityDays?: number; allowedDomains?: string[]; baseUrl?: string; exportDisabled?: boolean; dnsServer?: string }) {
+  async requiresStepUpForUpdate(req: LocalCaScope & { usage?: string; maxValidityDays?: number; allowedDomains?: string[]; baseUrl?: string; exportDisabled?: boolean; dnsServer?: string; allowDirectSign?: boolean }) {
     const ca = await this.accessService.getOwnedCa(req);
     if (req.allowedDomains != null) {
       try {
@@ -998,6 +1070,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       return true;
     }
     if (req.exportDisabled === false && ca.exportDisabled === true) {
+      return true;
+    }
+    if (req.allowDirectSign === true && !ca.allowDirectSign) {
       return true;
     }
     if (req.dnsServer != null && normalizeDnsServerInput(req.dnsServer) !== (ca.dnsServer || null)) {
@@ -1033,24 +1108,21 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       await tx.getRepository(AcmeEabEntity).update({ grantId: In(grantIds) }, { disabled: true, updateTime: new Date() } as any);
       await this.acmeService.invalidateDirectOrdersByEabIds(tx, eabs.map(item => item.id), "用户授权已撤销，EAB凭证已禁用，请重新创建订单");
       await grantRepository.delete({ id: In(grantIds) } as any);
-      // 级联撤销轮换后继CA上复制的授权，避免旧CA撤权后用户仍经旧ID获得新CA授权
-      let successorId = ca.rotatedToId;
-      let hops = 0;
-      while (successorId && hops < 5) {
-        const succ = await tx.getRepository(LocalCaEntity).findOne({ where: { id: successorId } });
-        if (!succ) {
-          break;
+      // 跨轮换链统一撤销：链上所有CA的同对象授权一并删除，绑定EAB全部禁用，
+      // 避免只操作链中某一CA时其余复制授权/旧EAB仍可用
+      const chain = await this.collectRotationChain(ca.id, tx);
+      for (const chainCaId of chain) {
+        if (chainCaId === ca.id) {
+          continue;
         }
-        const succGrants = await grantRepository.find({ where: { caId: succ.id, userId: grant.userId, projectId: grant.projectId } });
-        if (succGrants.length) {
-          const succGrantIds = succGrants.map(item => item.id);
-          const succEabs = await tx.getRepository(AcmeEabEntity).find({ where: { grantId: In(succGrantIds) }, select: { id: true } });
-          await tx.getRepository(AcmeEabEntity).update({ grantId: In(succGrantIds) }, { disabled: true, updateTime: new Date() } as any);
-          await this.acmeService.invalidateDirectOrdersByEabIds(tx, succEabs.map(item => item.id), "用户授权已撤销，EAB凭证已禁用，请重新创建订单");
-          await grantRepository.delete({ id: In(succGrantIds) } as any);
+        const chainGrants = await grantRepository.find({ where: { caId: chainCaId, userId: grant.userId, projectId: grant.projectId } });
+        if (chainGrants.length) {
+          const chainGrantIds = chainGrants.map(item => item.id);
+          const chainEabs = await tx.getRepository(AcmeEabEntity).find({ where: { grantId: In(chainGrantIds) }, select: { id: true } });
+          await tx.getRepository(AcmeEabEntity).update({ grantId: In(chainGrantIds) }, { disabled: true, updateTime: new Date() } as any);
+          await this.acmeService.invalidateDirectOrdersByEabIds(tx, chainEabs.map(item => item.id), "用户授权已撤销，EAB凭证已禁用，请重新创建订单");
+          await grantRepository.delete({ id: In(chainGrantIds) } as any);
         }
-        successorId = succ.rotatedToId;
-        hops++;
       }
     });
   }
@@ -1077,9 +1149,13 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       baseUrl?: string;
       exportDisabled?: boolean;
       dnsServer?: string;
+      allowDirectSign?: boolean;
     }
   ) {
     const ca = await this.accessService.getOwnedCa(req);
+    if (ca.deleted) {
+      throw new ValidateException("该CA已归档，不可修改");
+    }
     if (req.name != null && req.name.trim() !== ca.name) {
       await this.assertNameAvailable({
         userId: req.userId,
@@ -1139,10 +1215,17 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       ca.baseUrl = nextBaseUrl;
     }
     if (req.dnsServer != null) {
+      const effectiveParentDns = ca.parentId != null ? (await this.repository.findOne({ where: { id: ca.parentId } }))?.dnsServer : null;
+      if (effectiveParentDns) {
+        throw new ValidateException("根CA已配置DNS服务器，中间CA强制继承，不可单独修改");
+      }
       ca.dnsServer = normalizeDnsServerInput(req.dnsServer);
     }
     if (req.exportDisabled != null) {
       ca.exportDisabled = req.exportDisabled === true;
+    }
+    if (req.allowDirectSign !== undefined) {
+      ca.allowDirectSign = req.allowDirectSign === true;
     }
     await this.update(ca);
     await this.providerSync.syncForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${ca.id}: ${e?.message || e}`));
@@ -1172,6 +1255,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const leafRows = list.map(item => ({
       id: item.id,
       type: "leaf",
+      userId: item.userId,
+      projectId: item.projectId,
       caType: undefined,
       domain: item.domain,
       domains: item.domains,
@@ -1232,7 +1317,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async revokeIssuedCert(req: LocalCaScope & { certId: number }) {
-    const ca = await this.accessService.getOwnedCa(req);
+    const ca = await this.accessService.getOwnedCa(req, false, true);
     const cert = await this.certInfoService.findOne({ where: { id: req.certId, localCaId: ca.id } });
     if (!cert) {
       throw new ValidateException("证书记录不存在或无访问权限");
@@ -1443,6 +1528,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
 
     await this.providerSync.removeForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync remove failed ca=${ca.id}: ${e?.message || e}`));
+    await this.archiveExtinctAncestors(ca.id);
     logger.info(`[local-ca] intermediate revoked ca=${ca.id} root=${root.id} serial=${serialNumber} crl=${crlNumber} user=${req.userId}`);
     return { serialNumber, crlNumber };
   }
@@ -1532,6 +1618,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!req.disabled && ca.rotatedToId) {
       throw new ValidateException("该CA已轮换到新CA，旧CA密钥已退役，不能重新启用，请使用新CA签发");
     }
+    if (req.disabled === false && ca.rotatedToId) {
+      throw new ValidateException("该中间CA已轮换退役，不可重新启用");
+    }
     ca.disabled = req.disabled;
     await this.update(ca);
     await this.providerSync.syncForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${ca.id}: ${e?.message || e}`));
@@ -1595,7 +1684,48 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     ca.disabled = true;
     await this.update(ca);
     await this.providerSync.removeForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync remove failed ca=${ca.id}: ${e?.message || e}`));
+    await this.archiveExtinctAncestors(ca.id);
     logger.info(`[local-ca] ca archived ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
+  }
+
+  /**
+   * 绝迹链级联归档：当某CA被归档/吊销导致轮换链末端绝迹时，
+   * 链上已轮换退役的祖先中间CA一并归档（其签发能力早已停用，证书仍有效至过期，
+   * 吊销与CRL服务对归档CA保留，故不扩大风险）。
+   */
+  private async archiveExtinctAncestors(caId: number) {
+    const visited = new Set<number>();
+    let cursor: number | null = caId;
+    while (cursor != null && !visited.has(cursor)) {
+      visited.add(cursor);
+      const parent = await this.repository.findOne({ where: { rotatedToId: cursor } as any });
+      if (!parent) {
+        break;
+      }
+      cursor = parent.id;
+      if (parent.deleted || parent.caType !== "intermediate" || !parent.rotatedToId) {
+        continue;
+      }
+      // 判断该祖先的后继链末端是否绝迹（归档或吊销）
+      let end: any = parent;
+      const downVisited = new Set<number>([parent.id]);
+      while (end?.rotatedToId && !downVisited.has(end.rotatedToId)) {
+        downVisited.add(end.rotatedToId);
+        const next = await this.repository.findOne({ where: { id: end.rotatedToId } });
+        if (!next) {
+          break;
+        }
+        end = next;
+      }
+      if (end && (end.deleted || end.revoked)) {
+        parent.deleted = true;
+        parent.disabled = true;
+        parent.updateTime = new Date();
+        await this.update(parent);
+        await this.providerSync.removeForCa(parent.id).catch(e => logger.error(`[local-ca] provider sync remove failed ca=${parent.id}: ${e?.message || e}`));
+        logger.info(`[local-ca] extinct-chain ancestor archived ca=${parent.id} trigger=${caId}`);
+      }
+    }
   }
 
   private pipelineUsesCa(content: string, caId: number) {
@@ -1608,6 +1738,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         for (const task of stage.tasks || []) {
           for (const step of task.steps || []) {
             if (step.type === "CertApplyLocalCa" && Number(step.input?.caId) === caId) {
+              return true;
+            }
+            // 通用CertApply经local-ca颁发机构或旧账号引用该CA
+            if (step.input?.sslProvider === `local-ca-${caId}`) {
               return true;
             }
           }
@@ -1631,7 +1765,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     await this.accessService.assertCaOwner(req);
   }
 
-  async assertAdminCa(caId: number, adminUserId: number, requireOwner = false) {
+  async assertAdminCa(caId: number, adminUserId: number, requireOwner = false, includeDeleted = false) {
     return await this.accessService.assertAdminCa(caId, adminUserId, requireOwner);
   }
 

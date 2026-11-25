@@ -83,3 +83,13 @@ describe("acme-access 跨地址族与代理链安全回归", () => {
     assert.deepEqual(normalizeRequiredHeaders([{ name: "X-ACME-AUTH", value: "certd" }]), [{ name: "X-ACME-AUTH", value: "certd" }]);
   });
 });
+
+describe("acme-access 跨族误匹配回归", () => {
+  it("IPv6低32位落入IPv4网段不得误匹配", () => {
+    assert.equal(matchesIpRule("::ffff:7f00:1", "127.0.0.0/8"), true);
+    assert.equal(matchesIpRule("2001:db8::7f00:1", "127.0.0.0/8"), false);
+    assert.equal(matchesIpRule("::7f00:1", "127.0.0.0/8"), false);
+    assert.equal(matchesIpRule("2001:db8::a00:1", "10.0.0.0/8"), false);
+    assert.equal(matchesIpRule("64:ff9b::7f00:1", "127.0.0.0/8"), false);
+  });
+});

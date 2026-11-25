@@ -68,6 +68,11 @@ export default {
   certStatus: "Status",
   certExpires: "Expires",
   certApplyTime: "Issued At",
+  certGroupCount: "Certs",
+  certKeywordPlaceholder: "Search domain/serial",
+  certFilterAll: "All statuses",
+  certStatusExpired: "Expired",
+  certOwner: "Owner",
   certActions: "Actions",
   certView: "View",
   certNotFound: "Certificate not found",
@@ -149,7 +154,8 @@ export default {
   },
   fields: {
     dnsServer: "DNS Servers",
-    dnsServerHelper: "Optional. Leave empty to use the system DNS. Supports ip:port or host:port, comma-separated; used for DNS-01 validation of internal domains.",
+    dnsServerHelper:
+      "Optional. Leave empty to use the system DNS. Supports ip:port or host:port, comma-separated; used for DNS-01 validation of internal domains. When the root CA has DNS configured, the intermediate CA inherits it mandatorily (not editable); if the root later adds DNS, it overrides the intermediate setting while retaining the intermediate record.",
     name: "Name",
     subjectCn: "Common Name",
     organization: "Organization (O)",
@@ -163,7 +169,8 @@ export default {
     maxValidityDays: "Max Issuance Days",
     maxValidityDaysHelper: "0 means unlimited; the actual issuance period never exceeds the CA's remaining validity.",
     allowedDomains: "Allowed Domains",
-    allowedDomainsHelper: "One domain suffix per line, e.g. example.com; empty means unrestricted",
+    allowedDomainsHelper:
+      "One entry per line; empty means unrestricted. A plain suffix (e.g. tianhao.me) allows the domain and all its subdomains; a wildcard (e.g. *.tianhao.me) allows single-label subdomains only (RFC 6125), excluding the apex and multi-level subdomains; a TLD suffix (e.g. me) allows any domain under it.",
     remark: "Remark",
     certPem: "CA Certificate (PEM)",
     privateKeyPem: "CA Private Key (PEM)",
@@ -180,6 +187,9 @@ export default {
     caPath: "Hierarchy",
     acmeEnabled: "ACME",
     acmeDirectIssue: "EAB Direct Issue",
+    allowDirectSign: "Allow Local Direct Signing",
+    allowDirectSignHelper:
+      "When off, this CA issues only via local ACME (whether domain validation is skipped depends on the EAB credential privilege). When on, granted users may use local direct signing. Enabling requires secondary verification.",
     exportDisabled: "Disable Export",
     exportDisabledHelper:
       "When enabled, export of the CA certificate and private key is prohibited. Even when export is permitted, files are written only to the server runtime directory; no browser download is provided.",
@@ -235,6 +245,12 @@ export default {
   eabExpires: "Expires",
   eabInheritCa: "Inherit CA scope",
   eabStatusChanged: "EAB status updated",
+  eabEditTitle: "Edit ACME EAB Credential",
+  eabUpdated: "EAB credential updated",
+  eabViewTitle: "EAB Credential Details",
+  eabNotFound: "The bound EAB credential does not exist or has been deleted",
+  acmeViewEab: "View EAB",
+  eabExpiresDaysEditHelper: "Validity is recomputed from save time; 0 means unlimited",
   eabCreateTitle: "Create ACME EAB Credential",
   eabCreateWarning: "EAB credentials authorize only ACME account registration.",
   eabCreateWarningDesc:
@@ -242,8 +258,9 @@ export default {
   eabCa: "Intermediate CA",
   eabName: "Credential Name",
   eabGrant: "Bind User Grant",
-  eabGrantPlaceholder: "Optional: bind issued certificates to the granted user",
-  eabGrantHelper: "When bound to a grant, certificates issued by accounts registered with this credential are stored in the corresponding user (and project) repository; otherwise they are system-level.",
+  eabGrantPlaceholder: "Optional: bind a user grant or a project grant (mutually exclusive)",
+  eabGrantHelper:
+    "User grants and project grants are mutually exclusive: binding a user grant stores issued certificates in that user's repository; binding a project grant stores them in that project's repository; unbound credentials produce system-level certificates.",
   eabGrantEmpty: "No user grants are available. Add a grant under the CA User Grants first.",
   eabAllowedDomains: "Allowed Domains",
   eabAllowedDomainsHelper: "Leave empty to inherit the CA scope. When set, accounts registered with this credential may issue only the listed domains.",
@@ -292,6 +309,8 @@ export default {
   acmeCertdHelp:
     "<div>1. When ACME is enabled for an intermediate CA, the corresponding provider is registered automatically under System Settings → Pipeline Settings → Custom ACME; manual addition is not required.</div><div>2. Under Authorization → Add → ACME Account, select the provider, enter an email address and the EAB KID/HMAC Key, and generate the account.</div><div>3. Select the provider and account in the certificate pipeline. Privileged EAB credentials bypass domain validation; normal credentials require DNS/HTTP validation to be configured.</div><div>4. Clients must trust the corresponding root CA. Issuance remains subject to the allowed domains of the CA and the EAB credential.</div>",
   acmeChanged: "ACME service status updated",
+  allowDirectSignYes: "Enabled",
+  allowDirectSignNo: "Disabled",
   exportDisabledYes: "Export Disabled",
   exportDisabledNo: "Export Allowed",
   acmeDirectIssueYes: "Enabled",
@@ -364,6 +383,7 @@ export default {
   statusNormal: "Active",
   statusRotated: "Rotated",
   rotatedTag: "Rotated",
+  stateArchived: "Archived",
   rotateIntermediate: "Rotate Intermediate CA",
   rotateIntermediateTitle: "Rotate Intermediate CA",
   rotateIntermediateDesc:

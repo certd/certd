@@ -111,7 +111,6 @@ export class AcmeServerService {
       newAccount: `${base}/new-account`,
       newOrder: `${base}/new-order`,
       revokeCert: `${base}/revoke-cert`,
-      keyChange: `${base}/key-change`,
       meta: {
         termsOfService: "",
         website: "",

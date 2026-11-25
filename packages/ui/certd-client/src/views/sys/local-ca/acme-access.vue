@@ -2,9 +2,9 @@
   <div class="acme-access">
     <a-alert v-if="acmeMode === 'local'" type="success" show-icon class="mb-3" :message="t('certd.localCa.acmeModeLocalHint')" />
     <a-alert v-else type="warning" show-icon class="mb-3" :message="t('certd.localCa.acmeModeStandardRisk')" :description="t('certd.localCa.acmeModeStandardRiskDesc')" />
-    <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.acmeAccessHint')" />
     <a-spin :spinning="loading">
-      <a-form layout="vertical">
+      <a-form v-if="acmeMode === 'standard'" layout="vertical">
+        <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.acmeAccessHint')" />
         <a-form-item :label="t('certd.localCa.acmeClientIpSource')">
           <a-select v-model:value="clientIpSource" :options="clientIpSourceOptions" class="acme-access-source" />
           <div class="helper">{{ t("certd.localCa.acmeClientIpSourceHelper") }}</div>

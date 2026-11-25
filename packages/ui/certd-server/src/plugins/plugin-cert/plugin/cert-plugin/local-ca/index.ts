@@ -259,6 +259,9 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     if ((this.mode as string) === "remote-acme") {
       throw new Error("远程ACME模式已移除：请改用通用『证书申请(CertApply)』任务，由管理员在系统设置-流水线设置中配置自定义ACME颁发机构");
     }
+    if (this.mode !== "local-direct" && this.mode !== "local-acme") {
+      throw new Error("不支持的签发方式，请选择本地CA直接签发或本地ACME服务");
+    }
     if (this.mode === "local-acme") {
       // 本地ACME与本机服务通信，禁止用户可控代理：避免内部凭证随urlMapping外带到第三方主机
       this.reverseProxy = "";
@@ -292,6 +295,9 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   }
 
   async doCertApply(): Promise<CertReader> {
+    if (this.mode !== "local-direct" && this.mode !== "local-acme") {
+      throw new Error("不支持的签发方式，请选择本地CA直接签发或本地ACME服务");
+    }
     if (this.mode === "local-direct") {
       return await this.doLocalDirect();
     }
@@ -384,7 +390,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   protected async resolveDnsServers(): Promise<string[] | undefined> {
     if (this.mode !== "local-acme") return undefined;
     const ca = await this.prepareLocalCa(true);
-    const servers = String(ca.dnsServer || "").split(/[,，\s]+/).map(item => item.trim()).filter(Boolean);
+    const servers = String((ca as any).effectiveDnsServer || ca.dnsServer || "").split(/[,，\s]+/).map(item => item.trim()).filter(Boolean);
     return servers.length ? servers : undefined;
   }
 
@@ -554,7 +560,27 @@ if (localCaInput) {
 localCaInput.mode.order = -10000;
 if (localCaInput.caId) localCaInput.caId.mergeScript = `return {
   show: ctx.compute(({ form }) => form.mode === 'local-direct'),
-  required: ctx.compute(({ form }) => form.mode === 'local-direct')
+  required: ctx.compute(({ form }) => form.mode === 'local-direct'),
+  component: {
+    on: {
+      "ca-change": (scope) => {
+        let form = scope.form || {};
+        form = form.input || form.body || form;
+        form.caAllowDirectSign = scope.$event ? scope.$event.allowDirectSign === true : false;
+      }
+    }
+  }
+}`;
+if (localCaInput.mode) localCaInput.mode.mergeScript = `return {
+  component: {
+    options: ctx.compute(({ form }) => [
+      { value: 'local-direct', label: '本地CA直接签发', disabled: form.caAllowDirectSign !== true },
+      { value: 'local-acme', label: '本地ACME服务' }
+    ])
+  },
+  helper: ctx.compute(({ form }) => form.mode === 'local-direct' && form.caAllowDirectSign !== true
+    ? '所选CA未开启本地直签，该方式不可用；请改用本地ACME服务，或联系管理员在CA设置中开启本地直签。'
+    : '直接签发不经过ACME协议与域名校验，须CA开启本地直签；本地ACME遵循标准ACME协议，仅特权EAB凭证可跳过域名校验。远程ACME请使用通用证书申请任务。')
 }`;
 if (localCaInput.keyType) localCaInput.keyType.mergeScript = `return {
   show: ctx.compute(({ form }) => form.mode === 'local-direct'),

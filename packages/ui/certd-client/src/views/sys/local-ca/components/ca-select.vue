@@ -35,7 +35,15 @@ const cas = ref<any[]>([]);
 function buildLabel(ca: any) {
   const typeLabel = ca.caType === "root" ? t("certd.localCa.caTypeRoot") : t("certd.localCa.caTypeIntermediate");
   const cn = ca.subjectCn ? ` (${ca.subjectCn})` : "";
-  return `${ca.name}${cn} 【${typeLabel}】`;
+  let stateTag = "";
+  if (ca.deleted) {
+    stateTag = `【${t("certd.localCa.stateArchived")}】`;
+  } else if (ca.rotatedToId) {
+    stateTag = `【${t("certd.localCa.rotatedTag")}】`;
+  } else if (ca.disabled) {
+    stateTag = `【${t("common.disabled")}】`;
+  }
+  return `${ca.name}${cn} 【${typeLabel}】${stateTag}`;
 }
 
 let loadSeq = 0;
@@ -49,7 +57,8 @@ async function load() {
     }
     let list = all;
     if (props.acmeOnly) {
-      list = all.filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !ca.disabled && !ca.revoked && !ca.rotatedToId);
+      // 保留已轮换/禁用/已归档(已轮换)CA作legacy管理入口；仅排除未轮换的归档CA
+      list = all.filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !(ca.deleted && !ca.rotatedToId));
     }
     cas.value = list;
     options.value = list.map((ca: any) => ({ label: buildLabel(ca), value: Number(ca.id) }));
@@ -65,7 +74,8 @@ async function load() {
     const queryId = Number(route.query.caId);
     let initial = list.find((ca: any) => Number(ca.id) === queryId);
     if (!initial && list.length > 0) {
-      initial = list[0];
+      // 权限/ACME管理语义以中间CA为主：默认优先选中间CA，避免根CA无授权页造成"权限弱化"误解
+      initial = list.find((ca: any) => ca.caType === "intermediate") || list[0];
     }
     if (initial) {
       selectCa(Number(initial.id), initial);

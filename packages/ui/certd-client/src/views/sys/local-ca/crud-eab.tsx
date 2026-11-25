@@ -70,12 +70,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   let latestRequest: Promise<UserPageRes> | null = null;
   const fetchPage = async (query: UserPageQuery): Promise<UserPageRes> => {
-    const caId = caIdRef.value;
-    if (!caId) {
-      return { records: [], total: 0, currentPage: 1, pageSize: 20 };
-    }
-    const [eabs, grantList] = await Promise.all([localCaApi.ListEab(caId), localCaApi.ListGrants(caId).catch(() => [])]);
-    grants = grantList || [];
+    const filterCaId = query.query?.caId != null && query.query?.caId !== "" ? Number(query.query.caId) : null;
+    const allCas = (await localCaApi.GetAdminOptions()) || [];
+    const cas = allCas.filter((ca: any) => ca.caType === "intermediate");
+    const targetCas = filterCaId ? cas.filter((ca: any) => Number(ca.id) === filterCaId) : cas;
+    const grantLists = await Promise.all(targetCas.map((ca: any) => localCaApi.ListGrants(ca.id).catch(() => [])));
+    grants = ([] as any[]).concat(...grantLists);
     try {
       users = (await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST" })) || [];
     } catch {
@@ -87,7 +87,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     } catch {
       projects = [];
     }
-    let records = eabs || [];
+    const collected: any[] = [];
+    for (const ca of targetCas) {
+      const eabs = (await localCaApi.ListEab(ca.id)) || [];
+      for (const item of eabs) {
+        collected.push({ ...item, caId: ca.id, caName: ca.name });
+      }
+    }
+    let records = collected;
     const nameKey = String(query.query?.name || "")
       .trim()
       .toLowerCase();
@@ -119,7 +126,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   async function toggleDisabled(row: any, disabled: boolean) {
     const action = async () => {
       try {
-        await localCaApi.SetEabStatus(caIdRef.value, row.id, disabled, getSecretAccessToken());
+        await localCaApi.SetEabStatus(row.caId, row.id, disabled, getSecretAccessToken());
         notification.success({ message: t("certd.localCa.eabStatusChanged") });
       } catch (e: any) {
         notification.error({ message: String(e?.message || e) });
@@ -134,7 +141,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   async function togglePrivileged(row: any) {
     await context.runStepUp(async () => {
       try {
-        await localCaApi.SetEabPrivileged(caIdRef.value, row.id, !row.privileged, getSecretAccessToken());
+        await localCaApi.SetEabPrivileged(row.caId, row.id, !row.privileged, getSecretAccessToken());
         notification.success({ message: t("certd.localCa.eabPrivilegedChanged") });
       } catch (e: any) {
         notification.error({ message: String(e?.message || e) });
@@ -163,33 +170,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
       },
-      rowHandle: {
-        width: 120,
-        buttons: {
-          view: { show: false },
-          edit: { show: false },
-          remove: { show: false },
-          copy: { show: false },
-          upgrade: {
-            type: "link",
-            text: t("certd.localCa.eabUpgrade"),
-            show: compute(({ row }) => !row.privileged),
-            click: async ({ row }) => {
-              await togglePrivileged(row);
-            },
-          },
-          downgrade: {
-            type: "link",
-            text: t("certd.localCa.eabDowngrade"),
-            show: compute(({ row }) => row.privileged === true),
-            click: async ({ row }) => {
-              await togglePrivileged(row);
-            },
-          },
-        },
-      },
+      rowHandle: { show: false },
       columns: {
-        name: { title: t("certd.localCa.eabName"), type: "text", search: { show: true }, column: { width: 150, ellipsis: true } },
+        caId: {
+          title: t("certd.localCa.eabCa"),
+          type: "dict-select",
+          dict: dict({ data: context.caOptions || [] }),
+          search: { show: true, col: { span: 6 } },
+          column: { width: 140, ellipsis: true, cellRender: ({ row }) => row.caName || `#${row.caId}` },
+        },
+        name: { title: t("certd.localCa.eabName"), type: "text", search: { show: true, col: { span: 6 } }, column: { width: 150, ellipsis: true } },
         kid: {
           title: "KID",
           type: "text",
@@ -237,12 +227,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         grantId: {
           title: t("certd.localCa.eabGrant"),
           type: "text",
-          column: { width: 120, cellRender: ({ row }) => grantLabel(row) },
-        },
-        userId: {
-          title: t("certd.localCa.eabOwner"),
-          type: "text",
-          column: { width: 160, cellRender: ({ row }) => ownerLabel(row) },
+          column: { width: 150, ellipsis: true, cellRender: ({ row }) => grantLabel(row) },
         },
         accountCount: {
           title: t("certd.localCa.eabAccountCount"),
@@ -269,6 +254,25 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.common.createTime"),
           type: "datetime",
           column: { width: 170, cellRender: ({ value }) => formatTime(value) },
+        },
+        actions: {
+          title: t("certd.localCa.accessActions"),
+          type: "text",
+          column: {
+            width: 170,
+            cellRender({ row }) {
+              return (
+                <div class="local-ca-row-actions">
+                  <a-button type="link" size="small" onClick={() => context.openEditEab(row, () => crudExpose.doRefresh())}>
+                    {t("common.edit")}
+                  </a-button>
+                  <a-button type="link" size="small" onClick={() => togglePrivileged(row)}>
+                    {row.privileged ? t("certd.localCa.eabDowngrade") : t("certd.localCa.eabUpgrade")}
+                  </a-button>
+                </div>
+              );
+            },
+          },
         },
       },
     },

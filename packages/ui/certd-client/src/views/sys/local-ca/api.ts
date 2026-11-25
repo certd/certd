@@ -148,11 +148,11 @@ export const localCaApi = {
     });
   },
 
-  async SetAcmeAccountStatus(id: number, accountId: string, status: string) {
+  async SetAcmeAccountStatus(id: number, accountId: string, status: string, verifyToken?: string) {
     return await req({
       url: apiPrefix + "/acme/accountStatus",
       method: "post",
-      data: { id, accountId, status },
+      data: { id, accountId, status, verifyToken },
     });
   },
 
@@ -193,6 +193,14 @@ export const localCaApi = {
       url: apiPrefix + "/export",
       method: "post",
       data: { id, verifyToken },
+    });
+  },
+
+  async UpdateEab(data: any) {
+    return await req({
+      url: apiPrefix + "/eab/update",
+      method: "post",
+      data: { ...data, verifyToken: getSecretAccessToken() },
     });
   },
 

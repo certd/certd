@@ -82,12 +82,12 @@ export class LocalCaAcmeService {
     if (ca?.deleted && !ca.rotatedToId) {
       return null;
     }
-    let hops = 0;
-    while (ca?.rotatedToId && hops < 5) {
+    const visited = new Set<number>([ca.id]);
+    while (ca?.rotatedToId && !visited.has(ca.rotatedToId)) {
       const next = await repository.findOne({ where: { id: ca.rotatedToId, deleted: false } });
       if (!next) break;
+      visited.add(next.id);
       ca = next;
-      hops++;
     }
     return ca;
   }
@@ -352,6 +352,38 @@ export class LocalCaAcmeService {
       expiresTime: bean.expiresTime,
       privileged: bean.privileged,
     };
+  }
+
+  async updateAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; name?: string; remark?: string; allowedDomains?: string[]; maxUses?: number; expiresDays?: number }) {
+    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+    const bean = await this.acmeEabRepository.findOne({ where: { id: req.eabId, caId: ca.id } });
+    if (!bean) {
+      throw new ValidateException("EAB凭证不存在");
+    }
+    if (req.name !== undefined) {
+      const name = String(req.name || "").trim();
+      if (!name) {
+        throw new ValidateException("凭证名称不能为空");
+      }
+      bean.name = name;
+    }
+    if (req.remark !== undefined) {
+      bean.remark = String(req.remark || "");
+    }
+    if (req.allowedDomains !== undefined) {
+      bean.allowedDomains = JSON.stringify(normalizeAllowedDomains(req.allowedDomains));
+    }
+    if (req.maxUses !== undefined) {
+      bean.maxUses = Math.max(0, Number(req.maxUses) || 0);
+    }
+    if (req.expiresDays !== undefined) {
+      const days = Math.max(0, Number(req.expiresDays) || 0);
+      bean.expiresTime = days > 0 ? Date.now() + days * 86400000 : null;
+    }
+    bean.updateTime = new Date();
+    await this.acmeEabRepository.save(bean);
+    logger.info(`[local-ca] eab updated ca=${ca.id} eab=${bean.id} user=${req.userId}`);
+    return bean;
   }
 
   async setAcmeEabDisabled(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; disabled: boolean }) {

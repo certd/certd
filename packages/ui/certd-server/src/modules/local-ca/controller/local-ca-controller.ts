@@ -196,6 +196,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       baseUrl: body.baseUrl,
       exportDisabled: body.exportDisabled,
       dnsServer: body.dnsServer,
+      allowDirectSign: body.allowDirectSign,
     });
     if (sensitive) {
       this.assertStepUp(body.verifyToken, "修改本地CA安全策略");
@@ -212,6 +213,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       baseUrl: body.baseUrl,
       exportDisabled: body.exportDisabled,
       dnsServer: body.dnsServer,
+      allowDirectSign: body.allowDirectSign,
     });
     this.auditLog({ content: `修改了本地CA「${body.name}」(ID:${body.id})` });
     return this.ok(true);
@@ -372,8 +374,11 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(await this.acmeServerService.listAccountOrders(body.id, body.accountId, userId, projectId));
   }
 
-  @Post("/acme/accountStatus", { description: Constants.per.authOnly, summary: "启用/停用本地ACME账户" })
+  @Post("/acme/accountStatus", { description: Constants.per.authOnly, summary: "启用/停用本地ACME账户（启用需2FA/Passkey）" })
   async acmeAccountStatus(@Body(ALL) body: any) {
+    if (body.status === "valid") {
+      this.assertStepUp(body.verifyToken, "启用ACME账户");
+    }
     const { userId, projectId } = await this.checkCaAccess(body.id, "write");
     await this.acmeServerService.setAccountStatus(body.id, body.accountId, body.status, userId, projectId);
     this.auditLog({ content: `${body.status === "valid" ? "启用" : "停用"}了本地ACME账户(${body.accountId})` });
@@ -397,6 +402,25 @@ export class LocalCaController extends CrudController<LocalCaService> {
       privileged: body.privileged === true,
     });
     this.auditLog({ content: `创建本地ACME EAB凭证「${res.name}」(KID:${res.kid}, 类型:${body.privileged ? "特权" : "普通"})` });
+    return this.ok(res);
+  }
+
+  @Post("/eab/update", { description: Constants.per.authOnly, summary: "编辑本地ACME的EAB凭证（需2FA/Passkey）" })
+  async updateEab(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "编辑ACME凭证");
+    const { userId, projectId } = await this.checkCaAccess(body.caId, "write");
+    const res = await this.service.updateAcmeEab({
+      caId: body.caId,
+      eabId: body.eabId,
+      userId,
+      projectId,
+      name: body.name,
+      remark: body.remark,
+      allowedDomains: body.allowedDomains,
+      maxUses: body.maxUses,
+      expiresDays: body.expiresDays,
+    });
+    this.auditLog({ content: `编辑了本地CA的ACME EAB凭证(ID:${body.eabId})` });
     return this.ok(res);
   }
 
@@ -460,7 +484,8 @@ export class LocalCaController extends CrudController<LocalCaService> {
   @Post("/revokeCert", { description: Constants.per.authOnly, summary: "吊销本地CA签发的证书" })
   async revokeCert(@Body(ALL) body: any) {
     this.assertStepUp(body.verifyToken, "吊销本地CA证书");
-    const { userId, projectId } = await this.checkCaAccess(body.id, "write");
+    // 归档CA保留紧急吊销能力
+    const { userId, projectId } = await this.checkCaAccess(body.id, "write", false, true);
     await this.service.revokeIssuedCert({ id: body.id, userId, projectId, certId: body.certId });
     this.auditLog({ content: `吊销了本地CA签发的证书(ID:${body.certId})` });
     return this.ok(true);
@@ -468,8 +493,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/grants/list", { description: Constants.per.authOnly, summary: "查询CA用户授权" })
   async listGrants(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
-    const userId = this.getUserId();
+    const { userId } = await this.checkCaAccess(body.id, "read");
     return this.ok(await this.service.listGrants({ id: body.id, userId }));
   }
 
@@ -496,8 +520,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/admins/list", { description: Constants.per.authOnly, summary: "查询CA管理员" })
   async listAdmins(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
-    const userId = this.getUserId();
+    const { userId } = await this.checkCaAccess(body.id, "read");
     return this.ok(await this.service.listAdmins({ id: body.id, userId }));
   }
 
@@ -521,10 +544,10 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(true);
   }
 
-  private async checkCaAccess(id: number, mode: "read" | "write" = "read", requireOwner = false) {
+  private async checkCaAccess(id: number, mode: "read" | "write" = "read", requireOwner = false, includeDeleted = false) {
     this.assertSystemAdmin();
     const userId = this.getUserId();
-    await this.service.assertAdminCa(id, userId, requireOwner);
+    await this.service.assertAdminCa(id, userId, requireOwner, includeDeleted);
     return { userId, projectId: undefined as number | undefined };
   }
 

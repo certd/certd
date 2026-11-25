@@ -269,6 +269,8 @@ describe("LocalCaService", () => {
       validityYears: 1,
       allowedDomains: opts.allowedDomains,
     });
+    // 既有签发用例默认开启本地直签（新默认关闭，直签须显式开启）
+    await service.updateMeta({ id: intermediate.id, userId: 1, allowDirectSign: true });
     return { rootId: root.id, id: intermediate.id };
   }
 
@@ -464,6 +466,7 @@ describe("LocalCaService", () => {
       keyType: "ecdsa256",
       validityYears: 1,
     });
+    await service.updateMeta({ id: intermediate.id, userId: 1, allowDirectSign: true });
     const intermediateInfo: any = await service.infoSafe({ id: intermediate.id, userId: 1 });
     assert.equal(intermediateInfo.baseUrl, "https://ca.example.com");
 
@@ -1440,6 +1443,8 @@ describe("LocalCaService 轮换生命周期与权限级联回归", () => {
   async function createIssuingCa(service: any, opts: { name: string }) {
     const root = await service.generateCa({ userId: 1, name: `${opts.name} Root`, subject: { CN: `${opts.name} Root` }, keyType: "rsa2048", validityYears: 2 });
     const intermediate = await service.generateIntermediateCa({ rootId: root.id, maxValidityDays: 365, userId: 1, name: opts.name, subject: { CN: opts.name }, keyType: "rsa2048", validityYears: 1 });
+    // 既有签发用例默认开启本地直签（新默认关闭，直签须显式开启）
+    await service.updateMeta({ id: intermediate.id, userId: 1, allowDirectSign: true });
     return { rootId: root.id, id: intermediate.id };
   }
 
@@ -1498,5 +1503,63 @@ describe("LocalCaService 轮换生命周期与权限级联回归", () => {
     assert.equal(effective?.id, res.id);
     const revocationCa = await service.acmeService.getCaForAcmeRevocation(id);
     assert.equal(revocationCa.id, id);
+  });
+});
+
+describe("LocalCaService 直签开关/DNS继承/轮换防护回归", () => {
+  async function createIssuingCa2(service: any, name: string) {
+    const root = await service.generateCa({ userId: 1, name: `${name} Root`, subject: { CN: `${name} Root` }, keyType: "rsa2048", validityYears: 2 });
+    const intermediate = await service.generateIntermediateCa({ rootId: root.id, maxValidityDays: 365, userId: 1, name, subject: { CN: name }, keyType: "rsa2048", validityYears: 1 });
+    return { rootId: root.id, id: intermediate.id };
+  }
+
+  it("默认关闭本地直签：issueLeaf拒绝，开启后允许", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa2(service, "Direct Sign CA");
+    assert.ok(!store.get(id).allowDirectSign);
+    await assert.rejects(() => service.issueLeaf({ id, userId: 1, domains: ["x.example.com"], keyType: "rsa2048", validityDays: 30 }), /未开启本地直签/);
+    await service.updateMeta({ id, userId: 1, allowDirectSign: true });
+    assert.equal(store.get(id).allowDirectSign, true);
+  });
+
+  it("开启本地直签须step-up敏感判定", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa2(service, "Direct StepUp CA");
+    assert.equal(await service.requiresStepUpForUpdate({ id, userId: 1, allowDirectSign: true }), true);
+    assert.equal(await service.requiresStepUpForUpdate({ id, userId: 1, allowDirectSign: false }), false);
+  });
+
+  it("根CA配置DNS后中间CA强制继承且不可修改", async () => {
+    const { service, store } = createService();
+    const { rootId, id } = await createIssuingCa2(service, "DNS Inherit CA");
+    await service.updateMeta({ id: rootId, userId: 1, dnsServer: "10.0.0.53:5353" });
+    assert.equal(await service.resolveEffectiveDnsServer(store.get(id)), "10.0.0.53:5353");
+    await assert.rejects(() => service.updateMeta({ id, userId: 1, dnsServer: "10.0.0.99" }), /强制继承/);
+    // 根无DNS时中间可自设；根后加DNS覆盖但保留中间记录
+    const { rootId: r2, id: i2 } = await createIssuingCa2(service, "DNS Override CA");
+    await service.updateMeta({ id: i2, userId: 1, dnsServer: "10.0.0.77" });
+    assert.equal(await service.resolveEffectiveDnsServer(store.get(i2)), "10.0.0.77");
+    await service.updateMeta({ id: r2, userId: 1, dnsServer: "10.0.0.53" });
+    assert.equal(await service.resolveEffectiveDnsServer(store.get(i2)), "10.0.0.53");
+    assert.equal(store.get(i2).dnsServer, "10.0.0.77");
+  });
+
+  it("已轮换CA禁止再次轮换", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa2(service, "ReRotate CA");
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    await assert.rejects(() => service.rotateIntermediateCa({ id, userId: 1 }), /已轮换/);
+  });
+
+  it("末端归档触发绝迹链祖先级联归档", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa2(service, "Extinct Chain CA");
+    const r1 = await service.rotateIntermediateCa({ id, userId: 1 });
+    const r2 = await service.rotateIntermediateCa({ id: r1.id, userId: 1, name: "Extinct Chain CA G3" });
+    await service.setDisabled({ id: r2.id, userId: 1, disabled: true });
+    store.get(r2.id).revoked = true;
+    await service.archiveCa({ id: r2.id, userId: 1 });
+    assert.equal(store.get(r1.id).deleted, true);
+    assert.equal(store.get(id).deleted, true);
   });
 });

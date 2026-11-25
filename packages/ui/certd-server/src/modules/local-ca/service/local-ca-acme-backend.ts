@@ -11,14 +11,22 @@ export class LocalCaAcmeBackend implements AcmeIssuerBackend {
   @Inject()
   localCaService: LocalCaService;
 
-  getAcmeCa(caId: number) {
-    return this.localCaService.getAcmeCa(caId);
+  async getAcmeCa(caId: number) {
+    const view = await this.localCaService.getAcmeCa(caId);
+    if (view) {
+      view.dnsServer = await this.localCaService.resolveEffectiveDnsServer(view as any);
+    }
+    return view;
   }
   getAcmeAccessView(caId: number) {
     return this.localCaService.getAcmeAccessView(caId);
   }
-  getAcmeCaForUpdate(caId: number, manager: EntityManager) {
-    return this.localCaService.getAcmeCaForUpdate(caId, manager);
+  async getAcmeCaForUpdate(caId: number, manager: EntityManager) {
+    const view = await this.localCaService.getAcmeCaForUpdate(caId, manager);
+    if (view) {
+      view.dnsServer = await this.localCaService.resolveEffectiveDnsServer(view as any);
+    }
+    return view;
   }
   getCaForAcmeRevocation(caId: number) {
     return this.localCaService.getCaForAcmeRevocation(caId);

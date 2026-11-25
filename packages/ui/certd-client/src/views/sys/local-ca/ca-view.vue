@@ -43,6 +43,9 @@
             <a-descriptions-item v-if="row.acmeEnabled && !row.deleted" :label="t('certd.localCa.acmeDirectory')" :span="2">
               <fs-copyable :model-value="acmeDirectoryUrl">{{ acmeDirectoryUrl }}</fs-copyable>
             </a-descriptions-item>
+            <a-descriptions-item v-if="row.caType === 'intermediate'" :label="t('certd.localCa.fields.allowDirectSign')">
+              {{ row.allowDirectSign ? t("certd.localCa.allowDirectSignYes") : t("certd.localCa.allowDirectSignNo") }}
+            </a-descriptions-item>
             <a-descriptions-item :label="t('certd.localCa.fields.exportDisabled')">
               {{ row.exportDisabled ? t("certd.localCa.exportDisabledYes") : t("certd.localCa.exportDisabledNo") }}
             </a-descriptions-item>
