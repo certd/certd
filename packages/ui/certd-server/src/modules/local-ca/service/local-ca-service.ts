@@ -1319,7 +1319,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   async revokeIssuedCert(req: LocalCaScope & { certId: number }) {
     const ca = await this.accessService.getOwnedCa(req, false, true);
-    const cert = await this.certInfoService.findOne({ where: { id: req.certId, localCaId: ca.id } });
+    // 轮换链集中展示后，旧CA签发的证书归最新CA视图；吊销须按整条链查找，并归实际签发CA写入CRL
+    const chain = await this.accessService.collectRotationChain(ca.id);
+    const cert = await this.certInfoService.findOne({ where: { id: req.certId, localCaId: In(chain) } });
     if (!cert) {
       throw new ValidateException("证书记录不存在或无访问权限");
     }
@@ -1331,7 +1333,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     await this.certInfoService.applyLocalRevocation({
       certInfoId: cert.id,
-      caId: ca.id,
+      caId: cert.localCaId,
       userId: cert.userId,
       projectId: cert.projectId,
       serialNumber: cert.serialNumber,
