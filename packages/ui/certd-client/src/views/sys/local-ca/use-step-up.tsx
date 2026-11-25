@@ -1,4 +1,4 @@
-import { Modal, notification } from "ant-design-vue";
+import { Alert, Button, Input, Modal, notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
 import { createAccessApi } from "/@/views/certd/access/api";
 
@@ -90,9 +90,9 @@ export function useStepUp() {
         cancelText: t("certd.common.cancel"),
         content: () => (
           <div>
-            <a-alert type="warning" show-icon message={warning} class="mb-4" />
+            <Alert type="warning" showIcon message={warning} class="mb-4" />
             <div class="mb-2">{t("certd.localCa.dynamicCode")}</div>
-            <a-input
+            <Input
               size="large"
               placeholder={t("certd.localCa.dynamicCodePlaceholder")}
               onChange={(e: any) => {
@@ -101,7 +101,7 @@ export function useStepUp() {
             />
             {passkeySupported ? (
               <div class="mt-3 text-center">
-                <a-button
+                <Button
                   type="link"
                   onClick={async () => {
                     try {
@@ -112,7 +112,7 @@ export function useStepUp() {
                   }}
                 >
                   {t("certd.localCa.passkeyVerify")}
-                </a-button>
+                </Button>
               </div>
             ) : null}
           </div>
