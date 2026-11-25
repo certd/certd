@@ -975,7 +975,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.accessService.listGrants(req);
   }
 
-  async addGrant(req: { id: number; userId: number; grantUserId: number; grantProjectId?: number }) {
+  async addGrant(req: { id: number; userId: number; grantUserId?: number; grantProjectId?: number }) {
     return await this.accessService.addGrant(req);
   }
 
@@ -1640,6 +1640,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const copy: any = { ...item };
     delete copy.privateKeyEncrypted;
     delete copy.privateKeyHash;
+    // acmeConfig 含 Basic密码哈希/自定义头密钥/IP白名单，禁止经DTO泄漏；访问控制配置走专用脱敏接口getAcmeAccess
+    delete copy.acmeConfig;
     return copy;
   }
 }

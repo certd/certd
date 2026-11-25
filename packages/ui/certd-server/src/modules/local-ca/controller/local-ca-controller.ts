@@ -478,7 +478,8 @@ export class LocalCaController extends CrudController<LocalCaService> {
     this.assertStepUp(body.verifyToken, "授权用户使用中间CA");
     const userId = this.getUserId();
     const res = await this.service.addGrant({ id: body.id, userId, grantUserId: body.grantUserId, grantProjectId: body.grantProjectId });
-    this.auditLog({ content: `授权用户(ID:${body.grantUserId})使用本地CA(ID:${body.id})${body.grantProjectId ? `，项目(ID:${body.grantProjectId})` : "，全部项目"}` });
+    const projectMode = body.grantProjectId != null && body.grantProjectId !== 0;
+    this.auditLog({ content: projectMode ? `授权项目(ID:${body.grantProjectId})内全部用户使用本地CA(ID:${body.id})` : `授权用户(ID:${body.grantUserId})使用本地CA(ID:${body.id})，全部项目` });
     return this.ok(res);
   }
 
@@ -549,6 +550,9 @@ export class LocalCaController extends CrudController<LocalCaService> {
     if (!verifyToken || tokenUserId !== this.getUserId() || !fresh) {
       throw new Error(`为保障安全，${action}前请重新完成 2FA 或 Passkey 验证，并在验证后 10 秒内提交操作`);
     }
+    // 一次性消费：敏感操作每次均需新鲜验证，防止10秒窗口内令牌重放
+    cache.delete(`secret_access_2fa:${verifyToken}`);
+    cache.delete(`secret_access_2fa_ts:${verifyToken}`);
   }
 
   @Post("/crl/refresh", { description: Constants.per.authOnly, summary: "显式刷新Root CRL（需2FA/Passkey）" })

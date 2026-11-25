@@ -98,14 +98,18 @@ export class LocalCaAccessService {
    * 企业模式下项目用户/流水线的userId固定为-1，此时按项目授权匹配；否则按真实用户匹配。
    */
   async listApplicableGrants(req: { userId: number; projectId?: number }) {
+    const result: LocalCaGrantEntity[] = [];
+    // 用户模式：授权给指定用户（projectId=0表示其全部项目；兼容历史用户+项目授权）
     if (req.userId > 0) {
       const grants = await this.grantRepository.find({ where: { userId: req.userId, disabled: false } });
-      return grants.filter(item => item.projectId === 0 || item.projectId === req.projectId);
+      result.push(...grants.filter(item => item.projectId === 0 || item.projectId === req.projectId));
     }
+    // 项目模式：授权给指定项目（userId=0表示项目内全部用户），与用户模式互斥
     if (req.projectId) {
-      return await this.grantRepository.find({ where: { projectId: req.projectId, disabled: false } });
+      const projectGrants = await this.grantRepository.find({ where: { projectId: req.projectId, userId: 0, disabled: false } });
+      result.push(...projectGrants);
     }
-    return [];
+    return result;
   }
 
   async listGrants(req: LocalCaScope) {
@@ -117,20 +121,30 @@ export class LocalCaAccessService {
     return await this.grantRepository.findOne({ where: { id: grantId, caId, disabled: false } });
   }
 
-  async addGrant(req: { id: number; userId: number; grantUserId: number; grantProjectId?: number }) {
-    if (!Number.isInteger(req.grantUserId) || req.grantUserId <= 0) {
-      throw new ValidateException("请选择有效的用户");
-    }
-    if (req.grantProjectId != null && (!Number.isInteger(req.grantProjectId) || req.grantProjectId <= 0)) {
-      throw new ValidateException("项目ID不合法");
+  async addGrant(req: { id: number; userId: number; grantUserId?: number; grantProjectId?: number }) {
+    // 用户模式与项目模式互斥：要么授权用户(全部项目)，要么授权项目(全部用户)
+    const projectMode = req.grantProjectId != null && req.grantProjectId !== 0;
+    let grantUserId: number;
+    let projectId: number;
+    if (projectMode) {
+      if (!Number.isInteger(req.grantProjectId) || req.grantProjectId <= 0) {
+        throw new ValidateException("项目ID不合法");
+      }
+      grantUserId = 0;
+      projectId = req.grantProjectId;
+    } else {
+      if (!Number.isInteger(req.grantUserId) || req.grantUserId <= 0) {
+        throw new ValidateException("请选择有效的用户");
+      }
+      grantUserId = req.grantUserId;
+      projectId = 0;
     }
     const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只能授权中间CA");
     }
-    const projectId = req.grantProjectId ?? 0;
     const existing = await this.grantRepository.findOne({
-      where: { caId: ca.id, userId: req.grantUserId, projectId },
+      where: { caId: ca.id, userId: grantUserId, projectId },
     });
     if (existing) {
       if (existing.disabled) {
@@ -140,7 +154,7 @@ export class LocalCaAccessService {
     }
     const bean = this.grantRepository.create({
       caId: ca.id,
-      userId: req.grantUserId,
+      userId: grantUserId,
       projectId,
       createdByAdminId: req.userId,
       disabled: false,

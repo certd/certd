@@ -1300,42 +1300,40 @@ describe("LocalCaService", () => {
     assert.equal((await service.listAdminOptions({ adminUserId: 3 })).length, 0);
   });
 
-  it("仅中间CA可授权给用户，授权后可按用户/项目签发", async () => {
+  it("仅中间CA可授权，用户模式与项目模式互斥", async () => {
     const { service } = createService();
     const { rootId, id } = await createIssuingCa(service, { name: "Grant CA" });
 
     await assert.rejects(() => service.addGrant({ id: rootId, userId: 1, grantUserId: 2 }), /中间CA/);
-    const grant = await service.addGrant({ id, userId: 1, grantUserId: 2, grantProjectId: 10 });
-    assert.equal(grant.userId, 2);
+    // 用户模式：授权用户2，其全部项目可用
+    const userGrant = await service.addGrant({ id, userId: 1, grantUserId: 2 });
+    assert.equal(userGrant.userId, 2);
+    assert.equal(userGrant.projectId, 0);
+    assert.deepEqual((await service.listOptions({ userId: 2, projectId: 10 })).map(item => item.id), [id]);
+    assert.deepEqual((await service.listOptions({ userId: 2, projectId: 11 })).map(item => item.id), [id]);
+    assert.equal((await service.listOptions({ userId: 3, projectId: 10 })).length, 0);
 
-    const options = await service.listOptions({ userId: 2, projectId: 10 });
-    assert.deepEqual(
-      options.map(item => item.id),
-      [id]
-    );
-    assert.equal((await service.listOptions({ userId: 2, projectId: 11 })).length, 0);
+    // 项目模式：授权项目10，项目内全部用户可用（userId=0）
+    const projGrant = await service.addGrant({ id, userId: 1, grantProjectId: 10 });
+    assert.equal(projGrant.userId, 0);
+    assert.equal(projGrant.projectId, 10);
+    assert.deepEqual((await service.listOptions({ userId: 9, projectId: 10 })).map(item => item.id), [id]);
+    assert.equal((await service.listOptions({ userId: 9, projectId: 11 })).length, 0);
 
     const { csrPem } = await createCsr({ domains: ["grant.example.com"], keyType: "rsa2048" });
-    await assert.rejects(() => service.signCsr({ id, userId: 2, projectId: 11, csrPem }), /无访问权限/);
-    const signed = await service.signCsr({ id, userId: 2, projectId: 10, csrPem });
+    await assert.rejects(() => service.signCsr({ id, userId: 9, projectId: 11, csrPem }), /无访问权限/);
+    const signed = await service.signCsr({ id, userId: 9, projectId: 10, csrPem });
     assert.ok(signed.certPem.includes("BEGIN CERTIFICATE"));
 
-    const allProjectGrant = await service.addGrant({ id, userId: 1, grantUserId: 3 });
-    assert.equal(allProjectGrant.projectId, 0);
-    assert.deepEqual(
-      (await service.listOptions({ userId: 3, projectId: 99 })).map(item => item.id),
-      [id]
-    );
-
-    await service.removeGrant({ id, userId: 1, grantId: grant.id });
-    assert.equal((await service.listOptions({ userId: 2, projectId: 10 })).length, 0);
+    await service.removeGrant({ id, userId: 1, grantId: userGrant.id });
+    assert.equal((await service.listOptions({ userId: 2, projectId: 99 })).length, 0);
   });
 
   it("EAB可绑定用户授权，并固化用户与项目归属", async () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "EAB Grant CA" });
     await service.setAcmeEnabled({ id, userId: 1, enabled: true });
-    const grant = await service.addGrant({ id, userId: 1, grantUserId: 5, grantProjectId: 7 });
+    const grant = await service.addGrant({ id, userId: 1, grantUserId: 5 });
 
     const eab = await service.createAcmeEab({
       caId: id,
@@ -1346,11 +1344,11 @@ describe("LocalCaService", () => {
     });
     assert.equal(eab.grantId, grant.id);
     assert.equal(eab.userId, 5);
-    assert.equal(eab.projectId, 7);
+    assert.ok(!eab.projectId);
 
     const stored: any = await (service.acmeEabRepository as any).findOne({ where: { kid: eab.kid } });
     assert.equal(stored.userId, 5);
-    assert.equal(stored.projectId, 7);
+    assert.ok(!stored.projectId);
     assert.equal(stored.grantId, grant.id);
   });
 
