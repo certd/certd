@@ -9,7 +9,7 @@ import { In, LessThan, MoreThan, Not, Repository } from "typeorm";
 import type { AcmeIssuerBackend } from "../acme-issuer-backend.js";
 import type { AcmeIssuedCertificateStore } from "../acme-issued-certificate-store.js";
 import { getCsrDomains, matchAllowedDomains, normalizeDomains, verifyCertIssuedBy } from "../../cert/service/cert-utils.js";
-import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeOrderEntity } from "../entity/acme-server.js";
+import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeEabEntity, AcmeOrderEntity } from "../entity/acme-server.js";
 import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "../protocol/acme-jws.js";
 import { DEFAULT_INTRANET_RULES, matchIpAllowlist, matchesIpRule } from "../protocol/acme-access.js";
 import bcrypt from "bcryptjs";
@@ -76,6 +76,9 @@ export class AcmeServerService {
 
   @InjectEntityModel(AcmeChallengeEntity)
   challengeRepository: Repository<AcmeChallengeEntity>;
+
+  @InjectEntityModel(AcmeEabEntity)
+  eabRepository: Repository<AcmeEabEntity>;
 
   prepareResponse(ctx: any) {
     ctx.set("Replay-Nonce", acmeNonceStore.create());
@@ -552,16 +555,24 @@ export class AcmeServerService {
   async listAccounts(caId: number, userId: number, projectId?: number) {
     await this.issuer.assertCaOwner({ id: caId, userId, projectId });
     const accounts = await this.accountRepository.find({ where: { caId }, order: { createTime: "DESC" } });
+    const eabIds = [...new Set(accounts.map(item => item.eabId).filter(Boolean))];
+    const eabs = eabIds.length ? await this.eabRepository.find({ where: { id: In(eabIds) } }) : [];
+    const eabMap = new Map(eabs.map(item => [item.id, item]));
     const result = [];
     for (const account of accounts) {
       const orderCount = await this.orderRepository.count({ where: { caId, accountId: account.id } });
       const issuedCount = await this.orderRepository.count({ where: { caId, accountId: account.id, status: "valid" } });
+      const eab = account.eabId ? eabMap.get(account.eabId) : undefined;
       result.push({
         id: account.id,
         status: account.status,
         contact: account.contact ? JSON.parse(account.contact) : [],
         thumbprint: account.thumbprint,
         eabId: account.eabId,
+        eabKid: eab?.kid || null,
+        eabName: eab?.name || null,
+        eabPrivileged: eab?.privileged === true,
+        eabDisabled: eab?.disabled === true,
         userId: account.userId,
         projectId: account.projectId,
         createTime: account.createTime,

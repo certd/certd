@@ -248,6 +248,8 @@ export default {
   acmeAccountValid: "Valid",
   acmeAccountDisabled: "Deactivated",
   acmeAccountId: "Account ID",
+  acmeAccountEab: "Bound EAB",
+  acmeAccountNoEab: "No EAB",
   acmeOwner: "Certificate Owner",
   systemLevel: "System-level (not saved to user certificate repository)",
   eabDirectIssue: "EAB Direct Issue",

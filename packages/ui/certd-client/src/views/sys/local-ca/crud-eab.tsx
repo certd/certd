@@ -10,7 +10,7 @@ function formatTime(value?: number) {
   if (!value) {
     return "-";
   }
-  return dayjs(Number(value)).format("YYYY-MM-DD HH:mm:ss");
+  return dayjs(Number(value) || value).format("YYYY-MM-DD HH:mm:ss");
 }
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
@@ -86,7 +86,21 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     } catch {
       projects = [];
     }
-    const records = eabs || [];
+    let records = eabs || [];
+    const nameKey = String(query.query?.name || "")
+      .trim()
+      .toLowerCase();
+    if (nameKey) {
+      records = records.filter(
+        (item: any) =>
+          String(item.name || "")
+            .toLowerCase()
+            .includes(nameKey) ||
+          String(item.kid || "")
+            .toLowerCase()
+            .includes(nameKey)
+      );
+    }
     return { records, total: records.length, currentPage: query.page?.currentPage || 1, pageSize: query.page?.pageSize || 20 };
   };
 
@@ -115,7 +129,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   return {
     crudOptions: {
       request: { pageRequest },
-      search: { show: false },
       toolbar: { show: false },
       pagination: { show: false },
       table: { rowKey: "id" },
@@ -158,7 +171,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       columns: {
-        name: { title: t("certd.localCa.eabName"), type: "text", column: { width: 150, ellipsis: true } },
+        name: { title: t("certd.localCa.eabName"), type: "text", search: { show: true }, column: { width: 150, ellipsis: true } },
         kid: {
           title: "KID",
           type: "text",
@@ -179,6 +192,29 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             ],
           }),
           column: { width: 90, align: "center", component: { color: "auto" } },
+        },
+        disabled: {
+          title: t("certd.localCa.fields.disabled"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("common.enabled"), value: false, color: "green" },
+              { label: t("common.disabled"), value: true, color: "red" },
+            ],
+          }),
+          column: {
+            width: 100,
+            align: "center",
+            component: {
+              name: "fs-dict-switch",
+              vModel: "checked",
+              on: {
+                async change({ row, $event }) {
+                  await toggleDisabled(row, $event === true);
+                },
+              },
+            },
+          },
         },
         grantId: {
           title: t("certd.localCa.eabGrant"),
@@ -209,29 +245,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.localCa.eabExpires"),
           type: "datetime",
           column: { width: 170, cellRender: ({ value }) => formatTime(value) },
-        },
-        disabled: {
-          title: t("certd.localCa.fields.disabled"),
-          type: "dict-switch",
-          dict: dict({
-            data: [
-              { label: t("common.enabled"), value: false, color: "green" },
-              { label: t("common.disabled"), value: true, color: "red" },
-            ],
-          }),
-          column: {
-            width: 100,
-            align: "center",
-            component: {
-              name: "fs-dict-switch",
-              vModel: "checked",
-              on: {
-                async change({ row, $event }) {
-                  await toggleDisabled(row, $event === true);
-                },
-              },
-            },
-          },
         },
         remark: { title: t("certd.localCa.fields.remark"), type: "text", column: { width: 150, ellipsis: true } },
         createTime: {

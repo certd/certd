@@ -222,6 +222,35 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: { width: 100, component: { color: "auto" } },
         },
         id: { title: t("certd.localCa.acmeAccountId"), type: "text", column: { width: 200, ellipsis: true } },
+        eabKid: {
+          title: t("certd.localCa.acmeAccountEab"),
+          type: "text",
+          column: {
+            width: 200,
+            cellRender({ row }) {
+              if (!row.eabId) {
+                return <a-tag color="red">{t("certd.localCa.acmeAccountNoEab")}</a-tag>;
+              }
+              return (
+                <span>
+                  <a-tooltip title={row.eabKid}>
+                    <span>{row.eabName || row.eabKid}</span>
+                  </a-tooltip>
+                  {row.eabPrivileged ? (
+                    <a-tag color="orange" style={{ marginLeft: 4 }}>
+                      {t("certd.localCa.eabTypePrivileged")}
+                    </a-tag>
+                  ) : null}
+                  {row.eabDisabled ? (
+                    <a-tag color="red" style={{ marginLeft: 4 }}>
+                      {t("common.disabled")}
+                    </a-tag>
+                  ) : null}
+                </span>
+              );
+            },
+          },
+        },
         userId: {
           title: t("certd.localCa.acmeOwner"),
           type: "text",

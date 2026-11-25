@@ -247,6 +247,8 @@ export default {
   acmeAccountValid: "正常",
   acmeAccountDisabled: "已停用",
   acmeAccountId: "账户ID",
+  acmeAccountEab: "绑定EAB",
+  acmeAccountNoEab: "无EAB",
   acmeOwner: "证书归属",
   systemLevel: "系统级（不进入用户证书仓库）",
   eabDirectIssue: "EAB直签",
