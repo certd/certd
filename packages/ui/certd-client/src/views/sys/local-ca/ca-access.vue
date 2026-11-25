@@ -23,17 +23,20 @@
       <a-tab-pane v-if="caType === 'intermediate'" key="grants" :tab="t('certd.localCa.grants')">
         <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.grantHint')" />
         <div class="ca-access-add">
-          <a-select v-model:value="grantUserId" class="ca-access-user" show-search option-filter-prop="label" :placeholder="t('certd.localCa.selectUser')" :options="userOptions" />
-          <a-select v-model:value="projectId" class="ca-access-project" :placeholder="t('certd.localCa.allProjects')">
-            <a-select-option :value="null">{{ t("certd.localCa.allProjects") }}</a-select-option>
-            <a-select-option v-for="item in projectOptions" :key="item.value" :value="item.value">{{ item.label }}</a-select-option>
-          </a-select>
+          <a-radio-group v-model:value="grantMode" button-style="solid">
+            <a-radio-button value="user">{{ t("certd.localCa.grantModeUser") }}</a-radio-button>
+            <a-radio-button value="project">{{ t("certd.localCa.grantModeProject") }}</a-radio-button>
+          </a-radio-group>
+          <a-select v-if="grantMode === 'user'" v-model:value="grantUserId" class="ca-access-user" show-search option-filter-prop="label" :placeholder="t('certd.localCa.selectUser')" :options="userOptions" />
+          <a-select v-else v-model:value="projectId" class="ca-access-user" show-search option-filter-prop="label" :placeholder="t('certd.localCa.selectProject')" :options="projectOptions" />
           <a-button type="primary" :loading="saving" @click="addGrant">{{ t("certd.localCa.addAccess") }}</a-button>
         </div>
         <a-table :data-source="grants" :columns="grantColumns" :loading="loading" size="small" row-key="id" :pagination="false">
           <template #bodyCell="{ column, record }">
-            <template v-if="column.key === 'userId'">{{ userLabel(record.userId) }}</template>
-            <template v-else-if="column.key === 'projectId'">{{ record.projectId ? projectLabel(record.projectId) : t("certd.localCa.allProjects") }}</template>
+            <template v-if="column.key === 'mode'">
+              <a-tag :color="record.userId > 0 ? 'blue' : 'green'">{{ record.userId > 0 ? t("certd.localCa.grantModeUser") : t("certd.localCa.grantModeProject") }}</a-tag>
+            </template>
+            <template v-else-if="column.key === 'target'">{{ record.userId > 0 ? userLabel(record.userId) : projectLabel(record.projectId) }}</template>
             <template v-else-if="column.key === 'actions'">
               <a-button type="link" danger size="small" @click="removeGrant(record)">{{ t("certd.localCa.removeAccess") }}</a-button>
             </template>
@@ -68,14 +71,15 @@ const saving = ref(false);
 const grants = ref<any[]>([]);
 const admins = ref<any[]>([]);
 const adminUserId = ref<number | undefined>();
+const grantMode = ref<"user" | "project">("user");
 const grantUserId = ref<number | undefined>();
-const projectId = ref<number | null>(null);
+const projectId = ref<number | undefined>();
 const userOptions = ref<{ label: string; value: number }[]>([]);
 const projectOptions = ref<{ label: string; value: number }[]>([]);
 
 const grantColumns = computed(() => [
-  { title: t("certd.localCa.grantUser"), key: "userId" },
-  { title: t("certd.localCa.grantProject"), key: "projectId" },
+  { title: t("certd.localCa.grantMode"), key: "mode", width: 100 },
+  { title: t("certd.localCa.grantTarget"), key: "target" },
   { title: t("certd.localCa.accessActions"), key: "actions", width: 100 },
 ]);
 const adminColumns = computed(() => [
@@ -145,19 +149,24 @@ async function addAdmin() {
 }
 
 async function addGrant() {
-  if (!grantUserId.value) {
+  if (grantMode.value === "user" && !grantUserId.value) {
     notification.warning({ message: t("certd.localCa.selectUser") });
+    return;
+  }
+  if (grantMode.value === "project" && !projectId.value) {
+    notification.warning({ message: t("certd.localCa.selectProject") });
     return;
   }
   saving.value = true;
   try {
     await props.runStepUp(t("certd.localCa.grantStepUpTitle"), t("certd.localCa.grantStepUpDesc"), async () => {
-      await localCaApi.AddGrant({ id: props.caId, grantUserId: grantUserId.value, grantProjectId: projectId.value ?? undefined });
+      const payload = grantMode.value === "user" ? { id: props.caId, grantUserId: grantUserId.value } : { id: props.caId, grantProjectId: projectId.value };
+      await localCaApi.AddGrant(payload);
       notification.success({ message: t("certd.localCa.accessSaved") });
       await load();
     });
     grantUserId.value = undefined;
-    projectId.value = null;
+    projectId.value = undefined;
   } finally {
     saving.value = false;
   }
