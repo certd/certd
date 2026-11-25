@@ -293,6 +293,20 @@ export class AcmeAccountAccess extends BaseAccess {
     const directoryUrl = await this.getDirectoryUrl();
     const provider = await this.getProvider();
     const externalAccountBinding = this.eabKid && this.eabHmacKey ? { kid: this.eabKid, hmacKey: this.eabHmacKey } : undefined;
+    // 仅本地档的本地CA颁发机构：账号生成是Certd自身的管理操作，携带内部凭证通过门禁
+    let extraHeaders: Record<string, string> | undefined;
+    if (String(this.caType || "").startsWith("local-ca-")) {
+      try {
+        const getter: any = await this.ctx?.serviceGetter?.get("localCaGetter");
+        const caId = Number(String(this.caType).slice("local-ca-".length));
+        const ca = await getter?.getCa?.(caId);
+        if (ca?.localAcmeToken) {
+          extraHeaders = { "x-certd-acme-token": ca.localAcmeToken };
+        }
+      } catch {
+        // 无凭证时按普通请求处理，由服务端门禁裁决
+      }
+    }
     const memoryStore = new Map<string, any>();
     const userContext = {
       async getObj(key: string) {
@@ -316,6 +330,7 @@ export class AcmeAccountAccess extends BaseAccess {
       signal: (this.ctx as any)?.signal,
       maxCheckRetryCount: 6,
       domainParser: {} as any,
+      extraHeaders,
     });
     const client = await acmeService.getAcmeClient(this.email);
     const conf = await userContext.getObj(acmeService.buildAccountKey(this.email));

@@ -520,6 +520,10 @@ export class CertApplyLocalCa extends CertApplyPlugin {
         return false;
       }
       // 签名POST-as-GET读取账户资源上的新鲜EAB特权状态（服务端裁决，客户端仅规划）
+      let extraHeaders: Record<string, string> | undefined;
+      if (this.localCa?.localAcmeToken) {
+        extraHeaders = { "x-certd-acme-token": this.localCa.localAcmeToken };
+      }
       const client = new acme.Client({
         sslProvider: account.caType,
         directoryUrl: account.directoryUrl,
@@ -527,6 +531,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
         accountUrl: account.accountUri,
         logger: this.logger,
         signal: this.ctx.signal,
+        extraHeaders,
       } as any);
       const resp = await client.updateAccount({});
       this.directIssueCache = resp?.certdEab?.privileged === true;
