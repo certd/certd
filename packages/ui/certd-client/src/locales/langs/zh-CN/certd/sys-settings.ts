@@ -64,9 +64,9 @@ export default {
   customAcmeManageHelper: "配置证书颁发机构（内置 + 自定义ACME）。内置颁发机构不允许修改和删除；自定义ACME适用于内网CA、企业CA等符合RFC 8555标准的ACME服务，配置后可在证书申请任务和ACME账号授权的颁发机构中选用",
   customAcmeName: "颁发机构名称",
   customAcmeSslProvider: "颁发机构标识",
-  customAcmeSslProviderHelper: "唯一标识，如 myca；创建流水线和ACME账号时用它来区分颁发机构，不能重复，创建后不能修改",
+  customAcmeSslProviderHelper: "颁发机构的唯一标识（如 myca），用于在流水线与ACME账号中区分颁发机构；不可重复，创建后不可修改。",
   customAcmeReverseProxy: "反向代理地址",
-  customAcmeReverseProxyHelper: "例如：对于letsencrypt 你在海外服务器配置反代：\nproxy_pass https://acme-v02.api.letsencrypt.org/; \n然后在这里填写你的反代服务器的域名，不要带http://",
+  customAcmeReverseProxyHelper: "示例：为 Let's Encrypt 在海外服务器配置反向代理：\nproxy_pass https://acme-v02.api.letsencrypt.org/;\n此处填写反向代理服务器的域名，不含 http:// 前缀。",
   customAcmeAdd: "添加自定义ACME",
   customAcmeEdit: "编辑自定义ACME",
   customAcmeNeedEab: "需要EAB",
@@ -83,7 +83,7 @@ export default {
   customAcmeLocalCaSyncedTitle: "本地CA自动同步",
   customAcmeLocalCaSyncedHelp:
     "该颁发机构由本地CA自动同步：名称与 Directory URL 随CA更新，CA轮换后自动指向新CA，已有ACME账号和流水线无需调整。\n此处仅可配置反向代理和启用开关；如需移除，请在「本地CA管理」中关闭该CA的ACME服务，或将CA禁用/归档。",
-  customAcmeEnabledHelper: "停用后该颁发机构不可选用（配置保留），重新启用后恢复；修改后需点击页面底部「保存」生效",
+  customAcmeEnabledHelper: "停用后该颁发机构不可选用（配置保留），重新启用后恢复；修改后须点击页面底部「保存」生效。",
 
   fixedCertExpireDays: "固定证书有效期天数",
   fixedCertExpireDaysHelper: "固定证书有效期天数，有助于列表进度条整齐显示",

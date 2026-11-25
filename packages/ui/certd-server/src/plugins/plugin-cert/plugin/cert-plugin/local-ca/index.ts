@@ -40,7 +40,7 @@ const ACME_MODES: LocalCaApplyMode[] = ["local-acme"];
   title: "本地CA证书申请",
   group: pluginGroups.cert.key,
   serviceCapabilities: ["localCaGetter", "localCaSignerGetter"],
-  desc: "支持本地CA直接签发与本地ACME两种模式；客户端需信任对应根CA，建议用于内部/测试环境。远程ACME请用通用证书申请任务+管理员配置的自定义颁发机构",
+  desc: "提供本地CA直接签发与本地ACME两种模式，适用于内部及测试环境；客户端须信任对应根CA。远程ACME请使用通用证书申请任务，并由管理员配置自定义颁发机构。",
   default: {
     strategy: {
       runStrategy: RunStrategy.AlwaysRun,
@@ -49,7 +49,7 @@ const ACME_MODES: LocalCaApplyMode[] = ["local-acme"];
   i18n: {
     "en-US": {
       title: "Request Certificate (Local CA)",
-      desc: "Issue certificates through local direct signing or local ACME. Clients must trust the corresponding root CA. For remote ACME use the generic CertApply task with an admin-configured custom provider.",
+      desc: "Provides local direct signing and local ACME modes for internal or testing purposes. Clients must trust the corresponding root CA. For remote ACME, use the generic certificate apply task with an administrator-configured custom provider.",
       input: {
         mode: {
           title: "Issuance Mode",
@@ -57,9 +57,9 @@ const ACME_MODES: LocalCaApplyMode[] = ["local-acme"];
             "local-direct": "Local Direct Signing",
             "local-acme": "Local ACME",
           },
-          helper: "Local direct signing skips ACME/domain validation. Local ACME follows the ACME protocol and can skip validation only when the EAB is privileged.",
+          helper: "Direct signing bypasses the ACME protocol and domain validation. Local ACME follows the standard ACME protocol; only privileged EAB credentials bypass domain validation.",
         },
-        caId: { title: "CA", helper: "Local direct signing requires an intermediate CA. Local ACME requires ACME to be enabled on that CA." },
+        caId: { title: "CA", helper: "Direct signing requires an intermediate CA. In local ACME mode the CA is derived from the selected provider. Clients must trust the corresponding root CA." },
         keyType: { title: "Key Type" },
         validityDays: { title: "Validity (Days)", helper: "Capped by the CA's remaining validity." },
         renewDays: { title: "Renew Before (Days)", helper: "Reissue when the current certificate expires within this window." },
@@ -82,7 +82,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     },
     required: true,
     order: -10000,
-    helper: "直接签发不经过ACME和域名校验；本地ACME走标准协议，仅当EAB为特权凭证时可跳过域名校验。远程ACME请改用通用证书申请任务",
+    helper: "直接签发不经过ACME协议与域名校验；本地ACME遵循标准ACME协议，仅特权EAB凭证可跳过域名校验。远程ACME请使用通用证书申请任务。",
   })
   mode: LocalCaApplyMode = "local-direct";
 
@@ -156,7 +156,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
 
   @TaskInput({
     title: "中间CA",
-    helper: "本地直签必选中间CA；本地ACME可留空（自动使用ACME账号绑定的CA）；客户端需要信任其根CA",
+    helper: "本地直接签发须选择中间CA；本地ACME模式由所选颁发机构自动确定CA；客户端须信任对应根CA。",
     component: {
       name: "local-ca-selector",
       vModel: "modelValue",

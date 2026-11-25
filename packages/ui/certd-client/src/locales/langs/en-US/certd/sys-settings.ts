@@ -65,10 +65,10 @@ export default {
     "Configure certificate authorities (built-in + custom ACME). Built-in providers cannot be modified or deleted. Custom ACME providers (intranet CA, enterprise CA or any RFC 8555 compatible ACME service) become selectable as certificate authorities in apply tasks and ACME account authorization",
   customAcmeName: "Name",
   customAcmeSslProvider: "SSL Provider",
-  customAcmeSslProviderHelper: "Unique identifier, e.g. myca; used to distinguish providers in pipeline and ACME account",
+  customAcmeSslProviderHelper: "Unique identifier of the provider (e.g. myca), used to distinguish providers in pipelines and ACME accounts; must be unique and cannot be changed after creation.",
   customAcmeReverseProxy: "Reverse Proxy",
   customAcmeReverseProxyHelper:
-    "For example, for Let's Encrypt, configure the reverse proxy on your overseas server: \nproxy_pass https://acme-v02.api.letsencrypt.org/; \nthen fill in your reverse proxy server domain here, without http://",
+    "Example: configure a reverse proxy for Let's Encrypt on an overseas server:\nproxy_pass https://acme-v02.api.letsencrypt.org/;\nEnter the domain of the reverse proxy server here, without the http:// prefix.",
   customAcmeAdd: "Add Custom ACME",
   customAcmeEdit: "Edit Custom ACME",
   customAcmeNeedEab: "Need EAB",
@@ -85,7 +85,7 @@ export default {
   customAcmeLocalCaSyncedTitle: "Synced from Local CA",
   customAcmeLocalCaSyncedHelp:
     "This provider is synced from a local CA: its name and Directory URL follow the CA, and after CA rotation it points to the new CA automatically. Existing ACME accounts and pipelines keep working.\nOnly the reverse proxy and the enable switch can be configured here. To remove it, disable ACME for the CA in Local CA Management, or disable/archive the CA.",
-  customAcmeEnabledHelper: "When disabled the provider cannot be selected (config kept); re-enable to restore. Click Save at the bottom of the page to apply",
+  customAcmeEnabledHelper: "When disabled, the provider cannot be selected (configuration is retained); re-enable to restore. Click Save at the bottom of the page to apply.",
 
   fixedCertExpireDays: "Fixed Cert Expire Days",
   fixedCertExpireDaysHelper: "Fixed cert expiration days, helpful for table list progress bar display",

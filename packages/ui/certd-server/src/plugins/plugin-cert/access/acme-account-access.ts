@@ -283,7 +283,7 @@ export class AcmeAccountAccess extends BaseAccess {
     const provider = await this.getProvider();
     const needEab = provider?.needEAB === true;
     if (needEab && (!this.eabKid || !this.eabHmacKey)) {
-      throw new Error("该颁发机构需要填写EAB KID和EAB HMAC Key后才能生成账号");
+      throw new Error("该颁发机构要求填写EAB KID与EAB HMAC Key后方可生成账号");
     }
     const account = await this.createAccountInfo();
     return JSON.stringify(account, null, 2);
