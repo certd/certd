@@ -462,7 +462,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/eab/list", { description: Constants.per.authOnly, summary: "查询本地ACME的EAB凭证" })
   async listEab(@Body(ALL) body: any) {
-    const { userId, projectId } = await this.checkCaAccess(body.caId, "read");
+    const { userId, projectId } = await this.checkCaAccess(body.caId, "read", false, true);
     return this.ok(await this.service.listAcmeEab({ caId: body.caId, userId, projectId }));
   }
 
@@ -493,7 +493,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/grants/list", { description: Constants.per.authOnly, summary: "查询CA用户授权" })
   async listGrants(@Body(ALL) body: any) {
-    const { userId } = await this.checkCaAccess(body.id, "read");
+    const { userId } = await this.checkCaAccess(body.id, "read", false, true);
     return this.ok(await this.service.listGrants({ id: body.id, userId }));
   }
 
@@ -520,7 +520,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/admins/list", { description: Constants.per.authOnly, summary: "查询CA管理员" })
   async listAdmins(@Body(ALL) body: any) {
-    const { userId } = await this.checkCaAccess(body.id, "read");
+    const { userId } = await this.checkCaAccess(body.id, "read", false, true);
     return this.ok(await this.service.listAdmins({ id: body.id, userId }));
   }
 

@@ -1,5 +1,5 @@
 import { compute, CreateCrudOptionsProps, CreateCrudOptionsRet, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { Modal, notification } from "ant-design-vue";
+import { Button, Modal, Tag, Tooltip, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { useI18n } from "/src/locales";
 import { request } from "/@/api/service";
@@ -131,9 +131,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           <a-table-column title={t("certd.localCa.acmeOrderStatus")} width={110}>
             {{
               default: ({ record: order }: any) => (
-                <a-tooltip title={orderStatusHint(order.status)}>
-                  <a-tag color={orderStatusColor(order.status)}>{orderStatusLabel(order.status)}</a-tag>
-                </a-tooltip>
+                <Tooltip title={orderStatusHint(order.status)}>
+                  <Tag color={orderStatusColor(order.status)}>{orderStatusLabel(order.status)}</Tag>
+                </Tooltip>
               ),
             }}
           </a-table-column>
@@ -143,7 +143,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           <a-table-column title={t("certd.localCa.certSerial")} dataIndex="serialNumber" width={240} />
           <a-table-column title={t("certd.localCa.eabOrderType")} width={100} align="center">
             {{
-              default: ({ record: order }: any) => <a-tag color={order.directIssue ? "green" : "default"}>{order.directIssue ? t("certd.localCa.orderDirectIssueYes") : t("certd.localCa.orderDirectIssueNo")}</a-tag>,
+              default: ({ record: order }: any) => <Tag color={order.directIssue ? "green" : "default"}>{order.directIssue ? t("certd.localCa.orderDirectIssueYes") : t("certd.localCa.orderDirectIssueNo")}</Tag>,
             }}
           </a-table-column>
           <a-table-column title={t("certd.common.createTime")} width={180}>
@@ -153,9 +153,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             {{
               default: ({ record: order }: any) =>
                 order.certPem ? (
-                  <a-button type="link" size="small" onClick={() => viewOrderCert(order)}>
+                  <Button type="link" size="small" onClick={() => viewOrderCert(order)}>
                     {t("certd.localCa.viewCertInfo")}
-                  </a-button>
+                  </Button>
                 ) : (
                   <span>-</span>
                 ),
@@ -213,22 +213,22 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             width: 200,
             cellRender({ row }) {
               if (!row.eabId) {
-                return <a-tag color="red">{t("certd.localCa.acmeAccountNoEab")}</a-tag>;
+                return <Tag color="red">{t("certd.localCa.acmeAccountNoEab")}</Tag>;
               }
               return (
                 <span>
-                  <a-tooltip title={row.eabKid}>
+                  <Tooltip title={row.eabKid}>
                     <span>{row.eabName || row.eabKid}</span>
-                  </a-tooltip>
+                  </Tooltip>
                   {row.eabPrivileged ? (
-                    <a-tag color="orange" style={{ marginLeft: 4 }}>
+                    <Tag color="orange" style={{ marginLeft: 4 }}>
                       {t("certd.localCa.eabTypePrivileged")}
-                    </a-tag>
+                    </Tag>
                   ) : null}
                   {row.eabDisabled ? (
-                    <a-tag color="red" style={{ marginLeft: 4 }}>
+                    <Tag color="red" style={{ marginLeft: 4 }}>
                       {t("common.disabled")}
-                    </a-tag>
+                    </Tag>
                   ) : null}
                 </span>
               );
@@ -243,9 +243,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             cellRender({ row }) {
               if (!(Number(row.userId) > 0)) {
                 return (
-                  <a-tooltip title={t("certd.localCa.systemLevelHint")}>
-                    <a-tag color="purple">{t("certd.localCa.systemLevelTag")}</a-tag>
-                  </a-tooltip>
+                  <Tooltip title={t("certd.localCa.systemLevelHint")}>
+                    <Tag color="purple">{t("certd.localCa.systemLevelTag")}</Tag>
+                  </Tooltip>
                 );
               }
               if (row.projectId) {
@@ -267,7 +267,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "datetime",
           column: { width: 170, cellRender: ({ value }) => formatTime(value) },
         },
-        actions: {
+        ops: {
           title: t("certd.localCa.certActions"),
           type: "text",
           column: {
@@ -276,16 +276,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               return (
                 <div class="local-ca-row-actions">
                   {row.eabId ? (
-                    <a-button type="link" size="small" onClick={() => viewEab(row)}>
+                    <Button type="link" size="small" onClick={() => viewEab(row)}>
                       {t("certd.localCa.acmeViewEab")}
-                    </a-button>
+                    </Button>
                   ) : null}
-                  <a-button type="link" size="small" onClick={() => viewOrders(row)}>
+                  <Button type="link" size="small" onClick={() => viewOrders(row)}>
                     {t("certd.localCa.acmeViewOrders")}
-                  </a-button>
-                  <a-button type="link" size="small" danger={row.status === "valid"} onClick={() => toggleStatus(row)}>
+                  </Button>
+                  <Button type="link" size="small" danger={row.status === "valid"} onClick={() => toggleStatus(row)}>
                     {row.status === "valid" ? t("certd.common.disabled") : t("certd.common.enabled")}
-                  </a-button>
+                  </Button>
                 </div>
               );
             },

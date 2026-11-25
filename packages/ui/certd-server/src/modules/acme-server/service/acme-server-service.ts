@@ -558,7 +558,7 @@ export class AcmeServerService {
   }
 
   async listAccounts(caId: number, userId: number, projectId?: number) {
-    await this.issuer.assertCaOwner({ id: caId, userId, projectId });
+    await this.issuer.assertCaOwner({ id: caId, userId, projectId }, true);
     const accounts = await this.accountRepository.find({ where: { caId }, order: { createTime: "DESC" } });
     const eabIds = [...new Set(accounts.map(item => item.eabId).filter(Boolean))];
     const eabs = eabIds.length ? await this.eabRepository.find({ where: { id: In(eabIds) } }) : [];
@@ -589,7 +589,7 @@ export class AcmeServerService {
   }
 
   async listAccountOrders(caId: number, accountId: string, userId: number, projectId?: number) {
-    await this.issuer.assertCaOwner({ id: caId, userId, projectId });
+    await this.issuer.assertCaOwner({ id: caId, userId, projectId }, true);
     const account = await this.accountRepository.findOne({ where: { id: accountId, caId } });
     if (!account) {
       throw new AcmeProblem("unauthorized", "ACME账户不存在", 404);
@@ -612,7 +612,7 @@ export class AcmeServerService {
   }
 
   async setAccountStatus(caId: number, accountId: string, status: string, userId: number, projectId?: number) {
-    await this.issuer.assertCaOwner({ id: caId, userId, projectId });
+    await this.issuer.assertCaOwner({ id: caId, userId, projectId }, true);
     if (!["valid", "deactivated"].includes(status)) {
       throw new AcmeProblem("malformed", "账户状态不合法");
     }

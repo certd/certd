@@ -1764,8 +1764,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     };
   }
 
-  async assertCaOwner(req: LocalCaScope) {
-    await this.accessService.assertCaOwner(req);
+  async assertCaOwner(req: LocalCaScope, includeDeleted = false) {
+    await this.accessService.getOwnedCa(req, false, includeDeleted);
   }
 
   async assertAdminCa(caId: number, adminUserId: number, requireOwner = false, includeDeleted = false) {

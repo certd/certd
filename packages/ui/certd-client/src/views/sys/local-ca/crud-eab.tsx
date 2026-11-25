@@ -1,5 +1,5 @@
 import { compute, CreateCrudOptionsProps, CreateCrudOptionsRet, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { notification } from "ant-design-vue";
+import { Button, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { useI18n } from "/src/locales";
 import { request } from "/@/api/service";
@@ -255,7 +255,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "datetime",
           column: { width: 170, cellRender: ({ value }) => formatTime(value) },
         },
-        actions: {
+        ops: {
           title: t("certd.localCa.accessActions"),
           type: "text",
           column: {
@@ -263,12 +263,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             cellRender({ row }) {
               return (
                 <div class="local-ca-row-actions">
-                  <a-button type="link" size="small" onClick={() => context.openEditEab(row, () => crudExpose.doRefresh())}>
+                  <Button type="link" size="small" onClick={() => context.openEditEab(row, () => crudExpose.doRefresh())}>
                     {t("common.edit")}
-                  </a-button>
-                  <a-button type="link" size="small" onClick={() => togglePrivileged(row)}>
+                  </Button>
+                  <Button type="link" size="small" onClick={() => togglePrivileged(row)}>
                     {row.privileged ? t("certd.localCa.eabDowngrade") : t("certd.localCa.eabUpgrade")}
-                  </a-button>
+                  </Button>
                 </div>
               );
             },

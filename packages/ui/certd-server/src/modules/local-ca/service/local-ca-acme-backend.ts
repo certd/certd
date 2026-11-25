@@ -52,7 +52,7 @@ export class LocalCaAcmeBackend implements AcmeIssuerBackend {
   recordSystemCertRevocation(req: { caId: number; serialNumber: string; expiresTime?: number; userId?: number; projectId?: number; certPem?: string }) {
     return this.localCaService.recordSystemCertRevocation(req);
   }
-  assertCaOwner(req: { id: number; userId: number; projectId?: number }) {
-    return this.localCaService.assertCaOwner(req);
+  assertCaOwner(req: { id: number; userId: number; projectId?: number }, includeDeleted = false) {
+    return this.localCaService.assertCaOwner(req, includeDeleted);
   }
 }

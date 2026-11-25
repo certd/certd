@@ -114,7 +114,7 @@ export class LocalCaAccessService {
   }
 
   async listGrants(req: LocalCaScope) {
-    const ca = await this.getOwnedCa(req);
+    const ca = await this.getOwnedCa(req, false, true);
     return await this.grantRepository.find({ where: { caId: ca.id }, order: { id: "DESC" } });
   }
 
@@ -182,7 +182,7 @@ export class LocalCaAccessService {
   }
 
   async listAdmins(req: LocalCaScope) {
-    const ca = await this.getOwnedCa(req);
+    const ca = await this.getOwnedCa(req, false, true);
     return await this.adminRepository.find({ where: { caId: ca.id }, order: { id: "DESC" } });
   }
 

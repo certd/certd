@@ -428,7 +428,8 @@ export class LocalCaAcmeService {
   }
 
   async listAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number }) {
-    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+    // 只读管理列表允许归档CA（legacy凭证管理入口）
+    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, false, true);
     const list = await this.acmeEabRepository.find({ where: { caId: ca.id }, order: { createTime: "DESC" } });
     const accounts = await this.repository.manager.getRepository(AcmeAccountEntity).find({ where: { caId: ca.id }, select: { id: true, eabId: true } });
     const countByEab = new Map<string, number>();
