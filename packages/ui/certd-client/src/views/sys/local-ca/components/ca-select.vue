@@ -2,7 +2,7 @@
   <div class="local-ca-select">
     <span class="local-ca-select-label">{{ t("certd.localCa.caSelect") }}</span>
     <a-select class="local-ca-select-input" :value="props.modelValue" show-search option-filter-prop="label" :placeholder="t('certd.localCa.caSelect')" :options="options" :loading="loading" @change="onChange" />
-    <a-button type="link" size="small" @click="load">{{ t("certd.common.refresh") }}</a-button>
+    <a-button type="link" size="small" @click="load">{{ t("common.refresh") }}</a-button>
   </div>
 </template>
 

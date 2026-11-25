@@ -23,7 +23,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     if (!caId) {
       return { records: [], total: 0 };
     }
-    const records = (await localCaApi.ListCerts(caId)) || [];
+    const records = ((await localCaApi.ListCerts(caId)) || []).map((item: any) => ({ ...item, rowKey: `${item.type}-${item.id}` }));
     return { records, total: records.length };
   };
 
@@ -73,7 +73,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       search: { show: false },
       toolbar: { show: false },
       actionbar: { show: false },
-      table: { rowKey: (row: any) => `${row.type}-${row.id}` },
+      table: { rowKey: "rowKey" },
       rowHandle: {
         width: 150,
         buttons: {
