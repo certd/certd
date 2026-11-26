@@ -407,23 +407,24 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       try {
         const grants = await localCaApi.ListGrants(item.id);
         for (const grant of grants || []) {
+          const isUser = Number(grant.userId) > 0;
           grantOptions.push({
-            label:
-              Number(grant.userId) > 0
-                ? `${item.name} - ${t("certd.localCa.grantUser")}: ${bindUserLabel(grant.userId)}（${t("certd.localCa.allProjects")}）`
-                : `${item.name} - ${t("certd.localCa.grantProject")}: ${bindProjectLabel(grant.projectId)}`,
+            label: isUser ? `${item.name} - ${bindUserLabel(grant.userId)}（${t("certd.localCa.allProjects")}）` : `${item.name} - ${bindProjectLabel(grant.projectId)}`,
             value: grant.id,
+            mode: isUser ? "user" : "project",
+            caId: item.id,
           });
         }
       } catch (e) {
         // 操作员可能无权查看授权，跳过
       }
     }
+    const grantOptionsJson = JSON.stringify(grantOptions);
     await openFormDialog({
       title: t("certd.localCa.eabCreateTitle"),
       wrapper: { width: 600 },
       body: () => <a-alert type="warning" show-icon message={t("certd.localCa.eabCreateWarning")} description={t("certd.localCa.eabCreateWarningDesc")} class="mb-4" />,
-      initialForm: { caId: initialCaId, maxUses: 1, expiresDays: 3650, privileged: false },
+      initialForm: { caId: initialCaId, maxUses: 1, expiresDays: 3650, privileged: false, bindMode: "user" },
       columns: {
         caId: {
           title: t("certd.localCa.eabCa"),
@@ -447,6 +448,17 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           }),
           form: { col: { span: 24 }, helper: t("certd.localCa.eabPrivilegedHelper") },
         },
+        bindMode: {
+          title: t("certd.localCa.eabGrantMode"),
+          type: "dict-select",
+          dict: dict({
+            data: [
+              { label: t("certd.localCa.grantModeUser"), value: "user" },
+              { label: t("certd.localCa.grantModeProject"), value: "project" },
+            ],
+          }),
+          form: { col: { span: 24 }, value: "user", helper: t("certd.localCa.eabGrantModeHelper") },
+        },
         grantId: {
           title: t("certd.localCa.eabGrant"),
           type: "dict-select",
@@ -456,6 +468,11 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             component: { allowClear: true, placeholder: t("certd.localCa.eabGrantPlaceholder") },
             helper: grantOptions.length ? t("certd.localCa.eabGrantHelper") : t("certd.localCa.eabGrantEmpty"),
           },
+          mergeScript: `return {
+            component: {
+              options: ctx.compute(({ form }) => (${grantOptionsJson}).filter(g => g.mode === (form.bindMode || 'user')))
+            }
+          }`,
         },
         allowedDomains: {
           title: t("certd.localCa.eabAllowedDomains"),

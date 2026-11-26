@@ -258,6 +258,8 @@ export default {
   eabCa: "中间CA",
   eabName: "凭证名称",
   eabGrant: "绑定授权",
+  eabGrantMode: "授权类型",
+  eabGrantModeHelper: "先选择授权给用户还是项目，再选择具体对象（仅限当前CA已有授权）。",
   eabGrantPlaceholder: "可选：选择用户或项目",
   eabGrantHelper: "选择用户：证书进入该用户的证书仓库；选择项目：证书进入该项目的证书仓库；不选择则为系统级证书。",
   eabGrantEmpty: "暂无可绑定的授权，请先在CA的「授权用户/项目」中添加。",

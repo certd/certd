@@ -271,6 +271,8 @@ export default {
   eabCa: "Intermediate CA",
   eabName: "Credential Name",
   eabGrant: "Bind Grant",
+  eabGrantMode: "Grant Type",
+  eabGrantModeHelper: "Choose whether to grant a user or a project, then pick the specific target (only existing grants of the current CA).",
   eabGrantPlaceholder: "Optional: select a user or a project",
   eabGrantHelper: "Select a user: certificates go to that user's repository; select a project: certificates go to that project's repository; leave empty for system-level certificates.",
   eabGrantEmpty: "No grants are available. Add a user/project grant under the CA Grants first.",
