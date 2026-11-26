@@ -97,8 +97,8 @@ export class LocalCaAcmeService {
   private async resolveEffectiveAcmeCa(id: number, manager?: EntityManager): Promise<LocalCaEntity> {
     const repository = manager ? manager.getRepository(LocalCaEntity) : this.repository;
     let ca = await repository.findOne({ where: { id } });
-    // 已归档且未轮换的CA不再提供ACME；已轮换的归档CA保留旧ID→新CA映射，保证旧账户/旧Directory连续
-    if (ca?.deleted && !ca.rotatedToId) {
+    // CA不存在或已归档且未轮换：不再提供ACME，返回null由调用方给出明确业务错误（避免访问null.id泄露堆栈）
+    if (!ca || (ca.deleted && !ca.rotatedToId)) {
       return null;
     }
     const visited = new Set<number>([ca.id]);
@@ -255,7 +255,17 @@ export class LocalCaAcmeService {
   }
 
   /** 设置ACME访问控制（IP白名单/Basic认证/自定义头），合并写入acmeConfig。 */
-  async setAcmeAccess(req: LocalCaScope & { caId: number; ipAllowlist?: any; basicAuth?: { enabled?: boolean; username?: string; password?: string }; requiredHeaders?: any; clientIpSource?: string; clientIpHeader?: string; trustProxyCidrs?: any }) {
+  async setAcmeAccess(
+    req: LocalCaScope & {
+      caId: number;
+      ipAllowlist?: any;
+      basicAuth?: { enabled?: boolean; username?: string; password?: string };
+      requiredHeaders?: any;
+      clientIpSource?: string;
+      clientIpHeader?: string;
+      trustProxyCidrs?: any;
+    }
+  ) {
     const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以配置ACME访问控制");
@@ -296,7 +306,9 @@ export class LocalCaAcmeService {
           // Basic认证凭证仅Base64编码非加密，HTTP下会明文传输：强制HTTPS访问地址（TLS反代对外地址）
           const baseUrl = String((await this.crlService.resolveBaseUrl(ca)) || "").trim();
           if (baseUrl && !/^https:\/\//i.test(baseUrl)) {
-            throw new ValidateException("启用Basic认证要求HTTPS访问地址：HTTP下用户名密码会明文传输（Base64不是加密）。请将Base URL配置为https对外地址（TLS反向代理场景填外部https地址），或改用IP白名单/自定义头控制访问。");
+            throw new ValidateException(
+              "启用Basic认证要求HTTPS访问地址：HTTP下用户名密码会明文传输（Base64不是加密）。请将Base URL配置为https对外地址（TLS反向代理场景填外部https地址），或改用IP白名单/自定义头控制访问。"
+            );
           }
           if (req.basicAuth.password) {
             passwordHash = bcrypt.hashSync(String(req.basicAuth.password), 10);
@@ -492,9 +504,7 @@ export class LocalCaAcmeService {
     const caNameMap = new Map(chainCas.map(item => [item.id, item.name]));
     const list = await this.acmeEabRepository.find({ where: { caId: In(chain) }, order: { createTime: "DESC" } });
     const eabIds = list.map(item => item.id);
-    const accounts = eabIds.length
-      ? await this.repository.manager.getRepository(AcmeAccountEntity).find({ where: { eabId: In(eabIds) }, select: { id: true, eabId: true, status: true } })
-      : [];
+    const accounts = eabIds.length ? await this.repository.manager.getRepository(AcmeAccountEntity).find({ where: { eabId: In(eabIds) }, select: { id: true, eabId: true, status: true } }) : [];
     const countByEab = new Map<string, number>();
     const riskByEab = new Map<string, number>();
     for (const acc of accounts) {
@@ -927,5 +937,4 @@ export class LocalCaAcmeService {
       .andWhere(`${statusColumn} IN (:...statuses)`, { statuses: ["pending", "ready"] })
       .execute();
   }
-
 }

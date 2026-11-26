@@ -318,9 +318,7 @@ export class AcmeAccountAccess extends BaseAccess {
   async onEabList() {
     const getter: any = await this.ctx?.serviceGetter?.get("localCaGetter");
     const list = (await getter?.listMyEab?.()) || [];
-    return list
-      .filter((item: any) => !this.caType || item.sslProvider === this.caType)
-      .map((item: any) => ({ value: item.id, label: `${item.name}（${item.caName || "#" + item.caId}）` }));
+    return list.filter((item: any) => !this.caType || item.sslProvider === this.caType).map((item: any) => ({ value: item.id, label: `${item.name}（${item.caName || "#" + item.caId}）` }));
   }
 
   async onGenerateAccount() {
@@ -407,8 +405,9 @@ export class AcmeAccountAccess extends BaseAccess {
       issuer: acme.getDnsPersistIssuer(directoryUrl),
     };
     if (externalAccountBinding) {
+      // HMAC Key仅用于注册过程，注册完成后不再返回前端/写入账户JSON，仅保留KID与使用时间供审计
       account.eab = {
-        ...externalAccountBinding,
+        kid: externalAccountBinding.kid,
         usedAt: Date.now(),
       };
     }

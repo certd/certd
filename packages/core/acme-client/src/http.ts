@@ -75,16 +75,10 @@ class HttpClient {
 
     async request(url, method, opts = {}) {
         // 仅替换实际传输地址；signedRequest 已在映射前用 ACME 原始 URL 生成 JWS，协议要求两者保持一致。
-        if (this.urlMapping && this.urlMapping.enabled && this.urlMapping.mappings) {
-            // eslint-disable-next-line no-restricted-syntax
-            for (const key in this.urlMapping.mappings) {
-                const value = this.urlMapping.mappings[key];
-                if (url.includes(key)) {
-                    const newUrl = url.replace(key, value);
-                    this.log(`use reverse proxy: ${newUrl}`);
-                    url = newUrl;
-                }
-            }
+        const mappedUrl = this.mapUrl(url);
+        if (mappedUrl != null) {
+            this.log(`use reverse proxy: ${mappedUrl}`);
+            url = mappedUrl;
         }
         opts.url = url;
         opts.method = method;
@@ -102,6 +96,10 @@ class HttpClient {
         /* 重定向策略：默认0（不跟随），可由 acmeSettings.maxRedirects 覆盖以兼容依赖跳转的第三方ACME */
         if (opts.maxRedirects == null) {
             opts.maxRedirects = axios.defaults.acmeSettings?.maxRedirects ?? 0;
+        }
+        // 携带内部凭证头（如x-certd-acme-token）的请求禁止跟随重定向，防止凭证经跨源重定向泄漏到非授权目标
+        if (Object.keys(this.extraHeaders || {}).length > 0 && this.isSameOriginAsDirectory(url)) {
+            opts.maxRedirects = 0;
         }
 
         /* Request */
@@ -228,18 +226,53 @@ class HttpClient {
         }
     }
 
-    /** 资源URL是否命中可信反向代理映射规则。 */
-    matchesMapping(url) {
+    /**
+     * 严格URL映射：用标准URL解析器比较origin（协议+主机+端口），路径按边界前缀匹配，
+     * 不以字符串包含关系判断（避免可信关键字出现在恶意URL的query/path中误命中）。
+     * 命中返回映射后的URL，未命中返回null。映射后目标由调用方重新校验。
+     */
+    mapUrl(url) {
         if (!(this.urlMapping && this.urlMapping.enabled && this.urlMapping.mappings)) {
-            return false;
+            return null;
+        }
+        let target;
+        try {
+            target = new URL(url);
+        } catch {
+            return null;
         }
         // eslint-disable-next-line no-restricted-syntax
         for (const key in this.urlMapping.mappings) {
-            if (url.includes(key)) {
-                return true;
+            const value = this.urlMapping.mappings[key];
+            let keyUrl;
+            let valueUrl;
+            try {
+                keyUrl = new URL(key);
+                valueUrl = new URL(value);
+            } catch {
+                continue;
             }
+            if (target.origin !== keyUrl.origin) {
+                continue;
+            }
+            const keyPath = keyUrl.pathname;
+            if (keyPath !== "/" && target.pathname !== keyPath && !target.pathname.startsWith(keyPath + "/")) {
+                continue;
+            }
+            const mapped = new URL(target.toString());
+            mapped.protocol = valueUrl.protocol;
+            mapped.host = valueUrl.host;
+            if (keyPath !== "/") {
+                mapped.pathname = valueUrl.pathname.replace(/\/+$/, "") + target.pathname.slice(keyPath.length);
+            }
+            return mapped.toString();
         }
-        return false;
+        return null;
+    }
+
+    /** 资源URL是否命中可信反向代理映射规则（严格origin+路径边界）。 */
+    matchesMapping(url) {
+        return this.mapUrl(url) != null;
     }
 
     /** 目标URL是否与目录地址同源（非法URL视为不同源）。 */

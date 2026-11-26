@@ -155,7 +155,10 @@ export type LocalCaSafe = Omit<LocalCaEntity, "privateKeyEncrypted" | "privateKe
 function normalizeDnsServerInput(value: any): string | null {
   const text = String(value || "").trim();
   if (!text) return null;
-  const items = text.split(/[,，\s]+/).map(item => item.trim()).filter(Boolean);
+  const items = text
+    .split(/[,，\s]+/)
+    .map(item => item.trim())
+    .filter(Boolean);
   if (items.length > 5) {
     throw new ValidateException("DNS服务器最多配置5个");
   }
@@ -192,7 +195,6 @@ function normalizeDnsServerInput(value: any): string | null {
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
-
 export class LocalCaService extends BaseService<LocalCaEntity> {
   @InjectEntityModel(LocalCaEntity)
   repository: Repository<LocalCaEntity>;
@@ -456,7 +458,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   async listAdminOptions(req: { adminUserId: number; searchKey?: string; includeAll?: boolean }) {
     // 管理端页签（权限/签发证书/导入父CA）需要根CA与禁用/已轮换CA；可用性过滤由前端按页签语义执行
     const list = await this.listSafe({ adminUserId: req.adminUserId, searchKey: req.searchKey, includeAll: req.includeAll });
-    const searchKey = String(req.searchKey || "").trim().toLowerCase();
+    const searchKey = String(req.searchKey || "")
+      .trim()
+      .toLowerCase();
     // 已归档但已轮换的CA保留legacy管理入口（旧EAB/账户/吊销管理）
     if (req.includeAll) {
       const archivedRotated = await this.find({ where: { deleted: true, caType: "intermediate" } });
@@ -650,7 +654,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (root.caType !== "root" || root.disabled) {
       throw new ValidateException("上级根CA不可用，不能轮换");
     }
-    const baseName = old.name.replace(/\s*G\d+$/, "").replace(/-rotated$/, "").trim();
+    const baseName = old.name
+      .replace(/\s*G\d+$/, "")
+      .replace(/-rotated$/, "")
+      .trim();
     const siblings = await this.getRepository().find({ where: { deleted: false, name: Like(`${baseName}%`) } });
     let generation = 1;
     for (const c of siblings) {
@@ -896,7 +903,11 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
    * CA 签发核心：流水线插件、独立签发、未来 ACME finalize 都走这里。
    */
   async signCsr(req: LocalCaSignCsrReq, manager?: EntityManager) {
-    const ca = await this.followRotation(req.internal ? await (manager ? manager.getRepository(LocalCaEntity) : this.repository).findOne({ where: { id: req.id, deleted: false } }) : await this.accessService.getGrantedCa(req), req, manager);
+    const ca = await this.followRotation(
+      req.internal ? await (manager ? manager.getRepository(LocalCaEntity) : this.repository).findOne({ where: { id: req.id, deleted: false } }) : await this.accessService.getGrantedCa(req),
+      req,
+      manager
+    );
     if (!ca) {
       throw new ValidateException("本地CA不存在或无访问权限");
     }
@@ -1027,13 +1038,16 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
    */
   async signCsrForAcme(caId: number, csrPem: string, validityDays = 90, manager?: EntityManager) {
     const ca = await this.acmeService.getAcmeCa(caId);
-    return await this.signCsr({
-      id: ca.id,
-      userId: 0,
-      csrPem,
-      validityDays,
-      internal: true,
-    }, manager);
+    return await this.signCsr(
+      {
+        id: ca.id,
+        userId: 0,
+        csrPem,
+        validityDays,
+        internal: true,
+      },
+      manager
+    );
   }
 
   async setAcmeEnabled(req: LocalCaScope & { enabled: boolean; validityDays?: number; mode?: "local" | "standard" }) {
@@ -1222,18 +1236,26 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     if (!manager?.transaction) {
       throw new ValidateException("数据库事务不可用，无法撤销授权");
     }
-    // 撤销授权与禁用EAB同事务，避免并发窗口残留可用EAB
+    // 撤销授权与禁用EAB同事务，并对Grant加行锁（与createAcmeEab一致），避免并发创建EAB残留可用凭证
     await runTransaction(manager, async tx => {
       const grantRepository = tx.getRepository(LocalCaGrantEntity);
-      const grant = await grantRepository.findOne({ where: { id: req.grantId, caId: ca.id } });
+      const driverType = String(tx.connection?.options?.type || "");
+      const useLock = !driverType.includes("sqlite");
+      const lockOpt = useLock ? { lock: { mode: "pessimistic_write" as const } } : {};
+      const grant = await grantRepository.findOne({ where: { id: req.grantId, caId: ca.id }, ...lockOpt });
       if (!grant) {
         throw new ValidateException("授权不存在");
       }
-      const duplicates = await grantRepository.find({ where: { caId: ca.id, userId: grant.userId, projectId: grant.projectId } });
+      // 按id升序加锁，保证多Grant锁定顺序一致，避免死锁
+      const duplicates = await grantRepository.find({ where: { caId: ca.id, userId: grant.userId, projectId: grant.projectId }, order: { id: "ASC" }, ...lockOpt });
       const grantIds = duplicates.map(item => item.id);
       const eabs = await tx.getRepository(AcmeEabEntity).find({ where: { grantId: In(grantIds) }, select: { id: true } });
       await tx.getRepository(AcmeEabEntity).update({ grantId: In(grantIds) }, { disabled: true, updateTime: new Date() } as any);
-      await this.acmeService.invalidateDirectOrdersByEabIds(tx, eabs.map(item => item.id), "用户授权已撤销，EAB凭证已禁用，请重新创建订单");
+      await this.acmeService.invalidateDirectOrdersByEabIds(
+        tx,
+        eabs.map(item => item.id),
+        "用户授权已撤销，EAB凭证已禁用，请重新创建订单"
+      );
       await grantRepository.delete({ id: In(grantIds) } as any);
       // 跨轮换链统一撤销：链上所有CA的同对象授权一并删除，绑定EAB全部禁用，
       // 避免只操作链中某一CA时其余复制授权/旧EAB仍可用
@@ -1242,12 +1264,16 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         if (chainCaId === ca.id) {
           continue;
         }
-        const chainGrants = await grantRepository.find({ where: { caId: chainCaId, userId: grant.userId, projectId: grant.projectId } });
+        const chainGrants = await grantRepository.find({ where: { caId: chainCaId, userId: grant.userId, projectId: grant.projectId }, order: { id: "ASC" }, ...lockOpt });
         if (chainGrants.length) {
           const chainGrantIds = chainGrants.map(item => item.id);
           const chainEabs = await tx.getRepository(AcmeEabEntity).find({ where: { grantId: In(chainGrantIds) }, select: { id: true } });
           await tx.getRepository(AcmeEabEntity).update({ grantId: In(chainGrantIds) }, { disabled: true, updateTime: new Date() } as any);
-          await this.acmeService.invalidateDirectOrdersByEabIds(tx, chainEabs.map(item => item.id), "用户授权已撤销，EAB凭证已禁用，请重新创建订单");
+          await this.acmeService.invalidateDirectOrdersByEabIds(
+            tx,
+            chainEabs.map(item => item.id),
+            "用户授权已撤销，EAB凭证已禁用，请重新创建订单"
+          );
           await grantRepository.delete({ id: In(chainGrantIds) } as any);
         }
       }
@@ -1415,7 +1441,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
    * 根CA的CRL条目是其下级中间CA签发的证书，故需在本CA及全部下级CA范围内查找；
    * 允许已归档CA（CRL永久公开，查看证书信息不受deleted限制）。 */
   async getCertPemBySerial(req: { id: number; userId: number; serial: string }): Promise<string | null> {
-    const serial = String(req.serial || "").trim().replace(/[:\s]/g, "").toUpperCase();
+    const serial = String(req.serial || "")
+      .trim()
+      .replace(/[:\s]/g, "")
+      .toUpperCase();
     if (!serial) {
       return null;
     }
@@ -1675,7 +1704,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       pem: getPublicKeyPem(ca.certPem),
     };
   }
-
 
   private getExportDir() {
     return path.join(process.cwd(), "data", "local-ca-export");

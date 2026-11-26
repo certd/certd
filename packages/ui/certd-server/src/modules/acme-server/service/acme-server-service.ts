@@ -871,7 +871,13 @@ export class AcmeServerService {
       const expected = sha256Base64Url(challenge.keyAuthorization);
       let records: string[][];
       try {
-        const resolver = dnsServer ? await createCustomResolver(String(dnsServer).split(/[,，\s]+/).filter(Boolean)) : dns;
+        const resolver = dnsServer
+          ? await createCustomResolver(
+              String(dnsServer)
+                .split(/[,，\s]+/)
+                .filter(Boolean)
+            )
+          : dns;
         records = await resolver.resolveTxt(`_acme-challenge.${authz.identifierValue}`);
       } catch (e: any) {
         throw new Error(`DNS TXT查询失败（${e.code || e.message}）`);
@@ -979,7 +985,6 @@ export class AcmeServerService {
     };
   }
 
-
   private assertJwkMatchesCertificate(jwk: any, cert: X509Certificate) {
     const publicJwk = cert.publicKey.export({ format: "jwk" }) as any;
     if (jwk.kty === "RSA") {
@@ -1011,7 +1016,19 @@ export class AcmeServerService {
   }
 
   private parseAcmeConfig(value?: string) {
-    const defaults = { validityDays: 90, maxPendingOrders: 20, maxOrdersPerMinute: 10, acmeMode: "standard", internalToken: "", clientIpSource: "xff", clientIpHeader: "", trustProxyCidrs: null as string[] | null, ipAllowlist: [] as string[], basicAuth: { enabled: false, username: "", passwordHash: "" }, requiredHeaders: [] as { name: string; value: string }[] };
+    const defaults = {
+      validityDays: 90,
+      maxPendingOrders: 20,
+      maxOrdersPerMinute: 10,
+      acmeMode: "standard",
+      internalToken: "",
+      clientIpSource: "xff",
+      clientIpHeader: "",
+      trustProxyCidrs: null as string[] | null,
+      ipAllowlist: [] as string[],
+      basicAuth: { enabled: false, username: "", passwordHash: "" },
+      requiredHeaders: [] as { name: string; value: string }[],
+    };
     if (!value) {
       return defaults;
     }
@@ -1028,7 +1045,10 @@ export class AcmeServerService {
         clientIpHeader: String(parsed.clientIpHeader || ""),
         trustProxyCidrs: Array.isArray(parsed.trustProxyCidrs) ? parsed.trustProxyCidrs : null,
         ipAllowlist: Array.isArray(parsed.ipAllowlist) ? parsed.ipAllowlist : [],
-        basicAuth: parsed.basicAuth && typeof parsed.basicAuth === "object" ? { enabled: parsed.basicAuth.enabled === true, username: String(parsed.basicAuth.username || ""), passwordHash: String(parsed.basicAuth.passwordHash || "") } : defaults.basicAuth,
+        basicAuth:
+          parsed.basicAuth && typeof parsed.basicAuth === "object"
+            ? { enabled: parsed.basicAuth.enabled === true, username: String(parsed.basicAuth.username || ""), passwordHash: String(parsed.basicAuth.passwordHash || "") }
+            : defaults.basicAuth,
         requiredHeaders: Array.isArray(parsed.requiredHeaders) ? parsed.requiredHeaders : [],
       };
     } catch (e) {
@@ -1079,6 +1099,10 @@ export class AcmeServerService {
       throw new AcmeProblem("unauthorized", "来源IP不在白名单内", 403);
     }
     if (config.basicAuth.enabled) {
+      // Basic凭证仅Base64编码非加密，必须在HTTPS链路传输；HTTP请求在处理凭证前直接拒绝
+      if (!this.isRequestHttps(ctx, config)) {
+        throw new AcmeProblem("unauthorized", "Basic认证要求HTTPS传输，当前链路非HTTPS，已拒绝", 403);
+      }
       const header = String(ctx.get("Authorization") || "");
       const fail = () => {
         ctx.set("WWW-Authenticate", 'Basic realm="acme"');
@@ -1130,6 +1154,29 @@ export class AcmeServerService {
     }
     const trusted = config.trustProxyCidrs || this.koaConfig?.trustProxyCidrs || ["127.0.0.0/8", "::1/128"];
     return resolveClientIp(socketIp, ctx.get("x-forwarded-for"), trusted);
+  }
+
+  /**
+   * 判断实际请求链路是否HTTPS：直连TLS看socket.encrypted；反向代理TLS终止仅采信可信代理传递的X-Forwarded-Proto，
+   * 不无条件信任客户端自带的XFP（防伪造）。用于Basic Auth等凭证传输的强制HTTPS校验。
+   */
+  private isRequestHttps(ctx: any, config: any) {
+    if (ctx.req?.socket?.encrypted === true) {
+      return true;
+    }
+    const socketIp = String(ctx.req?.socket?.remoteAddress || "");
+    const trusted = config.trustProxyCidrs || this.koaConfig?.trustProxyCidrs || ["127.0.0.0/8", "::1/128"];
+    const fromTrustedProxy = trusted.some((cidr: string) => matchesIpRule(socketIp, cidr));
+    if (fromTrustedProxy) {
+      const proto = String(ctx.get("x-forwarded-proto") || "")
+        .split(",")[0]
+        .trim()
+        .toLowerCase();
+      if (proto === "https") {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

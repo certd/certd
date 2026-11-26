@@ -366,7 +366,7 @@ export default {
   grantStepUpTitle: "验证后变更用户授权",
   grantStepUpDesc: "授权变更影响用户签发能力，须先完成动态验证码或Passkey验证。",
   grantRemoveTitle: "确认移除用户授权？",
-  grantRemoveContent: "移除「{user}」的授权后，该用户将无法再使用此CA签发证书；绑定的EAB凭证也会失效。",
+  grantRemoveContent: "移除「{user}」的授权后，绑定的EAB凭证将被禁用，该用户无法再注册新ACME账号或通过流水线直签。已注册的ACME账户凭账号密钥独立运行，如需停止其签发，请在账户管理中单独停用或做泄漏处置。",
   admins: "CA管理员",
   adminsTitle: "CA管理员",
   adminHint: "创建者为该CA的所有者，所有者可添加操作员。导出私钥、删除或吊销CA、授予用户权限等操作仅限所有者执行。",

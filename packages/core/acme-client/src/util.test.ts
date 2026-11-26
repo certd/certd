@@ -65,9 +65,14 @@ describe("isPublicUnicastIp", () => {
         assert.equal(isPublicUnicastIp("8.8.8.8"), true);
     });
     it("拒绝IPv6特殊用途范围，放行公网", () => {
-        for (const ip of ["::1", "::", "fc00::1", "fd12::1", "fe80::1", "2001::1", "2001:db8::1", "2001:0db8::1", "2002::1", "3fff::1", "::ffff:10.0.0.1"]) {
+        for (const ip of [
+            "::1", "::", "fc00::1", "fd12::1", "fe80::1", "fec0::1", "ff02::1",
+            "2001::1", "2001:db8::1", "2001:0db8::1", "2002::1", "3fff::1",
+            "64:ff9b::c0a8:0101", "64:ff9b::808:808", "::ffff:10.0.0.1", "::ffff:0a00:0001", "::10.0.0.1",
+        ]) {
             assert.equal(isPublicUnicastIp(ip), false, ip);
         }
         assert.equal(isPublicUnicastIp("2606:4700::1111"), true);
+        assert.equal(isPublicUnicastIp("2001:4860:4860::8888"), true);
     });
 });

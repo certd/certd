@@ -850,14 +850,15 @@ export async function signCsr(req: {
   const customStart = req.notBefore != null ? Number(req.notBefore) : NaN;
   const customEnd = req.notAfter != null ? Number(req.notAfter) : NaN;
   // 自定义起止时间仅在完全合法时采用：绝对禁止未来证书(生效不晚于当前)、不早于CA生效、失效晚于生效且不晚于CA失效；
-  // 任一非法字段一律回退为当前时间签发，避免错误参数签出无效或未来证书
+  // 自定义跨度同样受CA最大签发天数约束（与普通有效期一致），任一非法字段一律回退为当前时间签发
   const customValid =
     Number.isFinite(customStart) &&
     Number.isFinite(customEnd) &&
     customStart <= now &&
     customStart >= caCert.notBefore.getTime() - 5 * 60 * 1000 &&
     customEnd > customStart &&
-    customEnd <= caCert.notAfter.getTime();
+    customEnd <= caCert.notAfter.getTime() &&
+    customEnd - customStart <= maxDays * 24 * 3600 * 1000;
   if (customValid) {
     notBefore = new Date(customStart);
     notAfter = new Date(Math.min(customEnd, caLimit));

@@ -441,15 +441,17 @@ export function isPublicUnicastIp(ip) {
     if (net.isIP(addr) === 6) {
         const lower = addr.toLowerCase();
         if (lower === '::' || lower === '::1') return false;
-        if (lower.startsWith('::ffff:')) return false;
+        if (lower.startsWith('::ffff:')) return false; // IPv4-mapped（含hex形式），保守拒绝
+        if (/^::\d+\.\d+\.\d+\.\d+$/.test(lower)) return false; // IPv4-compatible（已废弃），保守拒绝
         const parts = lower.split(':');
         const g0 = parseInt(parts[0] || '0', 16);
         const g1 = parseInt(parts[1] || '0', 16);
-        if ((g0 & 0xfe00) === 0xfc00) return false; // fc00::/7 唯一本地地址
-        if ((g0 & 0xffc0) === 0xfe80) return false; // fe80::/10 链路本地
-        if (g0 === 0x2001 && g1 <= 0x01ff) return false; // 2001::/23 IETF协议分配（含ORCHID）
+        // 与服务端acme-network一致：仅允许2000::/3全球单播，其余（NAT64 64:ff9b::/96、组播ff00::/8、
+        // ULA fc00::/7、链路本地fe80::/10、站点本地fec0::/10等）一律拒绝
+        if ((g0 & 0xe000) !== 0x2000) return false;
+        if (g0 === 0x2001 && g1 <= 0x01ff) return false; // 2001::/23 IETF协议分配（含Teredo/ORCHID）
         if (g0 === 0x2001 && g1 === 0x0db8) return false; // 2001:db8::/32 文档地址
-        if (g0 === 0x2002) return false; // 2002::/16 6to4
+        if (g0 === 0x2002) return false; // 2002::/16 6to4（可映射私网IPv4）
         if (g0 === 0x3fff && (g1 & 0xf000) === 0) return false; // 3fff::/20 保留
         return true;
     }

@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 import Database from "better-sqlite3";
 
 const serverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
-const migrationFile = path.join(serverRoot, "db/migration/v10062__local_ca_cleanup.sql");
+// 清理逻辑已移出flyway序列（250a3897a，全新安装空操作），原始SQL保留为fixture供数据安全回归真实执行
+const migrationFile = path.join(serverRoot, "db/fixtures/local_ca_cleanup.sql");
 
 describe("v10062 pre-EAB account cleanup safety", () => {
   it("只删除关联 cd_local_ca 的旧账户及其订单/授权/挑战", async function (this: any) {

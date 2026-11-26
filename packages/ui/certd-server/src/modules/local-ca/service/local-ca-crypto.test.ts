@@ -204,6 +204,37 @@ describe("local-ca-crypto", () => {
     const fb3 = new X509Certificate(fallback3.certPem);
     assert.ok(new Date(fb3.validFrom).getTime() <= Date.now(), "倒置日期应回退当前");
     assert.ok(new Date(fb3.validTo).getTime() > new Date(fb3.validFrom).getTime());
+
+    // 自定义跨度超过CA最大签发天数 → 回退当前时间且跨度受maxValidityDays约束
+    const capped = await issueLeafCertificate({
+      caCertPem: intermediate.certPem,
+      caPrivateKeyPem: intermediate.privateKeyPem,
+      domains: ["capped.example.com"],
+      keyType: "rsa2048",
+      validityDays: 365,
+      maxValidityDays: 30,
+      notBefore: Date.UTC(2016, 5, 1),
+      notAfter: Date.UTC(2017, 5, 1),
+    });
+    const cappedCert = new X509Certificate(capped.certPem);
+    const cappedSpanDays = (new Date(cappedCert.validTo).getTime() - new Date(cappedCert.validFrom).getTime()) / 86400000;
+    assert.ok(cappedSpanDays <= 31, "自定义跨度不得超过CA最大签发天数");
+    assert.ok(new Date(cappedCert.validFrom).getTime() <= Date.now(), "超跨度回退当前时间");
+
+    // 自定义跨度在CA最大签发天数内 → 正常采用自定义日期
+    const okCustom = await issueLeafCertificate({
+      caCertPem: intermediate.certPem,
+      caPrivateKeyPem: intermediate.privateKeyPem,
+      domains: ["okcustom.example.com"],
+      keyType: "rsa2048",
+      validityDays: 365,
+      maxValidityDays: 400,
+      notBefore: Date.UTC(2016, 5, 1),
+      notAfter: Date.UTC(2017, 5, 1),
+    });
+    const okCert = new X509Certificate(okCustom.certPem);
+    assert.equal(new Date(okCert.validFrom).getTime(), Date.UTC(2016, 5, 1));
+    assert.equal(new Date(okCert.validTo).getTime(), Date.UTC(2017, 5, 1));
     // 中间CA生效时间早于根CA → 拒绝
     await assert.rejects(
       createIntermediateCa({

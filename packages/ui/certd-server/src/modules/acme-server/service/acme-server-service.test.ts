@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import bcrypt from "bcryptjs";
 import { AcmeServerService, sanitizePublicJwk } from "./acme-server-service.js";
 import { base64urlEncode, jwkThumbprint } from "../protocol/acme-jws.js";
 
@@ -217,6 +218,16 @@ describe("AcmeServerService ACME三档门禁", () => {
     };
   }
 
+  it("不存在的CA返回明确业务错误而非内部异常", async () => {
+    const service: any = new AcmeServerService();
+    service.issuer = { async getAcmeAccessView() { return null; } };
+    await assert.rejects(() => service.assertAccess(createCtx("127.0.0.1"), 999999), (e: any) => {
+      assert.equal(e.type, "unauthorized");
+      assert.equal(e.status, 403);
+      return true;
+    });
+  });
+
   it("仅本地档拒绝外部IP，放行回环IPv4/IPv6", async () => {
     const service = createGateService({ acmeMode: "local", internalToken: "tok" });
     await assert.rejects(() => service.assertAccess(createCtx("203.0.113.9"), 2), /仅本地模式/);
@@ -313,5 +324,51 @@ describe("AcmeServerService 门禁XFF伪造与吊销豁免回归", () => {
     const ctx = { req: { socket: { remoteAddress: "127.0.0.1" } }, get: () => "", set() {} };
     await assert.rejects(() => service.assertAccess(ctx, 2), /ACME服务未启用/);
     await service.assertAccess(ctx, 2, { revoke: true });
+  });
+});
+
+describe("AcmeServerService Basic Auth 强制HTTPS", () => {
+  const passwordHash = bcrypt.hashSync("secret", 4);
+  function makeService(basicEnabled: boolean, trustProxyCidrs: any = null) {
+    const service: any = new AcmeServerService();
+    const config = { acmeMode: "standard", ipAllowlist: ["0.0.0.0/0"], trustProxyCidrs, basicAuth: { enabled: basicEnabled, username: "user", passwordHash } };
+    service.issuer = { async getAcmeAccessView() { return { id: 2, caType: "intermediate", acmeEnabled: true, acmeConfig: JSON.stringify(config) }; } };
+    return service;
+  }
+  function makeCtx(opts: { encrypted?: boolean; ip?: string; xfp?: string; auth?: string }) {
+    const headers: Record<string, string> = {};
+    if (opts.xfp) headers["x-forwarded-proto"] = opts.xfp;
+    if (opts.auth) headers["authorization"] = opts.auth;
+    return {
+      req: { socket: { remoteAddress: opts.ip || "203.0.113.9", encrypted: opts.encrypted === true } },
+      get: (name: string) => headers[name.toLowerCase()] || "",
+      set() {},
+    };
+  }
+  const basicHeader = "Basic " + Buffer.from("user:secret").toString("base64");
+
+  it("直连HTTPS放行Basic认证", async () => {
+    const service = makeService(true);
+    await service.assertAccess(makeCtx({ encrypted: true, auth: basicHeader }), 2);
+  });
+
+  it("直连HTTP拒绝Basic认证（凭证处理前）", async () => {
+    const service = makeService(true);
+    await assert.rejects(() => service.assertAccess(makeCtx({ encrypted: false, auth: basicHeader }), 2), /HTTPS/);
+  });
+
+  it("可信反向代理传递HTTPS放行", async () => {
+    const service = makeService(true, ["203.0.113.0/24"]);
+    await service.assertAccess(makeCtx({ ip: "203.0.113.9", xfp: "https", auth: basicHeader }), 2);
+  });
+
+  it("非可信代理伪造X-Forwarded-Proto:https被拒绝", async () => {
+    const service = makeService(true, ["10.0.0.0/8"]);
+    await assert.rejects(() => service.assertAccess(makeCtx({ ip: "203.0.113.9", xfp: "https", auth: basicHeader }), 2), /HTTPS/);
+  });
+
+  it("Basic关闭时HTTP正常放行", async () => {
+    const service = makeService(false);
+    await service.assertAccess(makeCtx({ encrypted: false }), 2);
   });
 });

@@ -1433,6 +1433,54 @@ describe("LocalCaService", () => {
     assert.equal(stored.grantId, grant.id);
   });
 
+  it("撤销Grant后关联EAB全部禁用，不留可用孤儿凭证", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Grant Revoke EAB CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    const grant = await service.addGrant({ id, userId: 1, grantUserId: 5 });
+    const eab = await service.createAcmeEab({ caId: id, userId: 1, name: "bound eab", grantId: grant.id, maxUses: 0 });
+    await service.removeGrant({ id, userId: 1, grantId: grant.id });
+    const stored: any = await (service.acmeEabRepository as any).findOne({ where: { id: eab.id } });
+    assert.equal(stored.disabled, true, "撤销授权后EAB必须禁用");
+  });
+
+  it("撤销Grant对Grant行加锁（非SQLite），与创建EAB串行化", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Grant Lock CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    const grant = await service.addGrant({ id, userId: 1, grantUserId: 5 });
+    const lockCalls: any[] = [];
+    const origTx = (service.repository as any).manager.transaction;
+    (service.repository as any).manager.transaction = async (fn: any) => {
+      const tx = {
+        connection: { options: { type: "postgres" } },
+        getRepository: (entity: any) => {
+          const repo: any = entity?.name === "LocalCaGrantEntity" ? service.grantRepository : entity?.name === "AcmeEabEntity" ? service.acmeEabRepository : service.repository;
+          return {
+            findOne: async (opts: any) => {
+              if (opts?.lock) lockCalls.push(opts.lock);
+              return repo.findOne(opts);
+            },
+            find: async (opts: any) => {
+              if (opts?.lock) lockCalls.push(opts.lock);
+              return repo.find(opts);
+            },
+            update: (w: any, s: any) => repo.update(w, s),
+            delete: (w: any) => repo.delete(w),
+            save: (e: any) => repo.save(e),
+          };
+        },
+      };
+      return fn(tx);
+    };
+    try {
+      await service.removeGrant({ id, userId: 1, grantId: grant.id });
+    } finally {
+      (service.repository as any).manager.transaction = origTx;
+    }
+    assert.ok(lockCalls.some(l => l.mode === "pessimistic_write"), "撤销Grant须对Grant行加pessimistic_write锁");
+  });
+
   it("根CA不能授权、不能签发叶子，也不能创建EAB", async () => {
     const { service } = createService();
     const root = await service.generateCa({

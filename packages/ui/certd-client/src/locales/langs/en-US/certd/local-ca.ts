@@ -380,7 +380,7 @@ export default {
   grantStepUpTitle: "Verify to change user grants",
   grantStepUpDesc: "Grant changes affect certificate issuance permissions. Secondary verification via TOTP or Passkey is required.",
   grantRemoveTitle: "Remove this user grant?",
-  grantRemoveContent: "After removing the grant for {user}, the user can no longer issue certificates with this CA. Bound EAB credentials will also be disabled.",
+  grantRemoveContent: "After removing the grant for {user}, bound EAB credentials are disabled and the user can no longer register new ACME accounts or issue via pipeline direct signing. Already-registered ACME accounts run independently on their account key; to stop their issuance, deactivate them separately in account management or run leak response.",
   admins: "CA Admins",
   adminsTitle: "CA Admins",
   adminHint: "The creator is the owner of the CA and may add operators. Exporting the private key, deleting or revoking the CA, and granting user access are restricted to the owner.",
