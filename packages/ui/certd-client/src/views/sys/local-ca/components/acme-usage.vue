@@ -48,9 +48,11 @@
       <a-table-column :title="t('certd.localCa.acmeEmail')" :width="180" ellipsis>
         <template #default="{ record }">{{ emailText(record) }}</template>
       </a-table-column>
-      <a-table-column :title="t('certd.localCa.acmeStatus')" :width="90">
+      <a-table-column :title="t('certd.localCa.acmeStatus')" :width="120">
         <template #default="{ record }">
-          <a-tag :color="record.status === 'valid' ? 'green' : 'orange'">{{ record.status === "valid" ? t("certd.localCa.acmeAccountValid") : t("certd.localCa.acmeAccountDisabled") }}</a-tag>
+          <a-tag v-if="record.status === 'valid' && record.eabActive" color="green">{{ t("certd.localCa.acmeAccountValid") }}</a-tag>
+          <a-tag v-else-if="record.status === 'valid' && !record.eabActive" color="red">{{ t("certd.localCa.acmeAccountEabInactive") }}</a-tag>
+          <a-tag v-else color="orange">{{ t("certd.localCa.acmeAccountDisabled") }}</a-tag>
         </template>
       </a-table-column>
       <a-table-column :title="t('certd.localCa.acmeOrders')" data-index="orderCount" :width="80" align="center" />
@@ -147,17 +149,17 @@ function viewSecret(row: any) {
     width: 640,
     zIndex: 1200,
     content: () => (
-      <a-descriptions bordered column={1} size="small">
-        <a-descriptions-item label="KID">
-          <fs-copyable modelValue={row.kid} />
-        </a-descriptions-item>
-        <a-descriptions-item label="HMAC Key">
-          <span>••••••••••••••••</span>
-        </a-descriptions-item>
-        <a-descriptions-item label=" ">
-          <span style={{ color: "#999" }}>{t("certd.localCa.acmeUsageSecretHidden")}</span>
-        </a-descriptions-item>
-      </a-descriptions>
+      <div>
+        <a-descriptions bordered column={1} size="small">
+          <a-descriptions-item label="KID">
+            <fs-copyable modelValue={row.kid} />
+          </a-descriptions-item>
+          <a-descriptions-item label="HMAC Key">
+            <span>••••••••••••••••</span>
+          </a-descriptions-item>
+        </a-descriptions>
+        <div style={{ marginTop: "12px", color: "#999", fontSize: "12px" }}>{t("certd.localCa.acmeUsageSecretHidden")}</div>
+      </div>
     ),
   });
 }

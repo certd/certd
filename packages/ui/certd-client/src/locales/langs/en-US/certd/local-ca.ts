@@ -305,6 +305,7 @@ export default {
   acmeStatus: "Status",
   acmeAccountValid: "Valid",
   acmeAccountDisabled: "Deactivated",
+  acmeAccountEabInactive: "EAB Inactive",
   acmeAccountId: "Account ID",
   acmeAccountEab: "Bound EAB",
   acmeAccountNoEab: "No EAB",

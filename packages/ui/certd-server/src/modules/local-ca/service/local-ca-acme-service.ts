@@ -670,11 +670,14 @@ export class LocalCaAcmeService {
       }
       const ca = await this.repository.findOne({ where: { id: account.caId } });
       const eab = account.eabId ? await this.acmeEabRepository.findOne({ where: { id: account.eabId } }) : null;
+      // EAB实际可用性（禁用/过期/授权撤销均视为失效），供UI反映账户真实状态
+      const eabActive = account.eabId ? !!(await this.getAcmeEabProfile(account.eabId)) : false;
       const orderCount = await this.acmeOrderRepository.count({ where: { accountId: account.id } });
       const issuedCount = await this.acmeOrderRepository.count({ where: { accountId: account.id, status: "valid" } });
       result.push({
         id: account.id,
         status: account.status,
+        eabActive,
         contact: account.contact ? JSON.parse(account.contact) : [],
         caId: account.caId,
         caName: ca?.name || null,

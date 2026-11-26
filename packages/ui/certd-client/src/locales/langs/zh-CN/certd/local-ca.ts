@@ -292,6 +292,7 @@ export default {
   acmeStatus: "状态",
   acmeAccountValid: "正常",
   acmeAccountDisabled: "已停用",
+  acmeAccountEabInactive: "EAB已失效",
   acmeAccountId: "账户ID",
   acmeAccountEab: "绑定EAB",
   acmeAccountNoEab: "无EAB",
