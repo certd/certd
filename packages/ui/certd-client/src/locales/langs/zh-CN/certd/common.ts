@@ -23,6 +23,7 @@ export default {
   },
   close: "关闭",
   confirm: "确认",
+  copy: "复制",
   save: "保存",
   add: "生成新的Key",
   edit: "编辑",

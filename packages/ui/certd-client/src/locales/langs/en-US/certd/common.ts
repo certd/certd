@@ -19,6 +19,7 @@ export default {
   },
   close: "Close",
   confirm: "Confirm",
+  copy: "Copy",
   save: "Save",
   add: "Generate New Key",
   edit: "Edit",
