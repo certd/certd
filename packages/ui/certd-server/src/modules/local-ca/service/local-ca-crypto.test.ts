@@ -16,7 +16,9 @@ import {
 // @ts-ignore
 import * as x509 from "@peculiar/x509";
 
-describe("local-ca-crypto", () => {
+// 本套件包含多次 RSA-2048 密钥生成与 X.509 签名，CPU 较慢的 CI 上可能超过 Mocha 默认 2s；统一放宽超时
+describe("local-ca-crypto", function (this: any) {
+  this.timeout(30000);
   it("生成根CA并可导入校验", async () => {
     const ca = await createRootCa({
       subject: { CN: "Certd Local Root CA", O: "Certd" },
