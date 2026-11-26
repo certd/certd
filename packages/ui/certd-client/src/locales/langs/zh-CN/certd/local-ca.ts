@@ -392,6 +392,7 @@ export default {
   viewCertInfo: "查看证书信息",
   statusNormal: "正常",
   statusRotated: "已轮转",
+  statusRevoked: "已吊销",
   rotatedTag: "已轮换",
   stateArchived: "已归档",
   rotateIntermediate: "轮换中间CA",

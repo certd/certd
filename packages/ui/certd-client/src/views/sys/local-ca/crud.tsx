@@ -335,7 +335,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             rules: [{ required: true, message: t("certd.common.required") }],
           },
           column: {
-            width: 200,
+            width: 230,
             ellipsis: true,
             cellRender({ value, row }) {
               const rotated = !!row.rotatedToId;
@@ -359,7 +359,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "text",
           search: { show: true },
           form: { show: false },
-          column: { width: 180, ellipsis: true },
+          column: { width: 230, ellipsis: true },
         },
         source: {
           title: t("certd.localCa.fields.source"),
@@ -406,25 +406,35 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             width: 100,
             align: "center",
-            component: {
-              name: "fs-dict-switch",
-              vModel: "checked",
-              disabled: compute(({ row }) => !!row.rotatedToId || !!row.revoked),
-              on: {
-                async change({ row, $event }) {
-                  if ($event === false) {
-                    await openEnableCa(row);
-                    return;
-                  }
-                  try {
-                    await localCaApi.Disable(row.id, true);
-                    notification.success({ message: t("certd.localCa.disabledSuccess") });
-                  } catch (e: any) {
-                    notification.error({ message: String(e?.message || e) });
-                  }
-                  await crudExpose.doRefresh();
-                },
-              },
+            cellRender({ row }) {
+              // 已轮换/已吊销的CA不再显示“已禁用”，避免与真实状态混淆
+              if (row.rotatedToId) {
+                return <Tag color="default">{t("certd.localCa.rotatedTag")}</Tag>;
+              }
+              if (row.revoked) {
+                return <Tag color="red">{t("certd.localCa.statusRevoked")}</Tag>;
+              }
+              return (
+                <a-switch
+                  size="small"
+                  checked={row.disabled}
+                  checkedChildren={t("common.disabled")}
+                  unCheckedChildren={t("common.enabled")}
+                  onChange={async (checked: any) => {
+                    if (!checked) {
+                      await openEnableCa(row);
+                      return;
+                    }
+                    try {
+                      await localCaApi.Disable(row.id, true);
+                      notification.success({ message: t("certd.localCa.disabledSuccess") });
+                    } catch (e: any) {
+                      notification.error({ message: String(e?.message || e) });
+                    }
+                    await crudExpose.doRefresh();
+                  }}
+                />
+              );
             },
           },
         },
@@ -509,7 +519,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             helper: t("certd.localCa.fields.allowedDomainsHelper"),
           },
           search: { show: false },
-          column: { width: 180, ellipsis: true },
+          column: {
+            width: 180,
+            ellipsis: true,
+            cellRender({ value, row }) {
+              // 域名列表较长，保持文字样式不变，仅以可点击手势触发展开查看CA对话框
+              return (
+                <span style={{ cursor: "pointer" }} onClick={() => openView(row)}>
+                  {value || "-"}
+                </span>
+              );
+            },
+          },
         },
         notAfter: {
           title: t("certd.localCa.fields.notAfter"),

@@ -408,6 +408,7 @@ export default {
   viewCertInfo: "View certificate",
   statusNormal: "Active",
   statusRotated: "Rotated",
+  statusRevoked: "Revoked",
   rotatedTag: "Rotated",
   stateArchived: "Archived",
   rotateIntermediate: "Rotate Intermediate CA",
