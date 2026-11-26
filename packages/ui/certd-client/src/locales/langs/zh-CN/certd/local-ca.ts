@@ -230,6 +230,7 @@ export default {
   acmeIpSourceSocket: "TCP连接地址（不信任转发头）",
   acmeIpSourceHeader: "指定请求头（如CDN/反代注入）",
   acmeTrustProxyHelper: "可信代理网段，一行一条。仅当连接来源属于这些网段时才解析转发头，自右向左跳过可信跳，防止客户端伪造。",
+  acmeHeaderTrustHelper: "仅当连接来源属于下方可信代理网段时才采信该请求头；其他来源会回退到TCP连接地址，防止客户端自带头伪造IP。",
   acmeIpAllowlist: "来源IP/CIDR白名单",
   acmeIpAllowlistHelper: "一行一条，支持单个IP、CIDR（如 10.0.0.0/8）与IPv4通配符（如 192.168.*.*）；未配置时默认仅允许内网访问。",
   acmeBasicAuth: "HTTP Basic认证",

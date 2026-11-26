@@ -711,10 +711,15 @@ export class LocalCaAcmeService {
       throw new ValidateException("数据库事务不可用");
     }
     const accountIds = Array.isArray(req.accountIds) ? req.accountIds.filter(Boolean) : [];
-    // 事务内：不可恢复禁用EAB + 停用选中账户
+    // 事务内：统一锁顺序 EAB→Account（与 finalize 一致），先锁EAB再锁账户，避免与签发交叉等待死锁
     await runTransaction(manager, async tx => {
+      const driverType = String(tx.connection?.options?.type || "");
+      const useRowLock = !driverType.includes("sqlite");
       const eabRepository = tx.getRepository(AcmeEabEntity);
-      const eab = await eabRepository.findOne({ where: { id: req.eabId, caId: ca.id } });
+      const eab = await eabRepository.findOne({
+        where: { id: req.eabId, caId: ca.id },
+        ...(useRowLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+      });
       if (!eab) {
         throw new ValidateException("EAB凭证不存在或无访问权限");
       }
@@ -723,13 +728,11 @@ export class LocalCaAcmeService {
       eab.updateTime = new Date();
       await eabRepository.save(eab);
       const accountRepository = tx.getRepository(AcmeAccountEntity);
-      const driverType = String(tx.connection?.options?.type || "");
-      const useAccountLock = !driverType.includes("sqlite");
       for (const accountId of accountIds) {
         // 加行锁与finalize的账户锁串行化，确保停用与签发不会交错
         const account = await accountRepository.findOne({
           where: { id: accountId, eabId: req.eabId },
-          ...(useAccountLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+          ...(useRowLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
         });
         if (!account) {
           continue;

@@ -1,4 +1,4 @@
-import crypto, { X509Certificate } from "node:crypto";
+import crypto, { KeyObject, X509Certificate } from "node:crypto";
 import dns from "node:dns/promises";
 import { createCustomResolver } from "@certd/acme-client";
 import net from "node:net";
@@ -10,7 +10,7 @@ import type { AcmeIssuerBackend } from "../acme-issuer-backend.js";
 import type { AcmeIssuedCertificateStore } from "../acme-issued-certificate-store.js";
 import { getCsrDomains, matchAllowedDomains, normalizeDomains, verifyCertIssuedBy } from "../../cert/service/cert-utils.js";
 import { AcmeAccountEntity, AcmeAuthzEntity, AcmeChallengeEntity, AcmeEabEntity, AcmeOrderEntity } from "../entity/acme-server.js";
-import { AcmeProblem, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "../protocol/acme-jws.js";
+import { AcmeProblem, assertJwkStrength, base64urlDecode, decodeJws, jwkThumbprint, randomId, sha256Base64Url, verifyJwsSignature } from "../protocol/acme-jws.js";
 import { DEFAULT_INTRANET_RULES, matchIpAllowlist, matchesIpRule, resolveClientIp } from "../protocol/acme-access.js";
 import bcrypt from "bcryptjs";
 import { fetchHttpChallenge } from "../protocol/acme-network.js";
@@ -31,9 +31,10 @@ export function sanitizePublicJwk(jwk: any) {
   if (PRIVATE_JWK_FIELDS.some(field => jwk[field] != null)) {
     throw new AcmeProblem("malformed", "JWK不能包含私钥参数");
   }
-  const fields = jwk.kty === "RSA" ? ["kty", "n", "e"] : jwk.kty === "EC" ? ["kty", "crv", "x", "y"] : jwk.kty === "OKP" ? ["kty", "crv", "x"] : null;
+  // 仅接受 RSA/EC：OKP(EdDSA) 当前验签链路不支持，统一在此拒绝
+  const fields = jwk.kty === "RSA" ? ["kty", "n", "e"] : jwk.kty === "EC" ? ["kty", "crv", "x", "y"] : null;
   if (!fields) {
-    throw new AcmeProblem("badPublicKey", "不支持的JWK类型");
+    throw new AcmeProblem("badPublicKey", "不支持的JWK类型（仅支持RSA/EC）");
   }
   const result: any = {};
   for (const field of fields) {
@@ -42,6 +43,14 @@ export function sanitizePublicJwk(jwk: any) {
     }
     result[field] = jwk[field];
   }
+  // 校验公钥可解析且满足强度/曲线下限（RSA>=2048，EC仅P-256/P-384），避免弱密钥注册为账户
+  let key: KeyObject;
+  try {
+    key = crypto.createPublicKey({ key: result, format: "jwk" });
+  } catch (e: any) {
+    throw new AcmeProblem("badPublicKey", `JWK解析失败：${e.message}`);
+  }
+  assertJwkStrength(result, key);
   return result;
 }
 
@@ -335,7 +344,7 @@ export class AcmeServerService {
   }
 
   async finalizeOrder(ctx: any, caId: number, orderId: string, body: any) {
-    const ca = await this.issuer.getAcmeCa(caId);
+    // CA可用性/ACME总开关由 verifyAccount 内的 getAcmeCa 统一校验，避免事务外再读CA造成归属歧义
     const { account } = await this.verifyAccount(ctx, caId, body);
     const current = await this.getOrderForAccount(caId, orderId, account.id);
     this.assertNotExpired(current, "订单已过期");
@@ -386,8 +395,12 @@ export class AcmeServerService {
         throw new AcmeProblem("orderNotReady", "订单正在处理中或尚未就绪", 403);
       }
       checkCsrDomains(order);
+      // 统一锁顺序 EAB→Account→CA→Order：先按（不可变的）账户EAB绑定加锁读取EAB策略，
+      // 再锁账户与CA，与泄漏处置(leakRevokeEab 先锁EAB)保持同序，避免交叉等待死锁。
+      // EAB管注册、账户独立使用的设计不变，此处只做策略读取与串行化。
+      const profile = await this.assertAccountEabActive(account, tx);
       // 事务内重查账户并加行锁，确认仍为valid才签发：使账户停用/泄漏处置与finalize对同一账户行串行化，
-      // 避免事务外读到的旧账户对象在并发停用后仍完成签发（EAB管注册、账户独立使用的设计不变，此处校验账户自身状态）
+      // 避免事务外读到的旧账户对象在并发停用后仍完成签发
       const accountRepository = tx.getRepository(AcmeAccountEntity);
       const driverType = String(tx.connection?.options?.type || "");
       const useAccountLock = !driverType.includes("sqlite");
@@ -400,7 +413,6 @@ export class AcmeServerService {
       }
       // 在事务内锁定并重新读取CA策略，确保关闭直签/收紧域名范围与签发串行化
       const freshCa = await this.issuer.getAcmeCaForUpdate(caId, tx);
-      const profile = await this.assertAccountEabActive(account, tx);
       this.assertDirectIssueAllowed(order, profile);
       await this.assertOrderStillAuthorized(freshCa, account, order, tx, profile);
       // 事务内读取最新ACME配置，避免订单创建后管理员调整有效期仍用旧值签发
@@ -420,7 +432,7 @@ export class AcmeServerService {
       try {
         signed = await this.issuer.signCsrForAcme(freshCa.id, csrPem, freshConfig.validityDays, tx);
       } catch (e: any) {
-        logger.warn(`[acme] finalize signing failed ca=${ca.id} order=${order.id} account=${account.id}: ${e?.message || e}`);
+        logger.warn(`[acme] finalize signing failed ca=${freshCa.id} order=${order.id} account=${account.id}: ${e?.message || e}`);
         throw new AcmeProblem("serverInternal", `证书签发失败：${e.message}`, 500);
       }
       order.status = "valid";
@@ -429,9 +441,10 @@ export class AcmeServerService {
       order.serialNumber = signed.serialNumber;
       order.updateTime = new Date();
       await orderRepository.save(order);
+      // 证书归属与签名CA保持一致：轮换期间事务外CA可能与事务内 freshCa 不同，必须用实际签发CA(freshCa.id)
       await this.certificateStore.saveIssuedCertificate(
         {
-          caId: ca.id,
+          caId: freshCa.id,
           serialNumber: signed.serialNumber,
           fullchainPem: signed.fullchainPem,
           userId: account.userId,
@@ -440,7 +453,7 @@ export class AcmeServerService {
         },
         tx
       );
-      logger.info(`[acme] certificate issued ca=${ca.id} order=${order.id} account=${account.id} serial=${signed.serialNumber}`);
+      logger.info(`[acme] certificate issued ca=${freshCa.id} order=${order.id} account=${account.id} serial=${signed.serialNumber}`);
       return await this.toOrder(order);
     });
   }
@@ -1141,15 +1154,18 @@ export class AcmeServerService {
     return crypto.timingSafeEqual(ba, bb);
   }
 
-  /** 门禁客户端IP：socket直连不信任XFF；xff仅解析可信代理链；header取指定头（CDN/反代注入）。 */
+  /** 门禁客户端IP：socket直连不信任XFF；xff仅解析可信代理链；header仅在可信代理来源时采信注入头。 */
   private resolveGateClientIp(ctx: any, config: any) {
     const socketIp = String(ctx.req?.socket?.remoteAddress || "");
     if (config.clientIpSource === "socket") {
       return socketIp;
     }
     if (config.clientIpSource === "header") {
+      // 指定头只能由可信代理注入：直连来源不在可信网段时忽略该头并回退socket IP，防止客户端自带头伪造IP
       const headerName = String(config.clientIpHeader || "").trim();
-      const value = headerName ? String(ctx.get(headerName) || "").trim() : "";
+      const trusted = config.trustProxyCidrs || this.koaConfig?.trustProxyCidrs || ["127.0.0.0/8", "::1/128"];
+      const fromTrustedProxy = trusted.some((cidr: string) => matchesIpRule(socketIp, cidr));
+      const value = fromTrustedProxy && headerName ? String(ctx.get(headerName) || "").trim() : "";
       return value || socketIp;
     }
     const trusted = config.trustProxyCidrs || this.koaConfig?.trustProxyCidrs || ["127.0.0.0/8", "::1/128"];

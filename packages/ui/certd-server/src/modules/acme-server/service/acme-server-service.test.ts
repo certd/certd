@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { AcmeServerService, sanitizePublicJwk } from "./acme-server-service.js";
-import { base64urlEncode, jwkThumbprint } from "../protocol/acme-jws.js";
+import { base64urlEncode, jwkThumbprint, verifyJwsSignature } from "../protocol/acme-jws.js";
 
 function createJwsBody(header: any, payload: any = null) {
   return {
@@ -11,8 +12,16 @@ function createJwsBody(header: any, payload: any = null) {
   };
 }
 
+function rsaJwk(bits = 2048) {
+  return crypto.generateKeyPairSync("rsa", { modulusLength: bits }).publicKey.export({ format: "jwk" });
+}
+
+function ecJwk(namedCurve: "prime256v1" | "secp384r1" | "secp521r1") {
+  return crypto.generateKeyPairSync("ec", { namedCurve }).publicKey.export({ format: "jwk" });
+}
+
 describe("AcmeServerService account JWK", () => {
-  it("拒绝包含私钥参数的 JWK，并只返回公钥字段", () => {
+  it("拒绝包含私钥参数的 JWK", () => {
     assert.throws(
       () => sanitizePublicJwk({ kty: "RSA", n: "n", e: "AQAB", d: "secret" }),
       (e: any) => String(e?.message || "").includes("不能包含私钥参数")
@@ -21,7 +30,71 @@ describe("AcmeServerService account JWK", () => {
       () => sanitizePublicJwk({ kty: "EC", crv: "P-256", x: "x", y: "y", d: "secret" }),
       (e: any) => String(e?.message || "").includes("不能包含私钥参数")
     );
-    assert.deepEqual(sanitizePublicJwk({ kty: "RSA", n: "n", e: "AQAB", use: "sig" }), { kty: "RSA", n: "n", e: "AQAB" });
+  });
+
+  it("合法RSA(>=2048)与EC(P-256/P-384)仅返回公钥字段", () => {
+    const rsa = rsaJwk(2048);
+    assert.deepEqual(sanitizePublicJwk({ ...rsa, use: "sig" }), { kty: "RSA", n: (rsa as any).n, e: (rsa as any).e });
+    const p256 = ecJwk("prime256v1");
+    assert.deepEqual(sanitizePublicJwk(p256), { kty: "EC", crv: "P-256", x: (p256 as any).x, y: (p256 as any).y });
+    const p384 = ecJwk("secp384r1");
+    assert.equal((sanitizePublicJwk(p384) as any).crv, "P-384");
+  });
+
+  it("拒绝弱密钥：RSA<2048、EC P-521、OKP", () => {
+    assert.throws(
+      () => sanitizePublicJwk(rsaJwk(1024)),
+      (e: any) => String(e?.message || "").includes("RSA密钥长度不足")
+    );
+    assert.throws(
+      () => sanitizePublicJwk(ecJwk("secp521r1")),
+      (e: any) => String(e?.message || "").includes("P-256/P-384")
+    );
+    assert.throws(
+      () => sanitizePublicJwk({ kty: "OKP", crv: "Ed25519", x: "abc" }),
+      (e: any) => String(e?.message || "").includes("不支持的JWK类型")
+    );
+  });
+});
+
+describe("AcmeServerService JWS签名算法与曲线约束", () => {
+  function decodeLike(header: any, signature = Buffer.from("sig")) {
+    const protectedB64 = base64urlEncode(JSON.stringify(header));
+    const payloadB64 = base64urlEncode(JSON.stringify({}));
+    return {
+      header,
+      payloadRaw: payloadB64,
+      payload: {},
+      signingInput: Buffer.from(`${protectedB64}.${payloadB64}`),
+      signature,
+    } as any;
+  }
+
+  it("ES256对应P-256可通过真实签名验证", () => {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync("ec", { namedCurve: "prime256v1" });
+    const jwk = publicKey.export({ format: "jwk" });
+    const jws = decodeLike({ alg: "ES256", jwk });
+    jws.signature = crypto.sign("sha256", jws.signingInput, { key: privateKey, dsaEncoding: "ieee-p1363" });
+    assert.equal(verifyJwsSignature(jws, jwk), true);
+  });
+
+  it("ES256使用P-384密钥被拒绝（alg↔曲线必须匹配）", () => {
+    const p384 = ecJwk("secp384r1");
+    assert.throws(() => verifyJwsSignature(decodeLike({ alg: "ES256", jwk: p384 }), p384), /必须使用P-256/);
+    const p256 = ecJwk("prime256v1");
+    assert.throws(() => verifyJwsSignature(decodeLike({ alg: "ES384", jwk: p256 }), p256), /必须使用P-384/);
+  });
+
+  it("ES512不予支持", () => {
+    const p521 = ecJwk("secp521r1");
+    assert.throws(() => verifyJwsSignature(decodeLike({ alg: "ES512", jwk: p521 }), p521), /不支持签名算法/);
+  });
+
+  it("RS签名使用EC密钥或弱RSA被拒绝", () => {
+    const p256 = ecJwk("prime256v1");
+    assert.throws(() => verifyJwsSignature(decodeLike({ alg: "RS256", jwk: p256 }), p256), /密钥类型不匹配/);
+    const weak = rsaJwk(1024);
+    assert.throws(() => verifyJwsSignature(decodeLike({ alg: "RS256", jwk: weak }), weak), /RSA密钥长度不足/);
   });
 });
 
@@ -59,7 +132,12 @@ describe("AcmeServerService CA isolation", () => {
 
   it("CA B 的接口拒绝 CA A 的账号kid", async () => {
     const service: any = new AcmeServerService();
-    service.issuer = { async getAcmeCa() {}, async getCaBaseUrl() { return "https://certd.example.com"; } };
+    service.issuer = {
+      async getAcmeCa() {},
+      async getCaBaseUrl() {
+        return "https://certd.example.com";
+      },
+    };
     let lookupCalled = false;
     service.accountRepository = {
       async findOne() {
@@ -75,7 +153,12 @@ describe("AcmeServerService CA isolation", () => {
 
   it("kid路径必须符合 /api/acme/{caId}/account/{id} 格式", async () => {
     const service: any = new AcmeServerService();
-    service.issuer = { async getAcmeCa() {}, async getCaBaseUrl() { return "https://certd.example.com"; } };
+    service.issuer = {
+      async getAcmeCa() {},
+      async getCaBaseUrl() {
+        return "https://certd.example.com";
+      },
+    };
     let lookupCalled = false;
     service.accountRepository = {
       async findOne() {
@@ -91,7 +174,12 @@ describe("AcmeServerService CA isolation", () => {
 
   it("kid中的CA ID必须是正十进制数字", async () => {
     const service: any = new AcmeServerService();
-    service.issuer = { async getAcmeCa() {}, async getCaBaseUrl() { return "https://certd.example.com"; } };
+    service.issuer = {
+      async getAcmeCa() {},
+      async getCaBaseUrl() {
+        return "https://certd.example.com";
+      },
+    };
     let lookupCalled = false;
     service.accountRepository = {
       async findOne() {
@@ -107,7 +195,12 @@ describe("AcmeServerService CA isolation", () => {
 
   it("账号kid中的CA路径匹配时，查询仍带URL中的CA id", async () => {
     const service: any = new AcmeServerService();
-    service.issuer = { async getAcmeCa() {}, async getCaBaseUrl() { return "https://certd.example.com"; } };
+    service.issuer = {
+      async getAcmeCa() {},
+      async getCaBaseUrl() {
+        return "https://certd.example.com";
+      },
+    };
     let lookupWhere: any = null;
     service.accountRepository = {
       async findOne(args: any) {
@@ -220,12 +313,19 @@ describe("AcmeServerService ACME三档门禁", () => {
 
   it("不存在的CA返回明确业务错误而非内部异常", async () => {
     const service: any = new AcmeServerService();
-    service.issuer = { async getAcmeAccessView() { return null; } };
-    await assert.rejects(() => service.assertAccess(createCtx("127.0.0.1"), 999999), (e: any) => {
-      assert.equal(e.type, "unauthorized");
-      assert.equal(e.status, 403);
-      return true;
-    });
+    service.issuer = {
+      async getAcmeAccessView() {
+        return null;
+      },
+    };
+    await assert.rejects(
+      () => service.assertAccess(createCtx("127.0.0.1"), 999999),
+      (e: any) => {
+        assert.equal(e.type, "unauthorized");
+        assert.equal(e.status, 403);
+        return true;
+      }
+    );
   });
 
   it("仅本地档拒绝外部IP，放行回环IPv4/IPv6", async () => {
@@ -314,6 +414,18 @@ describe("AcmeServerService 门禁XFF伪造与吊销豁免回归", () => {
     await allowed.service.assertAccess(allowed.ctx, 2);
   });
 
+  it("header模式：非可信来源伪造注入头被忽略并回退socket IP", async () => {
+    // 直连公网来源伪造 X-Real-IP=127.0.0.1 不得放行本地档
+    const forged = createGate({ acmeMode: "local", internalToken: "tok", clientIpSource: "header", clientIpHeader: "X-Real-IP" }, "203.0.113.9", { "x-real-ip": "127.0.0.1" });
+    await assert.rejects(() => forged.service.assertAccess(forged.ctx, 2), /仅本地模式/);
+    // 连接来源在显式可信代理网段时，注入头才被采信
+    const viaTrusted = createGate({ acmeMode: "local", internalToken: "tok", clientIpSource: "header", clientIpHeader: "X-Real-IP", trustProxyCidrs: ["10.0.0.0/8"] }, "10.0.0.2", { "x-real-ip": "127.0.0.1" });
+    await viaTrusted.service.assertAccess(viaTrusted.ctx, 2);
+    // 非可信来源即使不在回环，也回退socket IP（10.0.0.2 → 非回环，拒绝）
+    const untrustedProxy = createGate({ acmeMode: "local", internalToken: "tok", clientIpSource: "header", clientIpHeader: "X-Real-IP" }, "10.0.0.2", { "x-real-ip": "127.0.0.1" });
+    await assert.rejects(() => untrustedProxy.service.assertAccess(untrustedProxy.ctx, 2), /仅本地模式/);
+  });
+
   it("关闭ACME后吊销端点仍可通过门禁", async () => {
     const service: any = new AcmeServerService();
     service.issuer = {
@@ -332,7 +444,11 @@ describe("AcmeServerService Basic Auth 强制HTTPS", () => {
   function makeService(basicEnabled: boolean, trustProxyCidrs: any = null) {
     const service: any = new AcmeServerService();
     const config = { acmeMode: "standard", ipAllowlist: ["0.0.0.0/0"], trustProxyCidrs, basicAuth: { enabled: basicEnabled, username: "user", passwordHash } };
-    service.issuer = { async getAcmeAccessView() { return { id: 2, caType: "intermediate", acmeEnabled: true, acmeConfig: JSON.stringify(config) }; } };
+    service.issuer = {
+      async getAcmeAccessView() {
+        return { id: 2, caType: "intermediate", acmeEnabled: true, acmeConfig: JSON.stringify(config) };
+      },
+    };
     return service;
   }
   function makeCtx(opts: { encrypted?: boolean; ip?: string; xfp?: string; auth?: string }) {

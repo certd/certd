@@ -13,8 +13,9 @@
           <a-select v-model:value="clientIpSource" :options="clientIpSourceOptions" class="acme-access-source" />
           <div class="helper">{{ t("certd.localCa.acmeClientIpSourceHelper") }}</div>
           <a-input v-if="clientIpSource === 'header'" v-model:value="clientIpHeader" placeholder="X-Real-IP" class="mb-2 mt-2" />
-          <a-textarea v-if="clientIpSource === 'xff'" v-model:value="trustProxyText" :rows="2" placeholder="127.0.0.0/8" class="mt-2" />
+          <a-textarea v-if="clientIpSource === 'xff' || clientIpSource === 'header'" v-model:value="trustProxyText" :rows="2" placeholder="127.0.0.0/8" class="mt-2" />
           <div v-if="clientIpSource === 'xff'" class="helper">{{ t("certd.localCa.acmeTrustProxyHelper") }}</div>
+          <div v-if="clientIpSource === 'header'" class="helper">{{ t("certd.localCa.acmeHeaderTrustHelper") }}</div>
         </a-form-item>
 
         <a-form-item :label="t('certd.localCa.acmeIpAllowlist')">

@@ -20,7 +20,7 @@
     "dev-new": "cross-env NODE_ENV=dev-new mwtsc --watch --run @midwayjs/mock/app",
     "rm-newdb": "rimraf ./data/db-new.sqlite",
     "test": "cross-env NODE_ENV=unittest mocha",
-    "test:unit": "cross-env NODE_ENV=unittest mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
+    "test:unit": "cross-env NODE_ENV=unittest mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\" \"test/**/*.test.ts\"",
     "cov": "cross-env c8 --all --reporter=text --reporter=lcovonly pnpm run test",
     "lint:check": "mwts check",
     "format": "prettier --write src",

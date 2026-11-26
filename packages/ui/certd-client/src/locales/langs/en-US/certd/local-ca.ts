@@ -241,6 +241,8 @@ export default {
   acmeIpSourceSocket: "TCP connection address (no forwarded headers)",
   acmeIpSourceHeader: "Designated header (e.g. injected by CDN/proxy)",
   acmeTrustProxyHelper: "Trusted proxy CIDRs, one per line. Forwarded headers are parsed only when the connection originates from these networks, walking right-to-left past trusted hops to prevent client spoofing.",
+  acmeHeaderTrustHelper:
+    "The designated header is trusted only when the connection originates from the trusted proxy CIDRs below; other sources fall back to the TCP connection address to prevent client-supplied header spoofing.",
   acmeIpAllowlist: "Source IP/CIDR allowlist",
   acmeIpAllowlistHelper: "One entry per line: single IP, CIDR (e.g. 10.0.0.0/8), or IPv4 wildcard (e.g. 192.168.*.*). When unset, only intranet access is permitted by default.",
   acmeBasicAuth: "HTTP Basic auth",
@@ -380,7 +382,8 @@ export default {
   grantStepUpTitle: "Verify to change user grants",
   grantStepUpDesc: "Grant changes affect certificate issuance permissions. Secondary verification via TOTP or Passkey is required.",
   grantRemoveTitle: "Remove this user grant?",
-  grantRemoveContent: "After removing the grant for {user}, bound EAB credentials are disabled and the user can no longer register new ACME accounts or issue via pipeline direct signing. Already-registered ACME accounts run independently on their account key; to stop their issuance, deactivate them separately in account management or run leak response.",
+  grantRemoveContent:
+    "After removing the grant for {user}, bound EAB credentials are disabled and the user can no longer register new ACME accounts or issue via pipeline direct signing. Already-registered ACME accounts run independently on their account key; to stop their issuance, deactivate them separately in account management or run leak response.",
   admins: "CA Admins",
   adminsTitle: "CA Admins",
   adminHint: "The creator is the owner of the CA and may add operators. Exporting the private key, deleting or revoking the CA, and granting user access are restricted to the owner.",
