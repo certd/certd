@@ -25,7 +25,7 @@ CREATE TABLE "cd_local_ca"
   "allowed_domains"       text,
   "max_validity_days"     bigint      NOT NULL DEFAULT 0,
   "acme_enabled"          boolean NOT NULL DEFAULT (false),
-  "acme_direct_issue"     boolean NOT NULL DEFAULT (false),
+  "allow_direct_sign"     boolean NOT NULL DEFAULT (false),
   "acme_config"           text,
   "crl_number"            bigint      NOT NULL DEFAULT 0,
   "export_disabled"       boolean NOT NULL DEFAULT (false),
@@ -164,6 +164,8 @@ CREATE TABLE "cd_acme_eab"
   "allowed_domains"    text,
   "expires_time"       bigint,
   "disabled"           boolean NOT NULL DEFAULT (false),
+  "privileged"         boolean NOT NULL DEFAULT (false),
+  "revoked"            boolean NOT NULL DEFAULT (false),
   "remark"             varchar(255),
   "create_time"        timestamp     NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "update_time"        timestamp     NOT NULL DEFAULT (CURRENT_TIMESTAMP)

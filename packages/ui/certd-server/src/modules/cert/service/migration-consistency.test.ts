@@ -113,4 +113,17 @@ describe("local CA migration consistency", () => {
       }
     }
   });
+
+  it("合并后的 v10061 直接包含最终结构（不再依赖后续增量）", () => {
+    const file = "v10061__local_ca.sql";
+    for (const dialect of ["sqlite", "pg", "mysql"] as const) {
+      const parsed = parseMigration(dialect, file);
+      const ca = parsed.tables.get("cd_local_ca");
+      const eab = parsed.tables.get("cd_acme_eab");
+      assert.ok(ca?.has("allow_direct_sign"), `${dialect} cd_local_ca 缺少 allow_direct_sign`);
+      assert.ok(!ca?.has("acme_direct_issue"), `${dialect} cd_local_ca 仍包含已删除的 acme_direct_issue`);
+      assert.ok(eab?.has("privileged"), `${dialect} cd_acme_eab 缺少 privileged`);
+      assert.ok(eab?.has("revoked"), `${dialect} cd_acme_eab 缺少 revoked`);
+    }
+  });
 });

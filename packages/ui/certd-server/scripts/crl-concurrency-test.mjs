@@ -1,3 +1,6 @@
+// ⚠️ 破坏性手工测试工具（非 CI 自动执行）：
+// 会 DELETE cd_cert_revocation / cd_local_ca_admin / cd_local_ca 等表数据。
+// 仅允许对独立测试库使用：数据库名必须匹配 ^certd_.*_test$，且必须显式设置 CONFIRM_DESTRUCTIVE_DB_TEST=1。
 import { DataSource } from "typeorm";
 import { Encryptor, EncryptService } from "@certd/lib-server";
 import * as x509 from "@peculiar/x509";
@@ -9,6 +12,12 @@ import { CertRevocationService } from "../dist/modules/local-ca/service/cert-rev
 import { createIntermediateCa, createRootCa, sha256Hex } from "../dist/modules/local-ca/service/local-ca-crypto.js";
 
 const dialect = process.env.CRL_TEST_DB || "sqlite";
+
+function assertDestructiveConfirmed() {
+  if (process.env.CONFIRM_DESTRUCTIVE_DB_TEST !== "1") {
+    throw new Error("拒绝执行：该脚本会清空测试库表数据；请显式设置 CONFIRM_DESTRUCTIVE_DB_TEST=1，并仅对独立测试库使用");
+  }
+}
 
 function assertTestDatabase(name) {
   if (!/^certd_.*_test$/.test(String(name || ""))) {
@@ -71,7 +80,7 @@ function caEntity({ id, type, name, certPem, privateKeyPem, parentId, notBefore,
   entity.usage = "server";
   entity.maxValidityDays = 0;
   entity.acmeEnabled = false;
-  entity.acmeDirectIssue = false;
+  entity.allowDirectSign = false;
   entity.crlNumber = 0;
   entity.exportDisabled = false;
   entity.deleted = false;
@@ -85,6 +94,8 @@ function caEntity({ id, type, name, certPem, privateKeyPem, parentId, notBefore,
 async function main() {
   const options = dataSourceOptions();
   if (options.type !== "better-sqlite3") {
+    // 参考数据库（MySQL/PG）为破坏性操作：先要求显式确认，再校验库名必须为独立测试库
+    assertDestructiveConfirmed();
     assertTestDatabase(options.database);
   }
   const ds = new DataSource(options);
