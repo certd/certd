@@ -460,9 +460,29 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const grants = await this.accessService.listApplicableGrants(req);
     const accesses = req.userId > 0 ? await this.adminRepository.find({ where: { adminUserId: req.userId } }) : [];
     const allowedIds = new Set([...grants.map(item => item.caId), ...accesses.map(item => item.caId)]);
+    // 已轮换CA折叠到最新后继：选择器/回显统一展示最新CA，签发亦沿轮换链指向最新
+    const resolvedIds = new Set<number>();
+    for (const id of ids) {
+      if (!allowedIds.has(id)) {
+        continue;
+      }
+      let cursor = await this.findOne({ where: { id } });
+      const visited = new Set<number>([id]);
+      while (cursor?.rotatedToId && !visited.has(cursor.rotatedToId)) {
+        const next = await this.findOne({ where: { id: cursor.rotatedToId, deleted: false } });
+        if (!next) {
+          break;
+        }
+        visited.add(next.id);
+        cursor = next;
+      }
+      if (cursor) {
+        resolvedIds.add(cursor.id);
+      }
+    }
     const list = await this.find({
       where: {
-        id: In(ids.filter(id => allowedIds.has(id))),
+        id: In([...resolvedIds]),
         caType: "intermediate",
         deleted: false,
       },

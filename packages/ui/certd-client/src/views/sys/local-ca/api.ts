@@ -346,4 +346,12 @@ export const localCaApi = {
       data: {},
     });
   },
+
+  async ListMyAccountOrders(accountId: string) {
+    return await req({
+      url: apiPrefix + "/acme/myAccountOrders",
+      method: "post",
+      data: { accountId },
+    });
+  },
 };

@@ -127,7 +127,12 @@ export class HandleController extends BaseController {
       });
     };
 
-    const taskServiceGetter = this.taskServiceBuilder.create({ userId, projectId });
+    const taskServiceGetter = this.taskServiceBuilder.create({
+      userId,
+      projectId,
+      pluginType: body.typeName,
+      capabilities: (pluginDefine.define as any)?.serviceCapabilities,
+    });
 
     const accessGetter = await taskServiceGetter.get<IAccessService>("accessService");
     //@ts-ignore

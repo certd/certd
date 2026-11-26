@@ -1,19 +1,21 @@
 <template>
-  <fs-page>
+  <fs-page class="page-cert-store">
     <template #header>
       <div class="title">
         {{ t("certd.monitor.certificateRepo.title") }}
         <span class="sub">{{ t("certd.monitor.certificateRepo.sub") }}</span>
       </div>
     </template>
-    <a-tabs v-model:active-key="activeTab" class="cert-store-tabs">
-      <a-tab-pane key="certs" :tab="t('certd.monitor.certificateRepo.title')">
-        <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
-      </a-tab-pane>
-      <a-tab-pane v-if="userStore.localCaAccessible" key="acme" :tab="t('certd.localCa.acmeUsageTab')">
-        <AcmeUsage v-if="activeTab === 'acme'" />
-      </a-tab-pane>
-    </a-tabs>
+    <div class="cert-store-body">
+      <a-tabs v-model:active-key="activeTab" type="card" class="cert-store-tabs">
+        <a-tab-pane key="certs" :tab="t('certd.monitor.certificateRepo.title')">
+          <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
+        </a-tab-pane>
+        <a-tab-pane v-if="userStore.localCaAccessible" key="acme" :tab="t('certd.localCa.acmeUsageTab')">
+          <AcmeUsage v-if="activeTab === 'acme'" />
+        </a-tab-pane>
+      </a-tabs>
+    </div>
   </fs-page>
 </template>
 
@@ -38,22 +40,40 @@ useMounted(() => crudExpose.doRefresh());
 </script>
 
 <style lang="less">
-.cert-store-tabs {
+.page-cert-store {
   display: flex;
-  flex: 1;
-  flex-direction: column;
   min-height: 0;
 
-  .ant-tabs-content-holder,
-  .ant-tabs-content,
-  .ant-tabs-tabpane {
+  .fs-page-content {
     display: flex;
-    flex: 1;
     min-height: 0;
   }
-  .ant-tabs-tabpane {
+
+  .cert-store-body {
+    display: flex;
+    flex: 1;
     flex-direction: column;
-    overflow: auto;
+    min-height: 0;
+    padding: 12px 20px 20px;
+  }
+
+  .cert-store-tabs {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+
+    .ant-tabs-content-holder,
+    .ant-tabs-content,
+    .ant-tabs-tabpane {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+    .ant-tabs-tabpane {
+      flex-direction: column;
+      overflow: auto;
+    }
   }
 }
 </style>

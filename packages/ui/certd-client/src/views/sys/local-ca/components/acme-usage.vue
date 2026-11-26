@@ -7,7 +7,7 @@
     </div>
 
     <div class="acme-usage-section">{{ t("certd.localCa.acmeUsageMyEab") }}</div>
-    <a-table :data-source="eabs" :loading="loading" :pagination="false" row-key="id" size="small">
+    <a-table v-if="eabs.length" :data-source="eabs" :loading="loading" :pagination="false" row-key="id" size="small">
       <a-table-column :title="t('certd.localCa.eabName')" data-index="name" :width="160" ellipsis />
       <a-table-column :title="t('certd.localCa.eabCa')" :width="160" ellipsis>
         <template #default="{ record }">{{ record.caName || `#${record.caId}` }}</template>
@@ -35,10 +35,10 @@
         </template>
       </a-table-column>
     </a-table>
-    <a-empty v-if="!loading && !eabs.length" :description="t('certd.localCa.acmeUsageNoEab')" />
+    <a-empty v-else :description="t('certd.localCa.acmeUsageNoEab')" />
 
     <div class="acme-usage-section">{{ t("certd.localCa.acmeUsageMyAccounts") }}</div>
-    <a-table :data-source="accounts" :loading="loading" :pagination="false" row-key="id" size="small">
+    <a-table v-if="accounts.length" :data-source="accounts" :loading="loading" :pagination="false" row-key="id" size="small">
       <a-table-column :title="t('certd.localCa.acmeAccountId')" data-index="id" :width="200" ellipsis />
       <a-table-column :title="t('certd.localCa.eabCa')" :width="160" ellipsis>
         <template #default="{ record }">{{ record.caName || `#${record.caId}` }}</template>
@@ -56,8 +56,16 @@
       <a-table-column :title="t('certd.common.createTime')" :width="170">
         <template #default="{ record }">{{ formatTime(record.createTime) }}</template>
       </a-table-column>
+      <a-table-column :title="t('certd.localCa.certActions')" :width="180">
+        <template #default="{ record }">
+          <div class="local-ca-row-actions">
+            <a-button type="link" size="small" @click="viewOrders(record)">{{ t("certd.localCa.acmeViewOrders") }}</a-button>
+            <a-button v-if="record.eabId" type="link" size="small" @click="viewEab(record)">{{ t("certd.localCa.acmeViewEab") }}</a-button>
+          </div>
+        </template>
+      </a-table-column>
     </a-table>
-    <a-empty v-if="!loading && !accounts.length" :description="t('certd.localCa.acmeUsageNoAccount')" />
+    <a-empty v-else :description="t('certd.localCa.acmeUsageNoAccount')" />
   </div>
 </template>
 
@@ -65,6 +73,7 @@
 import { onMounted, ref } from "vue";
 import { notification } from "ant-design-vue";
 import { dict } from "@fast-crud/fast-crud";
+import { nanoid } from "nanoid";
 import dayjs from "dayjs";
 import { useRouter } from "vue-router";
 import { useI18n } from "/src/locales";
@@ -72,6 +81,7 @@ import { request } from "/src/api/service";
 import { useModal } from "/@/use/use-modal";
 import { useFormDialog } from "/@/use/use-dialog";
 import { createAccessApi } from "/@/views/certd/access/api";
+import CertView from "/@/views/certd/pipeline/cert-view.vue";
 import { localCaApi } from "../api";
 
 defineOptions({ name: "LocalCaAcmeUsage" });
@@ -138,6 +148,123 @@ async function viewSecret(row: any) {
         </a-descriptions-item>
       </a-descriptions>
     ),
+  });
+}
+
+function viewEab(row: any) {
+  const eab = eabs.value.find(item => item.id === row.eabId);
+  if (!eab) {
+    notification.warning({ message: t("certd.localCa.eabNotFound") });
+    return;
+  }
+  model.success({
+    title: `${t("certd.localCa.eabViewTitle")} - ${eab.name}`,
+    maskClosable: true,
+    okText: t("certd.common.close"),
+    width: 640,
+    zIndex: 1200,
+    content: () => (
+      <a-descriptions bordered column={1} size="small">
+        <a-descriptions-item label="KID">{eab.kid}</a-descriptions-item>
+        <a-descriptions-item label={t("certd.localCa.eabCa")}>{eab.caName || `#${eab.caId}`}</a-descriptions-item>
+        <a-descriptions-item label={t("certd.localCa.eabType")}>{eab.privileged ? t("certd.localCa.eabTypePrivileged") : t("certd.localCa.eabTypeNormal")}</a-descriptions-item>
+        <a-descriptions-item label={t("certd.localCa.eabAllowedDomains")}>{domainsText(eab)}</a-descriptions-item>
+        <a-descriptions-item label={t("certd.localCa.eabUses")}>{`${eab.usedCount || 0} / ${eab.maxUses || "∞"}`}</a-descriptions-item>
+        <a-descriptions-item label={t("certd.localCa.eabExpires")}>{formatTime(eab.expiresTime)}</a-descriptions-item>
+      </a-descriptions>
+    ),
+  });
+}
+
+async function viewOrders(row: any) {
+  let orders: any[] = [];
+  try {
+    orders = (await localCaApi.ListMyAccountOrders(row.id)) || [];
+  } catch (e: any) {
+    notification.error({ message: String(e?.message || e) });
+    return;
+  }
+  const orderStatus = (status: string) => {
+    const map: Record<string, string> = {
+      pending: t("certd.localCa.orderStatusPending"),
+      ready: t("certd.localCa.orderStatusReady"),
+      processing: t("certd.localCa.orderStatusProcessing"),
+      valid: t("certd.localCa.orderStatusValid"),
+      invalid: t("certd.localCa.orderStatusInvalid"),
+    };
+    return map[status] || status;
+  };
+  const orderColor = (status: string) => {
+    if (status === "valid") {
+      return "green";
+    }
+    if (status === "invalid") {
+      return "red";
+    }
+    if (status === "ready") {
+      return "blue";
+    }
+    return "orange";
+  };
+  const renderStatus = (order: any) => <a-tag color={orderColor(order.status)}>{orderStatus(order.status)}</a-tag>;
+  const renderDomains = (order: any) => (order.identifiers || []).map((item: any) => item.value).join(", ");
+  const renderDirect = (order: any) => {
+    const color = order.directIssue ? "green" : "default";
+    const text = order.directIssue ? t("certd.localCa.orderDirectIssueYes") : t("certd.localCa.orderDirectIssueNo");
+    return <a-tag color={color}>{text}</a-tag>;
+  };
+  const renderTime = (order: any) => <span style={{ whiteSpace: "nowrap" }}>{formatTime(order.createTime)}</span>;
+  const renderActions = (order: any) => {
+    if (!order.certPem) {
+      return <span>-</span>;
+    }
+    return (
+      <a-button type="link" size="small" onClick={() => viewOrderCert(order)}>
+        {t("certd.localCa.viewCertInfo")}
+      </a-button>
+    );
+  };
+  model.success({
+    title: `${t("certd.localCa.acmeOrdersTitle")} - ${row.id}`,
+    maskClosable: true,
+    okText: t("certd.common.close"),
+    width: 1000,
+    zIndex: 1200,
+    content: () => (
+      <a-table dataSource={orders} pagination={{ pageSize: 10 }} size="small" rowKey="id">
+        <a-table-column title={t("certd.localCa.acmeOrderStatus")} width={110}>
+          {{ default: ({ record: order }: any) => renderStatus(order) }}
+        </a-table-column>
+        <a-table-column title={t("certd.localCa.certDomain")} width={220}>
+          {{ default: ({ record: order }: any) => renderDomains(order) }}
+        </a-table-column>
+        <a-table-column title={t("certd.localCa.certSerial")} dataIndex="serialNumber" width={240} />
+        <a-table-column title={t("certd.localCa.eabOrderType")} width={100} align="center">
+          {{ default: ({ record: order }: any) => renderDirect(order) }}
+        </a-table-column>
+        <a-table-column title={t("certd.common.createTime")} width={180}>
+          {{ default: ({ record: order }: any) => renderTime(order) }}
+        </a-table-column>
+        <a-table-column title={t("certd.localCa.certActions")} width={120} align="center">
+          {{ default: ({ record: order }: any) => renderActions(order) }}
+        </a-table-column>
+      </a-table>
+    ),
+  });
+}
+
+async function viewOrderCert(order: any) {
+  if (!order.certPem) {
+    return;
+  }
+  const res = await localCaApi.GetCertDetail(order.certPem);
+  model.success({
+    title: t("certd.localCa.viewTitle"),
+    maskClosable: true,
+    okText: t("certd.common.confirm"),
+    width: 800,
+    zIndex: 1300,
+    content: () => <CertView cert={{ crt: order.certPem, key: "", ic: "", detail: res.detail }} />,
   });
 }
 
@@ -217,20 +344,24 @@ async function openCreatePipeline() {
         .split(/[\n,，\s]+/)
         .map(s => s.trim())
         .filter(Boolean);
+      // 与标准创建器一致：补全 runnable id 与 triggers/notifications，否则编辑态插件上下文丢失
       const pipeline = {
         title: `${domains[0]}证书自动化（本地CA）`,
         runnableType: "pipeline",
         stages: [
           {
+            id: nanoid(),
             title: "证书申请阶段",
             maxTaskCount: 1,
             runnableType: "stage",
             tasks: [
               {
+                id: nanoid(),
                 title: "证书申请任务",
                 runnableType: "task",
                 steps: [
                   {
+                    id: nanoid(),
                     title: "申请证书",
                     runnableType: "step",
                     type: "CertApplyLocalCa",
@@ -242,6 +373,8 @@ async function openCreatePipeline() {
             ],
           },
         ],
+        triggers: [],
+        notifications: [],
       };
       const res: any = await request({ url: "/pi/pipeline/save", method: "post", data: { title: pipeline.title, content: JSON.stringify(pipeline), type: "cert" } });
       const id = res?.id || res;

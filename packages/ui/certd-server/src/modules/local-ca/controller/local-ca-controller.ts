@@ -289,6 +289,12 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(await this.service.listMyAccounts({ userId, projectId }));
   }
 
+  @Post("/acme/myAccountOrders", { description: Constants.per.authOnly, summary: "查询当前用户自己ACME账户的订单" })
+  async myAccountOrders(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.getUseScope();
+    return this.ok(await this.acmeServerService.listMyAccountOrders(body.accountId, userId, projectId));
+  }
+
   @Post("/intermediate/revoke", { description: Constants.per.authOnly, summary: "吊销中间CA并刷新Root CRL" })
   async revokeIntermediate(@Body(ALL) body: any) {
     this.assertStepUp(body.verifyToken, "吊销中间CA");
@@ -346,7 +352,10 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/adminOptions", { description: Constants.per.authOnly, summary: "查询管理员本地CA选项" })
   async adminOptions(@Body(ALL) body: any) {
-    this.assertSystemAdmin();
+    // 非系统管理员无管理选项，返回空而非抛错，避免普通用户登录时触发权限错误提示
+    if (!this.isAdmin()) {
+      return this.ok([]);
+    }
     const userId = this.getUserId();
     return this.ok(await this.service.listAdminOptions({ adminUserId: userId, searchKey: body?.searchKey, includeAll: true }));
   }

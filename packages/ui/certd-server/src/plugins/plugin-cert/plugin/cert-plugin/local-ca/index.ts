@@ -111,9 +111,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     helper:
       "1、支持多个域名打到一个证书上，例如： foo.com，*.foo.com，*.bar.com\n" +
       "2、子域名被通配符包含的不要填写，例如：www.foo.com已经被*.foo.com包含，不要填写www.foo.com\n" +
-      "3、泛域名只能通配*号那一级（*.foo.com的证书不能用于foo.com且不能用于xxx.yyy.foo.com）\n" +
-      "4、输入一个，空格之后，再输入下一个 \n" +
-      "5、如果设置了子域托管解析（比如免费的二级域名托管在CF或者阿里云），请先[设置托管子域名](#/certd/pipeline/subDomain)",
+      "3、泛域名只能通配*号那一级（*.foo.com的证书不能用于foo.com且不能用于xxx.yyy.foo.com）",
   })
   domains: string[] = [];
 
@@ -203,6 +201,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   @TaskInput({
     title: "生效时间(可选)",
     helper: "自定义证书生效时间，可早于当前时间以补签历史证书；不得早于签发CA的生效时间。留空则默认立即生效。",
+    show: false,
     component: {
       name: "a-date-picker",
       vModel: "value",
@@ -218,6 +217,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   @TaskInput({
     title: "失效时间(可选)",
     helper: "自定义证书失效时间，不得晚于签发CA的失效时间。留空则按有效期天数计算。",
+    show: false,
     component: {
       name: "a-date-picker",
       vModel: "value",
@@ -604,13 +604,7 @@ if (localCaInput.caId) localCaInput.caId.mergeScript = `return {
   }
 }`;
 if (localCaInput.mode) localCaInput.mode.mergeScript = `return {
-  component: {
-    options: ctx.compute(({ form }) => [
-      { value: 'local-direct', label: '本地CA直接签发', disabled: form.caAllowDirectSign !== true },
-      { value: 'local-acme', label: '本地ACME服务' }
-    ])
-  },
-  helper: ctx.compute(({ form }) => form.mode === 'local-direct' && form.caAllowDirectSign !== true
+  helper: ctx.compute(({ form }) => form.mode === 'local-direct' && form.caId && form.caAllowDirectSign !== true
     ? '所选CA未开启本地直签，该方式不可用；请改用本地ACME服务，或联系管理员在CA设置中开启本地直签。'
     : '直接签发不经过ACME协议与域名校验，须CA开启本地直签；本地ACME遵循标准ACME协议，仅特权EAB凭证可跳过域名校验。远程ACME请使用通用证书申请任务。')
 }`;
@@ -622,7 +616,7 @@ if (localCaInput.validityDays) localCaInput.validityDays.mergeScript = `return {
   show: ctx.compute(({ form }) => form.mode === 'local-direct'),
   required: ctx.compute(({ form }) => form.mode === 'local-direct')
 }`;
-if (localCaInput.email) localCaInput.email.mergeScript = `return { show: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode)), required: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode)) }`;
+if (localCaInput.email) localCaInput.email.mergeScript = `return { show: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode) && !form.acmeAccountAccessId), required: ctx.compute(({ form }) => ${JSON.stringify(ACME_MODES)}.includes(form.mode) && !form.acmeAccountAccessId) }`;
 if (localCaInput.sslProvider) {
   localCaInput.sslProvider.title = "中间CA颁发机构";
   localCaInput.sslProvider.mergeScript = `return {

@@ -88,6 +88,10 @@ async function loadByIds(ids: number[]) {
       options.value.push(toOption(item));
     }
   }
+  // 已轮换CA回显归一化到最新后继（后端getOptionsByIds已折叠），同步更新表单caId
+  if (ids.length === 1 && (list || []).length === 1 && list[0].id !== ids[0]) {
+    emit("update:modelValue", list[0].id);
+  }
   syncCaInfo();
 }
 
