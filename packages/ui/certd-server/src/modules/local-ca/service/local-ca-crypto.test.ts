@@ -166,30 +166,44 @@ describe("local-ca-crypto", () => {
     assert.equal(new Date(leaf.validTo).getTime(), leafEnd);
     assert.equal(leaf.verify(interCert.publicKey), true);
 
-    // 生效时间早于CA生效时间 → 拒绝
-    await assert.rejects(
-      issueLeafCertificate({
-        caCertPem: intermediate.certPem,
-        caPrivateKeyPem: intermediate.privateKeyPem,
-        domains: ["bad.example.com"],
-        keyType: "rsa2048",
-        notBefore: Date.UTC(2014, 0, 1),
-        notAfter: Date.UTC(2016, 0, 1),
-      }),
-      /生效时间不能早于/
-    );
-    // 失效时间晚于CA失效时间 → 拒绝
-    await assert.rejects(
-      issueLeafCertificate({
-        caCertPem: intermediate.certPem,
-        caPrivateKeyPem: intermediate.privateKeyPem,
-        domains: ["bad2.example.com"],
-        keyType: "rsa2048",
-        notBefore: Date.UTC(2034, 0, 1),
-        notAfter: Date.UTC(2036, 0, 1),
-      }),
-      /失效时间不能晚于/
-    );
+    // 非法自定义日期（生效早于CA）→ 回退当前时间签发，不报错
+    const beforeNow = Date.now();
+    const fallback1 = await issueLeafCertificate({
+      caCertPem: intermediate.certPem,
+      caPrivateKeyPem: intermediate.privateKeyPem,
+      domains: ["bad.example.com"],
+      keyType: "rsa2048",
+      notBefore: Date.UTC(2014, 0, 1),
+      notAfter: Date.UTC(2016, 0, 1),
+    });
+    const fb1 = new X509Certificate(fallback1.certPem);
+    assert.ok(new Date(fb1.validFrom).getTime() >= beforeNow - 10 * 60 * 1000, "非法日期应回退当前时间");
+    assert.ok(new Date(fb1.validFrom).getTime() <= Date.now(), "禁止未来证书");
+
+    // 失效晚于CA失效 → 回退当前时间签发
+    const fallback2 = await issueLeafCertificate({
+      caCertPem: intermediate.certPem,
+      caPrivateKeyPem: intermediate.privateKeyPem,
+      domains: ["bad2.example.com"],
+      keyType: "rsa2048",
+      notBefore: Date.UTC(2034, 0, 1),
+      notAfter: Date.UTC(2036, 0, 1),
+    });
+    const fb2 = new X509Certificate(fallback2.certPem);
+    assert.ok(new Date(fb2.validFrom).getTime() <= Date.now(), "未来生效时间应回退当前");
+
+    // 起止倒置（起始2026结束2018）→ 忽略非法日期，当前时间签发，不报错
+    const fallback3 = await issueLeafCertificate({
+      caCertPem: intermediate.certPem,
+      caPrivateKeyPem: intermediate.privateKeyPem,
+      domains: ["bad3.example.com"],
+      keyType: "rsa2048",
+      notBefore: Date.now() + 86400000,
+      notAfter: Date.UTC(2018, 5, 1),
+    });
+    const fb3 = new X509Certificate(fallback3.certPem);
+    assert.ok(new Date(fb3.validFrom).getTime() <= Date.now(), "倒置日期应回退当前");
+    assert.ok(new Date(fb3.validTo).getTime() > new Date(fb3.validFrom).getTime());
     // 中间CA生效时间早于根CA → 拒绝
     await assert.rejects(
       createIntermediateCa({

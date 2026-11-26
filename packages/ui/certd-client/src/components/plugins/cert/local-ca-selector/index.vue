@@ -38,7 +38,7 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const userStore = useUserStore();
-const isAdmin = computed(() => userStore.isAdmin());
+const isAdmin = computed(() => userStore.isAdmin);
 const options = ref<any[]>([]);
 const loading = ref(false);
 

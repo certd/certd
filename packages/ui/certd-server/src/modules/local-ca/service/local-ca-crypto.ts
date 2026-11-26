@@ -841,21 +841,28 @@ export async function signCsr(req: {
   const requestedDays = Math.max(1, Math.floor(req.validityDays || 90));
   const maxDays = req.maxValidityDays && req.maxValidityDays > 0 ? req.maxValidityDays : requestedDays;
   const days = Math.min(requestedDays, maxDays);
-  const notBefore = req.notBefore != null ? new Date(req.notBefore) : new Date(now - 5 * 60 * 1000);
-  if (notBefore.getTime() < caCert.notBefore.getTime() - 5 * 60 * 1000) {
-    throw new Error("证书生效时间不能早于签发CA的生效时间");
-  }
+  const defaultStart = new Date(now - 5 * 60 * 1000);
   // 叶证书到期日硬上限为签发CA到期日，并预留7天余量用于续期/轮换/部署回滚
   const caLimit = caCert.notAfter.getTime() - 7 * 24 * 3600 * 1000;
-  const defaultEnd = Math.min(now + days * 24 * 3600 * 1000, caLimit);
-  const notAfter = req.notAfter != null ? new Date(Math.min(req.notAfter, caLimit)) : new Date(defaultEnd);
-  if (req.notAfter != null && req.notAfter > caCert.notAfter.getTime()) {
-    throw new Error("证书失效时间不能晚于签发CA的失效时间");
+  const defaultEnd = new Date(Math.min(now + days * 24 * 3600 * 1000, caLimit));
+  let notBefore = defaultStart;
+  let notAfter = defaultEnd;
+  const customStart = req.notBefore != null ? Number(req.notBefore) : NaN;
+  const customEnd = req.notAfter != null ? Number(req.notAfter) : NaN;
+  // 自定义起止时间仅在完全合法时采用：绝对禁止未来证书(生效不晚于当前)、不早于CA生效、失效晚于生效且不晚于CA失效；
+  // 任一非法字段一律回退为当前时间签发，避免错误参数签出无效或未来证书
+  const customValid =
+    Number.isFinite(customStart) &&
+    Number.isFinite(customEnd) &&
+    customStart <= now &&
+    customStart >= caCert.notBefore.getTime() - 5 * 60 * 1000 &&
+    customEnd > customStart &&
+    customEnd <= caCert.notAfter.getTime();
+  if (customValid) {
+    notBefore = new Date(customStart);
+    notAfter = new Date(Math.min(customEnd, caLimit));
   }
   if (notAfter.getTime() <= notBefore.getTime()) {
-    if (req.notBefore != null && req.notAfter != null) {
-      throw new Error("证书失效时间必须晚于生效时间");
-    }
     throw new Error("CA证书剩余有效期不足，无法签发");
   }
 
