@@ -29,6 +29,12 @@ export class RegisterInviteEntity {
   @Column({ name: "used_user_name", comment: "注册用户名(快照)", length: 100, nullable: true })
   usedUserName: string;
 
+  @Column({ comment: "是否已禁用(未使用前可禁用)", default: false })
+  disabled: boolean;
+
+  @Column({ name: "disabled_time", comment: "禁用时间(ms)", type: "bigint", nullable: true })
+  disabledTime: number;
+
   @Column({ comment: "备注", length: 255, nullable: true })
   remark: string;
 

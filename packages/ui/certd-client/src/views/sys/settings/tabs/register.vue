@@ -70,7 +70,19 @@
           <div class="invite-block">
             <a-button type="primary" @click="openInviteModal">{{ t("certd.sys.settings.inviteGenerate") }}</a-button>
             <div class="helper">{{ t("certd.sys.settings.inviteLinksHelper") }}</div>
-            <a-table class="mt-3" size="small" row-key="id" :columns="inviteColumns" :data-source="invites" :pagination="false" />
+            <a-table class="mt-3" size="small" row-key="id" :columns="inviteColumns" :data-source="invites" :pagination="false">
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.key === 'createTime'">{{ formatDate(record.createTime) }}</template>
+                <template v-else-if="column.key === 'expiresTime'">{{ formatTime(record.expiresTime) }}</template>
+                <template v-else-if="column.key === 'status'">
+                  {{ record.status === "used" ? t("certd.sys.settings.inviteStatusUsed") : t("certd.sys.settings.inviteStatusActive") }}
+                </template>
+                <template v-else-if="column.key === 'action'">
+                  <a-button type="link" size="small" @click="openRemark(record)">{{ t("certd.sys.settings.inviteEditRemark") }}</a-button>
+                  <a-button type="link" size="small" danger @click="disableInvite(record)">{{ t("certd.sys.settings.inviteDisable") }}</a-button>
+                </template>
+              </template>
+            </a-table>
           </div>
         </a-form-item>
       </template>
@@ -100,11 +112,18 @@
         <div class="helper warning">{{ t("certd.sys.settings.inviteLinkOnce") }}</div>
       </div>
     </a-modal>
+    <a-modal v-model:open="remarkModalOpen" :title="t('certd.sys.settings.inviteEditRemark')" :confirm-loading="remarkSaving" :ok-text="t('certd.common.confirm')" :cancel-text="t('certd.common.cancel')" @ok="saveRemark">
+      <a-form layout="vertical">
+        <a-form-item :label="t('certd.sys.settings.inviteRemark')">
+          <a-input v-model:value="remarkEditingValue" :maxlength="255" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="tsx">
-import { notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { merge } from "lodash-es";
 import { computed, reactive, ref, Ref } from "vue";
 import { useSettingStore } from "/@/store/settings";
@@ -133,15 +152,61 @@ function formatTime(value: any) {
   return new Date(Number(value)).toLocaleString();
 }
 
+function formatDate(value: any) {
+  if (!value) {
+    return "";
+  }
+  return new Date(value).toLocaleString();
+}
+
+const remarkModalOpen = ref(false);
+const remarkSaving = ref(false);
+const remarkEditingId = ref<number | null>(null);
+const remarkEditingValue = ref("");
+
+function openRemark(record: any) {
+  remarkEditingId.value = record.id;
+  remarkEditingValue.value = record.remark || "";
+  remarkModalOpen.value = true;
+}
+
+async function saveRemark() {
+  if (remarkEditingId.value == null) {
+    return;
+  }
+  remarkSaving.value = true;
+  try {
+    await api.RegisterInviteUpdateRemark({ id: remarkEditingId.value, remark: remarkEditingValue.value });
+    remarkModalOpen.value = false;
+    await loadInvites();
+    notification.success({ message: t("certd.sys.settings.inviteRemarkUpdated") });
+  } finally {
+    remarkSaving.value = false;
+  }
+}
+
+function disableInvite(record: any) {
+  Modal.confirm({
+    title: t("certd.sys.settings.inviteDisable"),
+    content: t("certd.sys.settings.inviteDisableConfirm"),
+    okText: t("certd.common.confirm"),
+    cancelText: t("certd.common.cancel"),
+    okButtonProps: { danger: true },
+    async onOk() {
+      await api.RegisterInviteDisable(record.id);
+      notification.success({ message: t("certd.sys.settings.inviteDisabled") });
+      await loadInvites();
+    },
+  });
+}
+
 const inviteColumns = computed(() => [
-  { title: t("certd.sys.settings.inviteCreateTime"), dataIndex: "createTime", customRender: ({ text }: any) => (text ? new Date(text).toLocaleString() : "") },
-  { title: t("certd.sys.settings.inviteExpiresTime"), dataIndex: "expiresTime", customRender: ({ text }: any) => formatTime(text) },
-  {
-    title: t("certd.sys.settings.inviteStatus"),
-    dataIndex: "status",
-    customRender: ({ text }: any) => (text === "used" ? t("certd.sys.settings.inviteStatusUsed") : t("certd.sys.settings.inviteStatusActive")),
-  },
-  { title: t("certd.sys.settings.inviteUsedUser"), dataIndex: "usedUserName" },
+  { title: t("certd.sys.settings.inviteCreateTime"), dataIndex: "createTime", key: "createTime" },
+  { title: t("certd.sys.settings.inviteExpiresTime"), dataIndex: "expiresTime", key: "expiresTime" },
+  { title: t("certd.sys.settings.inviteStatus"), dataIndex: "status", key: "status" },
+  { title: t("certd.sys.settings.inviteRemark"), dataIndex: "remark", key: "remark" },
+  { title: t("certd.sys.settings.inviteUsedUser"), dataIndex: "usedUserName", key: "usedUserName" },
+  { title: t("certd.sys.settings.inviteActions"), key: "action" },
 ]);
 
 async function loadInvites() {

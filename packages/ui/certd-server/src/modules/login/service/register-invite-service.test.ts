@@ -60,6 +60,7 @@ describe("RegisterInviteService", () => {
     const bean = await service.findUsableByToken("token-abc");
     assert.ok(bean);
     assert.equal(captured.tokenHash, service.hashToken("token-abc"));
+    assert.equal(captured.disabled, false, "禁用的链接必须不可用");
   });
 
   it("consume 使用条件UPDATE原子领取（未使用且未过期）", async () => {
@@ -94,6 +95,7 @@ describe("RegisterInviteService", () => {
     assert.equal(ok, true);
     assert.ok(conditions.some(c => /token_hash = :tokenHash/.test(c)));
     assert.ok(conditions.some(c => /used_time IS NULL/.test(c)));
+    assert.ok(conditions.some(c => /disabled = :disabled/.test(c)));
     assert.ok(conditions.some(c => /expires_time > :now/.test(c)));
     assert.equal(setValues.usedUserId, 9);
     assert.equal(setValues.usedUserName, "alice");
@@ -133,7 +135,8 @@ describe("RegisterInviteService", () => {
       find: async () => [
         { id: 1, expiresTime: now - 1000, usedTime: null },
         { id: 2, expiresTime: now - 1000, usedTime: now - 500, usedUserName: "bob" },
-        { id: 3, expiresTime: now + 100000, usedTime: null },
+        { id: 3, expiresTime: now + 100000, usedTime: null, disabled: false },
+        { id: 4, expiresTime: now + 100000, usedTime: null, disabled: true },
       ],
     };
     const list = await service.listInvites();
@@ -144,6 +147,41 @@ describe("RegisterInviteService", () => {
     assert.equal(list[0].status, "used");
     assert.equal(list[0].usedUserName, "bob");
     assert.equal(list[1].status, "active");
+  });
+
+  it("disable 使用条件UPDATE原子禁用未使用链接", async () => {
+    const service = createService();
+    const conditions: string[] = [];
+    let setValues: any;
+    (service as any).repository = {
+      createQueryBuilder() {
+        return {
+          update() {
+            return this;
+          },
+          set(values: any) {
+            setValues = values;
+            return this;
+          },
+          where(sql: string) {
+            conditions.push(sql);
+            return this;
+          },
+          andWhere(sql: string) {
+            conditions.push(sql);
+            return this;
+          },
+          async execute() {
+            return { affected: 1 };
+          },
+        };
+      },
+    };
+    assert.equal(await service.disable(5), true);
+    assert.ok(conditions.some(c => /used_time IS NULL/.test(c)));
+    assert.ok(conditions.some(c => /disabled = :disabled/.test(c)));
+    assert.equal(setValues.disabled, true);
+    assert.ok(setValues.disabledTime > 0);
   });
 
   it("按IP限流：注册7次/分钟，状态30次/分钟，错误token也计数", () => {

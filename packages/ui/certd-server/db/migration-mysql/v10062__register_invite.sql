@@ -8,6 +8,8 @@ CREATE TABLE `cd_register_invite`
   `used_time`      bigint,
   `used_user_id`   bigint,
   `used_user_name` varchar(100),
+  `disabled`       boolean      NOT NULL DEFAULT 0,
+  `disabled_time`  bigint,
   `remark`         varchar(255),
   `create_time`    timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB ROW_FORMAT = DYNAMIC;

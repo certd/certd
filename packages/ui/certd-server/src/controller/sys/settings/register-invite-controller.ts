@@ -40,4 +40,26 @@ export class RegisterInviteController extends BaseController {
     await this.auditLog({ content: `生成注册邀请链接(ID:${res.id})，有效期${res.expiresDays}天` });
     return this.ok(res);
   }
+
+  @Post("/disable", { description: "sys:settings:edit", summary: "禁用注册邀请链接" })
+  async disable(@Body(ALL) body: { id: number }) {
+    this.assertAdmin();
+    const ok = await this.service.disable(Number(body?.id));
+    if (!ok) {
+      throw new Error("邀请链接不存在、已使用或已禁用，无法禁用");
+    }
+    await this.auditLog({ content: `禁用注册邀请链接(ID:${body.id})` });
+    return this.ok({});
+  }
+
+  @Post("/updateRemark", { description: "sys:settings:edit", summary: "更新注册邀请备注" })
+  async updateRemark(@Body(ALL) body: { id: number; remark?: string }) {
+    this.assertAdmin();
+    const ok = await this.service.updateRemark({ id: Number(body?.id), remark: body?.remark });
+    if (!ok) {
+      throw new Error("邀请链接不存在");
+    }
+    await this.auditLog({ content: `更新注册邀请备注(ID:${body.id})` });
+    return this.ok({});
+  }
 }

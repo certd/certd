@@ -84,6 +84,8 @@ export class RegisterInviteService extends BaseService<RegisterInviteEntity> {
       usedTime: null,
       usedUserId: null,
       usedUserName: null,
+      disabled: false,
+      disabledTime: null,
       remark: req.remark || "",
     });
     const saved = await this.repository.save(entity);
@@ -105,6 +107,7 @@ export class RegisterInviteService extends BaseService<RegisterInviteEntity> {
       where: {
         tokenHash: this.hashToken(text),
         usedTime: IsNull(),
+        disabled: false,
         expiresTime: MoreThan(Date.now()),
       },
     });
@@ -124,8 +127,28 @@ export class RegisterInviteService extends BaseService<RegisterInviteEntity> {
       .set({ usedTime: Date.now(), usedUserId: req.usedUserId, usedUserName: req.usedUserName })
       .where("token_hash = :tokenHash", { tokenHash })
       .andWhere("used_time IS NULL")
+      .andWhere("disabled = :disabled", { disabled: false })
       .andWhere("expires_time > :now", { now: Date.now() })
       .execute();
+    return (result.affected || 0) > 0;
+  }
+
+  /** 禁用未使用的邀请链接：条件 UPDATE 原子生效，禁用后立即无法用于注册。 */
+  async disable(id: number) {
+    const result = await this.repository
+      .createQueryBuilder()
+      .update()
+      .set({ disabled: true, disabledTime: Date.now() })
+      .where("id = :id", { id })
+      .andWhere("used_time IS NULL")
+      .andWhere("disabled = :disabled", { disabled: false })
+      .execute();
+    return (result.affected || 0) > 0;
+  }
+
+  /** 更新备注（业务信息，不影响校验）。 */
+  async updateRemark(req: { id: number; remark?: string }) {
+    const result = await this.repository.update({ id: req.id } as any, { remark: String(req.remark || "") } as any);
     return (result.affected || 0) > 0;
   }
 
@@ -134,7 +157,7 @@ export class RegisterInviteService extends BaseService<RegisterInviteEntity> {
     const now = Date.now();
     const rows = await this.repository.find({ order: { createTime: "DESC" } });
     return rows
-      .filter(item => item.usedTime != null || Number(item.expiresTime) > now)
+      .filter(item => item.usedTime != null || (!item.disabled && Number(item.expiresTime) > now))
       .map(item => ({
         id: item.id,
         createTime: item.createTime,
