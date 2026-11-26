@@ -256,6 +256,85 @@ describe("AcmeServerService CA isolation", () => {
   });
 });
 
+describe("AcmeServerService EAB不可恢复禁用", () => {
+  it("revoked=true 的EAB即使disabled=false也拒绝注册", async () => {
+    const service: any = new AcmeServerService();
+    service.issuer = {
+      async getCaBaseUrl() {
+        return "https://certd.example.com";
+      },
+      async getAcmeEabSecret() {
+        return { id: "eab-1", disabled: false, revoked: true, hmacKey: "key" };
+      },
+    };
+    const jwk = { kty: "EC", crv: "P-256", x: "x-value", y: "y-value" };
+    const eab = {
+      protected: base64urlEncode(
+        JSON.stringify({
+          alg: "HS256",
+          kid: "eab-1",
+          url: "https://certd.example.com/api/acme/102/new-account",
+        })
+      ),
+      payload: base64urlEncode(JSON.stringify(jwk)),
+      signature: base64urlEncode("signature"),
+    };
+    await assert.rejects(() => service.verifyExternalAccountBinding(102, eab, jwkThumbprint(jwk)), /EAB凭证不可用/);
+  });
+});
+
+describe("AcmeServerService 账户状态与EAB泄漏处置串行化", () => {
+  function makeService(account: any, eab: any) {
+    const service: any = new AcmeServerService();
+    service.issuer = {
+      async assertCaOwner() {},
+      async getRotationChainWithNames() {
+        return [{ id: 102 }];
+      },
+    };
+    service.accountRepository = {
+      manager: {
+        connection: { options: { type: "better-sqlite3" } },
+        async transaction(fn: any) {
+          return await fn({
+            connection: { options: { type: "better-sqlite3" } },
+            getRepository: (entity: any) => {
+              if (entity?.name === "AcmeEabEntity") {
+                return {
+                  async findOne() {
+                    return eab;
+                  },
+                };
+              }
+              return service.accountRepository;
+            },
+          });
+        },
+      },
+      async findOne() {
+        return account;
+      },
+      async save(entity: any) {
+        Object.assign(account, entity);
+        return entity;
+      },
+    };
+    return service;
+  }
+
+  it("EAB已revoked时禁止重新启用账户", async () => {
+    const service = makeService({ id: "acc", caId: 102, eabId: "eab-1", status: "deactivated" }, { id: "eab-1", revoked: true });
+    await assert.rejects(() => service.setAccountStatus(102, "acc", "valid", 1), /不能重新启用/);
+  });
+
+  it("EAB未revoked时可重新启用并写入valid", async () => {
+    const account: any = { id: "acc", caId: 102, eabId: "eab-1", status: "deactivated" };
+    const service = makeService(account, { id: "eab-1", revoked: false });
+    await service.setAccountStatus(102, "acc", "valid", 1);
+    assert.equal(account.status, "valid");
+  });
+});
+
 describe("AcmeServerService finalize authorization", () => {
   it("EAB特权关闭后未完成的直签订单不能签发", () => {
     const service: any = new AcmeServerService();

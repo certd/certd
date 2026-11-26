@@ -95,18 +95,31 @@ export class RdapSsClient {
       return;
     }
 
+    // rdap.ss 返回的是 .hk（香港）WHOIS 日期，语义为香港时间(HKT, UTC+8，1979年后无夏令时)。
+    // dayjs 的 customParseFormat 不支持 Z 偏移标记，且默认按运行环境本地时区解释日期；
+    // 这里按本地时区解析出墙钟时间后，统一重解释为 HKT，避免机器时区不同导致同一日期相差数小时。
+    const text = value.trim();
     const formats = ["DD-MM-YYYY", "YYYY-MM-DD", "YYYY-MM-DD HH:mm:ss", "YYYY/MM/DD", "YYYY/MM/DD HH:mm:ss", "MMM D YYYY", "MMM D, YYYY"];
     for (const format of formats) {
-      const parsed = dayjs(value, format, true);
+      const parsed = dayjs(text, format, true);
       if (parsed.isValid()) {
-        return parsed.valueOf();
+        return this.reinterpretAsHkt(parsed);
       }
     }
 
-    const parsed = dayjs(value);
+    const parsed = dayjs(text);
     if (parsed.isValid()) {
       return parsed.valueOf();
     }
+  }
+
+  /** 将“按本地时区解释的墙钟时间”重解释为香港时间(HKT, UTC+8)，返回 UTC 毫秒时间戳。 */
+  private reinterpretAsHkt(parsed: ReturnType<typeof dayjs>) {
+    // getTimezoneOffset 语义为 UTC - 本地（分钟）；本地墙钟重解释到 +08:00 的增量 = HKT 偏移 - 本地偏移
+    const localOffsetMinutes = parsed.toDate().getTimezoneOffset();
+    const hktOffsetMinutes = -480;
+    const shiftMinutes = hktOffsetMinutes - localOffsetMinutes;
+    return parsed.valueOf() + shiftMinutes * 60000;
   }
 
   private sleep(ms: number) {

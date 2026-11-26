@@ -422,34 +422,53 @@ export class LocalCaAcmeService {
 
   async updateAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; name?: string; remark?: string; allowedDomains?: string[]; maxUses?: number; expiresDays?: number }) {
     const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
-    const bean = await this.acmeEabRepository.findOne({ where: { id: req.eabId, caId: ca.id } });
-    if (!bean) {
-      throw new ValidateException("EAB凭证不存在");
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用");
     }
+    // 先按字段校验构造补丁，避免在锁内做无谓的非法输入处理
+    const patch: any = {};
     if (req.name !== undefined) {
       const name = String(req.name || "").trim();
       if (!name) {
         throw new ValidateException("凭证名称不能为空");
       }
-      bean.name = name;
+      patch.name = name;
     }
     if (req.remark !== undefined) {
-      bean.remark = String(req.remark || "");
+      patch.remark = String(req.remark || "");
     }
     if (req.allowedDomains !== undefined) {
-      bean.allowedDomains = JSON.stringify(normalizeAllowedDomains(req.allowedDomains));
+      patch.allowedDomains = JSON.stringify(normalizeAllowedDomains(req.allowedDomains));
     }
     if (req.maxUses !== undefined) {
-      bean.maxUses = Math.max(0, Number(req.maxUses) || 0);
+      patch.maxUses = Math.max(0, Number(req.maxUses) || 0);
     }
     if (req.expiresDays !== undefined) {
       const days = Math.max(0, Number(req.expiresDays) || 0);
-      bean.expiresTime = days > 0 ? Date.now() + days * 86400000 : null;
+      patch.expiresTime = days > 0 ? Date.now() + days * 86400000 : null;
     }
-    bean.updateTime = new Date();
-    await this.acmeEabRepository.save(bean);
-    logger.info(`[local-ca] eab updated ca=${ca.id} eab=${bean.id} user=${req.userId}`);
-    return bean;
+    const result = await runTransaction(manager, async tx => {
+      const repository = tx.getRepository(AcmeEabEntity);
+      const driverType = String(tx.connection?.options?.type || "");
+      const useLock = !driverType.includes("sqlite");
+      const bean = await repository.findOne({
+        where: { id: req.eabId, caId: ca.id },
+        ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+      });
+      if (!bean) {
+        throw new ValidateException("EAB凭证不存在");
+      }
+      // 只更新允许修改的业务字段（局部 UPDATE），绝不复写 disabled/revoked 等安全状态，
+      // 防止并发泄漏处置写入的不可恢复标记被陈旧实体覆盖。行锁保证 PG/MySQL 下与泄漏处置串行。
+      patch.updateTime = new Date();
+      if (Object.keys(patch).length > 0) {
+        await repository.update({ id: bean.id }, patch);
+      }
+      return await repository.findOne({ where: { id: bean.id } });
+    });
+    logger.info(`[local-ca] eab updated ca=${ca.id} eab=${req.eabId} user=${req.userId}`);
+    return result;
   }
 
   async setAcmeEabDisabled(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; disabled: boolean }) {
@@ -681,9 +700,14 @@ export class LocalCaAcmeService {
   /** 普通用户“我的ACME账户”：按归属过滤并校验使用权。 */
   /** 列出某EAB注册的全部ACME账户（按注册时间升序），供泄漏处置甄别。 */
   async listEabAccounts(req: { caId: number; eabId: string; userId: number; projectId?: number }) {
-    await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, false, true);
+    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, false, true);
+    // 先校验 EAB 确实属于请求的CA，避免跨CA枚举账户
+    const eab = await this.acmeEabRepository.findOne({ where: { id: req.eabId, caId: ca.id } });
+    if (!eab) {
+      throw new ValidateException("EAB凭证不存在或无访问权限");
+    }
     const accountRepository = this.repository.manager.getRepository(AcmeAccountEntity);
-    const accounts = await accountRepository.find({ where: { eabId: req.eabId }, order: { createTime: "ASC" } });
+    const accounts = await accountRepository.find({ where: { eabId: eab.id }, order: { createTime: "ASC" } });
     const result: any[] = [];
     for (const account of accounts) {
       const orderCount = await this.acmeOrderRepository.count({ where: { accountId: account.id } });
@@ -711,6 +735,8 @@ export class LocalCaAcmeService {
       throw new ValidateException("数据库事务不可用");
     }
     const accountIds = Array.isArray(req.accountIds) ? req.accountIds.filter(Boolean) : [];
+    // 事务内确认真属于该EAB且被停用的账户ID；后续订单收集只依据这份已验证清单，避免请求体混入其他EAB账户导致跨EAB误吊销
+    const deactivatedAccountIds: string[] = [];
     // 事务内：统一锁顺序 EAB→Account（与 finalize 一致），先锁EAB再锁账户，避免与签发交叉等待死锁
     await runTransaction(manager, async tx => {
       const driverType = String(tx.connection?.options?.type || "");
@@ -740,13 +766,17 @@ export class LocalCaAcmeService {
         account.status = "deactivated";
         account.updateTime = new Date();
         await accountRepository.save(account);
+        deactivatedAccountIds.push(account.id);
       }
     });
-    // 收集选中账户已签发的有效订单，证书吊销由facade统一处理（复用轮换链查询与系统级证书CRL路径）
+    // 收集已验证属于该EAB的账户的有效订单，证书吊销由facade统一处理（复用轮换链查询与系统级证书CRL路径）
     const orders: any[] = [];
     const accountRepository = this.repository.manager.getRepository(AcmeAccountEntity);
-    for (const accountId of accountIds) {
-      const account = await accountRepository.findOne({ where: { id: accountId } });
+    for (const accountId of deactivatedAccountIds) {
+      const account = await accountRepository.findOne({ where: { id: accountId, eabId: req.eabId } });
+      if (!account) {
+        continue;
+      }
       const accountOrders = await this.acmeOrderRepository.find({ where: { accountId, status: "valid" } });
       for (const order of accountOrders) {
         if (!order.serialNumber) {
@@ -756,14 +786,14 @@ export class LocalCaAcmeService {
           caId: order.caId,
           serialNumber: order.serialNumber,
           certPem: order.certPem || null,
-          userId: account?.userId ?? 0,
-          projectId: account?.projectId,
+          userId: account.userId ?? 0,
+          projectId: account.projectId,
           expiresTime: order.expiresTime,
         });
       }
     }
-    logger.info(`[local-ca] eab leak disabled ca=${ca.id} eab=${req.eabId} accounts=${accountIds.length} orders=${orders.length} user=${req.userId}`);
-    return { disabledAccounts: accountIds.length, orders };
+    logger.info(`[local-ca] eab leak disabled ca=${ca.id} eab=${req.eabId} accounts=${deactivatedAccountIds.length} orders=${orders.length} user=${req.userId}`);
+    return { disabledAccounts: deactivatedAccountIds.length, orders };
   }
 
   async listMyAccounts(req: { userId: number; projectId?: number }) {
@@ -852,6 +882,7 @@ export class LocalCaAcmeService {
     const usedCountColumn = metadata?.findColumnWithPropertyName?.("usedCount")?.databaseName || "used_count";
     const maxUsesColumn = metadata?.findColumnWithPropertyName?.("maxUses")?.databaseName || "max_uses";
     const disabledColumn = metadata?.findColumnWithPropertyName?.("disabled")?.databaseName || "disabled";
+    const revokedColumn = metadata?.findColumnWithPropertyName?.("revoked")?.databaseName || "revoked";
     const expiresColumn = metadata?.findColumnWithPropertyName?.("expiresTime")?.databaseName || "expires_time";
     const result = await repository
       .createQueryBuilder()
@@ -859,6 +890,8 @@ export class LocalCaAcmeService {
       .set({ usedCount: () => `${usedCountColumn} + 1`, updateTime: new Date() })
       .where("id = :id", { id })
       .andWhere(`${disabledColumn} = :disabled`, { disabled: false })
+      // revoked 为不可恢复标记：原子更新同样必须排除，避免“禁用被并发覆盖”后仍能消费注册
+      .andWhere(`${revokedColumn} = :revoked`, { revoked: false })
       .andWhere(`(${expiresColumn} IS NULL OR ${expiresColumn} > :now)`, { now: Date.now() })
       .andWhere(`(${maxUsesColumn} = 0 OR ${usedCountColumn} < ${maxUsesColumn})`)
       .execute();

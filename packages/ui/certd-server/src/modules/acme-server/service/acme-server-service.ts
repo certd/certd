@@ -568,7 +568,8 @@ export class AcmeServerService {
       throw new AcmeProblem("malformed", "EAB绑定的账号公钥不匹配");
     }
     const info = await this.issuer.getAcmeEabSecret(caId, header.kid);
-    if (!info || info.disabled) {
+    // revoked 为泄漏处置后的不可恢复标记：即使 disabled 被并发旧实体覆盖，也绝不允许再次用于注册
+    if (!info || info.disabled || info.revoked) {
       throw new AcmeProblem("unauthorized", "EAB凭证不可用", 401);
     }
     if (info.expiresTime && info.expiresTime <= Date.now()) {
@@ -683,20 +684,42 @@ export class AcmeServerService {
       throw new AcmeProblem("malformed", "账户状态不合法");
     }
     const chain = await this.issuer.getRotationChainWithNames(caId);
-    const account = await this.accountRepository.findOne({ where: { id: accountId, caId: In(chain.map(item => item.id)) } });
-    if (!account) {
-      throw new AcmeProblem("unauthorized", "ACME账户不存在", 404);
+    const chainIds = chain.map(item => item.id);
+    const manager = this.accountRepository.manager;
+    if (!manager?.transaction) {
+      throw new AcmeProblem("serverInternal", "账户事务不可用", 500);
     }
-    // 泄漏处置（EAB已不可恢复禁用）的账户禁止重新启用，避免绕过泄漏处置
-    if (status === "valid" && account.eabId) {
-      const eab = await this.eabRepository.findOne({ where: { id: account.eabId } });
-      if (eab?.revoked) {
-        throw new AcmeProblem("unauthorized", "该账户因EAB泄漏已被处置，不能重新启用", 403);
+    await runTransaction(manager, async tx => {
+      const driverType = String(tx.connection?.options?.type || "");
+      const useLock = !driverType.includes("sqlite");
+      const accountRepository = tx.getRepository(AcmeAccountEntity);
+      // 先读取账户以取得不可变的 eabId（仅用于定位要锁的EAB行）
+      const account = await accountRepository.findOne({ where: { id: accountId, caId: In(chainIds) } });
+      if (!account) {
+        throw new AcmeProblem("unauthorized", "ACME账户不存在", 404);
       }
-    }
-    account.status = status;
-    account.updateTime = new Date();
-    await this.accountRepository.save(account);
+      // 统一锁顺序 EAB→Account：重新启用时先锁EAB并检查不可恢复的 revoked 标记，再锁账户，
+      // 与泄漏处置(leakRevokeEab)同序串行化，防止先读旧 revoked=false 再在泄漏处置后写回 valid。
+      if (status === "valid" && account.eabId) {
+        const eab = await tx.getRepository(AcmeEabEntity).findOne({
+          where: { id: account.eabId },
+          ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+        });
+        if (eab?.revoked) {
+          throw new AcmeProblem("unauthorized", "该账户因EAB泄漏已被处置，不能重新启用", 403);
+        }
+      }
+      const freshAccount = await accountRepository.findOne({
+        where: { id: accountId, caId: In(chainIds) },
+        ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+      });
+      if (!freshAccount) {
+        throw new AcmeProblem("unauthorized", "ACME账户不存在", 404);
+      }
+      freshAccount.status = status;
+      freshAccount.updateTime = new Date();
+      await accountRepository.save(freshAccount);
+    });
   }
 
   async notImplemented() {
