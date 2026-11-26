@@ -1,0 +1,274 @@
+<template>
+  <div class="local-ca-acme-usage">
+    <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.acmeUsageHint')" />
+    <div class="acme-usage-toolbar">
+      <a-button type="primary" @click="openCreatePipeline">{{ t("certd.localCa.acmeUsageCreatePipeline") }}</a-button>
+      <a-button @click="load">{{ t("certd.localCa.refresh") }}</a-button>
+    </div>
+
+    <div class="acme-usage-section">{{ t("certd.localCa.acmeUsageMyEab") }}</div>
+    <a-table :data-source="eabs" :loading="loading" :pagination="false" row-key="id" size="small">
+      <a-table-column :title="t('certd.localCa.eabName')" data-index="name" :width="160" ellipsis />
+      <a-table-column :title="t('certd.localCa.eabCa')" :width="160" ellipsis>
+        <template #default="{ record }">{{ record.caName || `#${record.caId}` }}</template>
+      </a-table-column>
+      <a-table-column title="KID" :width="200" ellipsis>
+        <template #default="{ record }"><fs-copyable :model-value="record.kid" /></template>
+      </a-table-column>
+      <a-table-column :title="t('certd.localCa.eabAllowedDomains')" :width="200" ellipsis>
+        <template #default="{ record }">{{ domainsText(record) }}</template>
+      </a-table-column>
+      <a-table-column :title="t('certd.localCa.eabType')" :width="100">
+        <template #default="{ record }">
+          <a-tag :color="record.privileged ? 'orange' : 'default'">{{ record.privileged ? t("certd.localCa.eabTypePrivileged") : t("certd.localCa.eabTypeNormal") }}</a-tag>
+        </template>
+      </a-table-column>
+      <a-table-column :title="t('certd.localCa.certExpires')" :width="170">
+        <template #default="{ record }">{{ formatTime(record.expiresTime) }}</template>
+      </a-table-column>
+      <a-table-column :title="t('certd.localCa.certActions')" :width="240">
+        <template #default="{ record }">
+          <div class="local-ca-row-actions">
+            <a-button type="link" size="small" @click="viewSecret(record)">{{ t("certd.localCa.acmeUsageCopySecret") }}</a-button>
+            <a-button type="link" size="small" @click="openCreateAccount(record)">{{ t("certd.localCa.acmeUsageCreateAccount") }}</a-button>
+          </div>
+        </template>
+      </a-table-column>
+    </a-table>
+    <a-empty v-if="!loading && !eabs.length" :description="t('certd.localCa.acmeUsageNoEab')" />
+
+    <div class="acme-usage-section">{{ t("certd.localCa.acmeUsageMyAccounts") }}</div>
+    <a-table :data-source="accounts" :loading="loading" :pagination="false" row-key="id" size="small">
+      <a-table-column :title="t('certd.localCa.acmeAccountId')" data-index="id" :width="200" ellipsis />
+      <a-table-column :title="t('certd.localCa.eabCa')" :width="160" ellipsis>
+        <template #default="{ record }">{{ record.caName || `#${record.caId}` }}</template>
+      </a-table-column>
+      <a-table-column :title="t('certd.localCa.acmeAccountEab')" :width="160" ellipsis>
+        <template #default="{ record }">{{ record.eabName || record.eabKid || "-" }}</template>
+      </a-table-column>
+      <a-table-column :title="t('certd.localCa.acmeStatus')" :width="90">
+        <template #default="{ record }">
+          <a-tag :color="record.status === 'valid' ? 'green' : 'orange'">{{ record.status === "valid" ? t("certd.localCa.acmeAccountValid") : t("certd.localCa.acmeAccountDisabled") }}</a-tag>
+        </template>
+      </a-table-column>
+      <a-table-column :title="t('certd.localCa.acmeOrders')" data-index="orderCount" :width="80" align="center" />
+      <a-table-column :title="t('certd.localCa.acmeIssued')" data-index="issuedCount" :width="80" align="center" />
+      <a-table-column :title="t('certd.common.createTime')" :width="170">
+        <template #default="{ record }">{{ formatTime(record.createTime) }}</template>
+      </a-table-column>
+    </a-table>
+    <a-empty v-if="!loading && !accounts.length" :description="t('certd.localCa.acmeUsageNoAccount')" />
+  </div>
+</template>
+
+<script setup lang="tsx">
+import { onMounted, ref } from "vue";
+import { notification } from "ant-design-vue";
+import { dict } from "@fast-crud/fast-crud";
+import dayjs from "dayjs";
+import { useRouter } from "vue-router";
+import { useI18n } from "/src/locales";
+import { request } from "/src/api/service";
+import { useModal } from "/@/use/use-modal";
+import { useFormDialog } from "/@/use/use-dialog";
+import { createAccessApi } from "/@/views/certd/access/api";
+import { localCaApi } from "../api";
+
+defineOptions({ name: "LocalCaAcmeUsage" });
+
+const { t } = useI18n();
+const router = useRouter();
+const model = useModal();
+const { openFormDialog } = useFormDialog();
+const accessApi = createAccessApi("user");
+
+const eabs = ref<any[]>([]);
+const accounts = ref<any[]>([]);
+const accountAccesses = ref<any[]>([]);
+const loading = ref(false);
+
+function formatTime(value: any) {
+  if (!value) {
+    return "-";
+  }
+  return dayjs(Number(value) || value).format("YYYY-MM-DD HH:mm:ss");
+}
+function domainsText(record: any) {
+  try {
+    const arr = typeof record.allowedDomains === "string" ? JSON.parse(record.allowedDomains) : record.allowedDomains;
+    return Array.isArray(arr) && arr.length ? arr.join(", ") : t("certd.localCa.eabInheritCa");
+  } catch {
+    return t("certd.localCa.eabInheritCa");
+  }
+}
+
+async function load() {
+  loading.value = true;
+  try {
+    eabs.value = (await localCaApi.ListMyEab()) || [];
+    accounts.value = (await localCaApi.ListMyAccounts()) || [];
+    try {
+      const res: any = await accessApi.GetList({ query: { type: "acmeAccount" }, page: { current: 1, size: 100 } });
+      accountAccesses.value = res?.records || [];
+    } catch {
+      accountAccesses.value = [];
+    }
+  } catch (e: any) {
+    notification.error({ message: String(e?.message || e) });
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function viewSecret(row: any) {
+  const secret = await localCaApi.GetMyEabSecret(row.id);
+  model.success({
+    title: `${t("certd.localCa.acmeUsageCopySecret")} - ${row.name}`,
+    maskClosable: true,
+    okText: t("certd.common.close"),
+    width: 640,
+    zIndex: 1200,
+    content: () => (
+      <a-descriptions bordered column={1} size="small">
+        <a-descriptions-item label="KID">
+          <fs-copyable modelValue={secret.kid} />
+        </a-descriptions-item>
+        <a-descriptions-item label="HMAC Key">
+          <fs-copyable modelValue={secret.hmacKey} />
+        </a-descriptions-item>
+      </a-descriptions>
+    ),
+  });
+}
+
+async function openCreateAccount(row: any) {
+  if (!row.sslProvider) {
+    notification.warning({ message: t("certd.localCa.acmeUsageNoProvider") });
+    return;
+  }
+  await openFormDialog({
+    title: `${t("certd.localCa.acmeUsageCreateAccount")} - ${row.name}`,
+    wrapper: { width: 560 },
+    zIndex: 1200,
+    initialForm: { email: "" },
+    columns: {
+      email: {
+        title: t("certd.localCa.acmeUsageEmail"),
+        type: "text",
+        form: { required: true, col: { span: 24 }, rules: [{ required: true, message: t("certd.common.required") }], helper: t("certd.localCa.acmeUsageEmailHelper") },
+      },
+    },
+    async onSubmit(form: any) {
+      const secret = await localCaApi.GetMyEabSecret(row.id);
+      const account = await request({
+        url: "/pi/handle/access",
+        method: "post",
+        data: {
+          typeName: "acmeAccount",
+          action: "onGenerateAccount",
+          input: { caType: row.sslProvider, email: form.email, eabKid: secret.kid, eabHmacKey: secret.hmacKey },
+          record: { id: 0, type: "acmeAccount", title: "" },
+          data: {},
+        },
+      });
+      const setting = { caType: row.sslProvider, email: form.email, eabKid: secret.kid, eabHmacKey: secret.hmacKey, account };
+      await accessApi.AddObj({ type: "acmeAccount", name: `${row.name}账号`, setting: JSON.stringify(setting) });
+      notification.success({ message: t("certd.localCa.acmeUsageAccountCreated") });
+      await load();
+    },
+  });
+}
+
+async function openCreatePipeline() {
+  if (!accountAccesses.value.length) {
+    notification.warning({ message: t("certd.localCa.acmeUsageNoAccountAccess") });
+    return;
+  }
+  const accessOptions = accountAccesses.value.map(item => ({ label: item.name || `#${item.id}`, value: item.id }));
+  await openFormDialog({
+    title: t("certd.localCa.acmeUsageCreatePipeline"),
+    wrapper: { width: 600 },
+    zIndex: 1200,
+    initialForm: { accessId: accessOptions[0]?.value, domains: "" },
+    columns: {
+      accessId: {
+        title: t("certd.localCa.acmeUsageAccountAccess"),
+        type: "dict-select",
+        dict: dict({ data: accessOptions }),
+        form: { required: true, col: { span: 24 } },
+      },
+      domains: {
+        title: t("certd.localCa.certDomain"),
+        type: "textarea",
+        form: { required: true, col: { span: 24 }, component: { rows: 3, placeholder: "app.example.com" }, rules: [{ required: true, message: t("certd.common.required") }] },
+      },
+    },
+    async onSubmit(form: any) {
+      const access: any = await accessApi.GetObj(form.accessId);
+      let setting: any = access?.setting;
+      if (typeof setting === "string") {
+        setting = JSON.parse(setting);
+      }
+      const sslProvider = setting?.caType;
+      if (!sslProvider) {
+        throw new Error(t("certd.localCa.acmeUsageNoProvider"));
+      }
+      const domains = String(form.domains || "")
+        .split(/[\n,，\s]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+      const pipeline = {
+        title: `${domains[0]}证书自动化（本地CA）`,
+        runnableType: "pipeline",
+        stages: [
+          {
+            title: "证书申请阶段",
+            maxTaskCount: 1,
+            runnableType: "stage",
+            tasks: [
+              {
+                title: "证书申请任务",
+                runnableType: "task",
+                steps: [
+                  {
+                    title: "申请证书",
+                    runnableType: "step",
+                    type: "CertApplyLocalCa",
+                    input: { mode: "local-acme", sslProvider, caType: sslProvider, acmeAccountAccessId: form.accessId, domains, keyType: "rsa2048", validityDays: 365, renewDays: 30 },
+                    strategy: { runStrategy: 0 },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      const res: any = await request({ url: "/pi/pipeline/save", method: "post", data: { title: pipeline.title, content: JSON.stringify(pipeline), type: "cert" } });
+      const id = res?.id || res;
+      notification.success({ message: t("certd.localCa.acmeUsagePipelineCreated") });
+      router.push({ path: "/cert/pipeline/detail", query: { id, editMode: "true" } });
+    },
+  });
+}
+
+onMounted(load);
+defineExpose({ load });
+</script>
+
+<style lang="less">
+.local-ca-acme-usage {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+
+  .acme-usage-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .acme-usage-section {
+    margin: 16px 0 8px;
+    font-weight: 600;
+  }
+}
+</style>

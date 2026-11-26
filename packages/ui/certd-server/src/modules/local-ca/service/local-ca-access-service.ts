@@ -1,4 +1,4 @@
-import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { In, Repository } from "typeorm";
 import { ValidateException } from "@certd/lib-server";
@@ -19,6 +19,9 @@ export type LocalCaScope = {
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class LocalCaAccessService {
+  @Inject()
+  ctx: any;
+
   @InjectEntityModel(LocalCaEntity)
   repository: Repository<LocalCaEntity>;
 
@@ -36,6 +39,10 @@ export class LocalCaAccessService {
   }
 
   async getAdminAccess(caId: number, adminUserId: number, requireOwner = false) {
+    // 系统管理员可管理任意本地CA，无需CA ACL行；普通用户的管理入口已在controller层收敛拒绝
+    if (this.ctx?.user?.roles?.includes(1)) {
+      return { role: "owner" } as LocalCaAdminEntity;
+    }
     const access = await this.findAdminAccess(caId, adminUserId);
     if (!access) {
       throw new ValidateException("本地CA不存在或无访问权限");

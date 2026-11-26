@@ -44,6 +44,12 @@
               <a-tag :color="statusColor(item)">{{ statusLabel(item) }}</a-tag>
             </template>
           </a-table-column>
+          <a-table-column :title="t('certd.localCa.certIssueMethod')" :width="110">
+            <template #default="{ record: item }">
+              <a-tag v-if="item.type !== 'ca'" :color="item.fromType === 'acme' ? 'geekblue' : 'cyan'">{{ item.fromType === "acme" ? t("certd.localCa.certIssueAcme") : t("certd.localCa.certIssueDirect") }}</a-tag>
+              <span v-else>-</span>
+            </template>
+          </a-table-column>
           <a-table-column :title="t('certd.localCa.certIssuedBy')" :width="160" ellipsis>
             <template #default="{ record: item }">{{ item.caName || "-" }}</template>
           </a-table-column>

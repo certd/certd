@@ -36,6 +36,13 @@ function createService(cas: any[], providers: any[]) {
       }
       return ca;
     },
+    async update({ id }: any, partial: any) {
+      const idx = cas.findIndex(item => Number(item.id) === Number(id));
+      if (idx >= 0) {
+        cas[idx] = { ...cas[idx], ...partial };
+      }
+      return { affected: idx >= 0 ? 1 : 0 };
+    },
   };
   (service as any).sysSettingsService = {
     async getPrivateSettings() {

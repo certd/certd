@@ -3,7 +3,7 @@ import { logger } from "@certd/basic";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { EntityManager, In, Repository } from "typeorm";
-import { EncryptService, ValidateException } from "@certd/lib-server";
+import { EncryptService, SysSettingsService, ValidateException } from "@certd/lib-server";
 import { runTransaction } from "../../db/db-transaction.js";
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { LocalCaGrantEntity } from "../entity/local-ca-grant.js";
@@ -49,6 +49,17 @@ export class LocalCaAcmeService {
 
   @Inject()
   providerSync: LocalCaProviderSyncService;
+
+  @Inject()
+  sysSettingsService: SysSettingsService;
+
+  /** 解析EAB所属CA链对应的自定义ACME颁发机构sslProvider（供普通用户自助注册账号）。 */
+  private async resolveSslProvider(caId: number, providerList: any[]): Promise<string | null> {
+    const chain = await this.accessService.collectRotationChain(caId);
+    const chainSet = new Set(chain.map(id => Number(id)));
+    const entry = providerList.find(item => item.localCaId != null && chainSet.has(Number(item.localCaId)));
+    return entry?.sslProvider || null;
+  }
 
   private assertAcmeCaUsable(ca: LocalCaEntity | null) {
     if (!ca || ca.caType !== "intermediate" || !ca.acmeEnabled) {
@@ -508,6 +519,127 @@ export class LocalCaAcmeService {
       return null;
     }
     return { ...bean, hmacKey };
+  }
+
+  /** 普通用户“我的EAB”：按归属(用户/项目)过滤，并校验对所属CA仍有使用权；不回显hmacKey。 */
+  async listMyEab(req: { userId: number; projectId?: number }) {
+    const where: any[] = [];
+    if (req.userId > 0) {
+      where.push({ userId: req.userId });
+    }
+    if (req.projectId && req.projectId > 0) {
+      where.push({ projectId: req.projectId });
+    }
+    if (where.length === 0) {
+      return [];
+    }
+    const owned = await this.acmeEabRepository.find({ where, order: { createTime: "DESC" } });
+    const privateSetting = await this.sysSettingsService.getPrivateSettings();
+    const providerList = privateSetting.customAcmeProviders || [];
+    const caNameCache = new Map<number, string>();
+    const sslProviderCache = new Map<number, string | null>();
+    const result: any[] = [];
+    for (const item of owned) {
+      if (item.disabled) {
+        continue;
+      }
+      try {
+        await this.accessService.getGrantedCa({ id: item.caId, userId: req.userId, projectId: req.projectId });
+      } catch {
+        continue;
+      }
+      if (!caNameCache.has(item.caId)) {
+        const ca = await this.repository.findOne({ where: { id: item.caId } });
+        caNameCache.set(item.caId, ca?.name || `#${item.caId}`);
+      }
+      if (!sslProviderCache.has(item.caId)) {
+        sslProviderCache.set(item.caId, await this.resolveSslProvider(item.caId, providerList));
+      }
+      result.push({
+        id: item.id,
+        caId: item.caId,
+        caName: caNameCache.get(item.caId),
+        sslProvider: sslProviderCache.get(item.caId),
+        name: item.name,
+        kid: item.kid,
+        allowedDomains: item.allowedDomains,
+        maxUses: item.maxUses,
+        usedCount: item.usedCount,
+        expiresTime: item.expiresTime,
+        disabled: item.disabled,
+        privileged: item.privileged === true,
+        remark: item.remark,
+        createTime: item.createTime,
+      });
+    }
+    return result;
+  }
+
+  /** 普通用户取回自己EAB的密钥（供自助注册ACME账号）；严格归属+使用权校验，勿复用无校验的getAcmeEabSecret。 */
+  async getMyEabSecret(req: { userId: number; projectId?: number; eabId: string }) {
+    const bean = await this.acmeEabRepository.findOne({ where: { id: req.eabId } });
+    if (!bean) {
+      throw new ValidateException("EAB凭证不存在");
+    }
+    const owns = (req.userId > 0 && bean.userId === req.userId) || (req.projectId && req.projectId > 0 && bean.projectId === req.projectId);
+    if (!owns) {
+      throw new ValidateException("无权访问该EAB凭证");
+    }
+    await this.accessService.getGrantedCa({ id: bean.caId, userId: req.userId, projectId: req.projectId });
+    let hmacKey: string;
+    try {
+      hmacKey = this.encryptService.decrypt(bean.hmacKeyEncrypted);
+    } catch {
+      throw new ValidateException("EAB凭证密钥解密失败");
+    }
+    if (bean.hmacKeyHash && sha256Hex(hmacKey) !== bean.hmacKeyHash) {
+      throw new ValidateException("EAB凭证密钥校验失败");
+    }
+    return { kid: bean.kid, hmacKey, caId: bean.caId };
+  }
+
+  /** 普通用户“我的ACME账户”：按归属过滤并校验使用权。 */
+  async listMyAccounts(req: { userId: number; projectId?: number }) {
+    const where: any[] = [];
+    if (req.userId > 0) {
+      where.push({ userId: req.userId });
+    }
+    if (req.projectId && req.projectId > 0) {
+      where.push({ projectId: req.projectId });
+    }
+    if (where.length === 0) {
+      return [];
+    }
+    const accountRepository = this.repository.manager.getRepository(AcmeAccountEntity);
+    const accounts = await accountRepository.find({ where, order: { createTime: "DESC" } });
+    const result: any[] = [];
+    for (const account of accounts) {
+      try {
+        await this.accessService.getGrantedCa({ id: account.caId, userId: req.userId, projectId: req.projectId });
+      } catch {
+        continue;
+      }
+      const ca = await this.repository.findOne({ where: { id: account.caId } });
+      const eab = account.eabId ? await this.acmeEabRepository.findOne({ where: { id: account.eabId } }) : null;
+      const orderCount = await this.acmeOrderRepository.count({ where: { accountId: account.id } });
+      const issuedCount = await this.acmeOrderRepository.count({ where: { accountId: account.id, status: "valid" } });
+      result.push({
+        id: account.id,
+        status: account.status,
+        contact: account.contact ? JSON.parse(account.contact) : [],
+        caId: account.caId,
+        caName: ca?.name || null,
+        eabId: account.eabId,
+        eabKid: eab?.kid || null,
+        eabName: eab?.name || null,
+        userId: account.userId,
+        projectId: account.projectId,
+        createTime: account.createTime,
+        orderCount,
+        issuedCount,
+      });
+    }
+    return result;
   }
 
   async getAcmeEabProfile(id: string, manager?: EntityManager) {

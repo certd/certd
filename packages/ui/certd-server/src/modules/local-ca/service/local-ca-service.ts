@@ -267,15 +267,16 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     };
   }
 
-  async listSafe(req: { adminUserId: number; searchKey?: string }) {
-    const accesses = await this.adminRepository.find({ where: { adminUserId: req.adminUserId } });
-    const ids = accesses.map(item => item.caId);
-    const list = ids.length
-      ? await this.find({
-          where: { id: In(ids), deleted: false },
-          order: { id: "DESC" },
-        })
-      : [];
+  async listSafe(req: { adminUserId: number; searchKey?: string; includeAll?: boolean }) {
+    // 系统管理员管理视图返回全部CA；includeAll由controller在assertSystemAdmin后置 true
+    let list: LocalCaEntity[];
+    if (req.includeAll) {
+      list = await this.find({ where: { deleted: false }, order: { id: "DESC" } });
+    } else {
+      const accesses = await this.adminRepository.find({ where: { adminUserId: req.adminUserId } });
+      const ids = accesses.map(item => item.caId);
+      list = ids.length ? await this.find({ where: { id: In(ids), deleted: false }, order: { id: "DESC" } }) : [];
+    }
     const searchKey = String(req.searchKey || "")
       .trim()
       .toLowerCase();
@@ -430,16 +431,21 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return this.toOptionList(safeList as any);
   }
 
-  async listAdminOptions(req: { adminUserId: number; searchKey?: string }) {
+  async listAdminOptions(req: { adminUserId: number; searchKey?: string; includeAll?: boolean }) {
     // 管理端页签（权限/签发证书/导入父CA）需要根CA与禁用/已轮换CA；可用性过滤由前端按页签语义执行
-    const list = await this.listSafe({ adminUserId: req.adminUserId, searchKey: req.searchKey });
+    const list = await this.listSafe({ adminUserId: req.adminUserId, searchKey: req.searchKey, includeAll: req.includeAll });
+    const searchKey = String(req.searchKey || "").trim().toLowerCase();
     // 已归档但已轮换的CA保留legacy管理入口（旧EAB/账户/吊销管理）
+    if (req.includeAll) {
+      const archivedRotated = await this.find({ where: { deleted: true, caType: "intermediate" } });
+      const retired = archivedRotated.filter(item => !!item.rotatedToId && (!searchKey || item.name.toLowerCase().includes(searchKey)));
+      return this.toOptionList([...list, ...retired] as any);
+    }
     const accesses = await this.adminRepository.find({ where: { adminUserId: req.adminUserId } });
     const ids = accesses.map(item => item.caId);
     if (ids.length) {
       const archivedRotated = await this.find({ where: { id: In(ids), deleted: true, caType: "intermediate" } });
       const retired = archivedRotated.filter(item => !!item.rotatedToId);
-      const searchKey = String(req.searchKey || "").trim().toLowerCase();
       const filtered = retired.filter(item => !searchKey || item.name.toLowerCase().includes(searchKey));
       return this.toOptionList([...list, ...filtered] as any);
     }
@@ -983,6 +989,18 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   async rotateInternalToken(req: LocalCaScope & { caId: number }) {
     return await this.acmeService.rotateInternalToken(req);
+  }
+
+  async listMyEab(req: { userId: number; projectId?: number }) {
+    return await this.acmeService.listMyEab(req);
+  }
+
+  async getMyEabSecret(req: { userId: number; projectId?: number; eabId: string }) {
+    return await this.acmeService.getMyEabSecret(req);
+  }
+
+  async listMyAccounts(req: { userId: number; projectId?: number }) {
+    return await this.acmeService.listMyAccounts(req);
   }
 
   async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number; remark?: string; privileged?: boolean }) {

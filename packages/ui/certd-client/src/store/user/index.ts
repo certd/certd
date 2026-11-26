@@ -116,7 +116,7 @@ export const useUserStore = defineStore({
     async getUserInfoAction(): Promise<UserInfoRes> {
       const userInfo = await UserApi.mine();
       this.setUserInfo(userInfo);
-      // 分公司维护员/被授权用户可见本地CA入口（数据由后端CA ACL scoped）
+      // 被授权用户可见本地CA使用入口（管理仅系统管理员；普通用户经grants获得使用权）
       try {
         const [adminCas, grantedCas] = await Promise.all([
           request({ url: "/sys/local-ca/adminOptions", method: "post", data: {} }).catch(() => []),

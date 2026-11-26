@@ -26,8 +26,8 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询本地CA分页列表" })
   async page(@Body(ALL) body: any) {
+    this.assertSystemAdmin();
     body.query = body.query ?? {};
-    const userId = this.getUserId();
     const name = body.query.name;
     const subjectCn = body.query.subjectCn;
     const status = body.query.status;
@@ -42,7 +42,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
       page: body.page,
       sort: body.sort,
       buildQuery: bq => {
-        bq.andWhere("id IN (SELECT ca_id FROM cd_local_ca_admin WHERE admin_user_id = :adminUserId)", { adminUserId: userId });
         if (name) {
           bq.andWhere("(name like :name or subject_cn like :subjectCn)", {
             name: `%${name}%`,
@@ -66,10 +65,12 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/list", { description: Constants.per.authOnly, summary: "查询本地CA列表" })
   async list(@Body(ALL) body: any) {
+    this.assertSystemAdmin();
     const userId = this.getUserId();
     const list = await this.service.listSafe({
       adminUserId: userId,
       searchKey: body?.searchKey,
+      includeAll: true,
     });
     return this.ok(list);
   }
@@ -270,6 +271,24 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(res);
   }
 
+  @Post("/eab/myList", { description: Constants.per.authOnly, summary: "查询当前用户被分配的EAB凭证" })
+  async myEabList() {
+    const { userId, projectId } = await this.getUseScope();
+    return this.ok(await this.service.listMyEab({ userId, projectId }));
+  }
+
+  @Post("/eab/mySecret", { description: Constants.per.authOnly, summary: "取回当前用户自己的EAB密钥（自助注册ACME账号）" })
+  async myEabSecret(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.getUseScope();
+    return this.ok(await this.service.getMyEabSecret({ userId, projectId, eabId: body.eabId }));
+  }
+
+  @Post("/acme/myAccounts", { description: Constants.per.authOnly, summary: "查询当前用户的ACME账户" })
+  async myAccounts() {
+    const { userId, projectId } = await this.getUseScope();
+    return this.ok(await this.service.listMyAccounts({ userId, projectId }));
+  }
+
   @Post("/intermediate/revoke", { description: Constants.per.authOnly, summary: "吊销中间CA并刷新Root CRL" })
   async revokeIntermediate(@Body(ALL) body: any) {
     this.assertStepUp(body.verifyToken, "吊销中间CA");
@@ -327,8 +346,9 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/adminOptions", { description: Constants.per.authOnly, summary: "查询管理员本地CA选项" })
   async adminOptions(@Body(ALL) body: any) {
+    this.assertSystemAdmin();
     const userId = this.getUserId();
-    return this.ok(await this.service.listAdminOptions({ adminUserId: userId, searchKey: body?.searchKey }));
+    return this.ok(await this.service.listAdminOptions({ adminUserId: userId, searchKey: body?.searchKey, includeAll: true }));
   }
 
   @Post("/getOptionsByIds", { description: Constants.per.authOnly, summary: "根据ID查询本地CA选项" })
@@ -507,6 +527,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/grants/add", { description: Constants.per.authOnly, summary: "授权用户使用中间CA" })
   async addGrant(@Body(ALL) body: any) {
+    this.assertSystemAdmin();
     this.assertStepUp(body.verifyToken, "授权用户使用中间CA");
     const userId = this.getUserId();
     const res = await this.service.addGrant({ id: body.id, userId, grantUserId: body.grantUserId, grantProjectId: body.grantProjectId });
@@ -517,6 +538,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/grants/remove", { description: Constants.per.authOnly, summary: "移除CA用户授权" })
   async removeGrant(@Body(ALL) body: any) {
+    this.assertSystemAdmin();
     this.assertStepUp(body.verifyToken, "移除CA用户授权");
     const userId = this.getUserId();
     await this.service.removeGrant({ id: body.id, userId, grantId: body.grantId });
@@ -532,6 +554,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/admins/add", { description: Constants.per.authOnly, summary: "添加CA管理员" })
   async addAdmin(@Body(ALL) body: any) {
+    this.assertSystemAdmin();
     this.assertStepUp(body.verifyToken, "添加CA管理员");
     const userId = this.getUserId();
     const res = await this.service.addCaAdmin({ id: body.id, userId, adminUserId: body.adminUserId, role: body.role });
@@ -541,6 +564,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Post("/admins/remove", { description: Constants.per.authOnly, summary: "移除CA管理员" })
   async removeAdmin(@Body(ALL) body: any) {
+    this.assertSystemAdmin();
     this.assertStepUp(body.verifyToken, "移除CA管理员");
     const userId = this.getUserId();
     await this.service.removeCaAdmin({ id: body.id, userId, adminUserId: body.adminUserId });
@@ -549,9 +573,9 @@ export class LocalCaController extends CrudController<LocalCaService> {
   }
 
   private async checkCaAccess(id: number, mode: "read" | "write" = "read", requireOwner = false, includeDeleted = false) {
-    // 企业场景：分公司维护员可为非系统管理员的CA owner/operator，边界由CA ACL判定
+    // 本地CA管理收敛为系统管理员-only；普通用户仅经授权(grants)使用，不能管理/查看/修改CA设置
+    this.assertSystemAdmin();
     const userId = this.getUserId();
-    await this.service.assertAdminCa(id, userId, requireOwner, includeDeleted);
     return { userId, projectId: undefined as number | undefined };
   }
 

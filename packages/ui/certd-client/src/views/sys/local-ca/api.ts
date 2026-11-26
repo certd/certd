@@ -323,27 +323,27 @@ export const localCaApi = {
     });
   },
 
-  async ListAdmins(id: number) {
+  async ListMyEab() {
     return await req({
-      url: apiPrefix + "/admins/list",
+      url: apiPrefix + "/eab/myList",
       method: "post",
-      data: { id },
+      data: {},
     });
   },
 
-  async AddAdmin(data: any) {
+  async GetMyEabSecret(eabId: string) {
     return await req({
-      url: apiPrefix + "/admins/add",
+      url: apiPrefix + "/eab/mySecret",
       method: "post",
-      data: { ...data, verifyToken: getSecretAccessToken() },
+      data: { eabId },
     });
   },
 
-  async RemoveAdmin(id: number, adminUserId: number) {
+  async ListMyAccounts() {
     return await req({
-      url: apiPrefix + "/admins/remove",
+      url: apiPrefix + "/acme/myAccounts",
       method: "post",
-      data: { id, adminUserId, verifyToken: getSecretAccessToken() },
+      data: {},
     });
   },
 };

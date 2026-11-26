@@ -230,7 +230,7 @@ async function viewOrderCert(order: any) {
     maskClosable: true,
     okText: t("certd.common.confirm"),
     width: 800,
-    zIndex: 1200,
+    zIndex: 1300,
     content: () => <CertView cert={{ crt: order.certPem, key: "", ic: "", detail: res.detail }} />,
   });
 }
