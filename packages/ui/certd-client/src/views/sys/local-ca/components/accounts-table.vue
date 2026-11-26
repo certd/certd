@@ -13,9 +13,10 @@
       <a-table-column :title="t('certd.localCa.acmeAccountEab')" :width="170" ellipsis>
         <template #default="{ record }">
           <template v-if="record.eabId">
-            <span>{{ record.eabName || record.eabKid }}</span>
+            <span :style="{ textDecoration: record.eabDisabled || record.eabRevoked ? 'line-through' : 'none', color: record.eabDisabled || record.eabRevoked ? '#999' : undefined }">{{
+              record.eabName || record.eabKid
+            }}</span>
             <a-tag v-if="record.eabPrivileged" color="orange" class="ml-1">{{ t("certd.localCa.eabTypePrivileged") }}</a-tag>
-            <a-tag v-if="record.eabDisabled" color="red" class="ml-1">{{ t("common.disabled") }}</a-tag>
           </template>
           <a-tag v-else color="red">{{ t("certd.localCa.acmeAccountNoEab") }}</a-tag>
         </template>
@@ -194,6 +195,12 @@ async function viewOrders(row: any) {
       <a-table dataSource={orders} pagination={{ pageSize: 10 }} size="small" rowKey="id">
         <a-table-column title={t("certd.localCa.acmeOrderStatus")} width={110}>
           {{ default: ({ record: order }: any) => <a-tag color={orderColor(order.status)}>{orderStatus(order.status)}</a-tag> }}
+        </a-table-column>
+        <a-table-column title={t("certd.localCa.acmeOrderCertStatus")} width={100}>
+          {{
+            default: ({ record: order }: any) =>
+              order.serialNumber ? <a-tag color={order.certRevoked ? "red" : "green"}>{order.certRevoked ? t("certd.localCa.certStatusRevoked") : t("certd.localCa.certStatusActive")}</a-tag> : <span>-</span>,
+          }}
         </a-table-column>
         <a-table-column title={t("certd.localCa.certDomain")} width={220}>
           {{ default: ({ record: order }: any) => (order.identifiers || []).map((item: any) => item.value).join(", ") }}

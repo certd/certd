@@ -610,17 +610,32 @@ export class AcmeServerService {
       where: { caId: In(chainIds), accountId },
       order: { createTime: "DESC" },
     });
-    return orders.map(order => ({
-      id: order.id,
-      status: order.status,
-      identifiers: JSON.parse(order.identifiers),
-      serialNumber: order.serialNumber,
-      directIssue: order.directIssue,
-      error: order.error,
-      createTime: order.createTime,
-      expiresTime: order.expiresTime,
-      certPem: order.certPem || null,
-    }));
+    return await this.mapOrdersWithCertStatus(orders);
+  }
+
+  /** 订单视图附带证书吊销状态：订单status不随证书吊销变化，需查证书仓库反映真实吊销情况。 */
+  private async mapOrdersWithCertStatus(orders: AcmeOrderEntity[]) {
+    const result: any[] = [];
+    for (const order of orders) {
+      let certRevoked = false;
+      if (order.serialNumber) {
+        const cert = await this.certificateStore.findIssuedCertificate(order.caId, order.serialNumber);
+        certRevoked = (cert as any)?.status === "revoked";
+      }
+      result.push({
+        id: order.id,
+        status: order.status,
+        certRevoked,
+        identifiers: JSON.parse(order.identifiers),
+        serialNumber: order.serialNumber,
+        directIssue: order.directIssue,
+        error: order.error,
+        createTime: order.createTime,
+        expiresTime: order.expiresTime,
+        certPem: order.certPem || null,
+      });
+    }
+    return result;
   }
 
   /** 普通用户查看自己账户的订单：按账户归属(userId/projectId)校验，无需CA管理权。 */
@@ -634,17 +649,7 @@ export class AcmeServerService {
       throw new AcmeProblem("unauthorized", "无权访问该ACME账户", 403);
     }
     const orders = await this.orderRepository.find({ where: { accountId }, order: { createTime: "DESC" } });
-    return orders.map(order => ({
-      id: order.id,
-      status: order.status,
-      identifiers: JSON.parse(order.identifiers),
-      serialNumber: order.serialNumber,
-      directIssue: order.directIssue,
-      error: order.error,
-      createTime: order.createTime,
-      expiresTime: order.expiresTime,
-      certPem: order.certPem || null,
-    }));
+    return await this.mapOrdersWithCertStatus(orders);
   }
 
   async setAccountStatus(caId: number, accountId: string, status: string, userId: number, projectId?: number) {

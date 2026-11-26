@@ -225,6 +225,15 @@ async function viewOrders(row: any) {
     return <a-tag color={color}>{text}</a-tag>;
   };
   const renderTime = (order: any) => <span style={{ whiteSpace: "nowrap" }}>{formatTime(order.createTime)}</span>;
+  const renderCertStatus = (order: any) => {
+    if (!order.serialNumber) {
+      return <span>-</span>;
+    }
+    if (order.certRevoked) {
+      return <a-tag color="red">{t("certd.localCa.certStatusRevoked")}</a-tag>;
+    }
+    return <a-tag color="green">{t("certd.localCa.certStatusActive")}</a-tag>;
+  };
   const renderActions = (order: any) => {
     if (!order.certPem) {
       return <span>-</span>;
@@ -245,6 +254,9 @@ async function viewOrders(row: any) {
       <a-table dataSource={orders} pagination={{ pageSize: 10 }} size="small" rowKey="id">
         <a-table-column title={t("certd.localCa.acmeOrderStatus")} width={110}>
           {{ default: ({ record: order }: any) => renderStatus(order) }}
+        </a-table-column>
+        <a-table-column title={t("certd.localCa.acmeOrderCertStatus")} width={100}>
+          {{ default: ({ record: order }: any) => renderCertStatus(order) }}
         </a-table-column>
         <a-table-column title={t("certd.localCa.certDomain")} width={220}>
           {{ default: ({ record: order }: any) => renderDomains(order) }}
