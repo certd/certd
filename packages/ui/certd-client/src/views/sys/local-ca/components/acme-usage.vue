@@ -48,11 +48,9 @@
       <a-table-column :title="t('certd.localCa.acmeEmail')" :width="180" ellipsis>
         <template #default="{ record }">{{ emailText(record) }}</template>
       </a-table-column>
-      <a-table-column :title="t('certd.localCa.acmeStatus')" :width="120">
+      <a-table-column :title="t('certd.localCa.acmeStatus')" :width="90">
         <template #default="{ record }">
-          <a-tag v-if="record.status === 'valid' && record.eabActive" color="green">{{ t("certd.localCa.acmeAccountValid") }}</a-tag>
-          <a-tag v-else-if="record.status === 'valid' && !record.eabActive" color="red">{{ t("certd.localCa.acmeAccountEabInactive") }}</a-tag>
-          <a-tag v-else color="orange">{{ t("certd.localCa.acmeAccountDisabled") }}</a-tag>
+          <a-tag :color="record.status === 'valid' ? 'green' : 'orange'">{{ record.status === "valid" ? t("certd.localCa.acmeAccountValid") : t("certd.localCa.acmeAccountDisabled") }}</a-tag>
         </template>
       </a-table-column>
       <a-table-column :title="t('certd.localCa.acmeOrders')" data-index="orderCount" :width="80" align="center" />

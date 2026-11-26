@@ -684,10 +684,26 @@ export class AcmeServerService {
       throw new AcmeProblem("unauthorized", "账户未通过EAB认证，请重新注册", 401);
     }
     const profile = await this.issuer.getAcmeEabProfile(account.eabId, manager);
-    if (!profile) {
-      throw new AcmeProblem("unauthorized", "EAB凭证已禁用或过期", 401);
+    if (profile) {
+      return profile;
     }
-    return profile;
+    // EAB只管注册：已注册账户独立可用，EAB禁用/过期后仍按其原始域名范围与特权签发；
+    // 泄漏处置由管理员批量停用未授权账户并吊销证书，而非靠EAB状态拦截已有账户
+    const repository = manager ? manager.getRepository(AcmeEabEntity) : this.eabRepository;
+    const bean = await repository.findOne({ where: { id: account.eabId } });
+    if (!bean) {
+      throw new AcmeProblem("unauthorized", "EAB凭证不存在", 401);
+    }
+    let allowedDomains: string[] = [];
+    if (bean.allowedDomains) {
+      try {
+        const parsed = JSON.parse(bean.allowedDomains);
+        allowedDomains = Array.isArray(parsed) ? parsed : [];
+      } catch {
+        throw new AcmeProblem("serverInternal", "EAB域名配置损坏", 500);
+      }
+    }
+    return { id: bean.id, allowedDomains, privileged: bean.privileged === true };
   }
 
   private assertDirectIssueAllowed(order: AcmeOrderEntity, profile: { privileged: boolean }) {

@@ -204,6 +204,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               await togglePrivileged(row);
             },
           },
+          leakRevoke: {
+            type: "link",
+            text: t("certd.localCa.leakRevokeTitle"),
+            click: async ({ row }) => {
+              await context.openLeakRevoke(row, () => crudExpose.doRefresh());
+            },
+          },
         },
       },
       columns: {

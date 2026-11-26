@@ -170,12 +170,17 @@ describe("AcmeServerService finalize authorization", () => {
     assert.throws(() => service.assertDirectIssueAllowed({ directIssue: true }, { privileged: false }), /特权已关闭/);
   });
 
-  it("EAB 禁用后已有订单不能 finalize", async () => {
+  it("EAB 禁用后已注册账户仍可 finalize（EAB只管注册，账户独立）", async () => {
     const service: any = new AcmeServerService();
     service.issuer = { getAcmeEabProfile: async () => null };
+    service.eabRepository = {
+      async findOne() {
+        return { id: "eab-1", allowedDomains: JSON.stringify(["old.example.com"]), privileged: false };
+      },
+    };
     const account: any = { eabId: "eab-1" };
     const order: any = { identifiers: JSON.stringify([{ type: "dns", value: "old.example.com" }]) };
-    await assert.rejects(() => service.assertOrderStillAuthorized({ allowedDomains: null }, account, order), /EAB凭证已禁用或过期/);
+    await assert.doesNotReject(() => service.assertOrderStillAuthorized({ allowedDomains: null }, account, order));
   });
 
   it("EAB 域名范围收紧后已有订单不能 finalize", async () => {

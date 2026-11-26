@@ -362,4 +362,20 @@ export const localCaApi = {
       data: { accountId },
     });
   },
+
+  async ListEabAccounts(caId: number, eabId: string) {
+    return await req({
+      url: apiPrefix + "/eab/accounts",
+      method: "post",
+      data: { caId, eabId },
+    });
+  },
+
+  async LeakRevokeEab(caId: number, eabId: string, accountIds: string[], verifyToken: string) {
+    return await req({
+      url: apiPrefix + "/eab/leakRevoke",
+      method: "post",
+      data: { caId, eabId, accountIds, verifyToken },
+    });
+  },
 };

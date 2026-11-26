@@ -16,6 +16,7 @@ import { LocalCaCrlService } from "./local-ca-crl-service.js";
 import { LocalCaProviderSyncService } from "./local-ca-provider-sync-service.js";
 import { normalizeAllowedDomains, sha256Hex } from "./local-ca-crypto.js";
 import { localCaMutex, caConfigKey } from "./local-ca-mutex.js";
+import { CertInfoService } from "../../monitor/service/cert-info-service.js";
 
 function randomEabHmacKey() {
   // RFC 8555 EAB HMAC key：统一使用无填充的 base64url
@@ -55,6 +56,9 @@ export class LocalCaAcmeService {
 
   @Inject()
   sysAccessService: AccessService;
+
+  @Inject()
+  certInfoService: CertInfoService;
 
   /** 解析EAB所属CA链对应的自定义ACME颁发机构sslProvider（供普通用户自助注册账号）。 */
   private async resolveSslProvider(caId: number, providerList: any[]): Promise<string | null> {
@@ -454,6 +458,9 @@ export class LocalCaAcmeService {
       if (!bean) {
         throw new ValidateException("ACME凭证不存在或无访问权限");
       }
+      if (req.disabled === false && bean.revoked) {
+        throw new ValidateException("该EAB已因泄漏被不可恢复禁用，不能重新启用，请创建新凭证");
+      }
       if (req.disabled === false && bean.grantId) {
         const grant = await tx.getRepository(LocalCaGrantEntity).findOne({ where: { id: bean.grantId, caId: ca.id } });
         if (!grant || grant.disabled) {
@@ -648,6 +655,88 @@ export class LocalCaAcmeService {
   }
 
   /** 普通用户“我的ACME账户”：按归属过滤并校验使用权。 */
+  /** 列出某EAB注册的全部ACME账户（按注册时间升序），供泄漏处置甄别。 */
+  async listEabAccounts(req: { caId: number; eabId: string; userId: number; projectId?: number }) {
+    await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, false, true);
+    const accountRepository = this.repository.manager.getRepository(AcmeAccountEntity);
+    const accounts = await accountRepository.find({ where: { eabId: req.eabId }, order: { createTime: "ASC" } });
+    const result: any[] = [];
+    for (const account of accounts) {
+      const orderCount = await this.acmeOrderRepository.count({ where: { accountId: account.id } });
+      const issuedCount = await this.acmeOrderRepository.count({ where: { accountId: account.id, status: "valid" } });
+      result.push({
+        id: account.id,
+        status: account.status,
+        contact: account.contact ? JSON.parse(account.contact) : [],
+        createTime: account.createTime,
+        orderCount,
+        issuedCount,
+      });
+    }
+    return result;
+  }
+
+  /**
+   * EAB泄漏应急处置：不可恢复禁用该EAB，批量停用选中账户并吊销其已签发证书。
+   * 未选中的（确认安全的）账户保留可用（EAB只管注册，账户独立）。
+   */
+  async leakRevokeEab(req: { caId: number; eabId: string; accountIds: string[]; userId: number; projectId?: number }) {
+    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, true);
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用");
+    }
+    const accountIds = Array.isArray(req.accountIds) ? req.accountIds.filter(Boolean) : [];
+    // 事务内：不可恢复禁用EAB + 停用选中账户
+    await runTransaction(manager, async tx => {
+      const eabRepository = tx.getRepository(AcmeEabEntity);
+      const eab = await eabRepository.findOne({ where: { id: req.eabId, caId: ca.id } });
+      if (!eab) {
+        throw new ValidateException("EAB凭证不存在或无访问权限");
+      }
+      eab.disabled = true;
+      eab.revoked = true;
+      eab.updateTime = new Date();
+      await eabRepository.save(eab);
+      const accountRepository = tx.getRepository(AcmeAccountEntity);
+      for (const accountId of accountIds) {
+        const account = await accountRepository.findOne({ where: { id: accountId, eabId: req.eabId } });
+        if (!account) {
+          continue;
+        }
+        account.status = "deactivated";
+        account.updateTime = new Date();
+        await accountRepository.save(account);
+      }
+    });
+    // 吊销选中账户已签发的证书（逐证独立事务，避免长事务）
+    let revokedCount = 0;
+    for (const accountId of accountIds) {
+      const orders = await this.acmeOrderRepository.find({ where: { accountId, status: "valid" } });
+      for (const order of orders) {
+        if (!order.serialNumber) {
+          continue;
+        }
+        const cert = await this.certInfoService.findOne({ where: { localCaId: order.caId, serialNumber: order.serialNumber.toUpperCase() } });
+        if (!cert || cert.status === "revoked") {
+          continue;
+        }
+        await this.certInfoService.applyLocalRevocation({
+          certInfoId: cert.id,
+          caId: order.caId,
+          userId: cert.userId,
+          projectId: cert.projectId,
+          serialNumber: order.serialNumber,
+          expiresTime: cert.expiresTime,
+          reason: "EAB泄漏应急处置",
+        });
+        revokedCount++;
+      }
+    }
+    logger.info(`[local-ca] eab leak revoked ca=${ca.id} eab=${req.eabId} accounts=${accountIds.length} certs=${revokedCount} user=${req.userId}`);
+    return { disabledAccounts: accountIds.length, revokedCerts: revokedCount };
+  }
+
   async listMyAccounts(req: { userId: number; projectId?: number }) {
     const where: any[] = [];
     if (req.userId > 0) {

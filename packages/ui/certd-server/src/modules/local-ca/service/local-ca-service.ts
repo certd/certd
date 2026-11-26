@@ -1027,6 +1027,14 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.acmeService.exportMyAccount(req);
   }
 
+  async listEabAccounts(req: { caId: number; eabId: string; userId: number; projectId?: number }) {
+    return await this.acmeService.listEabAccounts(req);
+  }
+
+  async leakRevokeEab(req: { caId: number; eabId: string; accountIds: string[]; userId: number; projectId?: number }) {
+    return await this.acmeService.leakRevokeEab(req);
+  }
+
   async listMyAccounts(req: { userId: number; projectId?: number }) {
     return await this.acmeService.listMyAccounts(req);
   }

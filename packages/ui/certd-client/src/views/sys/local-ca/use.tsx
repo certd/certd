@@ -5,6 +5,7 @@ import { useModal } from "/@/use/use-modal";
 import { useI18n } from "/src/locales";
 import { getSecretAccessToken } from "/@/views/certd/access/api";
 import LocalCaArchivedRoots from "./archived-roots.vue";
+import LocalCaLeakRevoke from "./components/leak-revoke.vue";
 import { request } from "/@/api/service";
 import { localCaApi } from "./api";
 import { useStepUp } from "./use-step-up";
@@ -902,6 +903,19 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
+  async function openLeakRevoke(row: any, onDone?: () => void) {
+    model.success({
+      title: `${t("certd.localCa.leakRevokeTitle")} - ${row.name}`,
+      maskClosable: true,
+      okText: t("certd.common.close"),
+      width: 900,
+      zIndex: 1200,
+      content: () => (
+        <LocalCaLeakRevoke caId={row.caId} eabId={row.id} runStepUp={(action: () => Promise<void>) => openStepUp(t("certd.localCa.leakRevokeTitle"), t("certd.localCa.leakRevokeStepUpDesc"), action)} onDone={onDone} />
+      ),
+    });
+  }
+
   return {
     openGenerate,
     openIntermediate,
@@ -916,5 +930,6 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openArchiveCa,
     openStepUp,
     openArchivedRoots,
+    openLeakRevoke,
   };
 }

@@ -327,6 +327,21 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(await this.service.exportMyAccount({ userId, projectId, accountId: body.accountId }));
   }
 
+  @Post("/eab/accounts", { description: Constants.per.authOnly, summary: "查询某EAB注册的ACME账户（按时间，供泄漏处置）" })
+  async eabAccounts(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.checkCaAccess(body.caId, "read", false, true);
+    return this.ok(await this.service.listEabAccounts({ caId: body.caId, eabId: body.eabId, userId, projectId }));
+  }
+
+  @Post("/eab/leakRevoke", { description: Constants.per.authOnly, summary: "EAB泄漏处置：不可恢复禁用EAB并批量停用账户、吊销证书（需2FA/Passkey）" })
+  async eabLeakRevoke(@Body(ALL) body: any) {
+    this.assertStepUp(body.verifyToken, "EAB泄漏处置");
+    const { userId, projectId } = await this.checkCaAccess(body.caId, "write", true);
+    const res = await this.service.leakRevokeEab({ caId: body.caId, eabId: body.eabId, accountIds: body.accountIds, userId, projectId });
+    this.auditLog({ content: `EAB泄漏处置(ID:${body.eabId})，停用账户${res.disabledAccounts}个，吊销证书${res.revokedCerts}张` });
+    return this.ok(res);
+  }
+
   @Post("/intermediate/revoke", { description: Constants.per.authOnly, summary: "吊销中间CA并刷新Root CRL" })
   async revokeIntermediate(@Body(ALL) body: any) {
     this.assertStepUp(body.verifyToken, "吊销中间CA");
