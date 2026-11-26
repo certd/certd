@@ -130,8 +130,8 @@ async function load() {
   }
 }
 
-async function viewSecret(row: any) {
-  const secret = await localCaApi.GetMyEabSecret(row.id);
+function viewSecret(row: any) {
+  // HMAC Key 不对用户暴露，仅展示掩码；注册账号时由后端按归属校验后内部使用
   model.success({
     title: `${t("certd.localCa.acmeUsageCopySecret")} - ${row.name}`,
     maskClosable: true,
@@ -141,10 +141,13 @@ async function viewSecret(row: any) {
     content: () => (
       <a-descriptions bordered column={1} size="small">
         <a-descriptions-item label="KID">
-          <fs-copyable modelValue={secret.kid} />
+          <fs-copyable modelValue={row.kid} />
         </a-descriptions-item>
         <a-descriptions-item label="HMAC Key">
-          <fs-copyable modelValue={secret.hmacKey} />
+          <span>••••••••••••••••</span>
+        </a-descriptions-item>
+        <a-descriptions-item label=" ">
+          <span style={{ color: "#999" }}>{t("certd.localCa.acmeUsageSecretHidden")}</span>
         </a-descriptions-item>
       </a-descriptions>
     ),
