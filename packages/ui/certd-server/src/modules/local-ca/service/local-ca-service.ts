@@ -52,6 +52,28 @@ function isUniqueConstraintError(e: any) {
   return ["SQLITE_CONSTRAINT", "23505", "ER_DUP_ENTRY"].includes(code) || /UNIQUE constraint failed|duplicate key|Duplicate entry/i.test(message);
 }
 
+/**
+ * 从fullchain PEM解析叶子证书（首张证书）的NotAfter毫秒时间戳。
+ * ACME Order的expiresTime是订单TTL（数天），不是证书有效期；吊销记录/CRL与归档检查必须用证书NotAfter，
+ * 否则订单过期后吊销条目会被CRL过滤、归档会误判证书已过期。无法解析时返回null（调用方须保守处理）。
+ */
+export function leafCertNotAfterFromChain(certPem?: string | null): number | null {
+  if (!certPem) {
+    return null;
+  }
+  const match = certPem.match(/-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/);
+  if (!match) {
+    return null;
+  }
+  try {
+    const cert = new crypto.X509Certificate(match[0]);
+    const t = new Date(cert.validTo).getTime();
+    return Number.isFinite(t) ? t : null;
+  } catch {
+    return null;
+  }
+}
+
 export type LocalCaGenerateReq = {
   userId: number;
   projectId?: number;
@@ -1075,10 +1097,12 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       }
       // 系统级证书无cd_cert_info记录：复用系统证书吊销路径写入CRL（与正常ACME吊销一致）
       const effectiveCa = await this.getAcmeCa(order.caId).catch(() => null);
+      // 吊销记录有效期用叶子证书NotAfter（非订单TTL），确保证书剩余有效期内吊销条目不被CRL过滤
+      const certNotAfter = leafCertNotAfterFromChain(order.certPem);
       await this.recordSystemCertRevocation({
         caId: effectiveCa?.id ?? order.caId,
         serialNumber,
-        expiresTime: order.expiresTime,
+        expiresTime: certNotAfter ?? order.expiresTime,
         userId: order.userId ?? 0,
         projectId: order.projectId,
         certPem: order.certPem,
@@ -1778,11 +1802,20 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       const issuedSerials = new Set(issued.map(item => String(item.serialNumber || "").toUpperCase()));
       const validOrders = await this.acmeOrderRepository.find({
         where: { caId: ca.id, status: "valid" },
-        select: { serialNumber: true, expiresTime: true },
+        select: { serialNumber: true, expiresTime: true, certPem: true },
       });
       for (const order of validOrders || []) {
         const serial = String(order.serialNumber || "").toUpperCase();
-        if (!serial || issuedSerials.has(serial) || !order.expiresTime || order.expiresTime <= now) {
+        if (!serial || issuedSerials.has(serial)) {
+          continue;
+        }
+        // 用叶子证书NotAfter判断证书是否仍有效（订单expiresTime是订单TTL，不能代表证书有效期）
+        const certNotAfter = leafCertNotAfterFromChain(order.certPem);
+        if (certNotAfter == null) {
+          // 保守策略：有效订单缺少/无法解析certPem时不能当作已过期，阻止归档并报告异常
+          throw new ValidateException(`该本地CA存在无法解析有效期的ACME证书(${serial})，为安全起见不能归档，请人工核查`);
+        }
+        if (certNotAfter <= now) {
           continue;
         }
         const revoked = await this.certRevocationService.findBySerial(ca.id, serial);

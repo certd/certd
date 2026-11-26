@@ -2,13 +2,20 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import crypto, { X509Certificate } from "node:crypto";
 import { Encryptor, EncryptService } from "@certd/lib-server";
-import { LocalCaService } from "./local-ca-service.js";
+import { LocalCaService, leafCertNotAfterFromChain } from "./local-ca-service.js";
 import { LocalCaAccessService } from "./local-ca-access-service.js";
 import { LocalCaCrlService } from "./local-ca-crl-service.js";
 import { LocalCaAcmeService } from "./local-ca-acme-service.js";
-import { createCsr, createIntermediateCa, getCertSerialNumber } from "./local-ca-crypto.js";
+import { createCsr, createIntermediateCa, createRootCa, issueLeafCertificate, getCertSerialNumber } from "./local-ca-crypto.js";
 // @ts-ignore
 import * as x509 from "@peculiar/x509";
+
+async function makeLeafFullchain() {
+  const root = await createRootCa({ subject: { CN: "Leaf Test Root" }, keyType: "rsa2048", validityYears: 5 });
+  const inter = await createIntermediateCa({ rootCertPem: root.certPem, rootPrivateKeyPem: root.privateKeyPem, subject: { CN: "Leaf Test Intermediate" }, keyType: "rsa2048", validityYears: 3 });
+  const leaf = await issueLeafCertificate({ caCertPem: inter.certPem, caPrivateKeyPem: inter.privateKeyPem, domains: ["leaf.example.com"], keyType: "rsa2048", validityDays: 365 });
+  return leaf;
+}
 
 function createService() {
   const store = new Map<number, any>();
@@ -1528,10 +1535,42 @@ describe("LocalCaService 轮换生命周期与权限级联回归", () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "Rotated Archive CA" });
     await service.rotateIntermediateCa({ id, userId: 1 });
+    const leaf = await makeLeafFullchain();
     (service as any).acmeOrderRepository.find = async () => [
-      { id: "order-rot-1", caId: id, status: "valid", serialNumber: "AABBCC", expiresTime: Date.now() + 86400000 },
+      { id: "order-rot-1", caId: id, status: "valid", serialNumber: "AABBCC", expiresTime: Date.now() + 86400000, certPem: leaf.fullchainPem },
     ];
     await assert.rejects(() => service.archiveCa({ id, userId: 1 }), /未吊销且未过期/);
+  });
+
+  it("订单已过期但证书仍有效时仍阻止归档（用证书NotAfter而非订单TTL）", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Expired Order Valid Cert CA" });
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    const leaf = await makeLeafFullchain();
+    // 订单TTL已过期，但证书NotAfter仍在未来
+    (service as any).acmeOrderRepository.find = async () => [
+      { id: "order-exp-1", caId: id, status: "valid", serialNumber: "DDEEFF", expiresTime: Date.now() - 86400000, certPem: leaf.fullchainPem },
+    ];
+    await assert.rejects(() => service.archiveCa({ id, userId: 1 }), /未吊销且未过期/);
+  });
+
+  it("有效订单缺少certPem时保守阻止归档", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Missing CertPem CA" });
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    (service as any).acmeOrderRepository.find = async () => [
+      { id: "order-nopem", caId: id, status: "valid", serialNumber: "112233", expiresTime: Date.now() - 86400000, certPem: null },
+    ];
+    await assert.rejects(() => service.archiveCa({ id, userId: 1 }), /无法解析有效期/);
+  });
+
+  it("leafCertNotAfterFromChain取叶子证书NotAfter而非中间CA", async () => {
+    const leaf = await makeLeafFullchain();
+    const parsed = leafCertNotAfterFromChain(leaf.fullchainPem);
+    const leafCert = new X509Certificate(leaf.certPem);
+    assert.equal(parsed, new Date(leafCert.validTo).getTime());
+    assert.equal(leafCertNotAfterFromChain(null), null);
+    assert.equal(leafCertNotAfterFromChain("not-a-pem"), null);
   });
 
   it("归档的已轮换CA仍沿旧ID指向新CA（ACME连续性）", async () => {
