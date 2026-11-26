@@ -114,7 +114,8 @@ export class PipelineLogger implements ILogger {
   }
 
   addSecret(secret: string) {
-    if (!secret) {
+    // 仅登记字符串密钥；非字符串（对象/数字）跳过，避免脱敏循环调用includes崩溃
+    if (!secret || typeof secret !== "string") {
       return;
     }
     this._secrets.push(secret);
@@ -124,7 +125,7 @@ export class PipelineLogger implements ILogger {
     let text = args.join(" ");
     if (this.customWriter) {
       for (const item of this._secrets) {
-        if (item == null) {
+        if (item == null || typeof item !== "string") {
           continue;
         }
         if (item.includes(text)) {
