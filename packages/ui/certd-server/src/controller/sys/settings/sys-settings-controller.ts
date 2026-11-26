@@ -9,6 +9,7 @@ import { http, logger, utils } from "@certd/basic";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { SmsServiceFactory } from "../../../modules/basic/sms/factory.js";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { RegisterInviteService, resolveRegisterMode } from "../../../modules/login/service/register-invite-service.js";
 
 /**
  */
@@ -25,6 +26,8 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   codeService: CodeService;
   @Inject()
   addonService: AddonService;
+  @Inject()
+  registerInviteService: RegisterInviteService;
   getService() {
     return this.service;
   }
@@ -134,6 +137,7 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   async saveSysSettings(@Body(ALL) body: { public: SysPublicSettings; private: SysPrivateSettings }) {
     const publicSettings = await this.service.getPublicSettings();
     const privateSettings = await this.service.getPrivateSettings();
+    const previousMode = resolveRegisterMode(publicSettings);
     merge(publicSettings, body.public);
     merge(privateSettings, body.private);
     // customAcmeProviders 是数组，lodash merge 按下标合并，删除/调整顺序不会生效，需整体替换
@@ -142,6 +146,14 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
     }
     await this.service.savePublicSettings(publicSettings);
     await this.service.savePrivateSettings(privateSettings);
+    // 受邀 -> 开放：失效所有未使用的邀请链接，避免切回受邀后旧链接复活
+    const newMode = resolveRegisterMode(publicSettings);
+    if (newMode === "open" && previousMode !== "open") {
+      const invalidated = await this.registerInviteService.invalidateUnused();
+      if (invalidated > 0) {
+        await this.auditLog({ content: `切换到开放注册，失效${invalidated}条未使用邀请链接` });
+      }
+    }
     await this.auditLog({ content: "保存了系统设置" });
     return this.ok({});
   }

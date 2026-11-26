@@ -188,6 +188,41 @@ describe("RegisterInviteService", () => {
     assert.ok(setValues.disabledTime > 0);
   });
 
+  it("invalidateUnused 失效所有未使用邀请（切换到开放注册）", async () => {
+    const service = createService();
+    const conditions: string[] = [];
+    let setValues: any;
+    (service as any).repository = {
+      createQueryBuilder() {
+        return {
+          update() {
+            return this;
+          },
+          set(values: any) {
+            setValues = values;
+            return this;
+          },
+          where(sql: string) {
+            conditions.push(sql);
+            return this;
+          },
+          andWhere(sql: string) {
+            conditions.push(sql);
+            return this;
+          },
+          async execute() {
+            return { affected: 3 };
+          },
+        };
+      },
+    };
+    assert.equal(await service.invalidateUnused(), 3);
+    assert.ok(conditions.some(c => /used_time IS NULL/.test(c)));
+    assert.ok(conditions.some(c => /disabled = :disabled/.test(c)));
+    assert.equal(setValues.disabled, true);
+    assert.ok(setValues.disabledTime > 0);
+  });
+
   it("cleanupInvalid 惰性清理过期/禁用未使用链接并60s节流", async () => {
     const service = createService();
     RegisterInviteService.resetCleanupForTest();

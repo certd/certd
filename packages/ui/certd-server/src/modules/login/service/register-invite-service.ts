@@ -155,6 +155,12 @@ export class RegisterInviteService extends BaseService<RegisterInviteEntity> {
     return (result.affected || 0) > 0;
   }
 
+  /** 失效所有未使用的邀请链接（切换到开放注册时调用）：批量禁用，立即失效并从列表隐藏。 */
+  async invalidateUnused() {
+    const result = await this.repository.createQueryBuilder().update().set({ disabled: true, disabledTime: Date.now() }).where("used_time IS NULL").andWhere("disabled = :disabled", { disabled: false }).execute();
+    return result.affected || 0;
+  }
+
   private static lastCleanupAt = 0;
 
   static resetCleanupForTest() {
