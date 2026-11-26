@@ -417,11 +417,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               return (
                 <a-switch
                   size="small"
-                  checked={row.disabled}
-                  checkedChildren={t("common.disabled")}
-                  unCheckedChildren={t("common.enabled")}
+                  checked={!row.disabled}
+                  checkedChildren={t("common.enabled")}
+                  unCheckedChildren={t("common.disabled")}
                   onChange={async (checked: any) => {
-                    if (!checked) {
+                    if (checked) {
+                      // 开启需二次验证：走启用流程
                       await openEnableCa(row);
                       return;
                     }

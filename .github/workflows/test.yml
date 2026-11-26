@@ -1,0 +1,49 @@
+name: test
+
+# PR #844 安全测试纳入CI：构建核心包后执行 ACME Client 与 certd-server 安全相关单测，
+# 失败即阻止合并。server 的 test 脚本经 .mocharc.json 已覆盖 src/**/*.test.ts 与 test/**/*.test.ts。
+on:
+  push:
+    branches: ['v2-dev']
+  pull_request:
+    branches: ['v2-dev']
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        run: npm install -g pnpm@10.33.4
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build workspace packages
+        run: npx lerna run build
+
+      - name: ACME Client unit tests
+        run: pnpm --filter @certd/acme-client run test:unit
+
+      - name: certd-server security unit tests
+        run: |
+          cd packages/ui/certd-server
+          npx cross-env NODE_ENV=unittest mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \
+            "src/modules/local-ca/**/*.test.ts" \
+            "src/modules/acme-server/**/*.test.ts" \
+            "src/middleware/acme-access.test.ts" \
+            "src/modules/cert/service/migration-*.test.ts" \
+            "src/plugins/plugin-cert/access/acme-account-access.test.ts" \
+            "test/**/*.test.ts"

@@ -19,7 +19,10 @@ export class AcmeAccessMiddleware implements IWebMiddleware {
       } catch {
         decodedPath = ctx.path;
       }
-      const match = decodedPath.match(/^\/api\/acme\/(\d+)(\/|$)/);
+      // 防御性归一化（大小写+重复斜杠）：即使路由层对路径变体大小写不敏感或规范化，门禁仍能识别并拦截，
+      // 避免出现"Controller可处理但门禁未执行"的绕过。归一化仅用于门禁匹配，不影响后续路由使用原始ctx.path。
+      const normalizedPath = decodedPath.toLowerCase().replace(/\/{2,}/g, "/");
+      const match = normalizedPath.match(/^\/api\/acme\/(\d+)(\/|$)/);
       if (!match) {
         await next();
         return;
@@ -33,11 +36,11 @@ export class AcmeAccessMiddleware implements IWebMiddleware {
       }
       const caId = Number(segment);
       // 吊销端点保留历史证书吊销能力：签发服务关闭/CA禁用后仍允许（账户认证与网络门禁不变）
-      const isRevoke = /\/revoke-cert\/?$/.test(decodedPath);
+      const isRevoke = /\/revoke-cert\/?$/.test(normalizedPath);
       try {
         await service.assertAccess(ctx, caId, { revoke: isRevoke });
         // 未认证引导端点额外按来源IP限速，防止nonce耗尽与账户批量注册滥用
-        if (/\/(directory|new-nonce|new-account)\/?$/.test(decodedPath)) {
+        if (/\/(directory|new-nonce|new-account)\/?$/.test(normalizedPath)) {
           await service.assertBootstrapRateLimit(ctx, caId);
         }
       } catch (e: any) {

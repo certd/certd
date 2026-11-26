@@ -41,11 +41,23 @@ describe("ACME访问门禁路径规范化", () => {
     assert.ok(calls.some(c => c.type === "assertAccess" && c.caId === 123));
   });
 
-  it("大小写变体不匹配门禁正则（与路由大小写敏感一致，路由层返回404）", async () => {
-    for (const path of ["/API/ACME/123/directory", "/Api/Acme/123/directory", "/api/ACME/123/directory"]) {
-      const { calls, nextCalled } = await run(path);
-      assert.equal(calls.length, 0, path + " 不应触发门禁（路由层不匹配）");
-      assert.ok(nextCalled, path + " 交由路由层处理（404）");
+  it("大小写变体经归一化后仍执行门禁（防路由层大小写不敏感绕过）", async () => {
+    for (const path of ["/API/ACME/123/directory", "/Api/Acme/123/directory", "/api/ACME/123/directory", "/API/ACME/123/REVOKE-CERT"]) {
+      const { calls } = await run(path);
+      assert.ok(
+        calls.some(c => c.type === "assertAccess" && c.caId === 123),
+        path + " 必须经门禁"
+      );
+    }
+  });
+
+  it("重复斜杠经归一化后仍执行门禁", async () => {
+    for (const path of ["//api//acme//123//directory", "/api/acme/123//new-nonce"]) {
+      const { calls } = await run(path);
+      assert.ok(
+        calls.some(c => c.type === "assertAccess" && c.caId === 123),
+        path + " 必须经门禁"
+      );
     }
   });
 
@@ -62,7 +74,10 @@ describe("ACME访问门禁路径规范化", () => {
   it("引导端点触发限速", async () => {
     for (const ep of ["directory", "new-nonce", "new-account"]) {
       const { calls } = await run(`/api/acme/123/${ep}`);
-      assert.ok(calls.some(c => c.type === "rateLimit" && c.caId === 123), ep);
+      assert.ok(
+        calls.some(c => c.type === "rateLimit" && c.caId === 123),
+        ep
+      );
     }
   });
 
