@@ -212,6 +212,7 @@ export default {
     "Normal credentials require domain validation before issuance. Privileged credentials bypass domain validation, subject to the allowed domains. Creation and upgrade of privileged credentials are restricted to the CA owner.",
   eabUpgrade: "Upgrade",
   eabDowngrade: "Downgrade",
+  eabLeaked: "Leaked",
   leakRevokeTitle: "Leak Response",
   leakRevokeHint:
     "Select accounts confirmed as unauthorized. The EAB will be irreversibly disabled, selected accounts deactivated and their issued certificates revoked; unselected accounts remain usable. Create a new EAB afterwards for future registration.",
@@ -317,6 +318,7 @@ export default {
   acmeAccountValid: "Valid",
   acmeAccountDisabled: "Deactivated",
   acmeAccountEabInactive: "EAB Inactive",
+  acmeAccountRisk: "At Risk",
   acmeAccountId: "Account ID",
   acmeAccountEab: "Bound EAB",
   acmeAccountNoEab: "No EAB",

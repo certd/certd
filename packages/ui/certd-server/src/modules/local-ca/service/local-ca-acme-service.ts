@@ -486,11 +486,18 @@ export class LocalCaAcmeService {
     const chainCas = await this.repository.find({ where: { id: In(chain) } });
     const caNameMap = new Map(chainCas.map(item => [item.id, item.name]));
     const list = await this.acmeEabRepository.find({ where: { caId: In(chain) }, order: { createTime: "DESC" } });
-    const accounts = await this.repository.manager.getRepository(AcmeAccountEntity).find({ where: { caId: ca.id }, select: { id: true, eabId: true } });
+    const eabIds = list.map(item => item.id);
+    const accounts = eabIds.length
+      ? await this.repository.manager.getRepository(AcmeAccountEntity).find({ where: { eabId: In(eabIds) }, select: { id: true, eabId: true, status: true } })
+      : [];
     const countByEab = new Map<string, number>();
+    const riskByEab = new Map<string, number>();
     for (const acc of accounts) {
       if (acc.eabId) {
         countByEab.set(acc.eabId, (countByEab.get(acc.eabId) || 0) + 1);
+        if (acc.status === "deactivated") {
+          riskByEab.set(acc.eabId, (riskByEab.get(acc.eabId) || 0) + 1);
+        }
       }
     }
     return list.map(item => ({
@@ -504,12 +511,14 @@ export class LocalCaAcmeService {
       usedCount: item.usedCount,
       expiresTime: item.expiresTime,
       disabled: item.disabled,
+      revoked: item.revoked === true,
       privileged: item.privileged === true,
       grantId: item.grantId,
       userId: item.userId,
       projectId: item.projectId,
       remark: item.remark,
       accountCount: countByEab.get(item.id) || 0,
+      riskAccountCount: riskByEab.get(item.id) || 0,
       createTime: item.createTime,
     }));
   }

@@ -4,7 +4,9 @@
     <a-table :data-source="accounts" :loading="loading" :pagination="{ pageSize: 20, showSizeChanger: true }" row-key="id" size="small">
       <a-table-column :title="t('certd.localCa.acmeStatus')" :width="90">
         <template #default="{ record }">
-          <a-tag :color="record.status === 'valid' ? 'green' : 'orange'">{{ record.status === "valid" ? t("certd.localCa.acmeAccountValid") : t("certd.localCa.acmeAccountDisabled") }}</a-tag>
+          <a-tag v-if="record.status === 'valid'" color="green">{{ t("certd.localCa.acmeAccountValid") }}</a-tag>
+          <a-tag v-else-if="record.eabRevoked" color="red">{{ t("certd.localCa.acmeAccountRisk") }}</a-tag>
+          <a-tag v-else color="orange">{{ t("certd.localCa.acmeAccountDisabled") }}</a-tag>
         </template>
       </a-table-column>
       <a-table-column :title="t('certd.localCa.acmeAccountId')" data-index="id" :width="190" ellipsis />
@@ -37,7 +39,7 @@
           <div class="local-ca-row-actions">
             <a-button v-if="record.eabId" type="link" size="small" @click="viewEab(record)">{{ t("certd.localCa.acmeViewEab") }}</a-button>
             <a-button type="link" size="small" @click="viewOrders(record)">{{ t("certd.localCa.acmeViewOrders") }}</a-button>
-            <a-button type="link" size="small" :danger="record.status === 'valid'" @click="toggleStatus(record)">
+            <a-button v-if="record.status === 'valid' || !record.eabRevoked" type="link" size="small" :danger="record.status === 'valid'" @click="toggleStatus(record)">
               {{ record.status === "valid" ? t("certd.common.disabled") : t("certd.common.enabled") }}
             </a-button>
           </div>

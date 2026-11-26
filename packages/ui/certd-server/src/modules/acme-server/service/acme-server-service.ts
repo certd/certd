@@ -586,6 +586,7 @@ export class AcmeServerService {
         eabName: eab?.name || null,
         eabPrivileged: eab?.privileged === true,
         eabDisabled: eab?.disabled === true,
+        eabRevoked: eab?.revoked === true,
         userId: account.userId,
         projectId: account.projectId,
         createTime: account.createTime,
@@ -655,6 +656,13 @@ export class AcmeServerService {
     const account = await this.accountRepository.findOne({ where: { id: accountId, caId: In(chain.map(item => item.id)) } });
     if (!account) {
       throw new AcmeProblem("unauthorized", "ACME账户不存在", 404);
+    }
+    // 泄漏处置（EAB已不可恢复禁用）的账户禁止重新启用，避免绕过泄漏处置
+    if (status === "valid" && account.eabId) {
+      const eab = await this.eabRepository.findOne({ where: { id: account.eabId } });
+      if (eab?.revoked) {
+        throw new AcmeProblem("unauthorized", "该账户因EAB泄漏已被处置，不能重新启用", 403);
+      }
     }
     account.status = status;
     account.updateTime = new Date();

@@ -207,6 +207,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           leakRevoke: {
             type: "link",
             text: t("certd.localCa.leakRevokeTitle"),
+            show: compute(({ row }) => !(row.accountCount > 0 && row.riskAccountCount >= row.accountCount)),
             click: async ({ row }) => {
               await context.openLeakRevoke(row, () => crudExpose.doRefresh());
             },
@@ -248,14 +249,21 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             width: 100,
             align: "center",
-            component: {
-              name: "fs-dict-switch",
-              vModel: "checked",
-              on: {
-                async change({ row, $event }) {
-                  await toggleDisabled(row, $event === true);
-                },
-              },
+            cellRender({ row }) {
+              if (row.revoked) {
+                return <a-tag color="red">{t("certd.localCa.eabLeaked")}</a-tag>;
+              }
+              return (
+                <a-switch
+                  size="small"
+                  checked={row.disabled}
+                  checkedChildren={t("common.disabled")}
+                  unCheckedChildren={t("common.enabled")}
+                  onChange={async (checked: any) => {
+                    await toggleDisabled(row, checked === true);
+                  }}
+                />
+              );
             },
           },
         },

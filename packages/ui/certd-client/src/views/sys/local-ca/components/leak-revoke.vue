@@ -1,14 +1,15 @@
 <template>
   <div class="local-ca-leak-revoke">
     <a-alert type="warning" show-icon class="mb-3" :message="t('certd.localCa.leakRevokeHint')" />
-    <a-table :data-source="accounts" :loading="loading" :pagination="false" row-key="id" size="small" :row-selection="{ selectedRowKeys: selectedKeys, onChange: onSelectChange }">
+    <a-table :data-source="accounts" :loading="loading" :pagination="false" row-key="id" size="small" :row-selection="{ selectedRowKeys: selectedKeys, onChange: onSelectChange, getCheckboxProps: checkboxProps }">
       <a-table-column :title="t('certd.localCa.acmeAccountId')" data-index="id" :width="200" ellipsis />
       <a-table-column :title="t('certd.localCa.acmeEmail')" :width="180" ellipsis>
         <template #default="{ record }">{{ emailText(record) }}</template>
       </a-table-column>
-      <a-table-column :title="t('certd.localCa.acmeStatus')" :width="90">
+      <a-table-column :title="t('certd.localCa.acmeStatus')" :width="100">
         <template #default="{ record }">
-          <a-tag :color="record.status === 'valid' ? 'green' : 'orange'">{{ record.status === "valid" ? t("certd.localCa.acmeAccountValid") : t("certd.localCa.acmeAccountDisabled") }}</a-tag>
+          <a-tag v-if="record.status === 'valid'" color="green">{{ t("certd.localCa.acmeAccountValid") }}</a-tag>
+          <a-tag v-else color="red">{{ t("certd.localCa.acmeAccountRisk") }}</a-tag>
         </template>
       </a-table-column>
       <a-table-column :title="t('certd.localCa.acmeOrders')" data-index="orderCount" :width="80" align="center" />
@@ -60,6 +61,10 @@ function emailText(record: any) {
 }
 function onSelectChange(keys: string[]) {
   selectedKeys.value = keys;
+}
+function checkboxProps(record: any) {
+  // 已处置（存在隐患）的账户置灰，不可重复勾选
+  return { disabled: record.status !== "valid" };
 }
 
 async function load() {
