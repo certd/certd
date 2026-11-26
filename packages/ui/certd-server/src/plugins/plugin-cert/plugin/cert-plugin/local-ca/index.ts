@@ -198,6 +198,13 @@ export class CertApplyLocalCa extends CertApplyPlugin {
   })
   validityDays = 365;
 
+  // 自定义起止时间仅保留接口（供补签历史证书等程序化场景），不在表单展示给用户
+  @TaskInput({ title: "生效时间", show: false, required: false })
+  notBefore?: number;
+
+  @TaskInput({ title: "失效时间", show: false, required: false })
+  notAfter?: number;
+
   private localCa?: LocalCaSubscribeInfo;
   private resolvedDirectoryUrl?: string;
   private directCertMeta?: { localCaId: number; serialNumber: string };
@@ -442,6 +449,8 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       domains: this.domains,
       keyType: this.keyType,
       validityDays: Math.max(1, Number(this.validityDays || 365)),
+      notBefore: Number(this.notBefore) || undefined,
+      notAfter: Number(this.notAfter) || undefined,
     });
     this.directCertMeta = { localCaId: ca.id, serialNumber: result.serialNumber };
     this.registerSecret(result.key);
