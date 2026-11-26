@@ -30,6 +30,7 @@ export default {
   auditLog: "Audit Log",
   userSecurity: "Security Settings",
   userProfile: "Account Info",
+  myAcme: "My ACME",
   userGrant: "Grant Delegation",
   mySuite: "My Suite",
   suiteBuy: "Suite Purchase",

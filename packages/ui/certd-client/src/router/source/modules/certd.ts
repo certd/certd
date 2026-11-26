@@ -1,4 +1,5 @@
 import { useProjectStore } from "/@/store/project";
+import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 
 export const certdResources = [
@@ -323,6 +324,19 @@ export const certdResources = [
               icon: "fluent:shield-keyhole-16-regular",
               auth: true,
               isMenu: true,
+            },
+          },
+          {
+            title: "certd.navigation.myAcme",
+            name: "MyAcme",
+            path: "/cert/mine/acme",
+            component: "/certd/mine/acme/index.vue",
+            meta: {
+              icon: "ph:certificate",
+              auth: true,
+              isMenu: true,
+              keepAlive: true,
+              show: () => useUserStore().localCaAccessible,
             },
           },
           {

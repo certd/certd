@@ -1,6 +1,5 @@
 <template>
   <div class="local-ca-acme-usage">
-    <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.acmeUsageHint')" />
     <div class="acme-usage-toolbar">
       <a-button type="primary" @click="openCreatePipeline">{{ t("certd.localCa.acmeUsageCreatePipeline") }}</a-button>
       <a-button @click="load">{{ t("certd.localCa.refresh") }}</a-button>

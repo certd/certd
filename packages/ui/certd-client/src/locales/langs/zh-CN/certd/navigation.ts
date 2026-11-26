@@ -30,6 +30,7 @@ export default {
   auditLog: "操作日志",
   userSecurity: "认证安全设置",
   userProfile: "账号信息",
+  myAcme: "我的ACME",
   userGrant: "授权委托",
   mySuite: "我的套餐",
   suiteBuy: "套餐购买",
