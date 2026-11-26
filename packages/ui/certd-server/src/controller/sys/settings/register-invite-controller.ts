@@ -46,7 +46,7 @@ export class RegisterInviteController extends BaseController {
     this.assertAdmin();
     const ok = await this.service.disable(Number(body?.id));
     if (!ok) {
-      throw new Error("邀请链接不存在、已使用或已禁用，无法禁用");
+      throw new Error("邀请链接不存在、已使用、已过期或已禁用，无法禁用");
     }
     await this.auditLog({ content: `禁用注册邀请链接(ID:${body.id})` });
     return this.ok({});

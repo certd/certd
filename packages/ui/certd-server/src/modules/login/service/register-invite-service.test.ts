@@ -180,8 +180,42 @@ describe("RegisterInviteService", () => {
     assert.equal(await service.disable(5), true);
     assert.ok(conditions.some(c => /used_time IS NULL/.test(c)));
     assert.ok(conditions.some(c => /disabled = :disabled/.test(c)));
+    assert.ok(
+      conditions.some(c => /expires_time > :now/.test(c)),
+      "已过期的不允许禁用"
+    );
     assert.equal(setValues.disabled, true);
     assert.ok(setValues.disabledTime > 0);
+  });
+
+  it("cleanupInvalid 惰性清理过期/禁用未使用链接并60s节流", async () => {
+    const service = createService();
+    RegisterInviteService.resetCleanupForTest();
+    const sql: string[] = [];
+    (service as any).repository = {
+      createQueryBuilder() {
+        return {
+          delete() {
+            return this;
+          },
+          where(s: string) {
+            sql.push(s);
+            return this;
+          },
+          andWhere(s: string) {
+            sql.push(s);
+            return this;
+          },
+          async execute() {
+            return { affected: 2 };
+          },
+        };
+      },
+    };
+    assert.equal(await service.cleanupInvalid(), 2);
+    assert.equal(await service.cleanupInvalid(), 0, "60s 内应节流");
+    assert.ok(sql.some(s => /used_time IS NULL/.test(s)));
+    assert.ok(sql.some(s => /expires_time <= :now OR disabled = :disabled/.test(s)));
   });
 
   it("按IP限流：注册7次/分钟，状态30次/分钟，错误token也计数", () => {

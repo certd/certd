@@ -46,6 +46,14 @@ export class RegisterInviteService extends BaseService<RegisterInviteEntity> {
     const key = `${kind}:${String(ip || "unknown")}`;
     const max = RegisterInviteService.RATE_MAX[kind];
     const now = Date.now();
+    // 惰性清理：桶数量较多时顺带移除已过窗口的旧记录，避免长期累积
+    if (RegisterInviteService.rateBuckets.size > 500) {
+      for (const [k, v] of RegisterInviteService.rateBuckets) {
+        if (now - v.windowStart >= RegisterInviteService.RATE_WINDOW_MS) {
+          RegisterInviteService.rateBuckets.delete(k);
+        }
+      }
+    }
     const bucket = RegisterInviteService.rateBuckets.get(key);
     if (!bucket || now - bucket.windowStart >= RegisterInviteService.RATE_WINDOW_MS) {
       RegisterInviteService.rateBuckets.set(key, { windowStart: now, count: 1 });
@@ -133,7 +141,7 @@ export class RegisterInviteService extends BaseService<RegisterInviteEntity> {
     return (result.affected || 0) > 0;
   }
 
-  /** 禁用未使用的邀请链接：条件 UPDATE 原子生效，禁用后立即无法用于注册。 */
+  /** 禁用未使用且未过期的邀请链接：条件 UPDATE 原子生效，禁用后立即无法用于注册。 */
   async disable(id: number) {
     const result = await this.repository
       .createQueryBuilder()
@@ -142,8 +150,29 @@ export class RegisterInviteService extends BaseService<RegisterInviteEntity> {
       .where("id = :id", { id })
       .andWhere("used_time IS NULL")
       .andWhere("disabled = :disabled", { disabled: false })
+      .andWhere("expires_time > :now", { now: Date.now() })
       .execute();
     return (result.affected || 0) > 0;
+  }
+
+  private static lastCleanupAt = 0;
+
+  static resetCleanupForTest() {
+    RegisterInviteService.lastCleanupAt = 0;
+  }
+
+  /**
+   * 惰性清理：删除“未使用且（已过期或已禁用）”的邀请链接。
+   * 仅在打开注册页（状态查询）时触发，并用 60s 节流避免频繁写库。
+   */
+  async cleanupInvalid() {
+    const now = Date.now();
+    if (now - RegisterInviteService.lastCleanupAt < 60 * 1000) {
+      return 0;
+    }
+    RegisterInviteService.lastCleanupAt = now;
+    const result = await this.repository.createQueryBuilder().delete().where("used_time IS NULL").andWhere("(expires_time <= :now OR disabled = :disabled)", { now, disabled: true }).execute();
+    return result.affected || 0;
   }
 
   /** 更新备注（业务信息，不影响校验）。 */

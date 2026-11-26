@@ -58,6 +58,8 @@ export class RegisterController extends BaseController {
     const pub = await this.sysSettingsService.getPublicSettings();
     const mode = resolveRegisterMode(pub);
     this.registerInviteService.assertRateLimit(remoteIp, "status");
+    // 打开注册页时惰性清理“已过期/已禁用且未使用”的邀请链接（服务内 60s 节流）
+    await this.registerInviteService.cleanupInvalid().catch(() => undefined);
     if (mode === "open") {
       return this.ok({ mode: "open", canRegister: true, methods: this.publicMethods(pub) });
     }
