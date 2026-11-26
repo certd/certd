@@ -1,6 +1,6 @@
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { In, Repository } from "typeorm";
+import { EntityManager, In, Repository } from "typeorm";
 import { ValidateException } from "@certd/lib-server";
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { LocalCaAdminEntity } from "../entity/local-ca-admin.js";
@@ -53,13 +53,14 @@ export class LocalCaAccessService {
     return access;
   }
 
-  async addAdminAccess(caId: number, adminUserId: number, role = "owner") {
-    const existing = await this.findAdminAccess(caId, adminUserId);
+  async addAdminAccess(caId: number, adminUserId: number, role = "owner", manager?: EntityManager) {
+    const repository = manager ? manager.getRepository(LocalCaAdminEntity) : this.adminRepository;
+    const existing = await repository.findOne({ where: { caId, adminUserId } });
     if (existing) {
-      await this.adminRepository.update({ id: existing.id }, { role, updateTime: new Date() });
+      await repository.update({ id: existing.id }, { role, updateTime: new Date() });
       return;
     }
-    await this.adminRepository.save(this.adminRepository.create({ caId, adminUserId, role }));
+    await repository.save(repository.create({ caId, adminUserId, role }));
   }
 
   async assertAdminCa(caId: number, adminUserId: number, requireOwner = false) {
@@ -270,18 +271,20 @@ export class LocalCaAccessService {
   /**
    * 轮换中间CA时把旧CA的管理员（不含owner）与有效授权复制到新CA。
    */
-  async copyAdminsAndGrants(fromCaId: number, toCaId: number, createdByAdminId: number) {
-    await this.addAdminAccess(toCaId, createdByAdminId, "owner");
-    const oldAdmins = await this.adminRepository.find({ where: { caId: fromCaId } });
+  async copyAdminsAndGrants(fromCaId: number, toCaId: number, createdByAdminId: number, manager?: EntityManager) {
+    await this.addAdminAccess(toCaId, createdByAdminId, "owner", manager);
+    const adminRepository = manager ? manager.getRepository(LocalCaAdminEntity) : this.adminRepository;
+    const grantRepository = manager ? manager.getRepository(LocalCaGrantEntity) : this.grantRepository;
+    const oldAdmins = await adminRepository.find({ where: { caId: fromCaId } });
     for (const admin of oldAdmins) {
       if (admin.role !== "owner") {
-        await this.addAdminAccess(toCaId, admin.adminUserId, "operator");
+        await this.addAdminAccess(toCaId, admin.adminUserId, "operator", manager);
       }
     }
-    const oldGrants = await this.grantRepository.find({ where: { caId: fromCaId, disabled: false } });
+    const oldGrants = await grantRepository.find({ where: { caId: fromCaId, disabled: false } });
     for (const grant of oldGrants) {
-      await this.grantRepository.save(
-        this.grantRepository.create({
+      await grantRepository.save(
+        grantRepository.create({
           caId: toCaId,
           userId: grant.userId,
           projectId: grant.projectId,

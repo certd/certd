@@ -349,14 +349,26 @@ async function getAuthoritativeDnsResolver(recordName, logger = log, customServe
  */
 
 async function retrieveTlsAlpnCertificate(host, port, timeout = 30000) {
+    // 与HTTP-01一致：校验全部解析地址为公网单播，并固定到首个合格地址连接，防SSRF与DNS重绑定
+    const addresses = await dns.lookup(host, { all: true, verbatim: true });
+    if (!addresses.length) {
+        throw new Error(`[error] 域名解析失败：${host}`);
+    }
+    for (const item of addresses) {
+        if (!isPublicUnicastIp(item.address)) {
+            throw new Error(`[error] TLS-ALPN挑战目标指向非公网地址，已拒绝预检：${host} -> ${item.address}`);
+        }
+    }
+    const pinned = addresses[0];
     return new Promise((resolve, reject) => {
         let result;
 
-        /* TLS connection */
+        /* TLS connection（连接固定IP，SNI仍用原域名） */
         const socket = tls.connect({
-            host,
+            host: pinned.address,
             port,
             servername: host,
+            family: pinned.family,
             rejectUnauthorized: false,
             ALPNProtocols: ['acme-tls/1'],
         });
@@ -429,10 +441,16 @@ export function isPublicUnicastIp(ip) {
     if (net.isIP(addr) === 6) {
         const lower = addr.toLowerCase();
         if (lower === '::' || lower === '::1') return false;
-        if (lower.startsWith('fc') || lower.startsWith('fd')) return false;
-        if (lower.startsWith('fe8') || lower.startsWith('fe9') || lower.startsWith('fea') || lower.startsWith('feb')) return false;
-        if (lower.startsWith('2001:db8')) return false;
         if (lower.startsWith('::ffff:')) return false;
+        const parts = lower.split(':');
+        const g0 = parseInt(parts[0] || '0', 16);
+        const g1 = parseInt(parts[1] || '0', 16);
+        if ((g0 & 0xfe00) === 0xfc00) return false; // fc00::/7 唯一本地地址
+        if ((g0 & 0xffc0) === 0xfe80) return false; // fe80::/10 链路本地
+        if (g0 === 0x2001 && g1 <= 0x01ff) return false; // 2001::/23 IETF协议分配（含ORCHID）
+        if (g0 === 0x2001 && g1 === 0x0db8) return false; // 2001:db8::/32 文档地址
+        if (g0 === 0x2002) return false; // 2002::/16 6to4
+        if (g0 === 0x3fff && (g1 & 0xf000) === 0) return false; // 3fff::/20 保留
         return true;
     }
     return false;

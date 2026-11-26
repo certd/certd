@@ -75,7 +75,6 @@ class HttpClient {
 
     async request(url, method, opts = {}) {
         // 仅替换实际传输地址；signedRequest 已在映射前用 ACME 原始 URL 生成 JWS，协议要求两者保持一致。
-        let mapped = false;
         if (this.urlMapping && this.urlMapping.enabled && this.urlMapping.mappings) {
             // eslint-disable-next-line no-restricted-syntax
             for (const key in this.urlMapping.mappings) {
@@ -84,7 +83,6 @@ class HttpClient {
                     const newUrl = url.replace(key, value);
                     this.log(`use reverse proxy: ${newUrl}`);
                     url = newUrl;
-                    mapped = true;
                 }
             }
         }
@@ -96,8 +94,8 @@ class HttpClient {
         if (typeof opts.headers === 'undefined') {
             opts.headers = {};
         }
-        // 经代理映射转发的请求不附加内部凭证头，防止凭证外带到代理主机
-        opts.headers = { ...(mapped ? {} : this.extraHeaders), ...opts.headers };
+        // 内部凭证头仅发往与目录同源的可信目标：经代理映射转发的跨源请求不附加，未匹配映射的跨源目标也不附加
+        opts.headers = { ...(this.isSameOriginAsDirectory(url) ? this.extraHeaders : {}), ...opts.headers };
 
         opts.headers['Content-Type'] = 'application/jose+json';
 
@@ -218,22 +216,38 @@ class HttpClient {
     /**
      * 出站策略：目录返回的资源URL须与管理员配置的目录地址同源，
      * 防止被篡改/恶意的目录把携带账户密钥签名的请求引导至其它主机（凭证外泄/SSRF）。
-     * 显式启用反向代理URL映射时视为管理员主动改写出站目标，跳过同源约束。
+     * 仅当资源URL确实匹配可信反向代理映射规则时才允许跨源；未匹配映射仍执行同源检查，
+     * 避免“开启映射即整体放行”把内部凭证头发往非预期主机。
      */
     assertResourceSameOrigin(resource, resourceUrl) {
-        if (this.urlMapping && this.urlMapping.enabled) {
+        if (this.matchesMapping(resourceUrl)) {
             return;
         }
-        let dirOrigin;
-        let resOrigin;
-        try {
-            dirOrigin = new URL(this.directoryUrl).origin;
-            resOrigin = new URL(resourceUrl).origin;
-        } catch {
-            throw new Error(`ACME目录资源地址不合法：${resource}=${resourceUrl}`);
-        }
-        if (resOrigin !== dirOrigin) {
+        if (!this.isSameOriginAsDirectory(resourceUrl)) {
             throw new Error(`ACME目录资源「${resource}」与目录地址不同源，已拒绝出站：${resourceUrl}`);
+        }
+    }
+
+    /** 资源URL是否命中可信反向代理映射规则。 */
+    matchesMapping(url) {
+        if (!(this.urlMapping && this.urlMapping.enabled && this.urlMapping.mappings)) {
+            return false;
+        }
+        // eslint-disable-next-line no-restricted-syntax
+        for (const key in this.urlMapping.mappings) {
+            if (url.includes(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 目标URL是否与目录地址同源（非法URL视为不同源）。 */
+    isSameOriginAsDirectory(url) {
+        try {
+            return new URL(url).origin === new URL(this.directoryUrl).origin;
+        } catch {
+            return false;
         }
     }
 

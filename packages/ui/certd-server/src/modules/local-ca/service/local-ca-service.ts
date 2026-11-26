@@ -7,7 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { EntityManager, In, Like, Repository } from "typeorm";
+import { EntityManager, In, IsNull, Like, Repository } from "typeorm";
 import { BaseService, EncryptService, PageReq, SysSettingsService, ValidateException } from "@certd/lib-server";
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { LocalCaAdminEntity } from "../entity/local-ca-admin.js";
@@ -681,16 +681,35 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.deleted = false;
     bean.revoked = false;
     await this.crlService.refreshRootCrlCache(root, rootPrivateKey);
-    const res = await this.add(bean);
-    await this.accessService.copyAdminsAndGrants(old.id, res.id, req.userId);
+    // 原子轮换：事务内锁定旧CA行并复查rotatedToId，条件更新保证并发轮换只有一个成功，避免产生两个后继
+    const manager = this.getRepository().manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用，无法安全轮换");
+    }
+    let newId = 0;
+    await runTransaction(manager, async tx => {
+      const repository = tx.getRepository(LocalCaEntity);
+      const driverType = String(tx.connection?.options?.type || "");
+      const useLock = !driverType.includes("sqlite");
+      const lockedOld = await repository.findOne({
+        where: { id: old.id },
+        ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+      });
+      if (!lockedOld || lockedOld.rotatedToId) {
+        throw new ValidateException("该中间CA已轮换，仅允许最新一代CA执行轮换");
+      }
+      const res = await repository.save(bean);
+      newId = res.id;
+      await this.accessService.copyAdminsAndGrants(old.id, res.id, req.userId, tx);
+      const updated = await repository.update({ id: old.id, rotatedToId: IsNull() }, { disabled: true, rotatedToId: res.id, remark: `已轮换到新CA(ID:${res.id})，ACME自动指向新CA`, updateTime: new Date() });
+      if (!updated.affected) {
+        throw new ValidateException("该中间CA已轮换，仅允许最新一代CA执行轮换");
+      }
+    });
     await this.crlService.markBaseUrlLocked(root.id);
-    old.disabled = true;
-    old.rotatedToId = res.id;
-    old.remark = `已轮换到新CA(ID:${res.id})，ACME自动指向新CA`;
-    await this.update(old);
-    await this.providerSync.onRotated(old.id, res.id).catch(e => logger.error(`[local-ca] provider rotate sync failed ${old.id}->${res.id}: ${e?.message || e}`));
-    logger.info(`[local-ca] intermediate rotated old=${old.id} new=${res.id} root=${root.id} admin=${req.userId}`);
-    return { id: res.id, oldId: old.id };
+    await this.providerSync.onRotated(old.id, newId).catch(e => logger.error(`[local-ca] provider rotate sync failed ${old.id}->${newId}: ${e?.message || e}`));
+    logger.info(`[local-ca] intermediate rotated old=${old.id} new=${newId} root=${root.id} admin=${req.userId}`);
+    return { id: newId, oldId: old.id };
   }
 
   async checkImportDuplicate(req: { userId: number; projectId?: number; parentId?: number; certPem: string }) {
@@ -1032,7 +1051,42 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async leakRevokeEab(req: { caId: number; eabId: string; accountIds: string[]; userId: number; projectId?: number }) {
-    return await this.acmeService.leakRevokeEab(req);
+    const result = await this.acmeService.leakRevokeEab(req);
+    let revokedCerts = 0;
+    for (const order of result.orders || []) {
+      const serialNumber = String(order.serialNumber).toUpperCase();
+      // 轮换后证书可能保存在链上有效CA名下，按整条轮换链查询，避免漏吊销
+      const chain = await this.accessService.collectRotationChain(order.caId);
+      const cert = await this.certInfoService.findOne({ where: { localCaId: In(chain), serialNumber } });
+      if (cert) {
+        if (cert.status !== "revoked") {
+          await this.certInfoService.applyLocalRevocation({
+            certInfoId: cert.id,
+            caId: cert.localCaId,
+            userId: cert.userId,
+            projectId: cert.projectId,
+            serialNumber,
+            expiresTime: cert.expiresTime,
+            reason: "EAB泄漏应急处置",
+          });
+          revokedCerts++;
+        }
+        continue;
+      }
+      // 系统级证书无cd_cert_info记录：复用系统证书吊销路径写入CRL（与正常ACME吊销一致）
+      const effectiveCa = await this.getAcmeCa(order.caId).catch(() => null);
+      await this.recordSystemCertRevocation({
+        caId: effectiveCa?.id ?? order.caId,
+        serialNumber,
+        expiresTime: order.expiresTime,
+        userId: order.userId ?? 0,
+        projectId: order.projectId,
+        certPem: order.certPem,
+        reason: "EAB泄漏应急处置",
+      });
+      revokedCerts++;
+    }
+    return { disabledAccounts: result.disabledAccounts, revokedCerts };
   }
 
   async listMyAccounts(req: { userId: number; projectId?: number }) {

@@ -53,10 +53,30 @@ function createService() {
       return entity;
     },
     async update(where: any, set: any) {
-      const item = store.get(where.id);
-      if (item) {
-        Object.assign(item, set);
+      let affected = 0;
+      for (const item of store.values()) {
+        const match = Object.keys(where || {}).every(key => {
+          const w = where[key];
+          if (w && w._type === "isNull") {
+            return item[key] == null;
+          }
+          if (w && w._type === "in") {
+            return (w._value || []).includes(item[key]);
+          }
+          if (w === false) {
+            return !item[key];
+          }
+          if (w === true) {
+            return !!item[key];
+          }
+          return w === undefined || item[key] === w;
+        });
+        if (match) {
+          Object.assign(item, set);
+          affected++;
+        }
       }
+      return { affected };
     },
     create(data: any) {
       return data;
@@ -124,10 +144,30 @@ function createService() {
         return data;
       },
       async update(where: any, set: any) {
-        const item = map.get(where.id);
-        if (item) {
-          Object.assign(item, set);
+        let affected = 0;
+        for (const item of map.values()) {
+          const match = Object.keys(where || {}).every(key => {
+            const w = where[key];
+            if (w && w._type === "isNull") {
+              return item[key] == null;
+            }
+            if (w && w._type === "in") {
+              return (w._value || []).includes(item[key]);
+            }
+            if (w === false) {
+              return !item[key];
+            }
+            if (w === true) {
+              return !!item[key];
+            }
+            return w === undefined || item[key] === w;
+          });
+          if (match) {
+            Object.assign(item, set);
+            affected++;
+          }
         }
+        return { affected };
       },
       async delete(where: any) {
         const value = where.id;

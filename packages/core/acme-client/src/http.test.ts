@@ -19,11 +19,16 @@ describe("acme-client directory egress policy", () => {
 
   it("非法资源URL拒绝", () => {
     const client = makeClient("https://ca.example.com/directory");
-    assert.throws(() => client.assertResourceSameOrigin("newNonce", "not-a-url"), /不合法/);
+    assert.throws(() => client.assertResourceSameOrigin("newNonce", "not-a-url"), /不同源/);
   });
 
-  it("显式启用反向代理URL映射时跳过同源约束", () => {
-    const client = makeClient("https://ca.example.com/directory", { enabled: true, mappings: {} });
+  it("资源URL命中可信映射规则时允许跨源", () => {
+    const client = makeClient("https://ca.example.com/directory", { enabled: true, mappings: { "https://other.example.com": "https://proxy.example.com" } });
     assert.doesNotThrow(() => client.assertResourceSameOrigin("newNonce", "https://other.example.com/new-nonce"));
+  });
+
+  it("开启映射但资源URL未命中规则时仍执行同源检查", () => {
+    const client = makeClient("https://ca.example.com/directory", { enabled: true, mappings: { "https://other.example.com": "https://proxy.example.com" } });
+    assert.throws(() => client.assertResourceSameOrigin("newAccount", "https://evil.example.com/new-account"), /不同源/);
   });
 });

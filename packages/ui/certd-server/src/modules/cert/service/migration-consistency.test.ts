@@ -12,7 +12,7 @@ const dialectDirs = {
 };
 const files = fs
   .readdirSync(migrationDir)
-  .filter(file => /^v1006[12]__.*\.sql$/.test(file))
+  .filter(file => /^v1006[1-4]__.*\.sql$/.test(file))
   .sort();
 
 type TableColumns = Map<string, Set<string>>;
@@ -91,7 +91,7 @@ function assertColumnsEqual(dialect: string, file: string, expected: TableColumn
 function migrationFiles(dir: string) {
   return fs
     .readdirSync(dir)
-    .filter(file => /^v1006[12]__.*\.sql$/.test(file))
+    .filter(file => /^v1006[1-4]__.*\.sql$/.test(file))
     .sort();
 }
 

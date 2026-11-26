@@ -135,19 +135,19 @@ export class LocalCaAcmeService {
     const repository = manager.getRepository(LocalCaEntity);
     const driverType = String(manager.connection?.options?.type || "");
     const useLock = !driverType.includes("sqlite");
-    let ca = await repository.findOne({
-      where: { id, deleted: false },
-      ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
-    });
-    let hops = 0;
-    while (ca?.rotatedToId && hops < 5) {
-      const next = await repository.findOne({
-        where: { id: ca.rotatedToId, deleted: false },
-        ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
-      });
+    const lockOpt = useLock ? { lock: { mode: "pessimistic_write" as const } } : {};
+    // 与resolveEffectiveAcmeCa一致：先读原始CA（允许已归档但已轮换的旧CA），再沿rotatedToId解析到有效CA，
+    // 避免旧CA归档后新订单可创建却无法finalize；用visited防环，不限制轮换代数
+    let ca = await repository.findOne({ where: { id }, ...lockOpt });
+    if (ca?.deleted && !ca.rotatedToId) {
+      ca = null;
+    }
+    const visited = new Set<number>(ca ? [ca.id] : []);
+    while (ca?.rotatedToId && !visited.has(ca.rotatedToId)) {
+      const next = await repository.findOne({ where: { id: ca.rotatedToId, deleted: false }, ...lockOpt });
       if (!next) break;
+      visited.add(next.id);
       ca = next;
-      hops++;
     }
     this.assertAcmeCaUsable(ca);
     await this.crlService.assertCaNotRevokedByParent(ca);
@@ -292,6 +292,11 @@ export class LocalCaAcmeService {
         if (enabled) {
           if (!username) {
             throw new ValidateException("启用Basic认证必须设置用户名");
+          }
+          // Basic认证凭证仅Base64编码非加密，HTTP下会明文传输：强制HTTPS访问地址（TLS反代对外地址）
+          const baseUrl = String((await this.crlService.resolveBaseUrl(ca)) || "").trim();
+          if (baseUrl && !/^https:\/\//i.test(baseUrl)) {
+            throw new ValidateException("启用Basic认证要求HTTPS访问地址：HTTP下用户名密码会明文传输（Base64不是加密）。请将Base URL配置为https对外地址（TLS反向代理场景填外部https地址），或改用IP白名单/自定义头控制访问。");
           }
           if (req.basicAuth.password) {
             passwordHash = bcrypt.hashSync(String(req.basicAuth.password), 10);
@@ -708,8 +713,14 @@ export class LocalCaAcmeService {
       eab.updateTime = new Date();
       await eabRepository.save(eab);
       const accountRepository = tx.getRepository(AcmeAccountEntity);
+      const driverType = String(tx.connection?.options?.type || "");
+      const useAccountLock = !driverType.includes("sqlite");
       for (const accountId of accountIds) {
-        const account = await accountRepository.findOne({ where: { id: accountId, eabId: req.eabId } });
+        // 加行锁与finalize的账户锁串行化，确保停用与签发不会交错
+        const account = await accountRepository.findOne({
+          where: { id: accountId, eabId: req.eabId },
+          ...(useAccountLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+        });
         if (!account) {
           continue;
         }
@@ -718,32 +729,28 @@ export class LocalCaAcmeService {
         await accountRepository.save(account);
       }
     });
-    // 吊销选中账户已签发的证书（逐证独立事务，避免长事务）
-    let revokedCount = 0;
+    // 收集选中账户已签发的有效订单，证书吊销由facade统一处理（复用轮换链查询与系统级证书CRL路径）
+    const orders: any[] = [];
+    const accountRepository = this.repository.manager.getRepository(AcmeAccountEntity);
     for (const accountId of accountIds) {
-      const orders = await this.acmeOrderRepository.find({ where: { accountId, status: "valid" } });
-      for (const order of orders) {
+      const account = await accountRepository.findOne({ where: { id: accountId } });
+      const accountOrders = await this.acmeOrderRepository.find({ where: { accountId, status: "valid" } });
+      for (const order of accountOrders) {
         if (!order.serialNumber) {
           continue;
         }
-        const cert = await this.certInfoService.findOne({ where: { localCaId: order.caId, serialNumber: order.serialNumber.toUpperCase() } });
-        if (!cert || cert.status === "revoked") {
-          continue;
-        }
-        await this.certInfoService.applyLocalRevocation({
-          certInfoId: cert.id,
+        orders.push({
           caId: order.caId,
-          userId: cert.userId,
-          projectId: cert.projectId,
           serialNumber: order.serialNumber,
-          expiresTime: cert.expiresTime,
-          reason: "EAB泄漏应急处置",
+          certPem: order.certPem || null,
+          userId: account?.userId ?? 0,
+          projectId: account?.projectId,
+          expiresTime: order.expiresTime,
         });
-        revokedCount++;
       }
     }
-    logger.info(`[local-ca] eab leak revoked ca=${ca.id} eab=${req.eabId} accounts=${accountIds.length} certs=${revokedCount} user=${req.userId}`);
-    return { disabledAccounts: accountIds.length, revokedCerts: revokedCount };
+    logger.info(`[local-ca] eab leak disabled ca=${ca.id} eab=${req.eabId} accounts=${accountIds.length} orders=${orders.length} user=${req.userId}`);
+    return { disabledAccounts: accountIds.length, orders };
   }
 
   async listMyAccounts(req: { userId: number; projectId?: number }) {

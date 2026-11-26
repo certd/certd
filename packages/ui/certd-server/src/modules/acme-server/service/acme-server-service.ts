@@ -386,6 +386,18 @@ export class AcmeServerService {
         throw new AcmeProblem("orderNotReady", "订单正在处理中或尚未就绪", 403);
       }
       checkCsrDomains(order);
+      // 事务内重查账户并加行锁，确认仍为valid才签发：使账户停用/泄漏处置与finalize对同一账户行串行化，
+      // 避免事务外读到的旧账户对象在并发停用后仍完成签发（EAB管注册、账户独立使用的设计不变，此处校验账户自身状态）
+      const accountRepository = tx.getRepository(AcmeAccountEntity);
+      const driverType = String(tx.connection?.options?.type || "");
+      const useAccountLock = !driverType.includes("sqlite");
+      const freshAccount = await accountRepository.findOne({
+        where: { id: account.id },
+        ...(useAccountLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+      });
+      if (!freshAccount || freshAccount.status !== "valid") {
+        throw new AcmeProblem("unauthorized", "账户已停用，无法签发", 401);
+      }
       // 在事务内锁定并重新读取CA策略，确保关闭直签/收紧域名范围与签发串行化
       const freshCa = await this.issuer.getAcmeCaForUpdate(caId, tx);
       const profile = await this.assertAccountEabActive(account, tx);
