@@ -321,6 +321,12 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(await this.acmeServerService.listMyAccountOrders(body.accountId, userId, projectId));
   }
 
+  @Post("/acme/exportMyAccount", { description: Constants.per.authOnly, summary: "导出当前用户自己的ACME账户供外部标准客户端（仅标准ACME模式）" })
+  async exportMyAccount(@Body(ALL) body: any) {
+    const { userId, projectId } = await this.getUseScope();
+    return this.ok(await this.service.exportMyAccount({ userId, projectId, accountId: body.accountId }));
+  }
+
   @Post("/intermediate/revoke", { description: Constants.per.authOnly, summary: "吊销中间CA并刷新Root CRL" })
   async revokeIntermediate(@Body(ALL) body: any) {
     this.assertStepUp(body.verifyToken, "吊销中间CA");

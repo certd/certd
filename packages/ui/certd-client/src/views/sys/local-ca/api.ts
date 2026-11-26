@@ -354,4 +354,12 @@ export const localCaApi = {
       data: { accountId },
     });
   },
+
+  async ExportMyAccount(accountId: string) {
+    return await req({
+      url: apiPrefix + "/acme/exportMyAccount",
+      method: "post",
+      data: { accountId },
+    });
+  },
 };

@@ -1023,6 +1023,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.acmeService.resolveEabSslProvider(caId);
   }
 
+  async exportMyAccount(req: { userId: number; projectId?: number; accountId: string }) {
+    return await this.acmeService.exportMyAccount(req);
+  }
+
   async listMyAccounts(req: { userId: number; projectId?: number }) {
     return await this.acmeService.listMyAccounts(req);
   }

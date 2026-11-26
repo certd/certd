@@ -128,20 +128,20 @@ export class AcmeAccountAccess extends BaseAccess {
       placeholder: "需要EAB的颁发机构生成账号时填写",
     },
     helper:
-      "需要提供EAB授权" +
-      "\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials'" +
-      "\nGoogle:请查看[google获取eab帮助文档](https://certd.docmirror.cn/guide/use/google/),需要你去翻墙得到EAB填到这里" +
-      "\nSSL.com:[SSL.com账号页面](https://secure.ssl.com/account),然后点击api credentials链接，然后点击编辑按钮，查看Secret key和HMAC key" +
-      "\nlitessl:[litesslEAB页面](https://freessl.cn/automation/eab-manager),然后点击新增EAB" +
-      "\n本地CA：请先在「本地CA管理」中为中间CA开启ACME并创建EAB凭证；再到「系统设置-流水线设置」快速添加自定义ACME（Directory URL 从CA详情复制），最后把凭证的 KID 和 HMAC Key 填到这里生成账号。",
+      "外部颁发机构需自行获取EAB凭证：" +
+      "\nZeroSSL：[开发者中心](https://app.zerossl.com/developer)生成 EAB Credentials" +
+      "\nGoogle：[获取EAB帮助文档](https://certd.docmirror.cn/guide/use/google/)" +
+      "\nSSL.com：[账号页面](https://secure.ssl.com/account) → API credentials → 编辑查看 Key" +
+      "\nlitessl：[EAB管理页面](https://freessl.cn/automation/eab-manager)新增EAB",
     required: true,
     encrypt: true,
     mergeScript: `
     return {
       show: ctx.compute(({form})=>{
-        // 按所选颁发机构的 needEAB 配置显隐（由 caType 的 onSelectedChange 同步到 _needEAB）
-        return form.access?._needEAB === true;
+        // 本地CA改用EAB下拉自助选择，外部颁发机构才手动填写KID/HMAC
+        return form.access?._needEAB === true && !String(form.caType||'').startsWith('local-ca-');
       }),
+      required: ctx.compute(({form})=> form.access?._needEAB === true && !String(form.caType||'').startsWith('local-ca-')),
       component: {
         disabled: ctx.compute(({form})=> !!form.access?.account && !form.access?.editAccount)
       }
@@ -160,9 +160,9 @@ export class AcmeAccountAccess extends BaseAccess {
     mergeScript: `
     return {
       show: ctx.compute(({form})=>{
-        // 按所选颁发机构的 needEAB 配置显隐（由 caType 的 onSelectedChange 同步到 _needEAB）
-        return form.access?._needEAB === true;
+        return form.access?._needEAB === true && !String(form.caType||'').startsWith('local-ca-');
       }),
+      required: ctx.compute(({form})=> form.access?._needEAB === true && !String(form.caType||'').startsWith('local-ca-')),
       component: {
         disabled: ctx.compute(({form})=> !!form.access?.account && !form.access?.editAccount)
       }
@@ -170,6 +170,31 @@ export class AcmeAccountAccess extends BaseAccess {
     `,
   })
   eabHmacKey = "";
+
+  @AccessInput({
+    title: "EAB凭证",
+    component: {
+      name: "remote-select",
+      vModel: "value",
+      type: "access",
+      typeName: "acmeAccount",
+      action: "onEabList",
+      single: true,
+      emitImmediate: true,
+    },
+    helper: "选择管理员分配给您的EAB凭证，密钥由服务端内部使用，无需手动填写。",
+    required: true,
+    mergeScript: `
+    return {
+      show: ctx.compute(({form})=> form.access?._needEAB === true && String(form.caType||'').startsWith('local-ca-')),
+      required: ctx.compute(({form})=> form.access?._needEAB === true && String(form.caType||'').startsWith('local-ca-')),
+      component: {
+        disabled: ctx.compute(({form})=> !!form.access?.account && !form.access?.editAccount)
+      }
+    }
+    `,
+  })
+  eabId = "";
 
   @AccessInput({
     title: "生成ACME账号",
@@ -289,6 +314,15 @@ export class AcmeAccountAccess extends BaseAccess {
       }));
   }
 
+  /** 本地CA：当前用户被分配的EAB下拉选项（按所选颁发机构过滤），不含密钥。 */
+  async onEabList() {
+    const getter: any = await this.ctx?.serviceGetter?.get("localCaGetter");
+    const list = (await getter?.listMyEab?.()) || [];
+    return list
+      .filter((item: any) => !this.caType || item.sslProvider === this.caType)
+      .map((item: any) => ({ value: item.id, label: `${item.name}（${item.caName || "#" + item.caId}）` }));
+  }
+
   async onGenerateAccount() {
     if (!this.caType) {
       throw new Error("请先选择颁发机构");
@@ -296,11 +330,21 @@ export class AcmeAccountAccess extends BaseAccess {
     if (!this.email) {
       throw new Error("请先填写邮箱");
     }
+    // 本地CA：用户选择被分配的EAB，服务端校验归属后内部取密钥，HMAC不下发前端
+    if (String(this.caType).startsWith("local-ca-") && this.eabId) {
+      const getter: any = await this.ctx?.serviceGetter?.get("localCaGetter");
+      const secret = await getter?.getEabSecret?.(this.eabId);
+      if (!secret?.kid || !secret?.hmacKey) {
+        throw new Error("无权使用该EAB凭证或凭证不可用");
+      }
+      this.eabKid = secret.kid;
+      this.eabHmacKey = secret.hmacKey;
+    }
     // 是否需要EAB按系统「流水线设置」中该颁发机构的 needEAB 配置决定
     const provider = await this.getProvider();
     const needEab = provider?.needEAB === true;
     if (needEab && (!this.eabKid || !this.eabHmacKey)) {
-      throw new Error("该颁发机构要求填写EAB KID与EAB HMAC Key后方可生成账号");
+      throw new Error("该颁发机构要求选择EAB凭证后方可生成账号");
     }
     const account = await this.createAccountInfo();
     return JSON.stringify(account, null, 2);

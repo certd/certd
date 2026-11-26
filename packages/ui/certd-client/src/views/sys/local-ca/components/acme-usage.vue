@@ -61,6 +61,7 @@
           <div class="local-ca-row-actions">
             <a-button type="link" size="small" @click="viewOrders(record)">{{ t("certd.localCa.acmeViewOrders") }}</a-button>
             <a-button v-if="record.eabId" type="link" size="small" @click="viewEab(record)">{{ t("certd.localCa.acmeViewEab") }}</a-button>
+            <a-button v-if="record.acmeMode === 'standard'" type="link" size="small" @click="exportAccount(record)">{{ t("certd.localCa.acmeUsageExport") }}</a-button>
           </div>
         </template>
       </a-table-column>
@@ -268,6 +269,47 @@ async function viewOrderCert(order: any) {
     width: 800,
     zIndex: 1300,
     content: () => <CertView cert={{ crt: order.certPem, key: "", ic: "", detail: res.detail }} />,
+  });
+}
+
+async function exportAccount(row: any) {
+  let data: any;
+  try {
+    data = await localCaApi.ExportMyAccount(row.id);
+  } catch (e: any) {
+    notification.error({ message: String(e?.message || e) });
+    return;
+  }
+  model.success({
+    title: `${t("certd.localCa.acmeUsageExport")} - ${row.id}`,
+    maskClosable: true,
+    okText: t("certd.common.close"),
+    width: 720,
+    zIndex: 1200,
+    content: () => (
+      <a-descriptions bordered column={1} size="small">
+        <a-descriptions-item label="Directory URL">
+          <fs-copyable modelValue={data.directoryUrl} />
+        </a-descriptions-item>
+        <a-descriptions-item label="Account URI">
+          <fs-copyable modelValue={data.accountUri} />
+        </a-descriptions-item>
+        <a-descriptions-item label="Account Key">
+          <fs-copyable modelValue={data.accountKey} />
+        </a-descriptions-item>
+        <a-descriptions-item label={t("certd.localCa.acmeUsageEmail")}>{data.email || "-"}</a-descriptions-item>
+        {data.eab ? (
+          <a-descriptions-item label="EAB KID">
+            <fs-copyable modelValue={data.eab.kid} />
+          </a-descriptions-item>
+        ) : null}
+        {data.eab ? (
+          <a-descriptions-item label="EAB HMAC Key">
+            <fs-copyable modelValue={data.eab.hmacKey} />
+          </a-descriptions-item>
+        ) : null}
+      </a-descriptions>
+    ),
   });
 }
 

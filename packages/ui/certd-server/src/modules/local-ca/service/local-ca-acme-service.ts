@@ -3,7 +3,7 @@ import { logger } from "@certd/basic";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { EntityManager, In, Repository } from "typeorm";
-import { EncryptService, SysSettingsService, ValidateException } from "@certd/lib-server";
+import { AccessService, EncryptService, SysSettingsService, ValidateException } from "@certd/lib-server";
 import { runTransaction } from "../../db/db-transaction.js";
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { LocalCaGrantEntity } from "../entity/local-ca-grant.js";
@@ -52,6 +52,9 @@ export class LocalCaAcmeService {
 
   @Inject()
   sysSettingsService: SysSettingsService;
+
+  @Inject()
+  sysAccessService: AccessService;
 
   /** 解析EAB所属CA链对应的自定义ACME颁发机构sslProvider（供普通用户自助注册账号）。 */
   private async resolveSslProvider(caId: number, providerList: any[]): Promise<string | null> {
@@ -604,6 +607,46 @@ export class LocalCaAcmeService {
     return await this.resolveSslProvider(caId, privateSetting.customAcmeProviders || []);
   }
 
+  /** 导出当前用户自己的ACME账户供外部标准客户端使用；仅标准ACME模式允许，归属校验。 */
+  async exportMyAccount(req: { userId: number; projectId?: number; accountId: string }) {
+    const accountRepository = this.repository.manager.getRepository(AcmeAccountEntity);
+    const account = await accountRepository.findOne({ where: { id: req.accountId } });
+    if (!account) {
+      throw new ValidateException("ACME账户不存在");
+    }
+    const owns = (req.userId > 0 && account.userId === req.userId) || (req.projectId && req.projectId > 0 && account.projectId === req.projectId);
+    if (!owns) {
+      throw new ValidateException("无权导出该ACME账户");
+    }
+    const ca = await this.getAcmeAccessView(account.caId);
+    const config = this.readAcmeConfigObject(ca?.acmeConfig);
+    if (this.resolveAcmeMode(config) !== "standard") {
+      throw new ValidateException("仅标准ACME模式允许导出账户到外部客户端");
+    }
+    const accesses = await this.sysAccessService.repository.find({ where: { userId: req.userId, type: "acmeAccount" } });
+    let acc: any = null;
+    for (const item of accesses) {
+      const setting = this.sysAccessService.decryptAccessEntity(item);
+      const parsed = typeof setting.account === "string" ? JSON.parse(setting.account) : setting.account;
+      if (parsed?.accountUri && String(parsed.accountUri).endsWith("/account/" + req.accountId)) {
+        acc = parsed;
+        break;
+      }
+    }
+    if (!acc?.accountKey) {
+      throw new ValidateException("未找到该账户的密钥配置，无法导出");
+    }
+    const eab = account.eabId ? await this.getMyEabSecret({ userId: req.userId, projectId: req.projectId, eabId: account.eabId }) : null;
+    return {
+      directoryUrl: acc.directoryUrl,
+      accountUri: acc.accountUri,
+      accountKey: acc.accountKey,
+      email: acc.email,
+      caType: acc.caType,
+      eab: eab ? { kid: eab.kid, hmacKey: eab.hmacKey } : null,
+    };
+  }
+
   /** 普通用户“我的ACME账户”：按归属过滤并校验使用权。 */
   async listMyAccounts(req: { userId: number; projectId?: number }) {
     const where: any[] = [];
@@ -635,6 +678,7 @@ export class LocalCaAcmeService {
         contact: account.contact ? JSON.parse(account.contact) : [],
         caId: account.caId,
         caName: ca?.name || null,
+        acmeMode: this.resolveAcmeMode(this.readAcmeConfigObject(ca?.acmeConfig)),
         eabId: account.eabId,
         eabKid: eab?.kid || null,
         eabName: eab?.name || null,
