@@ -303,8 +303,8 @@ export class LocalCaController extends CrudController<LocalCaService> {
     const accessContext = { http, logger, utils, accessService: accessGetter, serviceGetter, define: undefined } as any;
     const access = await newAccess("acmeAccount", input, accessGetter, accessContext);
     const accountJson = await access.onRequest({ typeName: "acmeAccount", action: "onGenerateAccount", input, record: { id: 0, type: "acmeAccount", title: "" }, data: {} });
-    const account = JSON.parse(accountJson);
-    const setting = { caType: sslProvider, email: body.email, eabKid: secret.kid, eabHmacKey: secret.hmacKey, account };
+    // account 以JSON字符串存储，与标准授权流程一致（插件parseAcmeAccount按字符串解析）
+    const setting = { caType: sslProvider, email: body.email, eabKid: secret.kid, eabHmacKey: secret.hmacKey, account: accountJson };
     const saved = await this.accessService.add({ type: "acmeAccount", name: body.name || `${body.email}账号`, setting: JSON.stringify(setting), userId, projectId });
     return this.ok({ id: saved.id, name: saved.name });
   }
