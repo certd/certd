@@ -36,6 +36,8 @@ export default {
     saveSuccess: "保存成功",
   },
   saveSuccess: "保存成功",
+  copySuccess: "已复制",
+  copyFailed: "复制失败",
   cancel: "取消",
   yes: "是",
   all: "全部",

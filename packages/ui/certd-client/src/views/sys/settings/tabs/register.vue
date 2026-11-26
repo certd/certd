@@ -1,8 +1,9 @@
 <template>
   <div class="sys-settings-form sys-settings-register">
     <a-form :model="formState" name="register" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
-      <a-form-item :label="t('certd.sys.settings.enableSelfRegistration')" :name="['public', 'registerEnabled']">
-        <a-switch v-model:checked="formState.public.registerEnabled" />
+      <a-form-item :label="t('certd.sys.settings.registerMode')" :name="['public', 'registerMode']">
+        <a-select v-model:value="formState.public.registerMode" :options="registerModeOptions" class="register-mode-select" />
+        <div class="helper">{{ t("certd.sys.settings.registerModeHelper") }}</div>
         <div v-if="!settingsStore.isComm" class="color-red helper">{{ t("certd.sys.settings.selfRegistrationWarning") }}</div>
       </a-form-item>
       <a-form-item :label="t('certd.sys.settings.enableCommonSelfServicePasswordRetrieval')" :name="['public', 'selfServicePasswordRetrievalEnabled']">
@@ -18,7 +19,7 @@
           <a href="https://certd.docmirror.cn/guide/use/setting/user-valid.html" target="_blank">{{ t("certd.common.helpDocLink") }}</a>
         </div>
       </a-form-item>
-      <template v-if="formState.public.registerEnabled">
+      <template v-if="formState.public.registerMode !== 'closed'">
         <a-form-item :label="t('certd.sys.settings.enableUsernameRegistration')" :name="['public', 'usernameRegisterEnabled']">
           <a-switch v-model:checked="formState.public.usernameRegisterEnabled" />
         </a-form-item>
@@ -64,10 +65,41 @@
           </a-form-item>
         </template>
       </template>
+      <template v-if="formState.public.registerMode === 'invite'">
+        <a-form-item :label="t('certd.sys.settings.inviteLinks')">
+          <div class="invite-block">
+            <a-button type="primary" @click="openInviteModal">{{ t("certd.sys.settings.inviteGenerate") }}</a-button>
+            <div class="helper">{{ t("certd.sys.settings.inviteLinksHelper") }}</div>
+            <a-table class="mt-3" size="small" row-key="id" :columns="inviteColumns" :data-source="invites" :pagination="false" />
+          </div>
+        </a-form-item>
+      </template>
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 16 }">
         <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.sys.settings.saveButton") }}</a-button>
       </a-form-item>
     </a-form>
+    <a-modal
+      v-model:open="inviteModalOpen"
+      :title="t('certd.sys.settings.inviteGenerate')"
+      :confirm-loading="inviteCreating"
+      :ok-text="t('certd.common.confirm')"
+      :cancel-text="t('certd.common.cancel')"
+      @ok="createInvite"
+    >
+      <a-form layout="vertical">
+        <a-form-item :label="t('certd.sys.settings.inviteExpiresDays')">
+          <a-input-number v-model:value="inviteDays" :min="1" :max="30" class="invite-days" />
+        </a-form-item>
+        <a-form-item :label="t('certd.sys.settings.inviteRemark')">
+          <a-input v-model:value="inviteRemark" />
+        </a-form-item>
+      </a-form>
+      <div v-if="createdLink" class="created-link mt-3">
+        <a-input :value="createdLink" readonly />
+        <a-button class="ml-2" @click="copyLink">{{ t("certd.common.copy") }}</a-button>
+        <div class="helper warning">{{ t("certd.sys.settings.inviteLinkOnce") }}</div>
+      </div>
+    </a-modal>
   </div>
 </template>
 
@@ -80,6 +112,76 @@ import * as api from "/@/views/sys/settings/api";
 import { SysSettings } from "/@/views/sys/settings/api";
 import { useI18n } from "/src/locales";
 const { t } = useI18n();
+
+const registerModeOptions = computed(() => [
+  { label: t("certd.sys.settings.registerModeClosed"), value: "closed" },
+  { label: t("certd.sys.settings.registerModeInvite"), value: "invite" },
+  { label: t("certd.sys.settings.registerModeOpen"), value: "open" },
+]);
+
+const invites = ref<any[]>([]);
+const inviteModalOpen = ref(false);
+const inviteCreating = ref(false);
+const inviteDays = ref(3);
+const inviteRemark = ref("");
+const createdLink = ref("");
+
+function formatTime(value: any) {
+  if (value == null || value === "") {
+    return "";
+  }
+  return new Date(Number(value)).toLocaleString();
+}
+
+const inviteColumns = computed(() => [
+  { title: t("certd.sys.settings.inviteCreateTime"), dataIndex: "createTime", customRender: ({ text }: any) => (text ? new Date(text).toLocaleString() : "") },
+  { title: t("certd.sys.settings.inviteExpiresTime"), dataIndex: "expiresTime", customRender: ({ text }: any) => formatTime(text) },
+  {
+    title: t("certd.sys.settings.inviteStatus"),
+    dataIndex: "status",
+    customRender: ({ text }: any) => (text === "used" ? t("certd.sys.settings.inviteStatusUsed") : t("certd.sys.settings.inviteStatusActive")),
+  },
+  { title: t("certd.sys.settings.inviteUsedUser"), dataIndex: "usedUserName" },
+]);
+
+async function loadInvites() {
+  try {
+    invites.value = (await api.RegisterInviteList()) || [];
+  } catch {
+    invites.value = [];
+  }
+}
+
+function openInviteModal() {
+  inviteModalOpen.value = true;
+  inviteDays.value = 3;
+  inviteRemark.value = "";
+  createdLink.value = "";
+}
+
+async function createInvite() {
+  inviteCreating.value = true;
+  try {
+    const res: any = await api.RegisterInviteCreate({ expiresDays: inviteDays.value, remark: inviteRemark.value });
+    if (res?.token) {
+      const base = `${window.location.origin}${window.location.pathname}`;
+      createdLink.value = `${base}#/register?inviteToken=${encodeURIComponent(res.token)}`;
+    }
+    await loadInvites();
+    notification.success({ message: t("certd.sys.settings.inviteCreated") });
+  } finally {
+    inviteCreating.value = false;
+  }
+}
+
+async function copyLink() {
+  try {
+    await navigator.clipboard.writeText(createdLink.value);
+    notification.success({ message: t("certd.common.copySuccess") });
+  } catch {
+    notification.error({ message: t("certd.common.copyFailed") });
+  }
+}
 
 defineOptions({
   name: "SettingRegister",
@@ -104,6 +206,7 @@ async function testSendSms() {
 const formState = reactive<Partial<SysSettings>>({
   public: {
     registerEnabled: false,
+    registerMode: "closed",
   },
   private: {
     sms: {
@@ -168,6 +271,11 @@ async function loadTypeDefine(type: string) {
 async function loadSysSettings() {
   const data: any = await api.SysSettingsGet();
   merge(formState, data);
+  // 兼容旧数据：无 registerMode 时按 registerEnabled 派生
+  formState.public.registerMode = data?.public?.registerMode ?? (data?.public?.registerEnabled ? "open" : "closed");
+  if (formState.public.registerMode === "invite") {
+    await loadInvites();
+  }
   if (data?.private.sms?.type) {
     await loadTypeDefine(data.private.sms.type);
   }
@@ -187,8 +295,15 @@ const settingsStore = useSettingStore();
 const onFinish = async (form: any) => {
   try {
     saveLoading.value = true;
+    // 保持 registerEnabled 与模式一致：仅开放注册为 true，保持旧字段语义
+    if (form?.public) {
+      form.public.registerEnabled = form.public.registerMode === "open";
+    }
     await api.SysSettingsSave(form);
     await settingsStore.loadSysSettings();
+    if (form?.public?.registerMode === "invite") {
+      await loadInvites();
+    }
     notification.success({
       message: t("certd.common.saveSuccess"),
     });
@@ -212,6 +327,20 @@ const loginTypeOptions = computed(() => [
 <style lang="less">
 .sys-settings-register {
   width: 1000px !important;
+
+  .register-mode-select {
+    width: 220px;
+  }
+  .invite-block {
+    width: 100%;
+  }
+  .invite-days {
+    width: 160px;
+  }
+  .created-link {
+    display: flex;
+    align-items: center;
+  }
 
   .register-warning {
     color: #fa8c16;

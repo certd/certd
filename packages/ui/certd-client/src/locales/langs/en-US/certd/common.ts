@@ -32,6 +32,8 @@ export default {
     saveSuccess: "Saved successfully",
   },
   saveSuccess: "Saved successfully",
+  copySuccess: "Copied",
+  copyFailed: "Copy failed",
   cancel: "Cancel",
   yes: "Yes",
   all: "All",

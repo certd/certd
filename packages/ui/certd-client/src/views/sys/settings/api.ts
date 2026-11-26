@@ -42,6 +42,22 @@ export async function HeaderMenusSettingsSave(setting: any) {
   });
 }
 
+export async function RegisterInviteList() {
+  return await request({
+    url: "/sys/register-invite/list",
+    method: "post",
+    data: {},
+  });
+}
+
+export async function RegisterInviteCreate(data: { expiresDays?: number; remark?: string }) {
+  return await request({
+    url: "/sys/register-invite/create",
+    method: "post",
+    data,
+  });
+}
+
 export async function EmailSettingsGet() {
   return await request({
     url: apiPrefix + "/getEmailSettings",
