@@ -64,7 +64,7 @@
   </div>
 </template>
 <script setup lang="tsx">
-import { computed, defineComponent, onMounted, ref, Ref, useAttrs } from "vue";
+import { computed, defineComponent, onMounted, ref, Ref, useAttrs, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useClipboard } from "@vueuse/core";

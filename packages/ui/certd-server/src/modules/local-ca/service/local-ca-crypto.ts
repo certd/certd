@@ -853,6 +853,9 @@ export async function signCsr(req: {
     throw new Error("证书失效时间不能晚于签发CA的失效时间");
   }
   if (notAfter.getTime() <= notBefore.getTime()) {
+    if (req.notBefore != null && req.notAfter != null) {
+      throw new Error("证书失效时间必须晚于生效时间");
+    }
     throw new Error("CA证书剩余有效期不足，无法签发");
   }
 
