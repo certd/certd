@@ -227,6 +227,10 @@ function openInviteModal() {
 async function createInvite() {
   inviteCreating.value = true;
   try {
+    // 生成邀请前先落库“受邀注册”，避免设置未保存导致链接与当前注册模式不一致
+    formState.public.registerMode = "invite";
+    await api.SysSettingsSave({ public: { ...formState.public, registerEnabled: false }, private: formState.private } as any);
+    await settingsStore.loadSysSettings();
     const res: any = await api.RegisterInviteCreate({ expiresDays: inviteDays.value, remark: inviteRemark.value });
     if (res?.token) {
       const base = `${window.location.origin}${window.location.pathname}`;
