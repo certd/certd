@@ -45,6 +45,9 @@
       <a-table-column :title="t('certd.localCa.acmeAccountEab')" :width="160" ellipsis>
         <template #default="{ record }">{{ record.eabName || record.eabKid || "-" }}</template>
       </a-table-column>
+      <a-table-column :title="t('certd.localCa.acmeEmail')" :width="180" ellipsis>
+        <template #default="{ record }">{{ emailText(record) }}</template>
+      </a-table-column>
       <a-table-column :title="t('certd.localCa.acmeStatus')" :width="90">
         <template #default="{ record }">
           <a-tag :color="record.status === 'valid' ? 'green' : 'orange'">{{ record.status === "valid" ? t("certd.localCa.acmeAccountValid") : t("certd.localCa.acmeAccountDisabled") }}</a-tag>
@@ -102,6 +105,11 @@ function formatTime(value: any) {
     return "-";
   }
   return dayjs(Number(value) || value).format("YYYY-MM-DD HH:mm:ss");
+}
+function emailText(record: any) {
+  const list = Array.isArray(record.contact) ? record.contact : [];
+  const emails = list.map((item: string) => String(item).replace(/^mailto:/i, "")).filter(Boolean);
+  return emails.length ? emails.join(", ") : "-";
 }
 function domainsText(record: any) {
   try {

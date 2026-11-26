@@ -299,6 +299,7 @@ export default {
   systemLevel: "系统级（不进入用户证书仓库）",
   eabDirectIssue: "EAB直签",
   acmeContact: "联系方式",
+  acmeEmail: "邮箱",
   acmeOrders: "订单数",
   acmeIssued: "已签发",
   acmeToggleStatus: "启停",

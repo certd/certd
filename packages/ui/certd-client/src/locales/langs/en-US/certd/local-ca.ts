@@ -312,6 +312,7 @@ export default {
   systemLevel: "System-level (not saved to user certificate repository)",
   eabDirectIssue: "EAB Direct Issue",
   acmeContact: "Contact",
+  acmeEmail: "Email",
   acmeOrders: "Orders",
   acmeIssued: "Issued",
   acmeToggleStatus: "Enable/Disable",
