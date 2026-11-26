@@ -94,9 +94,10 @@
       v-model:open="inviteModalOpen"
       :title="t('certd.sys.settings.inviteGenerate')"
       :confirm-loading="inviteCreating"
-      :ok-text="t('certd.common.confirm')"
+      :ok-text="createdLink ? t('certd.common.copy') : t('certd.common.confirm')"
       :cancel-text="t('certd.common.cancel')"
-      @ok="createInvite"
+      :cancel-button-props="createdLink ? { style: { display: 'none' } } : {}"
+      @ok="onInviteModalOk"
     >
       <a-form layout="vertical">
         <a-form-item :label="t('certd.sys.settings.inviteExpiresDays')">
@@ -108,7 +109,6 @@
       </a-form>
       <div v-if="createdLink" class="created-link mt-3">
         <a-input :value="createdLink" readonly />
-        <a-button class="ml-2" @click="copyLink">{{ t("certd.common.copy") }}</a-button>
         <div class="helper warning">{{ t("certd.sys.settings.inviteLinkOnce") }}</div>
       </div>
     </a-modal>
@@ -237,6 +237,14 @@ async function createInvite() {
   } finally {
     inviteCreating.value = false;
   }
+}
+
+async function onInviteModalOk() {
+  if (createdLink.value) {
+    await copyLink();
+    return;
+  }
+  await createInvite();
 }
 
 async function copyLink() {
