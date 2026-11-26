@@ -331,11 +331,11 @@ export const localCaApi = {
     });
   },
 
-  async GetMyEabSecret(eabId: string) {
+  async CreateAccountFromEab(eabId: string, email: string, name?: string) {
     return await req({
-      url: apiPrefix + "/eab/mySecret",
+      url: apiPrefix + "/eab/createAccount",
       method: "post",
-      data: { eabId },
+      data: { eabId, email, name },
     });
   },
 

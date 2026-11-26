@@ -598,6 +598,12 @@ export class LocalCaAcmeService {
     return { kid: bean.kid, hmacKey, caId: bean.caId };
   }
 
+  /** 解析EAB所属CA链对应的颁发机构sslProvider（服务端内部使用）。 */
+  async resolveEabSslProvider(caId: number) {
+    const privateSetting = await this.sysSettingsService.getPrivateSettings();
+    return await this.resolveSslProvider(caId, privateSetting.customAcmeProviders || []);
+  }
+
   /** 普通用户“我的ACME账户”：按归属过滤并校验使用权。 */
   async listMyAccounts(req: { userId: number; projectId?: number }) {
     const where: any[] = [];

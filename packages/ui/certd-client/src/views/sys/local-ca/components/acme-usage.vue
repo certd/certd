@@ -289,20 +289,8 @@ async function openCreateAccount(row: any) {
       },
     },
     async onSubmit(form: any) {
-      const secret = await localCaApi.GetMyEabSecret(row.id);
-      const account = await request({
-        url: "/pi/handle/access",
-        method: "post",
-        data: {
-          typeName: "acmeAccount",
-          action: "onGenerateAccount",
-          input: { caType: row.sslProvider, email: form.email, eabKid: secret.kid, eabHmacKey: secret.hmacKey },
-          record: { id: 0, type: "acmeAccount", title: "" },
-          data: {},
-        },
-      });
-      const setting = { caType: row.sslProvider, email: form.email, eabKid: secret.kid, eabHmacKey: secret.hmacKey, account };
-      await accessApi.AddObj({ type: "acmeAccount", name: `${row.name}账号`, setting: JSON.stringify(setting) });
+      // 密钥由服务端内部使用，前端仅传eabId与邮箱，HMAC不下发
+      await localCaApi.CreateAccountFromEab(row.id, form.email, `${row.name}账号`);
       notification.success({ message: t("certd.localCa.acmeUsageAccountCreated") });
       await load();
     },

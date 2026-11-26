@@ -1,9 +1,11 @@
 import { ALL, Body, Controller, Get, Inject, Post, Provide, Query } from "@midwayjs/core";
-import { Constants, CrudController, PermissionException, ValidateException } from "@certd/lib-server";
-import { cache } from "@certd/basic";
+import { AccessGetter, AccessService, Constants, CrudController, PermissionException, ValidateException } from "@certd/lib-server";
+import { cache, http, logger, utils } from "@certd/basic";
+import { newAccess } from "@certd/pipeline";
 import { ApiTags } from "@midwayjs/swagger";
 import { LocalCaService } from "../service/local-ca-service.js";
 import { AcmeServerService } from "../../acme-server/service/acme-server-service.js";
+import { TaskServiceBuilder } from "../../pipeline/service/getter/task-service-getter.js";
 import { AuditType } from "../../sys/enterprise/service/audit-constants.js";
 
 @Provide()
@@ -15,6 +17,12 @@ export class LocalCaController extends CrudController<LocalCaService> {
 
   @Inject()
   acmeServerService: AcmeServerService;
+
+  @Inject()
+  accessService: AccessService;
+
+  @Inject()
+  taskServiceBuilder: TaskServiceBuilder;
 
   getService(): LocalCaService {
     return this.service;
@@ -277,10 +285,28 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(await this.service.listMyEab({ userId, projectId }));
   }
 
-  @Post("/eab/mySecret", { description: Constants.per.authOnly, summary: "取回当前用户自己的EAB密钥（自助注册ACME账号）" })
-  async myEabSecret(@Body(ALL) body: any) {
+  @Post("/eab/createAccount", { description: Constants.per.authOnly, summary: "使用被分配的EAB自助创建ACME账号（密钥服务端内部使用，不下发前端）" })
+  async createAccountFromEab(@Body(ALL) body: any) {
     const { userId, projectId } = await this.getUseScope();
-    return this.ok(await this.service.getMyEabSecret({ userId, projectId, eabId: body.eabId }));
+    if (!body.email) {
+      throw new ValidateException("请填写邮箱");
+    }
+    // 归属校验后服务端内部取密钥，HMAC全程不出后端
+    const secret = await this.service.getMyEabSecret({ userId, projectId, eabId: body.eabId });
+    const sslProvider = await this.service.resolveEabSslProvider(secret.caId);
+    if (!sslProvider) {
+      throw new ValidateException("该凭证对应的颁发机构不可用，请联系管理员");
+    }
+    const input = { caType: sslProvider, email: body.email, eabKid: secret.kid, eabHmacKey: secret.hmacKey };
+    const accessGetter = new AccessGetter(userId, projectId, this.accessService.getById.bind(this.accessService));
+    const serviceGetter = this.taskServiceBuilder.create({ userId, projectId, pluginType: "acmeAccount", capabilities: ["localCaGetter"] });
+    const accessContext = { http, logger, utils, accessService: accessGetter, serviceGetter, define: undefined } as any;
+    const access = await newAccess("acmeAccount", input, accessGetter, accessContext);
+    const accountJson = await access.onRequest({ typeName: "acmeAccount", action: "onGenerateAccount", input, record: { id: 0, type: "acmeAccount", title: "" }, data: {} });
+    const account = JSON.parse(accountJson);
+    const setting = { caType: sslProvider, email: body.email, eabKid: secret.kid, eabHmacKey: secret.hmacKey, account };
+    const saved = await this.accessService.add({ type: "acmeAccount", name: body.name || `${body.email}账号`, setting: JSON.stringify(setting), userId, projectId });
+    return this.ok({ id: saved.id, name: saved.name });
   }
 
   @Post("/acme/myAccounts", { description: Constants.per.authOnly, summary: "查询当前用户的ACME账户" })
