@@ -6,7 +6,6 @@ import { useI18n } from "/src/locales";
 import { getSecretAccessToken } from "/@/views/certd/access/api";
 import LocalCaArchivedRoots from "./archived-roots.vue";
 import LocalCaLeakRevoke from "./components/leak-revoke.vue";
-import { request } from "/@/api/service";
 import { localCaApi } from "./api";
 import { useStepUp } from "./use-step-up";
 
@@ -381,50 +380,11 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       notification.error({ message: t("certd.localCa.eabNoCa") });
       return;
     }
-    let bindUsers: any[] = [];
-    let bindProjects: any[] = [];
-    try {
-      bindUsers = (await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST" })) || [];
-    } catch {
-      bindUsers = [];
-    }
-    try {
-      const projRes: any = await request({ url: "/sys/enterprise/project/page", method: "post", data: { page: { current: 1, size: 1000 } } });
-      bindProjects = projRes?.records || [];
-    } catch {
-      bindProjects = [];
-    }
-    const bindUserLabel = (id: number) => {
-      const u = bindUsers.find(x => Number(x.id) === Number(id));
-      return u ? u.nickName || u.username : `#${id}`;
-    };
-    const bindProjectLabel = (id: number) => {
-      const pr = bindProjects.find(x => Number(x.id) === Number(id));
-      return pr ? pr.name : `#${id}`;
-    };
-    const grantOptions: any[] = [];
-    for (const item of (allCas || []).filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !ca.disabled)) {
-      try {
-        const grants = await localCaApi.ListGrants(item.id);
-        for (const grant of grants || []) {
-          const isUser = Number(grant.userId) > 0;
-          grantOptions.push({
-            label: isUser ? `${item.name} - ${bindUserLabel(grant.userId)}（${t("certd.localCa.allProjects")}）` : `${item.name} - ${bindProjectLabel(grant.projectId)}`,
-            value: grant.id,
-            mode: isUser ? "user" : "project",
-            caId: item.id,
-          });
-        }
-      } catch (e) {
-        // 操作员可能无权查看授权，跳过
-      }
-    }
-    const grantOptionsJson = JSON.stringify(grantOptions);
     await openFormDialog({
       title: t("certd.localCa.eabCreateTitle"),
       wrapper: { width: 600 },
       body: () => <a-alert type="warning" show-icon message={t("certd.localCa.eabCreateWarning")} description={t("certd.localCa.eabCreateWarningDesc")} class="mb-4" />,
-      initialForm: { caId: initialCaId, maxUses: 1, expiresDays: 3650, privileged: false, bindMode: "user" },
+      initialForm: { caId: initialCaId, maxUses: 1, expiresDays: 3650, privileged: false },
       columns: {
         caId: {
           title: t("certd.localCa.eabCa"),
@@ -447,32 +407,6 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             ],
           }),
           form: { col: { span: 24 }, helper: t("certd.localCa.eabPrivilegedHelper") },
-        },
-        bindMode: {
-          title: t("certd.localCa.eabGrantMode"),
-          type: "dict-select",
-          dict: dict({
-            data: [
-              { label: t("certd.localCa.grantModeUser"), value: "user" },
-              { label: t("certd.localCa.grantModeProject"), value: "project" },
-            ],
-          }),
-          form: { col: { span: 24 }, value: "user", helper: t("certd.localCa.eabGrantModeHelper") },
-        },
-        grantId: {
-          title: t("certd.localCa.eabGrant"),
-          type: "dict-select",
-          dict: dict({ data: grantOptions }),
-          form: {
-            col: { span: 24 },
-            component: { allowClear: true, placeholder: t("certd.localCa.eabGrantPlaceholder") },
-            helper: grantOptions.length ? t("certd.localCa.eabGrantHelper") : t("certd.localCa.eabGrantEmpty"),
-          },
-          mergeScript: `return {
-            component: {
-              options: ctx.compute(({ form }) => (${grantOptionsJson}).filter(g => g.mode === (form.bindMode || 'user')))
-            }
-          }`,
         },
         allowedDomains: {
           title: t("certd.localCa.eabAllowedDomains"),
@@ -510,7 +444,6 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
             maxUses: form.maxUses || 0,
             expiresDays: form.expiresDays || 0,
             allowedDomains: parseAllowedDomains(form.allowedDomains),
-            grantId: form.grantId || undefined,
             remark: form.remark,
             privileged: form.privileged === true,
           });

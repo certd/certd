@@ -1554,38 +1554,36 @@ describe("LocalCaService", () => {
     assert.equal((await service.listOptions({ userId: 2, projectId: 99 })).length, 0);
   });
 
-  it("EAB可绑定用户授权，并固化用户与项目归属", async () => {
+  it("EAB不再绑定用户/项目授权，独立存在", async () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "EAB Grant CA" });
     await service.setAcmeEnabled({ id, userId: 1, enabled: true });
-    const grant = await service.addGrant({ id, userId: 1, grantUserId: 5 });
+    await service.addGrant({ id, userId: 1, grantUserId: 5 });
 
     const eab = await service.createAcmeEab({
       caId: id,
       userId: 1,
-      name: "bound eab",
-      grantId: grant.id,
+      name: "independent eab",
       maxUses: 1,
     });
-    assert.equal(eab.grantId, grant.id);
-    assert.equal(eab.userId, 5);
+    assert.equal(eab.grantId, null);
+    assert.equal(Number(eab.userId || 0), 0);
     assert.ok(!eab.projectId);
 
     const stored: any = await (service.acmeEabRepository as any).findOne({ where: { kid: eab.kid } });
-    assert.equal(stored.userId, 5);
-    assert.ok(!stored.projectId);
-    assert.equal(stored.grantId, grant.id);
+    assert.equal(stored.grantId, null);
+    assert.equal(Number(stored.userId || 0), 0);
   });
 
-  it("撤销Grant后关联EAB全部禁用，不留可用孤儿凭证", async () => {
+  it("撤销Grant不影响独立EAB（EAB不再绑定授权）", async () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "Grant Revoke EAB CA" });
     await service.setAcmeEnabled({ id, userId: 1, enabled: true });
     const grant = await service.addGrant({ id, userId: 1, grantUserId: 5 });
-    const eab = await service.createAcmeEab({ caId: id, userId: 1, name: "bound eab", grantId: grant.id, maxUses: 0 });
+    const eab = await service.createAcmeEab({ caId: id, userId: 1, name: "independent eab", maxUses: 0 });
     await service.removeGrant({ id, userId: 1, grantId: grant.id });
     const stored: any = await (service.acmeEabRepository as any).findOne({ where: { id: eab.id } });
-    assert.equal(stored.disabled, true, "撤销授权后EAB必须禁用");
+    assert.equal(stored.disabled, false, "独立EAB不因撤销授权而被禁用");
   });
 
   it("撤销Grant对Grant行加锁（非SQLite），与创建EAB串行化", async () => {

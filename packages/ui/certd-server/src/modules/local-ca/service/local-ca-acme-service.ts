@@ -6,7 +6,6 @@ import { EntityManager, In, Repository } from "typeorm";
 import { AccessService, EncryptService, SysSettingsService, ValidateException } from "@certd/lib-server";
 import { runTransaction } from "../../db/db-transaction.js";
 import { LocalCaEntity } from "../entity/local-ca.js";
-import { LocalCaGrantEntity } from "../entity/local-ca-grant.js";
 import { AcmeAccountEntity, AcmeEabEntity, AcmeOrderEntity } from "../../acme-server/entity/acme-server.js";
 import { normalizeIpAllowlist, normalizeRequiredHeaders } from "../../acme-server/protocol/acme-access.js";
 import bcrypt from "bcryptjs";
@@ -346,7 +345,7 @@ export class LocalCaAcmeService {
     logger.info(`[local-ca] ${disableAcme ? "acme disabled" : "direct orders invalidated"} ca=${ca.id}; unfinished direct orders invalidated`);
   }
 
-  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number; remark?: string; privileged?: boolean }) {
+  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; remark?: string; privileged?: boolean }) {
     const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, req.privileged === true);
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以创建ACME凭证");
@@ -367,7 +366,7 @@ export class LocalCaAcmeService {
     const bean = this.acmeEabRepository.create({
       id,
       caId: ca.id,
-      grantId: req.grantId ?? null,
+      grantId: null,
       userId: 0,
       projectId: undefined,
       name: String(req.name || "").trim() || "ACME凭证",
@@ -382,27 +381,8 @@ export class LocalCaAcmeService {
       privileged: req.privileged === true,
       remark: String(req.remark || "").trim() || null,
     });
-    const manager = this.repository.manager;
-    if (!manager?.transaction) {
-      throw new ValidateException("数据库事务不可用，无法创建ACME凭证");
-    }
-    // 授权校验与EAB保存同事务，并对Grant加锁，避免与撤销授权并发产生失效EAB
-    await runTransaction(manager, async tx => {
-      if (req.grantId != null) {
-        const driverType = String(tx.connection?.options?.type || "");
-        const useLock = !driverType.includes("sqlite");
-        const grant = await tx.getRepository(LocalCaGrantEntity).findOne({
-          where: { id: req.grantId, caId: ca.id },
-          ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
-        });
-        if (!grant || grant.disabled) {
-          throw new ValidateException("EAB绑定的用户授权不存在或已禁用");
-        }
-        bean.userId = grant.userId;
-        bean.projectId = grant.projectId > 0 ? grant.projectId : undefined;
-      }
-      await tx.getRepository(AcmeEabEntity).save(bean);
-    });
+    // EAB 不再绑定用户/项目授权，直接保存（账户分配在后续“分配账户”中完成）
+    await this.acmeEabRepository.save(bean);
     logger.info(`[local-ca] eab created ca=${ca.id} eab=${bean.id} kid=${kid} privileged=${bean.privileged} maxUses=${maxUses} allowedDomains=${allowedDomains.length}`);
     return {
       id,
@@ -496,12 +476,6 @@ export class LocalCaAcmeService {
       }
       if (req.disabled === false && bean.revoked) {
         throw new ValidateException("该EAB已因泄漏被不可恢复禁用，不能重新启用，请创建新凭证");
-      }
-      if (req.disabled === false && bean.grantId) {
-        const grant = await tx.getRepository(LocalCaGrantEntity).findOne({ where: { id: bean.grantId, caId: ca.id } });
-        if (!grant || grant.disabled) {
-          throw new ValidateException("关联用户授权已撤销，不能重新启用该EAB凭证");
-        }
       }
       bean.disabled = req.disabled;
       bean.updateTime = new Date();
@@ -854,13 +828,6 @@ export class LocalCaAcmeService {
     if (!bean || bean.disabled || (bean.expiresTime && bean.expiresTime <= Date.now())) {
       return null;
     }
-    if (bean.grantId) {
-      const grantRepository = manager ? manager.getRepository(LocalCaGrantEntity) : this.repository.manager.getRepository(LocalCaGrantEntity);
-      const grant = await grantRepository.findOne({ where: { id: bean.grantId, caId: bean.caId } });
-      if (!grant || grant.disabled) {
-        return null;
-      }
-    }
     let allowedDomains: string[] = [];
     if (bean.allowedDomains) {
       try {
@@ -931,12 +898,6 @@ export class LocalCaAcmeService {
       const bean = await repository.findOne({ where: { id: req.eabId, caId: ca.id }, ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}) });
       if (!bean) {
         throw new ValidateException("ACME凭证不存在或无访问权限");
-      }
-      if (req.privileged === true && bean.grantId) {
-        const grant = await tx.getRepository(LocalCaGrantEntity).findOne({ where: { id: bean.grantId, caId: ca.id } });
-        if (!grant || grant.disabled) {
-          throw new ValidateException("关联用户授权已撤销，不能升级为特权EAB");
-        }
       }
       const downgraded = bean.privileged === true && req.privileged === false;
       bean.privileged = req.privileged;

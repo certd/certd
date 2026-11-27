@@ -3,7 +3,6 @@ import { h } from "vue";
 import { Button, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { useI18n } from "/src/locales";
-import { request } from "/@/api/service";
 import { getSecretAccessToken } from "/@/views/certd/access/api";
 import { localCaApi } from "./api";
 
@@ -17,9 +16,6 @@ function formatTime(value?: number) {
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const caIdRef = context.caIdRef;
-  let grants: any[] = [];
-  let users: any[] = [];
-  let projects: any[] = [];
 
   function formatDomains(value: any) {
     if (!value) {
@@ -35,49 +31,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       return String(value);
     }
   }
-  function grantLabel(record: any) {
-    if (record.grantId) {
-      const grant = grants.find(item => Number(item.id) === Number(record.grantId));
-      if (grant) {
-        // 用户授权与项目授权互斥：展示绑定的 userId/projectId 对象名称
-        if (Number(grant.userId) > 0) {
-          return `${t("certd.localCa.grantUser")}: ${userLabel(grant.userId)}`;
-        }
-        return `${t("certd.localCa.grantProject")}: ${projectLabel(grant.projectId)}`;
-      }
-      if (Number(record.userId) > 0) {
-        return `${t("certd.localCa.grantUser")}: ${userLabel(record.userId)}`;
-      }
-      if (record.projectId) {
-        return `${t("certd.localCa.grantProject")}: ${projectLabel(record.projectId)}`;
-      }
-      return "-";
-    }
-    return t("certd.localCa.systemLevelTag");
-  }
-  function userLabel(id: number) {
-    const user = users.find(item => Number(item.id) === Number(id));
-    if (user) {
-      return user.nickName || user.username || `#${id}`;
-    }
-    return `#${id}`;
-  }
-  function projectLabel(id: number) {
-    const project = projects.find(item => Number(item.id) === Number(id));
-    if (project) {
-      return project.name;
-    }
-    return `#${id}`;
-  }
-  function ownerLabel(record: any) {
-    if (!record.userId || Number(record.userId) <= 0) {
-      return t("certd.localCa.systemLevelTag");
-    }
-    if (record.projectId) {
-      return `${userLabel(record.userId)} / ${projectLabel(record.projectId)}`;
-    }
-    return userLabel(record.userId);
-  }
 
   let latestRequest: Promise<UserPageRes> | null = null;
   const fetchPage = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -85,20 +38,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     if (!caId) {
       return { records: [], total: 0, currentPage: 1, pageSize: 20 };
     }
-    // 服务端按轮换链聚合：旧CA的EAB/授权归最新CA统一管理
-    const [eabs, grantList] = await Promise.all([localCaApi.ListEab(caId), localCaApi.ListGrants(caId).catch(() => [])]);
-    grants = grantList || [];
-    try {
-      users = (await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST" })) || [];
-    } catch {
-      users = [];
-    }
-    try {
-      const res: any = await request({ url: "/sys/enterprise/project/page", method: "post", data: { page: { current: 1, size: 1000 } } });
-      projects = res?.records || [];
-    } catch {
-      projects = [];
-    }
+    // 服务端按轮换链聚合：旧CA的EAB归最新CA统一管理
+    const eabs = await localCaApi.ListEab(caId);
     let records = eabs || [];
     const nameKey = String(query.query?.name || "")
       .trim()
@@ -267,11 +208,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               );
             },
           },
-        },
-        grantId: {
-          title: t("certd.localCa.eabGrant"),
-          type: "text",
-          column: { width: 150, ellipsis: true, cellRender: ({ row }) => grantLabel(row) },
         },
         accountCount: {
           title: t("certd.localCa.eabAccountCount"),
