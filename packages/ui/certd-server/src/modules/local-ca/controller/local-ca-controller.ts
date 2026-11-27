@@ -564,6 +564,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
     }
     const { userId, projectId } = await this.checkCaAccess(body.id, "write");
     await this.acmeServerService.setAccountStatus(body.id, body.accountId, body.status, userId, projectId);
+    await this.service.syncAccessDisabledMarker({ caId: body.id, accountId: body.accountId });
     this.auditLog({ content: `${body.status === "valid" ? "启用" : "停用"}了本地ACME账户(${body.accountId})` });
     return this.ok(true);
   }
@@ -580,7 +581,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
       maxUses: body.maxUses,
       expiresDays: body.expiresDays,
       allowedDomains: body.allowedDomains,
-      grantId: body.grantId,
       remark: body.remark,
       privileged: body.privileged === true,
     });
@@ -695,9 +695,10 @@ export class LocalCaController extends CrudController<LocalCaService> {
     this.assertSystemAdmin();
     this.assertStepUp(body.verifyToken, "移除CA用户授权");
     const userId = this.getUserId();
-    await this.service.removeGrant({ id: body.id, userId, grantId: body.grantId });
-    this.auditLog({ content: `移除本地CA(ID:${body.id})的用户授权(ID:${body.grantId})` });
-    return this.ok(true);
+    const res = await this.service.removeGrant({ id: body.id, userId, grantId: body.grantId, disableAccounts: body.disableAccounts === true });
+    const extra = body.disableAccounts === true ? `；同时停用ACME账户${res.disabledAccounts}个，标记授权${res.markedAccess}个` : "";
+    this.auditLog({ content: `移除本地CA(ID:${body.id})的用户授权(ID:${body.grantId})${extra}` });
+    return this.ok(res);
   }
 
   @Post("/admins/list", { description: Constants.per.authOnly, summary: "查询CA管理员" })

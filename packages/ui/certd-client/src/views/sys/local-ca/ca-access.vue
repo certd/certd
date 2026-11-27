@@ -24,12 +24,17 @@
         </template>
       </a-table>
     </template>
+    <a-modal v-model:open="removeModalOpen" :title="t('certd.localCa.grantRemoveTitle')" :confirm-loading="removing" :ok-text="t('certd.common.confirm')" :cancel-text="t('certd.common.cancel')" @ok="doRemoveGrant">
+      <p>{{ t("certd.localCa.grantRemoveContent", { user: removeTargetLabel }) }}</p>
+      <a-checkbox v-model:checked="disableAccounts">{{ t("certd.localCa.grantRemoveDisableAccounts") }}</a-checkbox>
+      <div class="helper">{{ t("certd.localCa.grantRemoveDisableAccountsHelper") }}</div>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="tsx">
 import { computed, onMounted, ref } from "vue";
-import { Modal, notification } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { request } from "/src/api/service";
 import { useI18n } from "/src/locales";
 import { localCaApi } from "./api";
@@ -127,18 +132,37 @@ async function addGrant() {
   }
 }
 
+const removeModalOpen = ref(false);
+const removing = ref(false);
+const disableAccounts = ref(true);
+const removeTargetRecord = ref<any>(null);
+const removeTargetLabel = ref("");
+
 function removeGrant(record: any) {
-  Modal.confirm({
-    title: t("certd.localCa.grantRemoveTitle"),
-    content: t("certd.localCa.grantRemoveContent", { user: record.userId > 0 ? userLabel(record.userId) : projectLabel(record.projectId) }),
-    async onOk() {
-      await props.runStepUp(t("certd.localCa.grantStepUpTitle"), t("certd.localCa.grantStepUpDesc"), async () => {
-        await localCaApi.RemoveGrant(props.caId, record.id);
-        notification.success({ message: t("certd.localCa.accessRemoved") });
-        await load();
-      });
-    },
-  });
+  removeTargetRecord.value = record;
+  removeTargetLabel.value = record.userId > 0 ? userLabel(record.userId) : projectLabel(record.projectId);
+  disableAccounts.value = true;
+  removeModalOpen.value = true;
+}
+
+async function doRemoveGrant() {
+  const record = removeTargetRecord.value;
+  if (!record) {
+    return;
+  }
+  removing.value = true;
+  try {
+    const ok = await props.runStepUp(t("certd.localCa.grantStepUpTitle"), t("certd.localCa.grantStepUpDesc"), async () => {
+      await localCaApi.RemoveGrant(props.caId, record.id, disableAccounts.value);
+      notification.success({ message: t("certd.localCa.accessRemoved") });
+      await load();
+    });
+    if (ok) {
+      removeModalOpen.value = false;
+    }
+  } finally {
+    removing.value = false;
+  }
 }
 
 onMounted(async () => {
@@ -159,6 +183,11 @@ onMounted(async () => {
   }
   .ca-access-project {
     width: 200px;
+  }
+  .helper {
+    font-size: 12px;
+    color: var(--text-color-3, #999);
+    margin-top: 6px;
   }
 }
 </style>

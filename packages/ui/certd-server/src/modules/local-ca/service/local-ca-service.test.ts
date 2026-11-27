@@ -235,12 +235,29 @@ function createService() {
       return { affected: 0 };
     },
   };
+  const defaultAccessRepo = {
+    async find() {
+      return [];
+    },
+    async findOne() {
+      return null;
+    },
+    async update() {
+      return { affected: 0 };
+    },
+    async delete() {
+      return { affected: 0 };
+    },
+  };
   const resolveRepo = (entity: any) => {
     if (entity?.name === "AcmeEabEntity") {
       return service.acmeEabRepository;
     }
     if (entity?.name === "AcmeAccountEntity") {
       return (service as any).acmeAccountRepository || defaultAccountRepo;
+    }
+    if (entity?.name === "AccessEntity") {
+      return (service as any).accessEntityRepository || defaultAccessRepo;
     }
     if (entity?.name === "AcmeOrderEntity") {
       return (service as any).acmeOrderRepository;
@@ -1647,6 +1664,117 @@ describe("LocalCaService", () => {
     assert.equal(captured.status, "deactivated");
     assert.equal(captured.userId, 0);
     assert.equal(captured.projectId, null);
+  });
+
+  it("撤销授权并选择禁用账户：停用目标账户并给ACME授权加已停用标记", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Revoke Disable CA" });
+    const grant = await service.addGrant({ id, userId: 1, grantUserId: 5 });
+    const accounts = [
+      { id: "acc-target", caId: id, userId: 5, projectId: null, status: "valid" },
+      { id: "acc-other", caId: id, userId: 6, projectId: null, status: "valid" },
+    ];
+    (service as any).acmeAccountRepository = {
+      async find() {
+        return accounts;
+      },
+      async findOne(args: any) {
+        return accounts.find(a => a.id === args.where.id) || null;
+      },
+      async update(where: any, set: any) {
+        const ids = where.id?._type === "in" ? where.id._value : [where.id];
+        for (const item of accounts) {
+          if (ids.includes(item.id)) {
+            Object.assign(item, set);
+          }
+        }
+        return { affected: ids.length };
+      },
+    };
+    const accesses = [
+      { id: 1, type: "acmeAccount", subtype: `local-ca-${id}`, userId: 5, projectId: 0, name: "acc-5" },
+      { id: 2, type: "acmeAccount", subtype: `local-ca-${id}`, userId: 6, projectId: 0, name: "acc-6" },
+    ];
+    (service as any).accessEntityRepository = {
+      async find() {
+        return accesses;
+      },
+      async update(where: any, set: any) {
+        const item = accesses.find(a => a.id === where.id);
+        if (item) {
+          Object.assign(item, set);
+        }
+        return { affected: item ? 1 : 0 };
+      },
+    };
+
+    const res = await service.removeGrant({ id, userId: 1, grantId: grant.id, disableAccounts: true });
+    assert.equal(res.disabledAccounts, 1);
+    assert.equal(res.markedAccess, 1);
+    assert.equal(accounts[0].status, "deactivated");
+    assert.equal(accounts[1].status, "valid");
+    assert.equal(accesses[0].name, "acc-5（已停用）");
+    assert.equal(accesses[1].name, "acc-6");
+  });
+
+  it("撤销授权不勾选禁用账户时账户与授权名称不变", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Revoke Keep CA" });
+    const grant = await service.addGrant({ id, userId: 1, grantUserId: 5 });
+    const accounts = [{ id: "acc-target", caId: id, userId: 5, projectId: null, status: "valid" }];
+    (service as any).acmeAccountRepository = {
+      async find() {
+        return accounts;
+      },
+      async update() {
+        return { affected: 0 };
+      },
+    };
+    const accesses = [{ id: 1, type: "acmeAccount", subtype: `local-ca-${id}`, userId: 5, projectId: 0, name: "acc-5" }];
+    (service as any).accessEntityRepository = {
+      async find() {
+        return accesses;
+      },
+      async update() {
+        return { affected: 0 };
+      },
+    };
+    const res = await service.removeGrant({ id, userId: 1, grantId: grant.id });
+    assert.equal(res.disabledAccounts, 0);
+    assert.equal(accounts[0].status, "valid");
+    assert.equal(accesses[0].name, "acc-5");
+  });
+
+  it("账户启用后同步移除授权名称的已停用标记", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Sync Marker CA" });
+    const accounts = [{ id: "acc-1", caId: id, userId: 5, projectId: null, status: "valid" }];
+    (service as any).acmeAccountRepository = {
+      async find() {
+        return accounts;
+      },
+      async findOne(args: any) {
+        return accounts.find(a => a.id === args.where.id) || null;
+      },
+      async update() {
+        return { affected: 0 };
+      },
+    };
+    const accesses = [{ id: 1, type: "acmeAccount", subtype: `local-ca-${id}`, userId: 5, projectId: 0, name: "acc-5（已停用）" }];
+    (service as any).accessEntityRepository = {
+      async find() {
+        return accesses;
+      },
+      async update(where: any, set: any) {
+        const item = accesses.find(a => a.id === where.id);
+        if (item) {
+          Object.assign(item, set);
+        }
+        return { affected: item ? 1 : 0 };
+      },
+    };
+    await service.syncAccessDisabledMarker({ caId: id, accountId: "acc-1" });
+    assert.equal(accesses[0].name, "acc-5");
   });
 
   it("撤销Grant对Grant行加锁（非SQLite），与创建EAB串行化", async () => {

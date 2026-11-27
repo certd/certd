@@ -315,11 +315,11 @@ export const localCaApi = {
     });
   },
 
-  async RemoveGrant(id: number, grantId: number) {
+  async RemoveGrant(id: number, grantId: number, disableAccounts?: boolean) {
     return await req({
       url: apiPrefix + "/grants/remove",
       method: "post",
-      data: { id, grantId, verifyToken: getSecretAccessToken() },
+      data: { id, grantId, disableAccounts: disableAccounts === true, verifyToken: getSecretAccessToken() },
     });
   },
 

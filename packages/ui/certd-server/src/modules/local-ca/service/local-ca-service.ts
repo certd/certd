@@ -8,11 +8,11 @@ import path from "node:path";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { EntityManager, In, IsNull, Like, Repository } from "typeorm";
-import { BaseService, EncryptService, PageReq, SysSettingsService, ValidateException } from "@certd/lib-server";
+import { AccessEntity, BaseService, EncryptService, PageReq, SysSettingsService, ValidateException } from "@certd/lib-server";
 import { LocalCaEntity } from "../entity/local-ca.js";
 import { LocalCaAdminEntity } from "../entity/local-ca-admin.js";
 import { LocalCaGrantEntity } from "../entity/local-ca-grant.js";
-import { AcmeEabEntity, AcmeOrderEntity } from "../../acme-server/entity/acme-server.js";
+import { AcmeAccountEntity, AcmeEabEntity, AcmeOrderEntity } from "../../acme-server/entity/acme-server.js";
 import { CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { CertRevocationService } from "./cert-revocation-service.js";
 import { CertStatus } from "../../monitor/entity/cert-info.js";
@@ -192,6 +192,9 @@ function normalizeDnsServerInput(value: any): string | null {
   }
   return items.join(",");
 }
+
+// 撤销CA授权并停用账户时，追加到 ACME 授权名称后的标记（用户可在“我的授权”中自行删除该授权）
+const ACCESS_DISABLED_SUFFIX = "（已停用）";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -1131,7 +1134,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.acmeService.listMyAccounts(req);
   }
 
-  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; grantId?: number; remark?: string; privileged?: boolean }) {
+  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; remark?: string; privileged?: boolean }) {
     return await this.acmeService.createAcmeEab(req);
   }
 
@@ -1246,12 +1249,14 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.accessService.addGrant(req);
   }
 
-  async removeGrant(req: { id: number; userId: number; grantId: number }) {
+  async removeGrant(req: { id: number; userId: number; grantId: number; disableAccounts?: boolean }): Promise<{ disabledAccounts: number; markedAccess: number }> {
     const ca = await this.accessService.getOwnedCa({ id: req.id, userId: req.userId }, true);
     const manager = this.repository.manager;
     if (!manager?.transaction) {
       throw new ValidateException("数据库事务不可用，无法撤销授权");
     }
+    let disabledAccounts = 0;
+    let markedAccess = 0;
     // 撤销授权与禁用EAB同事务，并对Grant加行锁（与createAcmeEab一致），避免并发创建EAB残留可用凭证
     await runTransaction(manager, async tx => {
       const grantRepository = tx.getRepository(LocalCaGrantEntity);
@@ -1293,7 +1298,61 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
           await grantRepository.delete({ id: In(chainGrantIds) } as any);
         }
       }
+      // 联动停用目标在该CA轮换链下的ACME账户，并给对应授权名称加“已停用”标记（不删除授权记录）
+      if (req.disableAccounts) {
+        const chainProviders = chain.map(id => `local-ca-${id}`);
+        const matchOwner = (item: any) => (grant.userId > 0 ? Number(item.userId) === Number(grant.userId) && !Number(item.projectId) : Number(item.projectId) === Number(grant.projectId) && Number(grant.projectId) > 0);
+        const accountRepo = tx.getRepository(AcmeAccountEntity);
+        const accounts = await accountRepo.find({ where: { caId: In(chain) } });
+        const targetAccountIds = accounts.filter(matchOwner).map(item => item.id);
+        if (targetAccountIds.length) {
+          await accountRepo.update({ id: In(targetAccountIds) } as any, { status: "deactivated", updateTime: new Date() } as any);
+          disabledAccounts = targetAccountIds.length;
+        }
+        const accessRepo = tx.getRepository(AccessEntity);
+        const accesses = await accessRepo.find({ where: { type: "acmeAccount", subtype: In(chainProviders) } });
+        for (const item of accesses.filter(matchOwner)) {
+          const name = String(item.name || "");
+          if (name.endsWith(ACCESS_DISABLED_SUFFIX)) {
+            continue;
+          }
+          await accessRepo.update({ id: item.id }, { name: name + ACCESS_DISABLED_SUFFIX, updateTime: new Date() } as any);
+          markedAccess += 1;
+        }
+      }
     });
+    return { disabledAccounts, markedAccess };
+  }
+
+  /** 账户启停后同步 ACME 授权名称的“已停用”标记（best-effort，目标级）。 */
+  async syncAccessDisabledMarker(req: { caId: number; accountId: string }) {
+    try {
+      const manager = this.repository.manager;
+      const accountRepo = manager.getRepository(AcmeAccountEntity);
+      const account = await accountRepo.findOne({ where: { id: req.accountId } });
+      if (!account) {
+        return;
+      }
+      const chain = await this.collectRotationChain(account.caId);
+      const chainProviders = chain.map(id => `local-ca-${id}`);
+      const isUserOwner = Number(account.userId) > 0;
+      const sameOwner = (item: any) => (isUserOwner ? Number(item.userId) === Number(account.userId) && !Number(item.projectId) : Number(item.projectId) === Number(account.projectId) && Number(account.projectId) > 0);
+      const accounts = await accountRepo.find({ where: { caId: In(chain) } });
+      const hasValid = accounts.some(item => sameOwner(item) && item.status === "valid");
+      const accessRepo = manager.getRepository(AccessEntity);
+      const accesses = await accessRepo.find({ where: { type: "acmeAccount", subtype: In(chainProviders) } });
+      for (const item of accesses.filter(sameOwner)) {
+        const name = String(item.name || "");
+        const hasSuffix = name.endsWith(ACCESS_DISABLED_SUFFIX);
+        if (hasValid && hasSuffix) {
+          await accessRepo.update({ id: item.id }, { name: name.slice(0, -ACCESS_DISABLED_SUFFIX.length), updateTime: new Date() } as any);
+        } else if (!hasValid && !hasSuffix) {
+          await accessRepo.update({ id: item.id }, { name: name + ACCESS_DISABLED_SUFFIX, updateTime: new Date() } as any);
+        }
+      }
+    } catch (e: any) {
+      logger.warn(`[local-ca] sync access disabled marker failed account=${req.accountId}: ${e?.message || e}`);
+    }
   }
 
   async listAdmins(req: LocalCaScope) {
