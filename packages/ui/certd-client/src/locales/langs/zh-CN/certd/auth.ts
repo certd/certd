@@ -74,6 +74,7 @@ export default {
     submit: "注册",
     login: "登录",
     noMethodEnabled: "没有启用任何一种注册方式",
+    notOpen: "未开放注册",
     usernameRequired: "请输入用户名",
     emailRequired: "请输入邮箱",
     emailInvalid: "请输入正确的邮箱",

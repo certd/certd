@@ -16,6 +16,9 @@ export class SysPublicSettings extends BaseSettings {
   static __access__ = "public";
 
   registerEnabled = false;
+  // 注册模式：closed=关闭 / invite=受邀（一次性邀请链接）/ open=开放。
+  // 未设置时按 registerEnabled 派生（true=open, false=closed），保持对旧数据的兼容。
+  registerMode?: "closed" | "invite" | "open";
   userValidTimeEnabled?: boolean = false;
   passwordLoginEnabled = true;
   usernameRegisterEnabled = true;

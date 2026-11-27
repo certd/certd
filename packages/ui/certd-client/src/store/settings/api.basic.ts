@@ -32,6 +32,7 @@ export type PlusInfo = {
 };
 export type SysPublicSetting = {
   registerEnabled?: boolean;
+  registerMode?: "closed" | "invite" | "open";
   userValidTimeEnabled?: boolean;
   usernameRegisterEnabled?: boolean;
   mobileRegisterEnabled?: boolean;

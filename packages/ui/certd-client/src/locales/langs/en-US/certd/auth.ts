@@ -72,6 +72,7 @@ export default {
     submit: "Register",
     login: "Log In",
     noMethodEnabled: "No registration method is enabled",
+    notOpen: "Registration is not open",
     usernameRequired: "Please enter your username",
     emailRequired: "Please enter your email",
     emailInvalid: "Please enter a valid email address",

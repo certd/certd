@@ -1,6 +1,18 @@
 <template>
   <div class="main">
-    <a-form ref="formRef" class="user-layout-register" name="custom-validation" :model="formState" :rules="rules" v-bind="layout" :label-col="{ span: 6 }" @finish="handleFinish" @finish-failed="handleFinishFailed">
+    <a-result v-if="!canRegister" status="warning" :title="t('certd.auth.register.notOpen')" />
+    <a-form
+      v-else
+      ref="formRef"
+      class="user-layout-register"
+      name="custom-validation"
+      :model="formState"
+      :rules="rules"
+      v-bind="layout"
+      :label-col="{ span: 6 }"
+      @finish="handleFinish"
+      @finish-failed="handleFinishFailed"
+    >
       <a-tabs v-model:active-key="registerType" @change="handleTabChange">
         <a-tab-pane v-if="settingsStore.sysPublic.usernameRegisterEnabled !== false" key="username" :tab="t('certd.auth.register.usernameTab')">
           <template v-if="registerType === 'username'">
@@ -97,15 +109,16 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, reactive, ref, toRaw } from "vue";
+import { defineComponent, onMounted, reactive, ref, toRaw } from "vue";
 import { useUserStore } from "/src/store/user";
 import { utils } from "@fast-crud/fast-crud";
 import EmailCode from "./email-code.vue";
 import { useSettingStore } from "/@/store/settings";
 import { notification } from "ant-design-vue";
 import CaptchaInput from "/@/components/captcha/captcha-input.vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { inviteUtils } from "/@/utils/util.invite";
+import { registerStatus } from "/@/store/user/api.user";
 import { useI18n } from "vue-i18n";
 export default defineComponent({
   name: "RegisterPage",
@@ -113,6 +126,10 @@ export default defineComponent({
   setup() {
     const settingsStore = useSettingStore();
     const { t } = useI18n();
+    const route = useRoute();
+    // 受邀注册：链接形如 /register?inviteToken=xxx；token 无效/缺失时与“未开放注册”一致
+    const inviteToken = String((route.query.inviteToken || route.query.token || "") as string);
+    const canRegister = ref(true);
     const registerType = ref("email");
     if (settingsStore.sysPublic.emailRegisterEnabled) {
       registerType.value = "email";
@@ -126,6 +143,14 @@ export default defineComponent({
       });
     }
     const userStore = useUserStore();
+    onMounted(async () => {
+      try {
+        const res = await registerStatus({ inviteToken });
+        canRegister.value = res?.canRegister === true;
+      } catch {
+        canRegister.value = false;
+      }
+    });
     const formRef = ref();
     const formState: any = reactive({
       mobile: "",
@@ -137,6 +162,7 @@ export default defineComponent({
       captcha: null,
       captchaForEmail: null,
       inviteCode: inviteUtils.get(),
+      inviteToken,
     });
 
     const rules = {
@@ -228,6 +254,7 @@ export default defineComponent({
             captcha: registerType.value === "email" ? formState.captchaForEmail : formState.captcha,
             validateCode: formState.validateCode,
             inviteCode: formState.inviteCode,
+            inviteToken: formState.inviteToken,
           }) as any
         );
       } finally {
@@ -263,6 +290,7 @@ export default defineComponent({
       resetForm,
       registerType,
       settingsStore,
+      canRegister,
       handleTabChange,
       goLogin,
       t,

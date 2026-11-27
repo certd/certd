@@ -1,10 +1,12 @@
 import { request } from "/src/api/service";
 
 export interface RegisterReq {
+  type?: string;
   username: string;
   password: string;
-  confirmPassword: string;
+  confirmPassword?: string;
   inviteCode?: string;
+  inviteToken?: string;
 }
 /**
  * @description: Login interface parameters
@@ -55,6 +57,15 @@ export async function register(user: RegisterReq): Promise<UserInfoRes> {
     url: "/register",
     method: "post",
     data: user,
+  });
+}
+
+/** 注册可用性：关闭/受邀 token 无效统一返回 canRegister=false（不区分原因）。 */
+export async function registerStatus(data: { inviteToken?: string }): Promise<{ mode: string; canRegister: boolean; methods: { username: boolean; email: boolean; mobile: boolean } }> {
+  return await request({
+    url: "/register/status",
+    method: "post",
+    data,
   });
 }
 export async function forgotPassword(data: ForgotPasswordReq): Promise<any> {
