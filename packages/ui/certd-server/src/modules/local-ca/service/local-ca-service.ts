@@ -1069,20 +1069,8 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.acmeService.rotateInternalToken(req);
   }
 
-  async listMyEab(req: { userId: number; projectId?: number }) {
-    return await this.acmeService.listMyEab(req);
-  }
-
-  async getMyEabSecret(req: { userId: number; projectId?: number; eabId: string }) {
-    return await this.acmeService.getMyEabSecret(req);
-  }
-
   async resolveEabSslProvider(caId: number) {
     return await this.acmeService.resolveEabSslProvider(caId);
-  }
-
-  async exportMyAccount(req: { userId: number; projectId?: number; accountId: string }) {
-    return await this.acmeService.exportMyAccount(req);
   }
 
   async listEabAccounts(req: { caId: number; eabId: string; userId: number; projectId?: number }) {
@@ -1128,10 +1116,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       revokedCerts++;
     }
     return { disabledAccounts: result.disabledAccounts, revokedCerts };
-  }
-
-  async listMyAccounts(req: { userId: number; projectId?: number }) {
-    return await this.acmeService.listMyAccounts(req);
   }
 
   async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; remark?: string; privileged?: boolean }) {

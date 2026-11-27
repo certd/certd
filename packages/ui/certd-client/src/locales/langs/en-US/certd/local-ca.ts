@@ -2,6 +2,8 @@ export default {
   title: "Local CA Management",
   description: "Manage local root and intermediate CAs and issue certificates for internal or testing purposes. Clients must trust the corresponding root CA.",
   tabCaManage: "CA Management",
+  manage: "Manage",
+  manageDialogTitle: "Local CA Management",
   tabAcmeService: "ACME Service",
   tabIssuedCerts: "Issued Certificates",
   caSelect: "Select CA",

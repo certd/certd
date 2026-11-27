@@ -26,14 +26,4 @@ export class LocalCaGetter {
       searchKey,
     });
   }
-
-  /** 当前用户被分配的EAB列表（供acmeAccount表单下拉选择，不含密钥）。 */
-  async listMyEab() {
-    return await this.service.listMyEab({ userId: this.userId, projectId: this.projectId });
-  }
-
-  /** 服务端内部取回当前用户自有EAB密钥（归属校验），密钥不下发前端。 */
-  async getEabSecret(eabId: string) {
-    return await this.service.getMyEabSecret({ userId: this.userId, projectId: this.projectId, eabId });
-  }
 }

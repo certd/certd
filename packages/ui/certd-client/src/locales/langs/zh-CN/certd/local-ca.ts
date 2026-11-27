@@ -2,6 +2,8 @@ export default {
   title: "本地CA管理",
   description: "管理本地根CA与中间CA，签发内部及测试用途证书；客户端须信任对应根CA。",
   tabCaManage: "CA管理",
+  manage: "管理",
+  manageDialogTitle: "本地CA管理",
   tabAcmeService: "ACME服务",
   tabIssuedCerts: "签发证书管理",
   caSelect: "选择CA",

@@ -172,31 +172,6 @@ export class AcmeAccountAccess extends BaseAccess {
   eabHmacKey = "";
 
   @AccessInput({
-    title: "EAB凭证",
-    component: {
-      name: "remote-select",
-      vModel: "value",
-      type: "access",
-      typeName: "acmeAccount",
-      action: "onEabList",
-      single: true,
-      emitImmediate: true,
-    },
-    helper: "选择管理员分配给您的EAB凭证，密钥由服务端内部使用，无需手动填写。",
-    required: true,
-    mergeScript: `
-    return {
-      show: ctx.compute(({form})=> form.access?._needEAB === true && String(form.caType||'').startsWith('local-ca-')),
-      required: ctx.compute(({form})=> form.access?._needEAB === true && String(form.caType||'').startsWith('local-ca-')),
-      component: {
-        disabled: ctx.compute(({form})=> !!form.access?.account && !form.access?.editAccount)
-      }
-    }
-    `,
-  })
-  eabId = "";
-
-  @AccessInput({
     title: "生成ACME账号",
     component: {
       name: "refresh-input",
@@ -314,13 +289,6 @@ export class AcmeAccountAccess extends BaseAccess {
       }));
   }
 
-  /** 本地CA：当前用户被分配的EAB下拉选项（按所选颁发机构过滤），不含密钥。 */
-  async onEabList() {
-    const getter: any = await this.ctx?.serviceGetter?.get("localCaGetter");
-    const list = (await getter?.listMyEab?.()) || [];
-    return list.filter((item: any) => !this.caType || item.sslProvider === this.caType).map((item: any) => ({ value: item.id, label: `${item.name}（${item.caName || "#" + item.caId}）` }));
-  }
-
   async onGenerateAccount() {
     if (!this.caType) {
       throw new Error("请先选择颁发机构");
@@ -328,16 +296,7 @@ export class AcmeAccountAccess extends BaseAccess {
     if (!this.email) {
       throw new Error("请先填写邮箱");
     }
-    // 本地CA：用户选择被分配的EAB，服务端校验归属后内部取密钥，HMAC不下发前端
-    if (String(this.caType).startsWith("local-ca-") && this.eabId) {
-      const getter: any = await this.ctx?.serviceGetter?.get("localCaGetter");
-      const secret = await getter?.getEabSecret?.(this.eabId);
-      if (!secret?.kid || !secret?.hmacKey) {
-        throw new Error("无权使用该EAB凭证或凭证不可用");
-      }
-      this.eabKid = secret.kid;
-      this.eabHmacKey = secret.hmacKey;
-    }
+    // 本地CA：管理员通过 EAB 行"分配账户"完成注册，用户侧不再自助生成
     // 是否需要EAB按系统「流水线设置」中该颁发机构的 needEAB 配置决定
     const provider = await this.getProvider();
     const needEab = provider?.needEAB === true;

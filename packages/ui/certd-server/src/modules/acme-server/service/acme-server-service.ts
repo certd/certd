@@ -664,20 +664,6 @@ export class AcmeServerService {
     return result;
   }
 
-  /** 普通用户查看自己账户的订单：按账户归属(userId/projectId)校验，无需CA管理权。 */
-  async listMyAccountOrders(accountId: string, userId: number, projectId?: number) {
-    const account = await this.accountRepository.findOne({ where: { id: accountId } });
-    if (!account) {
-      throw new AcmeProblem("unauthorized", "ACME账户不存在", 404);
-    }
-    const owns = (userId > 0 && account.userId === userId) || (projectId && projectId > 0 && account.projectId === projectId);
-    if (!owns) {
-      throw new AcmeProblem("unauthorized", "无权访问该ACME账户", 403);
-    }
-    const orders = await this.orderRepository.find({ where: { accountId }, order: { createTime: "DESC" } });
-    return await this.mapOrdersWithCertStatus(orders);
-  }
-
   async setAccountStatus(caId: number, accountId: string, status: string, userId: number, projectId?: number) {
     await this.issuer.assertCaOwner({ id: caId, userId, projectId }, true);
     if (!["valid", "deactivated"].includes(status)) {

@@ -1,6 +1,5 @@
 <template>
   <div class="local-ca-tab-issued-certs">
-    <CaSelect v-model="caId" @change="onCaChange" />
     <a-alert type="info" show-icon class="mb-3" :message="t('certd.localCa.issuedCertsHint')" />
     <div class="issued-certs-filters">
       <a-input v-model:value="keyword" allow-clear class="issued-certs-keyword" :placeholder="t('certd.localCa.certKeywordPlaceholder')" />
@@ -83,23 +82,23 @@
 </template>
 
 <script setup lang="tsx">
-import { computed, nextTick, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { Modal, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { useI18n } from "/src/locales";
 import { request } from "/@/api/service";
 import { useModal } from "/@/use/use-modal";
 import CertView from "/@/views/certd/pipeline/cert-view.vue";
-import CaSelect from "../components/ca-select.vue";
 import { useStepUp } from "../use-step-up";
 import { localCaApi } from "../api";
 
 defineOptions({ name: "LocalCaTabIssuedCerts" });
 
+const props = defineProps<{ caId: number }>();
+
 const { t } = useI18n();
 const model = useModal();
 const { openStepUp } = useStepUp();
-const caId = ref<number | undefined>();
 const keyword = ref("");
 const statusFilter = ref("all");
 const loading = ref(false);
@@ -270,13 +269,13 @@ async function loadMeta() {
 }
 
 async function reload() {
-  if (!caId.value) {
+  if (!props.caId) {
     certs.value = [];
     return;
   }
   loading.value = true;
   try {
-    certs.value = (await localCaApi.ListCerts(caId.value)) || [];
+    certs.value = (await localCaApi.ListCerts(props.caId)) || [];
   } catch (e: any) {
     notification.error({ message: String(e?.message || e) });
     certs.value = [];
@@ -285,11 +284,10 @@ async function reload() {
   }
 }
 
-async function onCaChange() {
-  await nextTick();
+onMounted(async () => {
   await loadMeta();
   await reload();
-}
+});
 
 async function viewCert(item: any) {
   let cert: any;
@@ -324,7 +322,7 @@ function revokeCert(item: any) {
     okButtonProps: { danger: true },
     async onOk() {
       await openStepUp(t("certd.localCa.revokeCertStepUpTitle"), t("certd.localCa.revokeCertStepUpDesc"), async () => {
-        await localCaApi.RevokeCert(caId.value as number, item.id);
+        await localCaApi.RevokeCert(props.caId as number, item.id);
         notification.success({ message: t("certd.localCa.revokeSuccess") });
         await reload();
       });

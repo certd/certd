@@ -548,130 +548,12 @@ export class LocalCaAcmeService {
     return { ...bean, hmacKey };
   }
 
-  /** 普通用户“我的EAB”：按归属(用户/项目)过滤，并校验对所属CA仍有使用权；不回显hmacKey。 */
-  async listMyEab(req: { userId: number; projectId?: number }) {
-    const where: any[] = [];
-    if (req.userId > 0) {
-      where.push({ userId: req.userId });
-    }
-    if (req.projectId && req.projectId > 0) {
-      where.push({ projectId: req.projectId });
-    }
-    if (where.length === 0) {
-      return [];
-    }
-    const owned = await this.acmeEabRepository.find({ where, order: { createTime: "DESC" } });
-    const privateSetting = await this.sysSettingsService.getPrivateSettings();
-    const providerList = privateSetting.customAcmeProviders || [];
-    const caNameCache = new Map<number, string>();
-    const sslProviderCache = new Map<number, string | null>();
-    const result: any[] = [];
-    for (const item of owned) {
-      if (item.disabled) {
-        continue;
-      }
-      try {
-        await this.accessService.getGrantedCa({ id: item.caId, userId: req.userId, projectId: req.projectId });
-      } catch {
-        continue;
-      }
-      if (!caNameCache.has(item.caId)) {
-        const ca = await this.repository.findOne({ where: { id: item.caId } });
-        caNameCache.set(item.caId, ca?.name || `#${item.caId}`);
-      }
-      if (!sslProviderCache.has(item.caId)) {
-        sslProviderCache.set(item.caId, await this.resolveSslProvider(item.caId, providerList));
-      }
-      result.push({
-        id: item.id,
-        caId: item.caId,
-        caName: caNameCache.get(item.caId),
-        sslProvider: sslProviderCache.get(item.caId),
-        name: item.name,
-        kid: item.kid,
-        allowedDomains: item.allowedDomains,
-        maxUses: item.maxUses,
-        usedCount: item.usedCount,
-        expiresTime: item.expiresTime,
-        disabled: item.disabled,
-        privileged: item.privileged === true,
-        remark: item.remark,
-        createTime: item.createTime,
-      });
-    }
-    return result;
-  }
-
-  /** 普通用户取回自己EAB的密钥（供自助注册ACME账号）；严格归属+使用权校验，勿复用无校验的getAcmeEabSecret。 */
-  async getMyEabSecret(req: { userId: number; projectId?: number; eabId: string }) {
-    const bean = await this.acmeEabRepository.findOne({ where: { id: req.eabId } });
-    if (!bean) {
-      throw new ValidateException("EAB凭证不存在");
-    }
-    const owns = (req.userId > 0 && bean.userId === req.userId) || (req.projectId && req.projectId > 0 && bean.projectId === req.projectId);
-    if (!owns) {
-      throw new ValidateException("无权访问该EAB凭证");
-    }
-    await this.accessService.getGrantedCa({ id: bean.caId, userId: req.userId, projectId: req.projectId });
-    let hmacKey: string;
-    try {
-      hmacKey = this.encryptService.decrypt(bean.hmacKeyEncrypted);
-    } catch {
-      throw new ValidateException("EAB凭证密钥解密失败");
-    }
-    if (bean.hmacKeyHash && sha256Hex(hmacKey) !== bean.hmacKeyHash) {
-      throw new ValidateException("EAB凭证密钥校验失败");
-    }
-    return { kid: bean.kid, hmacKey, caId: bean.caId };
-  }
-
   /** 解析EAB所属CA链对应的颁发机构sslProvider（服务端内部使用）。 */
   async resolveEabSslProvider(caId: number) {
     const privateSetting = await this.sysSettingsService.getPrivateSettings();
     return await this.resolveSslProvider(caId, privateSetting.customAcmeProviders || []);
   }
 
-  /** 导出当前用户自己的ACME账户供外部标准客户端使用；仅标准ACME模式允许，归属校验。 */
-  async exportMyAccount(req: { userId: number; projectId?: number; accountId: string }) {
-    const accountRepository = this.repository.manager.getRepository(AcmeAccountEntity);
-    const account = await accountRepository.findOne({ where: { id: req.accountId } });
-    if (!account) {
-      throw new ValidateException("ACME账户不存在");
-    }
-    const owns = (req.userId > 0 && account.userId === req.userId) || (req.projectId && req.projectId > 0 && account.projectId === req.projectId);
-    if (!owns) {
-      throw new ValidateException("无权导出该ACME账户");
-    }
-    const ca = await this.getAcmeAccessView(account.caId);
-    const config = this.readAcmeConfigObject(ca?.acmeConfig);
-    if (this.resolveAcmeMode(config) !== "standard") {
-      throw new ValidateException("仅标准ACME模式允许导出账户到外部客户端");
-    }
-    const accesses = await this.sysAccessService.repository.find({ where: { userId: req.userId, type: "acmeAccount" } });
-    let acc: any = null;
-    for (const item of accesses) {
-      const setting = this.sysAccessService.decryptAccessEntity(item);
-      const parsed = typeof setting.account === "string" ? JSON.parse(setting.account) : setting.account;
-      if (parsed?.accountUri && String(parsed.accountUri).endsWith("/account/" + req.accountId)) {
-        acc = parsed;
-        break;
-      }
-    }
-    if (!acc?.accountKey) {
-      throw new ValidateException("未找到该账户的密钥配置，无法导出");
-    }
-    const eab = account.eabId ? await this.getMyEabSecret({ userId: req.userId, projectId: req.projectId, eabId: account.eabId }) : null;
-    return {
-      directoryUrl: acc.directoryUrl,
-      accountUri: acc.accountUri,
-      accountKey: acc.accountKey,
-      email: acc.email,
-      caType: acc.caType,
-      eab: eab ? { kid: eab.kid, hmacKey: eab.hmacKey } : null,
-    };
-  }
-
-  /** 普通用户“我的ACME账户”：按归属过滤并校验使用权。 */
   /** 列出某EAB注册的全部ACME账户（按注册时间升序），供泄漏处置甄别。 */
   async listEabAccounts(req: { caId: number; eabId: string; userId: number; projectId?: number }) {
     const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, false, true);
@@ -768,53 +650,6 @@ export class LocalCaAcmeService {
     }
     logger.info(`[local-ca] eab leak disabled ca=${ca.id} eab=${req.eabId} accounts=${deactivatedAccountIds.length} orders=${orders.length} user=${req.userId}`);
     return { disabledAccounts: deactivatedAccountIds.length, orders };
-  }
-
-  async listMyAccounts(req: { userId: number; projectId?: number }) {
-    const where: any[] = [];
-    if (req.userId > 0) {
-      where.push({ userId: req.userId });
-    }
-    if (req.projectId && req.projectId > 0) {
-      where.push({ projectId: req.projectId });
-    }
-    if (where.length === 0) {
-      return [];
-    }
-    const accountRepository = this.repository.manager.getRepository(AcmeAccountEntity);
-    const accounts = await accountRepository.find({ where, order: { createTime: "DESC" } });
-    const result: any[] = [];
-    for (const account of accounts) {
-      try {
-        await this.accessService.getGrantedCa({ id: account.caId, userId: req.userId, projectId: req.projectId });
-      } catch {
-        continue;
-      }
-      const ca = await this.repository.findOne({ where: { id: account.caId } });
-      const eab = account.eabId ? await this.acmeEabRepository.findOne({ where: { id: account.eabId } }) : null;
-      // EAB实际可用性（禁用/过期/授权撤销均视为失效），供UI反映账户真实状态
-      const eabActive = account.eabId ? !!(await this.getAcmeEabProfile(account.eabId)) : false;
-      const orderCount = await this.acmeOrderRepository.count({ where: { accountId: account.id } });
-      const issuedCount = await this.acmeOrderRepository.count({ where: { accountId: account.id, status: "valid" } });
-      result.push({
-        id: account.id,
-        status: account.status,
-        eabActive,
-        contact: account.contact ? JSON.parse(account.contact) : [],
-        caId: account.caId,
-        caName: ca?.name || null,
-        acmeMode: this.resolveAcmeMode(this.readAcmeConfigObject(ca?.acmeConfig)),
-        eabId: account.eabId,
-        eabKid: eab?.kid || null,
-        eabName: eab?.name || null,
-        userId: account.userId,
-        projectId: account.projectId,
-        createTime: account.createTime,
-        orderCount,
-        issuedCount,
-      });
-    }
-    return result;
   }
 
   async getAcmeEabProfile(id: string, manager?: EntityManager) {

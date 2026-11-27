@@ -1,28 +1,28 @@
 <template>
-  <div class="local-ca-tab-acme-service">
-    <CaSelect v-model="caId" acme-only @change="onCaChange" />
-    <template v-if="caId">
-      <a-tabs v-model:active-key="innerTab" class="acme-service-tabs" @change="refreshInner">
-        <a-tab-pane key="access" :tab="t('certd.localCa.acmeAccessTitle')">
-          <LocalCaAcmeAccess v-if="innerTab === 'access'" :key="caId" :ca-id="caId" :run-step-up="action => openStepUp(t('certd.localCa.acmeAccessStepUpTitle'), t('certd.localCa.acmeAccessStepUpDesc'), action)" />
-        </a-tab-pane>
-        <a-tab-pane key="eab" :tab="t('certd.localCa.eabManagerTitle')">
-          <fs-crud v-if="innerTab === 'eab'" ref="eabCrudRef" class="acme-service-crud" v-bind="eabCrudBinding" />
-        </a-tab-pane>
-        <a-tab-pane key="accounts" :tab="t('certd.localCa.acmeAccounts')">
-          <AccountsTable v-if="innerTab === 'accounts'" ref="accountsTableRef" :ca-id="caId" />
-        </a-tab-pane>
-      </a-tabs>
-    </template>
-    <a-empty v-else :description="t('certd.localCa.acmeCaSelectEmpty')" />
+  <div class="local-ca-acme-service-inner">
+    <a-tabs v-model:active-key="innerTab" class="acme-service-tabs" @change="refreshInner">
+      <a-tab-pane key="access" :tab="t('certd.localCa.acmeAccessTitle')">
+        <LocalCaAcmeAccess
+          v-if="innerTab === 'access'"
+          :key="'access-' + caId"
+          :ca-id="caId"
+          :run-step-up="action => openStepUp(t('certd.localCa.acmeAccessStepUpTitle'), t('certd.localCa.acmeAccessStepUpDesc'), action)"
+        />
+      </a-tab-pane>
+      <a-tab-pane key="eab" :tab="t('certd.localCa.eabManagerTitle')">
+        <fs-crud v-if="innerTab === 'eab'" ref="eabCrudRef" class="acme-service-crud" v-bind="eabCrudBinding" />
+      </a-tab-pane>
+      <a-tab-pane key="accounts" :tab="t('certd.localCa.acmeAccounts')">
+        <AccountsTable v-if="innerTab === 'accounts'" ref="accountsTableRef" :ca-id="caId" />
+      </a-tab-pane>
+    </a-tabs>
   </div>
 </template>
 
 <script lang="tsx" setup>
-import { nextTick, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import { useI18n } from "/src/locales";
-import CaSelect from "../components/ca-select.vue";
 import LocalCaAcmeAccess from "../acme-access.vue";
 import createEabCrudOptions from "../crud-eab";
 import AccountsTable from "../components/accounts-table.vue";
@@ -30,17 +30,19 @@ import { useLocalCaDialogs } from "../use";
 import { useStepUp } from "../use-step-up";
 
 defineOptions({
-  name: "LocalCaTabAcmeService",
+  name: "LocalCaAcmeServiceInner",
 });
+
+const props = defineProps<{ caId: number }>();
 
 const { t } = useI18n();
 const { openStepUp } = useStepUp();
-const caId = ref<number | undefined>();
+const caIdRef = computed(() => props.caId);
 const innerTab = ref("access");
 
 const { openCreateEab, openEditEab, openLeakRevoke, openAssignAccount } = useLocalCaDialogs({});
 const eabContext: any = {
-  caIdRef: caId,
+  caIdRef,
   openCreateEab,
   openEditEab,
   openLeakRevoke,
@@ -51,7 +53,7 @@ const { crudBinding: eabCrudBinding, crudRef: eabCrudRef, crudExpose: eabCrudExp
 const accountsTableRef = ref<any>();
 
 async function refreshInner() {
-  if (!caId.value) {
+  if (!props.caId) {
     return;
   }
   await nextTick();
@@ -61,14 +63,10 @@ async function refreshInner() {
     await accountsTableRef.value?.load?.();
   }
 }
-
-async function onCaChange() {
-  await refreshInner();
-}
 </script>
 
 <style lang="less">
-.local-ca-tab-acme-service {
+.local-ca-acme-service-inner {
   display: flex;
   flex: 1;
   flex-direction: column;

@@ -245,6 +245,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
         buttons: {
           copy: { show: false },
+          manage: {
+            order: 0,
+            type: "link",
+            text: null,
+            tooltip: { title: t("certd.localCa.manage") },
+            icon: "ph:sliders-horizontal",
+            click: async ({ row }) => {
+              await context.openManageDialog(row);
+            },
+          },
           view: {
             order: 1,
             type: "link",
