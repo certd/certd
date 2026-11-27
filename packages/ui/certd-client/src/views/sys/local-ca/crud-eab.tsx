@@ -117,7 +117,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       rowHandle: {
-        width: 200,
+        width: 300,
         buttons: {
           view: { show: false },
           edit: {
@@ -125,6 +125,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             text: t("common.edit"),
             click: async ({ row }) => {
               await context.openEditEab(row, () => crudExpose.doRefresh());
+            },
+          },
+          assignAccount: {
+            type: "link",
+            text: t("certd.localCa.eabAssignAccount"),
+            show: compute(({ row }) => !row.revoked),
+            click: async ({ row }) => {
+              await context.openAssignAccount(row, () => crudExpose.doRefresh());
             },
           },
           remove: { show: false },

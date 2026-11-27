@@ -1586,6 +1586,69 @@ describe("LocalCaService", () => {
     assert.equal(stored.disabled, false, "独立EAB不因撤销授权而被禁用");
   });
 
+  it("getAcmeEabForAssign 拒绝停用/泄漏/过期/不存在的EAB", async () => {
+    const { service } = createService();
+    for (const override of [{ disabled: true }, { revoked: true }, { expiresTime: Date.now() - 1000 }]) {
+      service.acmeEabRepository = {
+        async findOne() {
+          return { id: "eab-x", caId: 1, ...override };
+        },
+      } as any;
+      await assert.rejects(() => service.getAcmeEabForAssign("eab-x"));
+    }
+    service.acmeEabRepository = {
+      async findOne() {
+        return null;
+      },
+    } as any;
+    await assert.rejects(() => service.getAcmeEabForAssign("eab-x"), /不存在/);
+  });
+
+  it("assertEabAssignCapacity 达到上限时拒绝", () => {
+    const { service } = createService();
+    assert.throws(() => service.assertEabAssignCapacity({ maxUses: 1, usedCount: 1 } as any), /最大注册账户数/);
+    assert.doesNotThrow(() => service.assertEabAssignCapacity({ maxUses: 0, usedCount: 99 } as any));
+  });
+
+  it("updateAcmeAccountOwner 设置用户/项目归属并校验EAB匹配", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Assign Owner CA" });
+    const updates: any[] = [];
+    (service as any).acmeAccountRepository = {
+      async findOne() {
+        return { id: "acc-1", eabId: "eab-1", caId: id, userId: 0, projectId: null };
+      },
+      async update(where: any, set: any) {
+        updates.push({ where, set });
+        return { affected: 1 };
+      },
+    };
+    await service.updateAcmeAccountOwner({ accountId: "acc-1", eabId: "eab-1", eabCaId: id, userId: 7 });
+    assert.equal(updates[0].set.userId, 7);
+    assert.equal(updates[0].set.projectId, null);
+
+    await service.updateAcmeAccountOwner({ accountId: "acc-1", eabId: "eab-1", eabCaId: id, userId: -1, projectId: 3 });
+    assert.equal(updates[1].set.userId, -1);
+    assert.equal(updates[1].set.projectId, 3);
+
+    await assert.rejects(() => service.updateAcmeAccountOwner({ accountId: "acc-1", eabId: "other", eabCaId: id, userId: 7 }), /EAB不匹配/);
+  });
+
+  it("rollbackAcmeAccountAssignment 停用账户并清空归属", async () => {
+    const { service } = createService();
+    let captured: any;
+    (service as any).acmeAccountRepository = {
+      async update(where: any, set: any) {
+        captured = set;
+        return { affected: 1 };
+      },
+    };
+    await service.rollbackAcmeAccountAssignment("acc-1");
+    assert.equal(captured.status, "deactivated");
+    assert.equal(captured.userId, 0);
+    assert.equal(captured.projectId, null);
+  });
+
   it("撤销Grant对Grant行加锁（非SQLite），与创建EAB串行化", async () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "Grant Lock CA" });

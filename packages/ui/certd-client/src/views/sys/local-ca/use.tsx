@@ -3,7 +3,9 @@ import { Modal, notification } from "ant-design-vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useModal } from "/@/use/use-modal";
 import { useI18n } from "/src/locales";
+import { request } from "/@/api/service";
 import { getSecretAccessToken } from "/@/views/certd/access/api";
+import { useProjectStore } from "/@/store/project";
 import LocalCaArchivedRoots from "./archived-roots.vue";
 import LocalCaLeakRevoke from "./components/leak-revoke.vue";
 import { localCaApi } from "./api";
@@ -866,6 +868,106 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     });
   }
 
+  async function openAssignAccount(row: any, onDone?: () => void) {
+    const projectStore = useProjectStore();
+    const isEnterprise = projectStore.isEnterprise.value;
+    let targetOptions: { label: string; value: number }[] = [];
+    if (isEnterprise) {
+      try {
+        const res: any = await request({ url: "/sys/enterprise/project/page", method: "post", data: { page: { current: 1, size: 1000 } } });
+        targetOptions = (res?.records || []).filter((p: any) => !p.disabled).map((p: any) => ({ label: p.name, value: Number(p.id) }));
+      } catch {
+        targetOptions = [];
+      }
+      if (!targetOptions.length) {
+        notification.error({ message: t("certd.localCa.eabAssignNoProjects") });
+        return;
+      }
+    } else {
+      try {
+        const users: any[] = await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST" });
+        targetOptions = (users || []).map(u => ({ label: u.nickName || u.username || `#${u.id}`, value: Number(u.id) }));
+      } catch {
+        targetOptions = [];
+      }
+      if (!targetOptions.length) {
+        notification.error({ message: t("certd.localCa.eabAssignNoUsers") });
+        return;
+      }
+    }
+    await openFormDialog({
+      title: t("certd.localCa.eabAssignTitle"),
+      wrapper: { width: 600 },
+      body: () => (
+        <div>
+          <a-alert type="info" show-icon message={t("certd.localCa.eabAssignDesc")} class="mb-3" />
+          {row.privileged ? <a-alert type="warning" show-icon message={t("certd.localCa.eabAssignPrivilegedWarning")} class="mb-3" /> : null}
+        </div>
+      ),
+      initialForm: { targetId: undefined, email: "", name: "", ensureGrant: true },
+      columns: {
+        targetId: {
+          title: isEnterprise ? t("certd.localCa.eabAssignProject") : t("certd.localCa.eabAssignUser"),
+          type: "dict-select",
+          dict: dict({ data: targetOptions }),
+          form: { required: true, col: { span: 24 } },
+        },
+        email: {
+          title: t("certd.localCa.eabAssignEmail"),
+          type: "text",
+          form: {
+            required: true,
+            col: { span: 24 },
+            helper: t("certd.localCa.eabAssignEmailHelper"),
+            rules: [{ type: "email", message: t("certd.localCa.eabAssignEmailInvalid") }],
+          },
+        },
+        name: {
+          title: t("certd.localCa.eabAssignName"),
+          type: "text",
+          form: { col: { span: 24 }, helper: t("certd.localCa.eabAssignNameHelper") },
+        },
+        ensureGrant: {
+          title: t("certd.localCa.eabAssignEnsureGrant"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("common.enabled"), value: true },
+              { label: t("common.disabled"), value: false },
+            ],
+          }),
+          form: { col: { span: 24 }, helper: t("certd.localCa.eabAssignEnsureGrantHelper") },
+        },
+      },
+      async onSubmit(form: any) {
+        if (!form.targetId || !form.email) {
+          notification.error({ message: t("certd.localCa.eabAssignSelectTarget") });
+          return false;
+        }
+        let res: any;
+        const verified = await openStepUp(t("certd.localCa.eabAssignStepUpTitle"), t("certd.localCa.eabAssignStepUpDesc"), async () => {
+          res = await localCaApi.AssignEabAccount({
+            eabId: row.id,
+            targetType: isEnterprise ? "project" : "user",
+            ...(isEnterprise ? { targetProjectId: Number(form.targetId) } : { targetUserId: Number(form.targetId) }),
+            email: form.email,
+            name: form.name,
+            ensureGrant: form.ensureGrant !== false,
+          });
+        });
+        if (!verified) {
+          return false;
+        }
+        if (res?.alreadyAssigned) {
+          notification.info({ message: t("certd.localCa.eabAssignAlready") });
+        } else {
+          notification.success({ message: t("certd.localCa.eabAssignSuccess") });
+        }
+        onDone?.();
+      },
+    });
+  }
+
   return {
     openGenerate,
     openIntermediate,
@@ -881,5 +983,6 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     openStepUp,
     openArchivedRoots,
     openLeakRevoke,
+    openAssignAccount,
   };
 }

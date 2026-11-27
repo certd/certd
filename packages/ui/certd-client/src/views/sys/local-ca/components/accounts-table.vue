@@ -81,16 +81,21 @@ function formatTime(value: any) {
   return dayjs(Number(value) || value).format("YYYY-MM-DD HH:mm:ss");
 }
 function ownerLabel(record: any) {
+  if (record.projectId) {
+    const project = projects.value.find(p => Number(p.id) === Number(record.projectId));
+    const projectName = project ? project.name : `#${record.projectId}`;
+    if (Number(record.userId) > 0) {
+      const user = users.value.find(u => Number(u.id) === Number(record.userId));
+      const userName = user ? user.nickName || user.username : `#${record.userId}`;
+      return `${userName} / ${projectName}`;
+    }
+    return `${t("certd.localCa.grantModeProject")}: ${projectName}`;
+  }
   if (!(Number(record.userId) > 0)) {
     return t("certd.localCa.systemLevelTag");
   }
   const user = users.value.find(u => Number(u.id) === Number(record.userId));
-  const name = user ? user.nickName || user.username : `#${record.userId}`;
-  if (record.projectId) {
-    const project = projects.value.find(p => Number(p.id) === Number(record.projectId));
-    return `${name} / ${project ? project.name : `#${record.projectId}`}`;
-  }
-  return name;
+  return user ? user.nickName || user.username : `#${record.userId}`;
 }
 
 async function load() {

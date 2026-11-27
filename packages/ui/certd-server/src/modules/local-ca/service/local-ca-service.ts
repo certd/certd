@@ -876,7 +876,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     bean.acmeConfig = null;
     bean.baseUrl = normalizeBaseUrl(req.baseUrl) || parent?.baseUrl || null;
     bean.dnsServer = normalizeDnsServerInput(req.dnsServer);
-    bean.pathLength = material.pathLength ?? (selfSigned ? getBasicConstraints(material.certPem).pathLength ?? 1 : 0);
+    bean.pathLength = material.pathLength ?? (selfSigned ? (getBasicConstraints(material.certPem).pathLength ?? 1) : 0);
     bean.disabled = false;
     bean.remark = req.remark || "";
     bean.exportDisabled = req.exportDisabled === true;
@@ -1153,6 +1153,22 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
 
   async getAcmeEabSecret(caId: number, kid: string) {
     return await this.acmeService.getAcmeEabSecret(caId, kid);
+  }
+
+  async getAcmeEabForAssign(eabId: string) {
+    return await this.acmeService.getAcmeEabForAssign(eabId);
+  }
+
+  assertEabAssignCapacity(eab: AcmeEabEntity) {
+    return this.acmeService.assertEabAssignCapacity(eab);
+  }
+
+  async updateAcmeAccountOwner(req: { accountId: string; eabId: string; eabCaId: number; userId: number; projectId?: number }) {
+    return await this.acmeService.updateAcmeAccountOwner(req);
+  }
+
+  async rollbackAcmeAccountAssignment(accountId: string) {
+    return await this.acmeService.rollbackAcmeAccountAssignment(accountId);
   }
 
   async getAcmeEabProfile(id: string, manager?: EntityManager) {

@@ -934,4 +934,69 @@ export class LocalCaAcmeService {
       .andWhere(`${statusColumn} IN (:...statuses)`, { statuses: ["pending", "ready"] })
       .execute();
   }
+
+  /** 分配账户：加载并校验可用于分配的 EAB（不含用量预检，幂等判断后再判断）。 */
+  async getAcmeEabForAssign(eabId: string) {
+    const bean = await this.acmeEabRepository.findOne({ where: { id: eabId } });
+    if (!bean) {
+      throw new ValidateException("EAB凭证不存在");
+    }
+    if (bean.revoked) {
+      throw new ValidateException("该EAB已因泄漏被不可用，不能用于分配");
+    }
+    if (bean.disabled) {
+      throw new ValidateException("该EAB已停用，请先启用");
+    }
+    if (bean.expiresTime && Number(bean.expiresTime) <= Date.now()) {
+      throw new ValidateException("该EAB已过期");
+    }
+    return bean;
+  }
+
+  /** 判断 EAB 是否还有可注册账户的剩余次数。 */
+  assertEabAssignCapacity(eab: AcmeEabEntity) {
+    if (eab.maxUses > 0 && Number(eab.usedCount || 0) >= Number(eab.maxUses)) {
+      throw new ValidateException("该EAB已达到最大注册账户数，请调整最大注册数或新建凭证");
+    }
+  }
+
+  /**
+   * 事务内更新账户归属：用户目标 userId>0/projectId=null；项目目标 userId=-1/projectId=X。
+   * 同时校验账户确实由该 EAB 注册、且账户 CA 在 EAB 的轮换链中。
+   */
+  async updateAcmeAccountOwner(req: { accountId: string; eabId: string; eabCaId: number; userId: number; projectId?: number }) {
+    const manager = this.repository.manager;
+    if (!manager?.transaction) {
+      throw new ValidateException("数据库事务不可用");
+    }
+    await runTransaction(manager, async tx => {
+      const repo = tx.getRepository(AcmeAccountEntity);
+      const driverType = String(tx.connection?.options?.type || "");
+      const useLock = !driverType.includes("sqlite");
+      const account = await repo.findOne({
+        where: { id: req.accountId },
+        ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+      });
+      if (!account) {
+        throw new ValidateException("ACME账户注册成功但未找到账户记录");
+      }
+      if (account.eabId !== req.eabId) {
+        throw new ValidateException("ACME账户与EAB不匹配");
+      }
+      const chain = await this.accessService.collectRotationChain(req.eabCaId);
+      if (!chain.includes(account.caId)) {
+        throw new ValidateException("ACME账户与EAB所属CA不匹配");
+      }
+      await repo.update({ id: req.accountId }, { userId: req.userId, projectId: req.projectId ?? null, updateTime: new Date() } as any);
+    });
+  }
+
+  /** 补偿：分配失败时停用账户并清空归属（best-effort）。 */
+  async rollbackAcmeAccountAssignment(accountId: string) {
+    try {
+      await this.repository.manager.getRepository(AcmeAccountEntity).update({ id: accountId } as any, { userId: 0, projectId: null, status: "deactivated", updateTime: new Date() } as any);
+    } catch (e: any) {
+      logger.error(`[local-ca] rollback assigned account failed account=${accountId}: ${e?.message || e}`);
+    }
+  }
 }

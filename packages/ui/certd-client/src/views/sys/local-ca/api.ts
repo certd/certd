@@ -323,43 +323,11 @@ export const localCaApi = {
     });
   },
 
-  async ListMyEab() {
+  async AssignEabAccount(data: { eabId: string; targetType: "user" | "project"; targetUserId?: number; targetProjectId?: number; email: string; name?: string; ensureGrant?: boolean }) {
     return await req({
-      url: apiPrefix + "/eab/myList",
+      url: apiPrefix + "/eab/assignAccount",
       method: "post",
-      data: {},
-    });
-  },
-
-  async CreateAccountFromEab(eabId: string, email: string, name?: string) {
-    return await req({
-      url: apiPrefix + "/eab/createAccount",
-      method: "post",
-      data: { eabId, email, name },
-    });
-  },
-
-  async ListMyAccounts() {
-    return await req({
-      url: apiPrefix + "/acme/myAccounts",
-      method: "post",
-      data: {},
-    });
-  },
-
-  async ListMyAccountOrders(accountId: string) {
-    return await req({
-      url: apiPrefix + "/acme/myAccountOrders",
-      method: "post",
-      data: { accountId },
-    });
-  },
-
-  async ExportMyAccount(accountId: string) {
-    return await req({
-      url: apiPrefix + "/acme/exportMyAccount",
-      method: "post",
-      data: { accountId },
+      data: { ...data, verifyToken: getSecretAccessToken() },
     });
   },
 

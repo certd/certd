@@ -38,12 +38,13 @@ const { openStepUp } = useStepUp();
 const caId = ref<number | undefined>();
 const innerTab = ref("access");
 
-const { openCreateEab, openEditEab, openLeakRevoke } = useLocalCaDialogs({});
+const { openCreateEab, openEditEab, openLeakRevoke, openAssignAccount } = useLocalCaDialogs({});
 const eabContext: any = {
   caIdRef: caId,
   openCreateEab,
   openEditEab,
   openLeakRevoke,
+  openAssignAccount,
   runStepUp: (action: () => Promise<void>) => openStepUp(t("certd.localCa.eabStepUpTitle"), t("certd.localCa.eabStepUpDesc"), action),
 };
 const { crudBinding: eabCrudBinding, crudRef: eabCrudRef, crudExpose: eabCrudExpose } = useFs({ createCrudOptions: createEabCrudOptions, context: eabContext });

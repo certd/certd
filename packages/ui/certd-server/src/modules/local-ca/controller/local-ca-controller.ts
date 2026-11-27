@@ -1,5 +1,5 @@
 import { ALL, Body, Controller, Get, Inject, Post, Provide, Query } from "@midwayjs/core";
-import { AccessGetter, AccessService, Constants, CrudController, PermissionException, ValidateException } from "@certd/lib-server";
+import { AccessGetter, AccessService, Constants, CrudController, isEnterprise, PermissionException, ValidateException } from "@certd/lib-server";
 import { cache, http, logger, utils } from "@certd/basic";
 import { newAccess } from "@certd/pipeline";
 import { ApiTags } from "@midwayjs/swagger";
@@ -279,52 +279,150 @@ export class LocalCaController extends CrudController<LocalCaService> {
     return this.ok(res);
   }
 
-  @Post("/eab/myList", { description: Constants.per.authOnly, summary: "查询当前用户被分配的EAB凭证" })
-  async myEabList() {
-    const { userId, projectId } = await this.getUseScope();
-    return this.ok(await this.service.listMyEab({ userId, projectId }));
-  }
-
-  @Post("/eab/createAccount", { description: Constants.per.authOnly, summary: "使用被分配的EAB自助创建ACME账号（密钥服务端内部使用，不下发前端）" })
-  async createAccountFromEab(@Body(ALL) body: any) {
-    const { userId, projectId } = await this.getUseScope();
-    if (!body.email) {
-      throw new ValidateException("请填写邮箱");
+  @Post("/eab/assignAccount", { description: Constants.per.authOnly, summary: "使用EAB注册本地ACME账户并分配给用户/项目（需2FA/Passkey）" })
+  async assignEabAccount(@Body(ALL) body: any) {
+    this.assertSystemAdmin();
+    this.assertStepUp(body.verifyToken, "分配ACME账户");
+    const adminUserId = this.getUserId();
+    const eabId = String(body.eabId || "").trim();
+    if (!eabId) {
+      throw new ValidateException("EAB凭证不能为空");
     }
-    // 归属校验后服务端内部取密钥，HMAC全程不出后端
-    const secret = await this.service.getMyEabSecret({ userId, projectId, eabId: body.eabId });
-    const sslProvider = await this.service.resolveEabSslProvider(secret.caId);
+    const email = String(body.email || "").trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new ValidateException("请填写正确的邮箱");
+    }
+    const targetType = body.targetType === "project" ? "project" : "user";
+    const enterprise = isEnterprise();
+    if (enterprise && targetType !== "project") {
+      throw new ValidateException("企业模式下仅支持分配给项目");
+    }
+    if (!enterprise && targetType !== "user") {
+      throw new ValidateException("非企业模式下仅支持分配给用户");
+    }
+    const targetUserId = Number(body.targetUserId) || 0;
+    const targetProjectId = Number(body.targetProjectId) || 0;
+    if (targetType === "user" && targetUserId <= 0) {
+      throw new ValidateException("请选择用户");
+    }
+    if (targetType === "project" && targetProjectId <= 0) {
+      throw new ValidateException("请选择项目");
+    }
+    const scopeUserId = targetType === "project" ? -1 : targetUserId;
+    const scopeProjectId = targetType === "project" ? targetProjectId : undefined;
+    const ensureGrant = body.ensureGrant !== false;
+    const targetLabel = targetType === "project" ? `项目#${targetProjectId}` : `用户#${targetUserId}`;
+
+    const eab = await this.service.getAcmeEabForAssign(eabId);
+    // 幂等：同一EAB+同一目标已注册则直接返回，不重复注册、不消耗次数
+    const accounts = await this.acmeServerService.listAccounts(eab.caId, adminUserId);
+    const existing = (accounts || []).find(acc => {
+      if (acc.eabId !== eab.id || Number(acc.userId) !== scopeUserId) {
+        return false;
+      }
+      if (targetType === "project") {
+        return Number(acc.projectId) === scopeProjectId;
+      }
+      return !acc.projectId;
+    });
+    let grantAdded = false;
+    if (existing) {
+      if (ensureGrant) {
+        grantAdded = await this.ensureAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
+      }
+      const accessId = await this.findAssignedAccessId(scopeUserId, scopeProjectId, existing.id);
+      this.auditLog({ content: `重复分配ACME账户（EAB:${eab.kid}，账户:${existing.id}，目标:${targetLabel}），未重复注册` });
+      return this.ok({ accountId: existing.id, accessId, caId: eab.caId, kid: eab.kid, eabName: eab.name, targetLabel, userId: scopeUserId, projectId: scopeProjectId, alreadyAssigned: true, grantAdded });
+    }
+
+    this.service.assertEabAssignCapacity(eab);
+    const sslProvider = await this.service.resolveEabSslProvider(eab.caId);
     if (!sslProvider) {
       throw new ValidateException("该凭证对应的颁发机构不可用，请联系管理员");
     }
-    const input = { caType: sslProvider, email: body.email, eabKid: secret.kid, eabHmacKey: secret.hmacKey };
-    const accessGetter = new AccessGetter(userId, projectId, this.accessService.getById.bind(this.accessService));
-    const serviceGetter = this.taskServiceBuilder.create({ userId, projectId, pluginType: "acmeAccount", capabilities: ["localCaGetter"] });
-    const accessContext = { http, logger, utils, accessService: accessGetter, serviceGetter, define: undefined } as any;
-    const access = await newAccess("acmeAccount", input, accessGetter, accessContext);
-    const accountJson = await access.onRequest({ typeName: "acmeAccount", action: "onGenerateAccount", input, record: { id: 0, type: "acmeAccount", title: "" }, data: {} });
-    // account 以JSON字符串存储，与标准授权流程一致（插件parseAcmeAccount按字符串解析）
-    const setting = { caType: sslProvider, email: body.email, eabKid: secret.kid, eabHmacKey: secret.hmacKey, account: accountJson };
-    const saved = await this.accessService.add({ type: "acmeAccount", name: body.name || `${body.email}账号`, setting: JSON.stringify(setting), userId, projectId });
-    return this.ok({ id: saved.id, name: saved.name });
+    if (ensureGrant) {
+      grantAdded = await this.ensureAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
+    }
+    const secret = await this.service.getAcmeEabSecret(eab.caId, eab.kid);
+    if (!secret) {
+      throw new ValidateException("EAB凭证密钥校验失败");
+    }
+
+    let accountJson: string;
+    try {
+      const input = { caType: sslProvider, email, eabKid: secret.kid, eabHmacKey: secret.hmacKey };
+      const accessGetter = new AccessGetter(scopeUserId, scopeProjectId, this.accessService.getById.bind(this.accessService));
+      const serviceGetter = this.taskServiceBuilder.create({ userId: scopeUserId, projectId: scopeProjectId, pluginType: "acmeAccount", capabilities: ["localCaGetter"] });
+      const accessContext = { http, logger, utils, accessService: accessGetter, serviceGetter, define: undefined } as any;
+      const access = await newAccess("acmeAccount", input, accessGetter, accessContext);
+      accountJson = await access.onRequest({ typeName: "acmeAccount", action: "onGenerateAccount", input, record: { id: 0, type: "acmeAccount", title: "" }, data: {} });
+    } catch (e: any) {
+      throw new ValidateException(`使用EAB注册ACME账户失败：${e?.message || e}`);
+    }
+
+    const accountId = this.parseAssignedAccountId(accountJson);
+    await this.service.updateAcmeAccountOwner({ accountId, eabId: eab.id, eabCaId: eab.caId, userId: scopeUserId, projectId: scopeProjectId });
+
+    let saved: any;
+    try {
+      const setting = { caType: sslProvider, email, eabKid: secret.kid, account: accountJson };
+      const name = String(body.name || `${eab.name}-${email}`).slice(0, 100);
+      saved = await this.accessService.add({ type: "acmeAccount", name, setting: JSON.stringify(setting), userId: scopeUserId, projectId: scopeProjectId });
+    } catch (e: any) {
+      await this.service.rollbackAcmeAccountAssignment(accountId).catch(() => undefined);
+      throw e;
+    }
+    this.auditLog({ content: `使用EAB「${eab.name}」(KID:${eab.kid})注册ACME账户(${accountId})并分配给${targetLabel}${grantAdded ? "，已补充CA使用权" : ""}` });
+    return this.ok({ accountId, accessId: saved.id, caId: eab.caId, kid: eab.kid, eabName: eab.name, targetLabel, userId: scopeUserId, projectId: scopeProjectId, alreadyAssigned: false, grantAdded });
   }
 
-  @Post("/acme/myAccounts", { description: Constants.per.authOnly, summary: "查询当前用户的ACME账户" })
-  async myAccounts() {
-    const { userId, projectId } = await this.getUseScope();
-    return this.ok(await this.service.listMyAccounts({ userId, projectId }));
+  private async ensureAssignGrant(caId: number, adminUserId: number, targetType: string, targetUserId: number, projectId?: number): Promise<boolean> {
+    const grants = await this.service.listGrants({ id: caId, userId: adminUserId });
+    const exists = (grants || []).some(g => (targetType === "project" ? Number(g.projectId) === Number(projectId) && Number(g.userId) === 0 : Number(g.userId) === targetUserId && Number(g.projectId) === 0));
+    if (exists) {
+      return false;
+    }
+    await this.service.addGrant({ id: caId, userId: adminUserId, ...(targetType === "project" ? { grantProjectId: projectId } : { grantUserId: targetUserId }) });
+    return true;
   }
 
-  @Post("/acme/myAccountOrders", { description: Constants.per.authOnly, summary: "查询当前用户自己ACME账户的订单" })
-  async myAccountOrders(@Body(ALL) body: any) {
-    const { userId, projectId } = await this.getUseScope();
-    return this.ok(await this.acmeServerService.listMyAccountOrders(body.accountId, userId, projectId));
+  private async findAssignedAccessId(userId: number, projectId: number | undefined, accountId: string): Promise<number | null> {
+    const where: any = { type: "acmeAccount", userId };
+    if (projectId != null) {
+      where.projectId = projectId;
+    }
+    const list = await this.accessService.repository.find({ where });
+    for (const item of list) {
+      if (projectId == null && item.projectId) {
+        continue;
+      }
+      const setting: any = this.accessService.decryptAccessEntity(item);
+      let account = setting?.account;
+      if (typeof account === "string") {
+        try {
+          account = JSON.parse(account);
+        } catch {
+          account = null;
+        }
+      }
+      if (account?.accountUri && String(account.accountUri).endsWith("/account/" + accountId)) {
+        return item.id;
+      }
+    }
+    return null;
   }
 
-  @Post("/acme/exportMyAccount", { description: Constants.per.authOnly, summary: "导出当前用户自己的ACME账户供外部标准客户端（仅标准ACME模式）" })
-  async exportMyAccount(@Body(ALL) body: any) {
-    const { userId, projectId } = await this.getUseScope();
-    return this.ok(await this.service.exportMyAccount({ userId, projectId, accountId: body.accountId }));
+  private parseAssignedAccountId(accountJson: string): string {
+    try {
+      const account = JSON.parse(accountJson);
+      const match = String(account?.accountUri || "").match(/\/account\/([A-Za-z0-9_-]+)\/?$/);
+      if (match) {
+        return match[1];
+      }
+    } catch {
+      // fallthrough
+    }
+    throw new ValidateException("ACME账户注册结果解析失败，请联系管理员");
   }
 
   @Post("/eab/accounts", { description: Constants.per.authOnly, summary: "查询某EAB注册的ACME账户（按时间，供泄漏处置）" })
