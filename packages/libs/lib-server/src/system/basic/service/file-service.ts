@@ -17,20 +17,20 @@ export const uploadTmpFileCacheKey = "tmpfile_key_";
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class FileService {
   async saveFile(userId: number, tmpCacheKey: any, permission: "public" | "private") {
-    if (tmpCacheKey.startsWith(`/${permission}`)) {
+    if (typeof tmpCacheKey === "string" && tmpCacheKey.startsWith(`/${permission}/`) && !tmpCacheKey.includes("..")) {
       //已经保存过，不需要再次保存
       return tmpCacheKey;
     }
-    let fileName = "";
-    let tmpFilePath = tmpCacheKey;
-    if (uploadTmpFileCacheKey && tmpCacheKey.startsWith(uploadTmpFileCacheKey)) {
-      const tmpFile: UploadFileItem = cache.get(tmpCacheKey);
-      if (!tmpFile) {
-        throw new ParamException("文件已过期，请重新上传");
-      }
-      tmpFilePath = tmpFile.tmpFilePath;
-      fileName = tmpFile.filename || path.basename(tmpFilePath);
+    if (typeof tmpCacheKey !== "string" || !tmpCacheKey.startsWith(uploadTmpFileCacheKey)) {
+      //只允许服务端生成的上传缓存 key，禁止直接传入文件路径
+      throw new ParamException("参数错误");
     }
+    const tmpFile: UploadFileItem = cache.get(tmpCacheKey);
+    if (!tmpFile) {
+      throw new ParamException("文件已过期，请重新上传");
+    }
+    const tmpFilePath = tmpFile.tmpFilePath;
+    const fileName = path.basename(tmpFile.filename || tmpFilePath);
     if (!tmpFilePath || !fs.existsSync(tmpFilePath)) {
       throw new Error("文件不存在,请重新上传");
     }
