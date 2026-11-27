@@ -275,7 +275,7 @@ export default {
   eabAssignAlready: "该目标已分配过该EAB的账户，未重复注册",
   eabAssignNoUsers: "暂无可分配的用户",
   eabAssignNoProjects: "暂无可分配的项目",
-  eabAssignPrivilegedWarning: "该EAB为特权EAB：分配的账户可跳过域名范围校验直接签发，请谨慎分配",
+  eabAssignPrivilegedWarning: "该EAB为特权EAB：分配的账户可跳过域名所有权验证（DNS/HTTP校验）直接签发；CA与EAB的允许域名范围限制仍然生效，请谨慎分配。",
   eabCreateWarning: "EAB凭证仅授权注册ACME账户。",
   eabCreateWarningDesc: "EAB凭证用于注册ACME账户；特权凭证可跳过域名校验直接签发，仍受允许签发域名限制。使用次数按账户注册次数计数。",
   eabCa: "中间CA",

@@ -206,7 +206,7 @@ export class AcmeEabEntity {
   @Column({ comment: "泄漏不可恢复禁用：禁止重新启用", default: false })
   revoked: boolean;
 
-  @Column({ comment: "特权EAB：跳过域名校验直接签发", default: false })
+  @Column({ comment: "特权EAB：跳过域名所有权验证直接签发（CA与EAB域名范围限制仍生效）", default: false })
   privileged: boolean;
 
   @Column({ length: 255, nullable: true })

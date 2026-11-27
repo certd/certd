@@ -288,7 +288,7 @@ export default {
   eabAssignAlready: "This EAB was already assigned to the target; no new account registered",
   eabAssignNoUsers: "No assignable users",
   eabAssignNoProjects: "No assignable projects",
-  eabAssignPrivilegedWarning: "This is a privileged EAB: assigned accounts can skip domain scope checks. Assign with care.",
+  eabAssignPrivilegedWarning: "This is a privileged EAB: assigned accounts can skip domain ownership validation (DNS/HTTP challenges) and issue directly. CA and EAB allowed-domain limits still apply. Assign with care.",
   eabCreateWarning: "EAB credentials authorize only ACME account registration.",
   eabCreateWarningDesc:
     "EAB credentials authorize ACME account registration. Privileged credentials bypass domain validation, subject to the allowed domains. Usage is counted per account registration, not per issuance or renewal.",
