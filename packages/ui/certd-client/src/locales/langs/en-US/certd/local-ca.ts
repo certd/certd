@@ -60,6 +60,7 @@ export default {
   issuedCerts: "View Issued Certificates",
   issuedCertsTitle: "Certificates Issued by This CA",
   issuedCertsHint: "Only certificates issued by this CA are listed. Revoked certificates are included in this CA's CRL.",
+  certDetailsTitle: "Certificate details",
   certType: "Type",
   certTypeLeaf: "Leaf Certificate",
   certTypeCa: "Intermediate CA",

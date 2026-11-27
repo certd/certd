@@ -59,6 +59,7 @@ export default {
   issuedCerts: "查看签发证书",
   issuedCertsTitle: "该CA签发的证书",
   issuedCertsHint: "仅展示由当前CA签发的证书；证书吊销后将列入该CA的CRL。",
+  certDetailsTitle: "证书明细",
   certType: "类型",
   certTypeLeaf: "叶子证书",
   certTypeCa: "中间CA",

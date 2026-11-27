@@ -256,11 +256,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               return (
                 <a-switch
                   size="small"
-                  checked={row.disabled}
-                  checkedChildren={t("common.disabled")}
-                  unCheckedChildren={t("common.enabled")}
+                  checked={!row.disabled}
+                  checkedChildren={t("common.enabled")}
+                  unCheckedChildren={t("common.disabled")}
                   onChange={async (checked: any) => {
-                    await toggleDisabled(row, checked === true);
+                    // checked=true 表示启用 → disabled=false
+                    await toggleDisabled(row, checked !== true);
                   }}
                 />
               );

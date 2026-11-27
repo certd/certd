@@ -327,19 +327,6 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.navigation.myAcme",
-            name: "MyAcme",
-            path: "/cert/mine/acme",
-            component: "/certd/mine/acme/index.vue",
-            meta: {
-              icon: "ph:certificate",
-              auth: true,
-              isMenu: true,
-              keepAlive: true,
-              show: () => useUserStore().localCaAccessible,
-            },
-          },
-          {
             title: "certd.navigation.userGrant",
             name: "UserGrantSetting",
             path: "/cert/mine/grant",

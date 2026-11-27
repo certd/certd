@@ -6,7 +6,7 @@
       <a-input v-model:value="keyword" allow-clear class="issued-certs-keyword" :placeholder="t('certd.localCa.certKeywordPlaceholder')" />
       <a-select v-model:value="statusFilter" class="issued-certs-status" :options="statusOptions" />
     </div>
-    <a-table :data-source="groups" :loading="loading" :pagination="{ pageSize: 20, showSizeChanger: true }" row-key="key" size="small" :expand-row-by-click="true">
+    <a-table :data-source="groups" :loading="loading" :pagination="{ pageSize: 20, showSizeChanger: true }" row-key="key" size="small">
       <a-table-column :title="t('certd.localCa.certType')" :width="110">
         <template #default="{ record }">
           <a-tag :color="record.type === 'ca' ? 'purple' : 'blue'">{{ record.type === "ca" ? t("certd.localCa.certTypeCa") : t("certd.localCa.certTypeLeaf") }}</a-tag>
@@ -34,45 +34,51 @@
       <a-table-column :title="t('certd.localCa.certExpires')" :width="170">
         <template #default="{ record }">{{ formatTime(record.latestExpires) }}</template>
       </a-table-column>
-      <template #expandedRowRender="{ record }">
-        <a-table :data-source="record.items" :pagination="false" row-key="rowKey" size="small">
-          <a-table-column :title="t('certd.localCa.certSerial')" :width="240">
-            <template #default="{ record: item }"><fs-copyable :model-value="item.serialNumber || '-'" /></template>
-          </a-table-column>
-          <a-table-column :title="t('certd.localCa.certStatus')" :width="100">
-            <template #default="{ record: item }">
-              <a-tag :color="statusColor(item)">{{ statusLabel(item) }}</a-tag>
-            </template>
-          </a-table-column>
-          <a-table-column :title="t('certd.localCa.certIssueMethod')" :width="110">
-            <template #default="{ record: item }">
-              <a-tag v-if="item.type !== 'ca'" :color="item.fromType === 'acme' ? 'geekblue' : 'cyan'">{{ item.fromType === "acme" ? t("certd.localCa.certIssueAcme") : t("certd.localCa.certIssueDirect") }}</a-tag>
-              <span v-else>-</span>
-            </template>
-          </a-table-column>
-          <a-table-column :title="t('certd.localCa.certIssuedBy')" :width="160" ellipsis>
-            <template #default="{ record: item }">{{ item.caName || "-" }}</template>
-          </a-table-column>
-          <a-table-column :title="t('certd.localCa.certOwner')" :width="160" ellipsis>
-            <template #default="{ record: item }">{{ ownerLabel(item) }}</template>
-          </a-table-column>
-          <a-table-column :title="t('certd.localCa.certApplyTime')" :width="170">
-            <template #default="{ record: item }">{{ formatTime(item.applyTime) }}</template>
-          </a-table-column>
-          <a-table-column :title="t('certd.localCa.certExpires')" :width="170">
-            <template #default="{ record: item }">{{ formatTime(item.expiresTime) }}</template>
-          </a-table-column>
-          <a-table-column :title="t('certd.localCa.certActions')" :width="120">
-            <template #default="{ record: item }">
-              <div class="local-ca-row-actions">
-                <a-button type="link" size="small" @click="viewCert(item)">{{ t("certd.localCa.certView") }}</a-button>
-                <a-button v-if="item.status !== 'revoked'" type="link" size="small" danger @click="revokeCert(item)">{{ t("certd.localCa.revoke") }}</a-button>
-              </div>
-            </template>
-          </a-table-column>
-        </a-table>
-      </template>
+      <a-table-column :title="t('certd.localCa.certActions')" :width="90">
+        <template #default="{ record }">
+          <a-button type="link" size="small" @click="openDetail(record)">{{ t("certd.localCa.certView") }}</a-button>
+        </template>
+      </a-table-column>
     </a-table>
+
+    <a-modal v-model:open="detailVisible" :title="t('certd.localCa.certDetailsTitle')" :footer="null" width="1100px">
+      <a-table :data-source="detailRecord?.items || []" :pagination="false" row-key="rowKey" size="small" :scroll="{ x: 1000 }">
+        <a-table-column :title="t('certd.localCa.certSerial')" :width="240">
+          <template #default="{ record: item }"><fs-copyable :model-value="item.serialNumber || '-'" /></template>
+        </a-table-column>
+        <a-table-column :title="t('certd.localCa.certStatus')" :width="100">
+          <template #default="{ record: item }">
+            <a-tag :color="statusColor(item)">{{ statusLabel(item) }}</a-tag>
+          </template>
+        </a-table-column>
+        <a-table-column :title="t('certd.localCa.certIssueMethod')" :width="110">
+          <template #default="{ record: item }">
+            <a-tag v-if="item.type !== 'ca'" :color="item.fromType === 'acme' ? 'geekblue' : 'cyan'">{{ item.fromType === "acme" ? t("certd.localCa.certIssueAcme") : t("certd.localCa.certIssueDirect") }}</a-tag>
+            <span v-else>-</span>
+          </template>
+        </a-table-column>
+        <a-table-column :title="t('certd.localCa.certIssuedBy')" :width="160" ellipsis>
+          <template #default="{ record: item }">{{ item.caName || "-" }}</template>
+        </a-table-column>
+        <a-table-column :title="t('certd.localCa.certOwner')" :width="160" ellipsis>
+          <template #default="{ record: item }">{{ ownerLabel(item) }}</template>
+        </a-table-column>
+        <a-table-column :title="t('certd.localCa.certApplyTime')" :width="170">
+          <template #default="{ record: item }">{{ formatTime(item.applyTime) }}</template>
+        </a-table-column>
+        <a-table-column :title="t('certd.localCa.certExpires')" :width="170">
+          <template #default="{ record: item }">{{ formatTime(item.expiresTime) }}</template>
+        </a-table-column>
+        <a-table-column :title="t('certd.localCa.certActions')" :width="120">
+          <template #default="{ record: item }">
+            <div class="local-ca-row-actions">
+              <a-button type="link" size="small" @click="viewCert(item)">{{ t("certd.localCa.certView") }}</a-button>
+              <a-button v-if="item.status !== 'revoked'" type="link" size="small" danger @click="revokeCert(item)">{{ t("certd.localCa.revoke") }}</a-button>
+            </div>
+          </template>
+        </a-table-column>
+      </a-table>
+    </a-modal>
   </div>
 </template>
 
@@ -100,6 +106,13 @@ const loading = ref(false);
 const certs = ref<any[]>([]);
 const users = ref<any[]>([]);
 const projects = ref<any[]>([]);
+const detailVisible = ref(false);
+const detailRecord = ref<any>(null);
+
+function openDetail(record: any) {
+  detailRecord.value = record;
+  detailVisible.value = true;
+}
 
 const statusOptions = computed(() => [
   { label: t("certd.localCa.certFilterAll"), value: "all" },
