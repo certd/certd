@@ -1,4 +1,6 @@
-import { Alert, Button, Input, Modal, notification } from "ant-design-vue";
+import { Alert, Input, Modal, notification } from "ant-design-vue";
+import { ref } from "vue";
+import PasskeyVerifyButton from "/@/components/passkey-verify-button/index.vue";
 import { useI18n } from "/src/locales";
 import { createAccessApi } from "/@/views/certd/access/api";
 
@@ -14,7 +16,6 @@ function base64UrlToUint8Array(value: string) {
 export function useStepUp() {
   const { t } = useI18n();
   const secretAccessApi = createAccessApi("user");
-  const passkeySupported = typeof window !== "undefined" && "PublicKeyCredential" in window && "credentials" in navigator;
   let passkeyAbort: AbortController | null = null;
 
   function translatePasskeyError(e: any): string {
@@ -42,6 +43,7 @@ export function useStepUp() {
       let settled = false;
       const modalRef: { value: any } = { value: null };
       const code = { value: "" };
+      const passkeyLoading = ref(false);
       const finish = (ok: boolean) => {
         if (settled) {
           return;
@@ -99,22 +101,19 @@ export function useStepUp() {
                 code.value = e?.target?.value || "";
               }}
             />
-            {passkeySupported ? (
-              <div class="mt-3 text-center">
-                <Button
-                  type="link"
-                  onClick={async () => {
-                    try {
-                      await verifyPasskey();
-                    } catch (e: any) {
-                      notification.error({ message: e?.message || t("certd.localCa.passkeyFailed") });
-                    }
-                  }}
-                >
-                  {t("certd.localCa.passkeyVerify")}
-                </Button>
-              </div>
-            ) : null}
+            <PasskeyVerifyButton
+              loading={passkeyLoading.value}
+              onClick={async () => {
+                passkeyLoading.value = true;
+                try {
+                  await verifyPasskey();
+                } catch (e: any) {
+                  notification.error({ message: e?.message || t("certd.localCa.passkeyFailed") });
+                } finally {
+                  passkeyLoading.value = false;
+                }
+              }}
+            />
           </div>
         ),
         async onOk() {
