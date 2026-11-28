@@ -391,6 +391,7 @@ async function doRegisterPasskey(deviceName: string, verifyCode: string) {
   try {
     const res: any = await api.generatePasskeyRegistrationOptions(verifyCode);
     const options = res;
+    const verifyToken = res.verifyToken;
 
     // navigator.credentials.query({
     //   publicKey: options,
@@ -444,7 +445,7 @@ async function doRegisterPasskey(deviceName: string, verifyCode: string) {
     };
     console.log("credential", credential, response);
 
-    const verifyRes: any = await api.verifyPasskeyRegistration(response, options.challenge, deviceName);
+    const verifyRes: any = await api.verifyPasskeyRegistration(response, options.challenge, deviceName, verifyToken);
     console.log("verifyRes:", verifyRes, JSON.stringify(verifyRes));
     await loadPasskeys();
   } catch (e: any) {

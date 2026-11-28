@@ -58,26 +58,28 @@ export class TwoFactorService {
     if (requireEnabled && !setting.authenticator.enabled) {
       throw new Error("authenticator 未开启");
     }
-    const usedKey = `two_factor_used_code:${userId}`;
-    const used = cache.get(usedKey);
-    if (used && used.token === String(token)) {
+    // TOTP时间步防重放：按用户+验证码原子占位，同一进程内并发提交最多一个成功
+    const usedKey = `two_factor_used_code:${userId}:${String(token)}`;
+    if (cache.has(usedKey)) {
       throw new Error("验证码已使用，请等待下一个验证码");
     }
     const { authenticator } = await importRuntime("otplib");
     const isValid = authenticator.verify({ token, secret });
     if (!isValid) {
+      // 并发失败计数使用同步原子自增，避免丢失计数绕过锁定
       const failKey = `two_factor_fail:${userId}`;
-      const failures = Number(cache.get(failKey) || 0) + 1;
+      const failures = cache.increment(failKey, { ttl: TFA_FAIL_WINDOW_MS });
       if (failures >= TFA_MAX_FAILURES) {
         cache.set(lockKey, Date.now() + TFA_LOCK_MS, { ttl: TFA_LOCK_MS });
         cache.delete(failKey);
         throw new Error("验证失败次数过多，请15分钟后再试");
       }
-      cache.set(failKey, failures, { ttl: TFA_FAIL_WINDOW_MS });
       throw new Error("验证码错误");
     }
+    if (!cache.setIfAbsent(usedKey, true, { ttl: TFA_USED_CODE_TTL_MS })) {
+      throw new Error("验证码已使用，请等待下一个验证码");
+    }
     cache.delete(`two_factor_fail:${userId}`);
-    cache.set(usedKey, { token: String(token) }, { ttl: TFA_USED_CODE_TTL_MS });
     return true;
   }
 

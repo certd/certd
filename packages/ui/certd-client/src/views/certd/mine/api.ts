@@ -166,11 +166,11 @@ export async function generatePasskeyRegistrationOptions(verifyCode: string) {
   });
 }
 
-export async function verifyPasskeyRegistration(response: any, challenge: string, deviceName: string) {
+export async function verifyPasskeyRegistration(response: any, challenge: string, deviceName: string, verifyToken: string) {
   return await request({
     url: "/mine/passkey/verifyRegistration",
     method: "post",
-    data: { response, challenge, deviceName },
+    data: { response, challenge, deviceName, verifyToken },
   });
 }
 

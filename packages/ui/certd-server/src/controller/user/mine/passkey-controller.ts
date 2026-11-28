@@ -5,6 +5,7 @@ import { UserService } from "../../../modules/sys/authority/service/user-service
 import { TwoFactorService } from "../../../modules/mine/service/two-factor-service.js";
 import { ApiTags } from "@midwayjs/swagger";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { cache, utils } from "@certd/basic";
 
 @Provide()
 @Controller("/api/mine/passkey")
@@ -40,10 +41,35 @@ export class MinePasskeyController extends BaseController {
     }
 
     const options = await this.passkeyService.generateRegistrationOptions(userId, user.username, remoteIp, this.ctx);
+    const verifyToken = utils.id.simpleNanoId(32);
+    cache.set(`passkey_registration_token:${verifyToken}`, userId, { ttl: 5 * 60 * 1000 });
 
     return this.ok({
       ...options,
+      verifyToken,
     });
+  }
+
+  private consumeRegistrationToken(userId: number, verifyToken: string) {
+    if (!verifyToken) {
+      throw new Error("注册前必须完成TOTP 2FA验证");
+    }
+    const tokenUserId = cache.take(`passkey_registration_token:${verifyToken}`);
+    if (tokenUserId == null || Number(tokenUserId) !== Number(userId)) {
+      throw new Error("注册验证已过期，请重新完成TOTP 2FA验证");
+    }
+  }
+
+  private async registerInternal(body: any) {
+    const userId = this.getUserId();
+    await this.twoFactorService.assertAuthenticatorEnabled(userId);
+    this.consumeRegistrationToken(userId, body.verifyToken);
+    const response = body.response;
+    const challenge = body.challenge;
+    const deviceName = body.deviceName;
+    const result = await this.passkeyService.registerPasskey(userId, response, challenge, deviceName, this.ctx);
+    this.auditLog({ content: `注册了Passkey ${deviceName || ""}`.trim() });
+    return this.ok(result);
   }
 
   @Post("/verifyRegistration", { description: Constants.per.authOnly, summary: "验证Passkey注册" })
@@ -51,15 +77,7 @@ export class MinePasskeyController extends BaseController {
     @Body(ALL)
     body: any
   ) {
-    const userId = this.getUserId();
-    await this.twoFactorService.assertAuthenticatorEnabled(userId);
-    const response = body.response;
-    const challenge = body.challenge;
-    const deviceName = body.deviceName;
-
-    const result = await this.passkeyService.registerPasskey(userId, response, challenge, deviceName, this.ctx);
-    this.auditLog({ content: "验证注册了Passkey" });
-    return this.ok(result);
+    return await this.registerInternal(body);
   }
 
   @Post("/register", { description: Constants.per.authOnly, summary: "注册Passkey" })
@@ -67,16 +85,7 @@ export class MinePasskeyController extends BaseController {
     @Body(ALL)
     body: any
   ) {
-    const userId = this.getUserId();
-    await this.twoFactorService.assertAuthenticatorEnabled(userId);
-    const response = body.response;
-    const deviceName = body.deviceName;
-    const challenge = body.challenge;
-
-    const result = await this.passkeyService.registerPasskey(userId, response, challenge, deviceName, this.ctx);
-
-    this.auditLog({ content: `注册了Passkey ${deviceName}` });
-    return this.ok(result);
+    return await this.registerInternal(body);
   }
 
   @Post("/list", { description: Constants.per.authOnly, summary: "查询Passkey列表" })

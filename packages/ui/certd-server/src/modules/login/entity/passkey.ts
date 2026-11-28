@@ -32,6 +32,9 @@ export class PasskeyEntity {
   @Column({ name: "last_used_at", comment: "最近一次验证成功时间", type: "bigint", nullable: true })
   lastUsedAt: number;
 
+  @Column({ name: "last_active_at", comment: "生命周期最近活跃时间（认证成功或重新激活）", type: "bigint", nullable: true })
+  lastActiveAt: number;
+
   @Column({ name: "disabled", comment: "是否停用（30天未使用自动停用，需TOTP重新激活）", default: false })
   disabled: boolean;
 

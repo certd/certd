@@ -21,6 +21,9 @@ function createController(overrides: any = {}) {
       calls.generate++;
       return { challenge: "c" };
     },
+    async registerPasskey() {
+      return { success: true };
+    },
     async findOne() {
       return { id: 5, deviceName: "phone" };
     },
@@ -61,5 +64,29 @@ describe("MinePasskeyController 2FA保护", () => {
     await controller.reactivatePasskey({ id: 5, verifyCode: "111111" });
     assert.deepEqual(calls.verify, ["111111"]);
     assert.equal(calls.reactivate.length, 1);
+  });
+});
+
+
+describe("MinePasskeyController 注册入口一致性", () => {
+  it("注册token由TOTP生成并一次性消费，两个入口共享相同校验", async () => {
+    const { controller } = createController();
+    const options: any = await controller.generateRegistration({ verifyCode: "123456" }, "127.0.0.1");
+    assert.ok(options.verifyToken);
+    await controller.verifyRegistration({ verifyToken: options.verifyToken, response: {}, challenge: "ch", deviceName: "phone" });
+    await assert.rejects(
+      () => controller.registerPasskey({ verifyToken: options.verifyToken, response: {}, challenge: "ch", deviceName: "phone" }),
+      /已过期/
+    );
+  });
+
+  it("删除其他用户或不存在Passkey时拒绝且不删除", async () => {
+    const { controller, calls } = createController({
+      async findOne() {
+        return null;
+      },
+    });
+    await assert.rejects(() => controller.unbindPasskey({ id: 99, verifyCode: "123456" }), /Passkey不存在/);
+    assert.equal(calls.delete.length, 0);
   });
 });

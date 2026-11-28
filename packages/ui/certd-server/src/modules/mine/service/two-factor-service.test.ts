@@ -39,6 +39,19 @@ describe("TwoFactorService OTP安全校验", () => {
     await assert.rejects(() => service.verifyAuthenticatorCode(201, "654321"), /已使用/);
   });
 
+  it("同一验证码并发提交最多一个成功", async () => {
+    const service = await createService({ validCode: "135790" });
+    const results = await Promise.allSettled([service.verifyAuthenticatorCode(205, "135790"), service.verifyAuthenticatorCode(205, "135790")]);
+    assert.equal(results.filter(item => item.status === "fulfilled").length, 1);
+    assert.equal(results.filter(item => item.status === "rejected" && /已使用/.test(String(item.reason?.message))).length, 1);
+  });
+
+  it("多个错误验证码并发提交会累计并触发锁定", async () => {
+    const service = await createService({ validCode: "222222" });
+    await Promise.allSettled(Array.from({ length: 5 }, () => service.verifyAuthenticatorCode(206, "000000")));
+    await assert.rejects(() => service.verifyAuthenticatorCode(206, "222222"), /次数过多/);
+  });
+
   it("连续失败达到上限后锁定，即使输入正确也拒绝", async () => {
     const service = await createService({ validCode: "888888" });
     for (let i = 0; i < 4; i++) {

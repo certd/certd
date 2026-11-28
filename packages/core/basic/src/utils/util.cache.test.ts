@@ -18,3 +18,21 @@ describe("AtomicLruCache.take", () => {
     assert.equal(cache.take("k"), undefined);
   });
 });
+
+
+describe("AtomicLruCache atomic operations", () => {
+  it("setIfAbsent同进程内最多成功一次", () => {
+    const cache = new AtomicLruCache<string, number>({ max: 10, ttl: 60000 });
+    assert.equal(cache.setIfAbsent("k", 1), true);
+    assert.equal(cache.setIfAbsent("k", 2), false);
+    assert.equal(cache.get("k"), 1);
+  });
+
+  it("increment并发同步调用不会丢失计数", () => {
+    const cache = new AtomicLruCache<string, number>({ max: 10, ttl: 60000 });
+    for (let i = 0; i < 5; i++) {
+      cache.increment("f", { ttl: 60000 });
+    }
+    assert.equal(cache.get("f"), 5);
+  });
+});

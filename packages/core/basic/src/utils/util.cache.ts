@@ -15,6 +15,22 @@ export class AtomicLruCache<K extends {}, V extends {}> extends LRUCache<K, V> {
     }
     return value;
   }
+
+  /** 同步 compare-and-set：同一进程内不存在 await 窗口，最多一个调用成功。 */
+  setIfAbsent(key: K, value: V, options?: { ttl?: number }): boolean {
+    if (this.has(key)) {
+      return false;
+    }
+    this.set(key, value, options);
+    return true;
+  }
+
+  /** 同步原子自增：同一进程内不会丢失并发增量。 */
+  increment(key: K, options: { ttl?: number }, delta = 1): number {
+    const next = Number(this.get(key) || 0) + delta;
+    this.set(key, next as unknown as V, options);
+    return next;
+  }
 }
 
 export const cache = new AtomicLruCache<string, any>({

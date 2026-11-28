@@ -3,7 +3,7 @@ import { AuthException, BaseService, SysSettingsService, SysSiteInfo } from "@ce
 import { isComm } from "@certd/plus-core";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { In, Repository } from "typeorm";
+import { IsNull, Repository } from "typeorm";
 import { UserService } from "../../sys/authority/service/user-service.js";
 import { PasskeyEntity } from "../entity/passkey.js";
 
@@ -25,22 +25,26 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     return this.repository;
   }
 
-  private lastActiveAt(passkey: any): number {
+  private resolveLastActiveAt(passkey: any): number {
     const updateTime = passkey.updateTime ? new Date(passkey.updateTime).getTime() : 0;
-    return Number(passkey.lastUsedAt || updateTime || passkey.registeredAt || (passkey.createTime ? new Date(passkey.createTime).getTime() : 0)) || 0;
+    return Number(passkey.lastActiveAt || passkey.lastUsedAt || updateTime || passkey.registeredAt || (passkey.createTime ? new Date(passkey.createTime).getTime() : 0)) || 0;
   }
 
   private isUnusedTooLong(passkey: any): boolean {
-    const last = this.lastActiveAt(passkey);
+    const last = this.resolveLastActiveAt(passkey);
     return last > 0 && Date.now() - last > PASSKEY_UNUSED_TTL_MS;
   }
 
   /** 30天未使用的Passkey自动停用；需TOTP 2FA重新激活。 */
   async autoDisableExpiredPasskeys(userId: number) {
     const list = await this.find({ where: { userId, disabled: false } });
-    const ids = list.filter(item => this.isUnusedTooLong(item)).map(item => item.id);
-    if (ids.length > 0) {
-      await this.repository.update({ id: In(ids) }, { disabled: true, updateTime: new Date() } as any);
+    const candidates = list.filter(item => this.isUnusedTooLong(item));
+    // 条件更新：仅当记录仍停用可写且生命周期时间未被并发认证/激活推进时才停用
+    for (const item of candidates) {
+      const where: any = { id: item.id, disabled: false };
+      const activeAt = Number(item.lastActiveAt);
+      where.lastActiveAt = activeAt > 0 ? activeAt : IsNull();
+      await this.repository.update(where, { disabled: true, updateTime: new Date() } as any);
     }
   }
 
@@ -94,10 +98,11 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
   }
 
   async verifyRegistrationResponse(userId: number, response: any, challenge: string, ctx: any) {
-    const { verifyRegistrationResponse } = await import("@simplewebauthn/server");
-
     const storedUserId = cache.get(`passkey:registration:${challenge}`);
-    if (!storedUserId || storedUserId !== userId) {
+    if (!storedUserId) {
+      throw new AuthException("注册验证已过期，请重新发起");
+    }
+    if (storedUserId !== userId) {
       throw new AuthException("注册验证失败");
     }
     const consumedUserId = cache.take(`passkey:registration:${challenge}`);
@@ -106,6 +111,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     }
 
     const { rpId, origin } = await this.getRpInfo(ctx);
+    const { verifyRegistrationResponse } = await import("@simplewebauthn/server");
 
     let verification: any = null;
     const verifyReq = {
@@ -232,7 +238,10 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       throw new AuthException("Passkey已停用，请先通过TOTP 2FA验证重新激活");
     }
     if (this.isUnusedTooLong(passkey)) {
-      await this.repository.update({ id: passkey.id }, { disabled: true, updateTime: new Date() } as any);
+      const where: any = { id: passkey.id, disabled: false };
+      const activeAt = Number(passkey.lastActiveAt);
+      where.lastActiveAt = activeAt > 0 ? activeAt : IsNull();
+      await this.repository.update(where, { disabled: true, updateTime: new Date() } as any);
       throw new AuthException("Passkey超过30天未使用已自动停用，请先通过TOTP 2FA验证重新激活");
     }
 
@@ -263,12 +272,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       throw new AuthException("认证验证失败");
     }
 
-    passkey.lastUsedAt = Date.now();
-    passkey.counter = verification.authenticationInfo.newCounter;
-    if (!passkey.rpId) {
-      passkey.rpId = rpId;
-    }
-    await this.repository.save(passkey);
+    await this.markAuthenticationSuccess(passkey, verification.authenticationInfo.newCounter, rpId);
 
     return {
       credentialId: verification.authenticationInfo.credentialID,
@@ -277,59 +281,72 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     };
   }
 
+  /** 认证成功的字段级条件更新：不覆盖disabled，且并发停用后fail-closed。 */
+  private async markAuthenticationSuccess(passkey: PasskeyEntity, counter: number, rpId: string) {
+    const now = Date.now();
+    const update: any = {
+      lastUsedAt: now,
+      lastActiveAt: now,
+      counter,
+      updateTime: new Date(),
+    };
+    if (!passkey.rpId) {
+      update.rpId = rpId;
+    }
+    const updated = await this.repository.update({ id: passkey.id, disabled: false }, update);
+    if (!updated.affected) {
+      throw new AuthException("Passkey已停用，本次认证已取消");
+    }
+  }
+
   async registerPasskey(userId: number, response: any, challenge: string, deviceName: string, ctx: any) {
     const verification = await this.verifyRegistrationResponse(userId, response, challenge, ctx);
 
     const rpInfo = await this.getRpInfo(ctx);
-
-    await this.add({
-      userId,
-      passkeyId: verification.credentialId,
-      publicKey: Buffer.from(verification.credentialPublicKey).toString("base64"),
-      counter: verification.counter,
-      deviceName,
-      rpId: rpInfo.rpId,
-      registeredAt: Date.now(),
-      lastUsedAt: Date.now(),
-      disabled: false,
-    });
+    const existing = await this.repository.findOne({ where: { passkeyId: verification.credentialId } });
+    if (existing) {
+      throw new AuthException("该Passkey已注册，请勿重复绑定");
+    }
+    const now = Date.now();
+    try {
+      await this.add({
+        userId,
+        passkeyId: verification.credentialId,
+        publicKey: Buffer.from(verification.credentialPublicKey).toString("base64"),
+        counter: verification.counter,
+        deviceName,
+        rpId: rpInfo.rpId,
+        registeredAt: now,
+        lastActiveAt: now,
+        disabled: false,
+      });
+    } catch (e: any) {
+      // 并发注册同一credential由唯一索引兜底，不留下不完整记录
+      if (/UNIQUE|duplicate|unique constraint/i.test(String(e?.message || ""))) {
+        throw new AuthException("该Passkey已注册，请勿重复绑定");
+      }
+      throw e;
+    }
 
     return { success: true };
   }
 
   /** TOTP验证通过后重新激活已停用Passkey。 */
   async reactivatePasskey(userId: number, passkeyId: number) {
-    const passkey = await this.repository.findOne({ where: { id: passkeyId, userId } });
-    if (!passkey) {
-      throw new AuthException("Passkey不存在");
+    const updated = await this.repository.update(
+      { id: passkeyId, userId, disabled: true },
+      { disabled: false, lastActiveAt: Date.now(), updateTime: new Date() } as any
+    );
+    if (!updated.affected) {
+      throw new AuthException("Passkey不存在或当前状态不可激活");
     }
-    await this.repository.update({ id: passkey.id }, { disabled: false, lastUsedAt: Date.now(), updateTime: new Date() } as any);
     return { success: true };
   }
 
   async loginByPasskey(credential: any, challenge: string, ctx: any) {
     const verification = await this.verifyAuthenticationResponse(credential, challenge, ctx);
-
-    const passkey = await this.repository.findOne({
-      where: {
-        passkeyId: verification.credentialId,
-      },
-    });
-
-    if (!passkey) {
-      throw new AuthException("Passkey不存在");
-    }
-
-    // 可同步密钥 各个客户端的计数器不是单调递增的，此规范基本上都不遵守了
-    // if (verification.counter <= passkey.counter && passkey.counter > 0) {
-    //   throw new AuthException("认证失败:计数器异常");
-    // }
-
-    passkey.counter = verification.counter;
-    passkey.updateTime = new Date();
-    await this.repository.save(passkey);
-
-    const user = await this.userService.info(passkey.userId);
+    // verifyAuthenticationResponse已做字段级条件更新，避免这里用旧实体覆盖disabled/lastActiveAt
+    const user = await this.userService.info(verification.userId);
     return user;
   }
 }
