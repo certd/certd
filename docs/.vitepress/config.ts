@@ -90,6 +90,7 @@ export default defineConfig({
                     text: "使用指南",
                     items: [
                         {text: "证书申请与托管", link: "/guide/use/cert/"},
+                        {text: "本地CA（内部/测试证书）", link: "/guide/use/local-ca/"},
                         {text: "域名验证", link: "/guide/use/cert/validation.md"},
                         {text: "流水线", link: "/guide/use/pipeline/"},
                         {text: "站点与域名监控", link: "/guide/use/monitor/"},

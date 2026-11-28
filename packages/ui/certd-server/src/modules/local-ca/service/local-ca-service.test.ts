@@ -1735,6 +1735,32 @@ describe("LocalCaService", () => {
     assert.ok(store.get(id).rotatedToId, "轮换应完成并指向新CA");
   });
 
+  it("直接签发与吊销中间CA共用CA锁", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Issue Revoke Lock CA" });
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>(resolve => (release = resolve));
+    let started: () => void = () => undefined;
+    const startedP = new Promise<void>(resolve => (started = resolve));
+    (service as any).crlService.getCrlUrl = async () => {
+      started();
+      await gate;
+      return "http://crl.example.com/revoke.crl";
+    };
+    const issueP = service.issueLeaf({ id, userId: 1, domains: ["revoke-lock.example.com"], keyType: "rsa2048", validityDays: 30 });
+    await startedP;
+    let revoked = false;
+    const revokeP = service.revokeIntermediate({ id, userId: 1 }).then(() => {
+      revoked = true;
+    });
+    await new Promise(resolve => setTimeout(resolve, 30));
+    assert.equal(revoked, false, "吊销必须等待直签锁释放");
+    release();
+    await issueP;
+    await revokeP;
+    assert.equal(store.get(id).revoked, true, "吊销应完成");
+  });
+
   it("直接签发与禁用/归档链共用CA锁", async () => {
     const { service, store } = createService();
     const { id } = await createIssuingCa(service, { name: "Issue Archive Lock CA" });

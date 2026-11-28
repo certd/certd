@@ -1745,52 +1745,55 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     }
     const serialNumber = getCertSerialNumber(ca.certPem);
     const revokedTime = Date.now();
-    const manager = this.repository.manager;
-    if (!manager?.transaction) {
-      throw new ValidateException("数据库事务不可用，无法安全吊销中间CA");
-    }
-    // 先持久化不可逆吊销状态与吊销记录，再生成CRL；CRL失败也不能恢复签发能力
-    await runTransaction(manager, async tx => {
-      await tx.getRepository(LocalCaEntity).update({ id: ca.id }, { disabled: true, revoked: true });
-      // 递增Root的CRL序号，防止并发的旧Root CRL覆盖包含本次吊销的新CRL
-      await tx
-        .getRepository(LocalCaEntity)
-        .createQueryBuilder()
-        .update()
-        .set({ lastCrlTime: -1, crlNumber: () => "crl_number + 1" } as any)
-        .where("id = :id", { id: root.id })
-        .execute();
-      await this.certRevocationService.record(
-        {
-          caId: root.id,
-          userId: req.userId,
-          projectId: req.projectId,
-          serialNumber,
-          revokedTime,
-          expiresTime: ca.notAfter,
-          reason: req.reason || "unspecified",
-        },
-        tx
-      );
-    });
-    ca.disabled = true;
-    ca.revoked = true;
-
-    // 这是显式的 Root 私钥使用操作：只在吊销中间CA时解密一次，生成并缓存Root CRL
     let crlNumber: number;
-    try {
-      crlNumber = await this.crlService.refreshRootCrlCache(root);
-    } catch (e: any) {
-      logger.warn(`[local-ca] intermediate revoke crl refresh failed ca=${ca.id} root=${root.id}: ${e?.message || e}`);
-      // 只更新缓存标记，避免用事务前的旧实体覆盖已经递增的CRL序号
-      await this.repository.update({ id: root.id }, { lastCrlTime: -1 } as any);
-      throw e;
-    }
-
+    // 与直签共用同一旧CA锁：吊销状态写入与CRL更新都在签发临界区外/内形成明确边界
+    await localCaMutex.runExclusive(caConfigKey(ca.id), async () => {
+      const fresh = await this.repository.findOne({ where: { id: ca.id } });
+      if (!fresh) {
+        throw new ValidateException("本地CA不存在");
+      }
+      const manager = this.repository.manager;
+      if (!manager?.transaction) {
+        throw new ValidateException("数据库事务不可用，无法安全吊销中间CA");
+      }
+      // 先持久化不可逆吊销状态与吊销记录，再生成CRL；CRL失败也不能恢复签发能力
+      await runTransaction(manager, async tx => {
+        await tx.getRepository(LocalCaEntity).update({ id: ca.id }, { disabled: true, revoked: true });
+        // 递增Root的CRL序号，防止并发的旧Root CRL覆盖包含本次吊销的新CRL
+        await tx
+          .getRepository(LocalCaEntity)
+          .createQueryBuilder()
+          .update()
+          .set({ lastCrlTime: -1, crlNumber: () => "crl_number + 1" } as any)
+          .where("id = :id", { id: root.id })
+          .execute();
+        await this.certRevocationService.record(
+          {
+            caId: root.id,
+            userId: req.userId,
+            projectId: req.projectId,
+            serialNumber,
+            revokedTime,
+            expiresTime: fresh.notAfter,
+            reason: req.reason || "unspecified",
+          },
+          tx
+        );
+      });
+      // 这是显式的 Root 私钥使用操作：只在吊销中间CA时解密一次，生成并缓存Root CRL
+      try {
+        crlNumber = await this.crlService.refreshRootCrlCache(root);
+      } catch (e: any) {
+        logger.warn(`[local-ca] intermediate revoke crl refresh failed ca=${ca.id} root=${root.id}: ${e?.message || e}`);
+        // 只更新缓存标记，避免用事务前的旧实体覆盖已经递增的CRL序号
+        await this.repository.update({ id: root.id }, { lastCrlTime: -1 } as any);
+        throw e;
+      }
+    });
     await this.providerSync.removeForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync remove failed ca=${ca.id}: ${e?.message || e}`));
     await this.archiveExtinctAncestors(ca.id);
-    logger.info(`[local-ca] intermediate revoked ca=${ca.id} root=${root.id} serial=${serialNumber} crl=${crlNumber} user=${req.userId}`);
-    return { serialNumber, crlNumber };
+    logger.info(`[local-ca] intermediate revoked ca=${ca.id} root=${root.id} serial=${serialNumber} crl=${crlNumber!} user=${req.userId}`);
+    return { serialNumber, crlNumber: crlNumber! };
   }
 
   async getPublicKey(req: LocalCaScope) {
@@ -1990,12 +1993,29 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
         end = next;
       }
       if (end && (end.deleted || end.revoked)) {
-        parent.deleted = true;
-        parent.disabled = true;
-        parent.updateTime = new Date();
-        await this.repository.update({ id: parent.id }, { deleted: true, disabled: true, updateTime: new Date() });
-        await this.providerSync.removeForCa(parent.id).catch(e => logger.error(`[local-ca] provider sync remove failed ca=${parent.id}: ${e?.message || e}`));
-        logger.info(`[local-ca] extinct-chain ancestor archived ca=${parent.id} trigger=${caId}`);
+        await localCaMutex.runExclusive(caConfigKey(parent.id), async () => {
+          const fresh = await this.repository.findOne({ where: { id: parent.id } });
+          if (!fresh || fresh.deleted || fresh.caType !== "intermediate" || !fresh.rotatedToId) {
+            return;
+          }
+          // 锁内复核后继链末端是否仍绝迹，避免与签发/恢复并发时误归档
+          let freshEnd: any = fresh;
+          const freshVisited = new Set<number>([fresh.id]);
+          while (freshEnd?.rotatedToId && !freshVisited.has(freshEnd.rotatedToId)) {
+            freshVisited.add(freshEnd.rotatedToId);
+            const next = await this.repository.findOne({ where: { id: freshEnd.rotatedToId } });
+            if (!next) {
+              break;
+            }
+            freshEnd = next;
+          }
+          if (!freshEnd || (!freshEnd.deleted && !freshEnd.revoked)) {
+            return;
+          }
+          await this.repository.update({ id: fresh.id }, { deleted: true, disabled: true, updateTime: new Date() });
+          await this.providerSync.removeForCa(fresh.id).catch(e => logger.error(`[local-ca] provider sync remove failed ca=${fresh.id}: ${e?.message || e}`));
+          logger.info(`[local-ca] extinct-chain ancestor archived ca=${fresh.id} trigger=${caId}`);
+        });
       }
     }
   }

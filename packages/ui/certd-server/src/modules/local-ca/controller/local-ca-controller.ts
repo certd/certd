@@ -349,16 +349,16 @@ export class LocalCaController extends CrudController<LocalCaService> {
     if (!sslProvider) {
       throw new ValidateException("该凭证对应的颁发机构不可用，请联系管理员");
     }
-    if (ensureGrant) {
-      grantChange = await this.ensureAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
-    } else {
-      await this.assertActiveAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
-    }
     let accountJson: string | undefined;
     let accountId: string | undefined;
     let saved: any;
     // 从Grant变更开始到账户归属/访问保存统一补偿边界：任一异常都撤销本次Grant变更
     try {
+      if (ensureGrant) {
+        grantChange = await this.ensureAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
+      } else {
+        await this.assertActiveAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
+      }
       const secret = await this.service.getAcmeEabSecret(eab.caId, eab.kid);
       if (!secret) {
         throw new ValidateException("EAB凭证密钥校验失败");
@@ -375,6 +375,10 @@ export class LocalCaController extends CrudController<LocalCaService> {
       const name = String(body.name || `${eab.name}-${email}`).slice(0, 100);
       saved = await this.accessService.add({ type: "acmeAccount", name, setting: JSON.stringify(setting), userId: scopeUserId, projectId: scopeProjectId });
     } catch (e: any) {
+      if (accountJson && !accountId) {
+        // 远端ACME账户可能已创建但无法解析账户ID，无法自动回滚归属，保留审计线索供人工核查
+        logger.error(`[local-ca] EAB分配账户注册成功但账户ID解析失败，远端账户可能已创建，需人工核查 eab=${eab.kid} email=${email}`);
+      }
       if (accountId) {
         await this.service.rollbackAcmeAccountAssignment(accountId).catch(() => undefined);
       }
