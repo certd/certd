@@ -82,18 +82,20 @@ function onClick() {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    height: 42px;
-    border-radius: 10px;
+    height: 40px;
+    border-radius: 8px;
     border: 1px solid var(--border-color-2, #d9d9d9);
-    background: transparent;
+    background: var(--component-background, #ffffff);
+    color: var(--text-color, #1f2937);
     font-weight: 500;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     transition: all 0.2s ease;
 
     &:not(:disabled):hover {
       color: var(--primary-color, #1677ff);
       border-color: var(--primary-color, #1677ff);
-      background: rgba(22, 119, 255, 0.04);
-      box-shadow: 0 4px 12px rgba(22, 119, 255, 0.12);
+      background: var(--component-background, #ffffff);
+      box-shadow: 0 2px 8px rgba(22, 119, 255, 0.12);
     }
   }
 
@@ -115,9 +117,10 @@ function onClick() {
 
     &__btn {
       border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.04);
 
       &:not(:disabled):hover {
-        background: rgba(22, 119, 255, 0.12);
+        background: rgba(22, 119, 255, 0.14);
       }
     }
   }
