@@ -376,23 +376,27 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
   }
 
   async function openCreateEab(onCreated?: () => void, initialCaId?: number) {
-    const allCas = await localCaApi.GetAdminOptions();
-    const caOptions = (allCas || []).filter((item: any) => item.caType === "intermediate" && item.acmeEnabled && !item.disabled).map((item: any) => ({ label: `${item.name} (${item.subjectCn})`, value: item.id }));
-    if (caOptions.length === 0) {
+    if (!initialCaId) {
       notification.error({ message: t("certd.localCa.eabNoCa") });
       return;
     }
     await openFormDialog({
       title: t("certd.localCa.eabCreateTitle"),
+      zIndex: 1200,
       wrapper: { width: 600 },
       body: () => <a-alert type="warning" show-icon message={t("certd.localCa.eabCreateWarning")} description={t("certd.localCa.eabCreateWarningDesc")} class="mb-4" />,
-      initialForm: { caId: initialCaId, maxUses: 1, expiresDays: 3650, privileged: false },
+      initialForm: { mode: "local", maxUses: 1, expiresDays: 3650, privileged: false },
       columns: {
-        caId: {
-          title: t("certd.localCa.eabCa"),
+        mode: {
+          title: t("certd.localCa.eabMode"),
           type: "dict-select",
-          dict: dict({ data: caOptions }),
-          form: { required: true, col: { span: 24 } },
+          dict: dict({
+            data: [
+              { label: t("certd.localCa.eabModeLocal"), value: "local" },
+              { label: t("certd.localCa.eabModeStandard"), value: "standard" },
+            ],
+          }),
+          form: { required: true, col: { span: 24 }, helper: t("certd.localCa.eabModeHelper") },
         },
         name: {
           title: t("certd.localCa.eabName"),
@@ -441,7 +445,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         let res: any;
         const verified = await openStepUp(t("certd.localCa.eabStepUpTitle"), t("certd.localCa.eabStepUpDesc"), async () => {
           res = await localCaApi.CreateEab({
-            caId: form.caId,
+            caId: initialCaId,
             name: form.name,
             maxUses: form.maxUses || 0,
             expiresDays: form.expiresDays || 0,
@@ -453,24 +457,44 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         if (!verified) {
           return false;
         }
-        model.success({
-          title: t("certd.localCa.eabCreatedTitle"),
-          width: 620,
-          okText: t("certd.common.close"),
-          content: () => (
-            <div>
-              <a-alert type="warning" show-icon message={t("certd.localCa.eabSecretOnce")} class="mb-4" />
-              <a-descriptions bordered column={1} size="small">
-                <a-descriptions-item label="KID">
-                  <fs-copyable modelValue={res.kid}>{res.kid}</fs-copyable>
-                </a-descriptions-item>
-                <a-descriptions-item label="HMAC Key">
-                  <fs-copyable modelValue={res.hmacKey}>{res.hmacKey}</fs-copyable>
-                </a-descriptions-item>
-              </a-descriptions>
-            </div>
-          ),
-        });
+        if (form.mode === "local") {
+          model.success({
+            title: t("certd.localCa.eabCreatedTitle"),
+            width: 620,
+            zIndex: 1300,
+            okText: t("certd.common.close"),
+            content: () => (
+              <div>
+                <a-alert type="success" show-icon message={t("certd.localCa.eabLocalCreatedHint")} class="mb-4" />
+                <a-descriptions bordered column={1} size="small">
+                  <a-descriptions-item label="KID">
+                    <fs-copyable modelValue={res.kid}>{res.kid}</fs-copyable>
+                  </a-descriptions-item>
+                </a-descriptions>
+              </div>
+            ),
+          });
+        } else {
+          model.success({
+            title: t("certd.localCa.eabCreatedTitle"),
+            width: 620,
+            zIndex: 1300,
+            okText: t("certd.common.close"),
+            content: () => (
+              <div>
+                <a-alert type="warning" show-icon message={t("certd.localCa.eabSecretOnce")} class="mb-4" />
+                <a-descriptions bordered column={1} size="small">
+                  <a-descriptions-item label="KID">
+                    <fs-copyable modelValue={res.kid}>{res.kid}</fs-copyable>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="HMAC Key">
+                    <fs-copyable modelValue={res.hmacKey}>{res.hmacKey}</fs-copyable>
+                  </a-descriptions-item>
+                </a-descriptions>
+              </div>
+            ),
+          });
+        }
         onCreated?.();
       },
     });
@@ -484,6 +508,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     const remainingDays = row.expiresTime ? Math.max(0, Math.round((Number(row.expiresTime) - Date.now()) / 86400000)) : 0;
     await openFormDialog({
       title: t("certd.localCa.eabEditTitle"),
+      zIndex: 1200,
       wrapper: { width: 600 },
       initialForm: {
         name: row.name,
@@ -874,7 +899,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     let targetOptions: { label: string; value: number }[] = [];
     if (isEnterprise) {
       try {
-        const res: any = await request({ url: "/sys/enterprise/project/page", method: "post", data: { page: { current: 1, size: 1000 } } });
+        const res: any = await request({ url: "/sys/enterprise/project/page", method: "post", data: { page: { current: 1, size: 1000 } }, showErrorNotify: false });
         targetOptions = (res?.records || []).filter((p: any) => !p.disabled).map((p: any) => ({ label: p.name, value: Number(p.id) }));
       } catch {
         targetOptions = [];
@@ -885,7 +910,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       }
     } else {
       try {
-        const users: any[] = await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST" });
+        const users: any[] = await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST", showErrorNotify: false });
         targetOptions = (users || []).map(u => ({ label: u.nickName || u.username || `#${u.id}`, value: Number(u.id) }));
       } catch {
         targetOptions = [];
@@ -897,6 +922,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     }
     await openFormDialog({
       title: t("certd.localCa.eabAssignTitle"),
+      zIndex: 1200,
       wrapper: { width: 600 },
       body: () => (
         <div>

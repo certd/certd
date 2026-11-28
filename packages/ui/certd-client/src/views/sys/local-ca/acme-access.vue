@@ -139,6 +139,7 @@ function rotateToken() {
     okText: t("certd.common.confirm"),
     cancelText: t("certd.common.cancel"),
     okButtonProps: { danger: true },
+    zIndex: 1200,
     async onOk() {
       const action = async () => {
         rotating.value = true;

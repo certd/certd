@@ -24,7 +24,15 @@
         </template>
       </a-table>
     </template>
-    <a-modal v-model:open="removeModalOpen" :title="t('certd.localCa.grantRemoveTitle')" :confirm-loading="removing" :ok-text="t('certd.common.confirm')" :cancel-text="t('certd.common.cancel')" @ok="doRemoveGrant">
+    <a-modal
+      v-model:open="removeModalOpen"
+      :title="t('certd.localCa.grantRemoveTitle')"
+      :confirm-loading="removing"
+      :ok-text="t('certd.common.confirm')"
+      :cancel-text="t('certd.common.cancel')"
+      :z-index="1200"
+      @ok="doRemoveGrant"
+    >
       <p>{{ t("certd.localCa.grantRemoveContent", { user: removeTargetLabel }) }}</p>
       <a-checkbox v-model:checked="disableAccounts">{{ t("certd.localCa.grantRemoveDisableAccounts") }}</a-checkbox>
       <div class="helper">{{ t("certd.localCa.grantRemoveDisableAccountsHelper") }}</div>

@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model:open="open" :title="t('certd.localCa.manageDialogTitle')" width="min(1400px, calc(100vw - 48px))" :footer="null" destroy-on-close class="ca-manage-dialog">
+  <a-modal v-model:open="open" :title="t('certd.localCa.manageDialogTitle')" width="min(1400px, calc(100vw - 48px))" :footer="null" destroy-on-close :z-index="1000" class="ca-manage-dialog">
     <div class="ca-manage-dialog__body">
       <div class="ca-manage-dialog__head">
         <CaSelect v-model="caId" @change="onCaChange" />
