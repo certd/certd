@@ -76,13 +76,11 @@ export default {
   customAcmeDeleteConfirmContent: "删除「{title}」可能影响使用它的流水线申请证书，确认是否删除？",
   customAcmeSaveCheck: "自定义ACME的名称、标识、Directory URL均为必填",
   customAcmeSslProviderUnique: "自定义ACME的标识(sslProvider)不能重复",
-  customAcmeLocalCaHelpTitle: "本地CA无需手动添加",
-  customAcmeLocalCaHelpContent:
-    "本地中间CA开启ACME后会自动同步到本列表（带「中间CA」标记），无需手动添加。\n手动添加适用于外部/第三方ACME服务：填写名称、唯一标识和 Directory URL，按需开启「需要EAB」，然后在证书申请任务中选择该颁发机构并创建ACME账号。",
+  customAcmeLocalCaHelpTitle: "本地CA自动同步",
+  customAcmeLocalCaHelpContent: "本地中间CA启用ACME后会自动出现在列表，无需手动添加。",
   customAcmeLocalCaTag: "中间CA",
   customAcmeLocalCaSyncedTitle: "本地CA自动同步",
-  customAcmeLocalCaSyncedHelp:
-    "该颁发机构由本地CA自动同步：名称与 Directory URL 随CA更新，CA轮换后自动指向新CA，已有ACME账号和流水线无需调整。\n此处仅可配置反向代理和启用开关；如需移除，请在「本地CA管理」中关闭该CA的ACME服务，或将CA禁用/归档。",
+  customAcmeLocalCaSyncedHelp: "该条目由本地CA自动同步；如需关闭或调整，请在「本地CA管理」中操作ACME服务。",
   customAcmeEnabledHelper: "停用后该颁发机构不可选用（配置保留），重新启用后恢复；修改后须点击页面底部「保存」生效。",
 
   fixedCertExpireDays: "固定证书有效期天数",

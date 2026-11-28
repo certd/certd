@@ -6,17 +6,9 @@
       <a-tag v-else color="orange">{{ t("certd.sys.settings.customAcmeTag") }}</a-tag>
       <span class="custom-acme-provider-title" :title="provider.directoryUrl">{{ provider.title }} 【{{ providerLabel(provider) }}】</span>
       <span v-if="provider.reverseProxy" class="custom-acme-provider-proxy" :title="provider.reverseProxy">{{ provider.reverseProxy }}</span>
-      <div class="custom-acme-provider-actions">
-        <a-switch
-          v-if="provider.localCaId != null"
-          class="custom-acme-provider-enabled"
-          size="small"
-          :checked="provider.enabled !== false"
-          :title="t('certd.sys.settings.customAcmeEnabledHelper')"
-          @change="checked => toggleEnabled(index, checked === true)"
-        />
+      <div v-if="provider.localCaId == null" class="custom-acme-provider-actions">
         <a-button type="link" size="small" @click="openEditor(index)">{{ t("common.edit") }}</a-button>
-        <a-button v-if="!provider.builtIn && provider.localCaId == null" type="link" size="small" danger @click="removeProvider(index)">{{ t("common.delete") }}</a-button>
+        <a-button v-if="!provider.builtIn" type="link" size="small" danger @click="removeProvider(index)">{{ t("common.delete") }}</a-button>
       </div>
     </div>
     <a-button class="custom-acme-provider-add" type="dashed" block @click="openEditor()">+ {{ t("certd.sys.settings.customAcmeAdd") }}</a-button>
@@ -54,6 +46,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const { openFormDialog } = useFormDialog();
+
+// 没有本地CA同步条目时，不再显示“本地CA无需手动添加”的说明
+const hasLocalCa = computed(() => (props.modelValue || []).some(item => item.localCaId != null));
 
 /** 同步条目显示当前指向的CA标识（轮换后 localCaId 指向新CA，sslProvider 保持稳定不变） */
 function providerLabel(provider: CustomAcmeProviderForm) {
@@ -145,7 +140,7 @@ async function openEditor(index?: number) {
   let dialogBody: (() => any) | undefined;
   if (isSynced) {
     dialogBody = () => <a-alert class="mb-4" type="info" show-icon message={t("certd.sys.settings.customAcmeLocalCaSyncedTitle")} description={t("certd.sys.settings.customAcmeLocalCaSyncedHelp")} />;
-  } else if (!isBuiltIn) {
+  } else if (!isBuiltIn && hasLocalCa.value) {
     dialogBody = () => <a-alert class="local-ca-acme-help mb-4" type="info" show-icon message={t("certd.sys.settings.customAcmeLocalCaHelpTitle")} description={t("certd.sys.settings.customAcmeLocalCaHelpContent")} />;
   }
   await openFormDialog({
@@ -190,17 +185,6 @@ async function openEditor(index?: number) {
       emit("update:modelValue", list);
     },
   });
-}
-
-/** 本地CA同步条目的启用开关：停用后不可选用（配置保留），仍需页面底部「保存」写入 */
-function toggleEnabled(index: number, enabled: boolean) {
-  const list = [...props.modelValue];
-  const provider = list[index];
-  if (!provider) {
-    return;
-  }
-  list[index] = { ...provider, enabled };
-  emit("update:modelValue", list);
 }
 
 function removeProvider(index: number) {

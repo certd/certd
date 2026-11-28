@@ -79,12 +79,10 @@ export default {
   customAcmeSaveCheck: "Name, sslProvider and Directory URL are required",
   customAcmeSslProviderUnique: "The sslProvider identifier must be unique",
   customAcmeLocalCaHelpTitle: "Local CAs are synced automatically",
-  customAcmeLocalCaHelpContent:
-    "Local intermediate CAs with ACME enabled are synced into this list automatically (tagged Intermediate CA); no manual add needed.\nManual add is for external/third-party ACME services: fill in the name, unique sslProvider and Directory URL, enable Need EAB if required, then select the provider in the certificate apply task and create an ACME account.",
+  customAcmeLocalCaHelpContent: "Local intermediate CAs with ACME enabled appear here automatically; no manual add is needed.",
   customAcmeLocalCaTag: "Intermediate CA",
   customAcmeLocalCaSyncedTitle: "Synced from Local CA",
-  customAcmeLocalCaSyncedHelp:
-    "This provider is synced from a local CA: its name and Directory URL follow the CA, and after CA rotation it points to the new CA automatically. Existing ACME accounts and pipelines keep working.\nOnly the reverse proxy and the enable switch can be configured here. To remove it, disable ACME for the CA in Local CA Management, or disable/archive the CA.",
+  customAcmeLocalCaSyncedHelp: "This entry is synced from a local CA. To disable or adjust it, manage ACME in Local CA Management.",
   customAcmeEnabledHelper: "When disabled, the provider cannot be selected (configuration is retained); re-enable to restore. Click Save at the bottom of the page to apply.",
 
   fixedCertExpireDays: "Fixed Cert Expire Days",
