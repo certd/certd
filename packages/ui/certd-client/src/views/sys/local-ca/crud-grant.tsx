@@ -39,6 +39,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       settings: { plugins: { rowSelection: { enabled: false } } },
       request: { pageRequest },
       toolbar: { show: false },
+      // 无查询字段，隐藏查询/重置行
+      search: { show: false },
       pagination: { show: false },
       table: { rowKey: "id" },
       actionbar: {
@@ -55,9 +57,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       rowHandle: {
-        width: 100,
+        title: t("certd.localCa.accessActions"),
+        width: 120,
         buttons: {
           view: { show: false },
+          copy: { show: false },
           edit: { show: false },
           remove: {
             type: "link",

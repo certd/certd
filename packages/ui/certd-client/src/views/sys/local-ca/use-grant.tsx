@@ -4,6 +4,7 @@ import { ref } from "vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import { request } from "/@/api/service";
 import { useI18n } from "/src/locales";
+import { useProjectStore } from "/@/store/project";
 import { localCaApi } from "./api";
 
 type StepUpFn = (title: string, desc: string, action: () => Promise<void>) => Promise<boolean>;
@@ -17,6 +18,7 @@ function userText(user: any) {
 export function useLocalCaGrantDialogs() {
   const { t } = useI18n();
   const { openFormDialog } = useFormDialog();
+  const projectStore = useProjectStore();
   const users = ref<SelectOption[]>([]);
   const projects = ref<SelectOption[]>([]);
   let optionsLoaded = false;
@@ -88,22 +90,25 @@ export function useLocalCaGrantDialogs() {
     const grantedProjectIds = new Set(grants.filter(item => !item.disabled && Number(item.userId ?? 0) === 0 && Number(item.projectId) > 0).map(item => Number(item.projectId)));
     const userOptions = buildOptions(users.value, grantedUserIds);
     const projectOptions = buildOptions(projects.value, grantedProjectIds);
+    // 项目模式依赖商业版企业模式；未开启时只提供用户授权
+    const projectModeEnabled = projectStore.isEnterprise.value;
+    const modeOptions = [{ label: t("certd.localCa.grantModeUser"), value: "user" }];
+    if (projectModeEnabled) {
+      modeOptions.push({ label: t("certd.localCa.grantModeProject"), value: "project" });
+    }
 
     await openFormDialog({
       title: t("certd.localCa.grantAddTitle"),
       zIndex: 1200,
       wrapper: { width: 560 },
-      body: () => <a-alert type="info" show-icon message={t("certd.localCa.grantHint")} class="mb-3" />,
+      body: () => <a-alert type="info" show-icon message={t(projectModeEnabled ? "certd.localCa.grantHint" : "certd.localCa.grantHintUserOnly")} class="mb-3" />,
       initialForm: { mode: "user", userId: undefined, projectId: undefined },
       columns: {
         mode: {
           title: t("certd.localCa.grantMode"),
           type: "dict-radio",
           dict: dict({
-            data: [
-              { label: t("certd.localCa.grantModeUser"), value: "user" },
-              { label: t("certd.localCa.grantModeProject"), value: "project" },
-            ],
+            data: modeOptions,
           }),
           form: {
             col: { span: 24 },
@@ -133,7 +138,7 @@ export function useLocalCaGrantDialogs() {
           type: "dict-select",
           dict: dict({ data: projectOptions }),
           form: {
-            show: compute(({ form }) => form.mode === "project"),
+            show: compute(({ form }) => projectModeEnabled && form.mode === "project"),
             col: { span: 24 },
             component: { showSearch: true, optionFilterProp: "label" },
           },
@@ -178,8 +183,8 @@ export function useLocalCaGrantDialogs() {
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("common.yes"), value: true },
-              { label: t("common.no"), value: false },
+              { label: t("certd.localCa.grantDisableAccountsOn"), value: true },
+              { label: t("certd.localCa.grantDisableAccountsOff"), value: false },
             ],
           }),
           form: {

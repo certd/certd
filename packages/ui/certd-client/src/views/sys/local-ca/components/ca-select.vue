@@ -43,6 +43,20 @@ function buildLabel(ca: any) {
   return `${ca.name}${cn} 【${typeLabel}】${stateTag}`;
 }
 
+function orderAdminOptions(list: any[]) {
+  // 与CA列表一致：根CA按ID倒序，中间CA紧跟所属根并按ID正序
+  const roots = list.filter(item => item.caType === "root").sort((a, b) => Number(b.id) - Number(a.id));
+  const ordered: any[] = [];
+  for (const root of roots) {
+    ordered.push(root);
+    const children = list.filter(item => item.caType === "intermediate" && Number(item.parentId) === Number(root.id)).sort((a, b) => Number(a.id) - Number(b.id));
+    ordered.push(...children);
+  }
+  const included = new Set(ordered.map(item => Number(item.id)));
+  const rest = list.filter(item => !included.has(Number(item.id))).sort((a, b) => Number(a.id) - Number(b.id));
+  return [...ordered, ...rest];
+}
+
 let loadSeq = 0;
 async function load() {
   const seq = ++loadSeq;
@@ -58,6 +72,7 @@ async function load() {
       // 仅展示当前有效（本地/标准档）中间CA；轮换/禁用/归档CA的凭证由最新CA继承管理
       list = list.filter((ca: any) => ca.caType === "intermediate" && ca.acmeEnabled && !ca.disabled && !ca.deleted);
     }
+    list = orderAdminOptions(list);
     cas.value = list;
     options.value = list.map((ca: any) => ({ label: buildLabel(ca), value: Number(ca.id) }));
     // 优先使用传入的当前选择；无效时默认选中间CA，避免根CA无ACME/授权页造成误解

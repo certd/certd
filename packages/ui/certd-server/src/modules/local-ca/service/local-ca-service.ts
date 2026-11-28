@@ -1061,7 +1061,7 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.acmeService.getAcmeAccess(req);
   }
 
-  async setAcmeAccess(req: LocalCaScope & { caId: number; ipAllowlist?: any; basicAuth?: any; requiredHeaders?: any }) {
+  async setAcmeAccess(req: LocalCaScope & { caId: number; ipAllowlist?: any; basicAuth?: any; requiredHeaders?: any; clientIpSource?: string; clientIpHeader?: string; trustProxyCidrs?: any }) {
     return await this.acmeService.setAcmeAccess(req);
   }
 
@@ -1363,6 +1363,9 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     const ca = await this.accessService.getOwnedCa(req);
     if (ca.deleted) {
       throw new ValidateException("该CA已归档，不可修改");
+    }
+    if (ca.rotatedToId) {
+      throw new ValidateException("该CA已轮换，旧一代CA只读，请在新一代CA上管理");
     }
     if (req.name != null && req.name.trim() !== ca.name) {
       await this.assertNameAvailable({

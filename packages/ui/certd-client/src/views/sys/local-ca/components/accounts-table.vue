@@ -150,7 +150,13 @@ async function viewEab(row: any) {
       <a-descriptions bordered column={1} size="small">
         <a-descriptions-item label="KID">{eab.kid}</a-descriptions-item>
         <a-descriptions-item label={t("certd.localCa.eabType")}>{eab.privileged ? t("certd.localCa.eabTypePrivileged") : t("certd.localCa.eabTypeNormal")}</a-descriptions-item>
+        <a-descriptions-item label={t("certd.localCa.eabModeColumn")}>
+          <a-tag color={eab.mode === "local" ? "blue" : "default"}>{eab.mode === "local" ? t("certd.localCa.eabModeTagLocal") : t("certd.localCa.eabModeTagStandard")}</a-tag>
+        </a-descriptions-item>
         <a-descriptions-item label={t("certd.localCa.fields.disabled")}>{eab.disabled ? t("common.disabled") : t("common.enabled")}</a-descriptions-item>
+        <a-descriptions-item label={t("certd.localCa.eabLeakStatus")}>
+          {eab.revoked ? <a-tag color="red">{t("certd.localCa.eabLeaked")}</a-tag> : <a-tag color="green">{t("certd.localCa.eabLeakNormal")}</a-tag>}
+        </a-descriptions-item>
         <a-descriptions-item label={t("certd.localCa.eabAllowedDomains")}>{domains}</a-descriptions-item>
         <a-descriptions-item label={t("certd.localCa.eabUses")}>{`${eab.usedCount || 0} / ${eab.maxUses || "∞"}`}</a-descriptions-item>
         <a-descriptions-item label={t("certd.localCa.eabExpires")}>{formatTime(eab.expiresTime)}</a-descriptions-item>

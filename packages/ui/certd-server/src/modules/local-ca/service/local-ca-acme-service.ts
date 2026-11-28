@@ -428,7 +428,7 @@ export class LocalCaAcmeService {
       patch.allowedDomains = JSON.stringify(normalizeAllowedDomains(req.allowedDomains));
     }
     if (req.maxUses !== undefined) {
-      patch.maxUses = Math.max(0, Number(req.maxUses) || 0);
+      patch.maxUses = Math.max(0, Math.min(10000, Number(req.maxUses) || 0));
     }
     if (req.expiresDays !== undefined) {
       const days = Math.max(0, Number(req.expiresDays) || 0);
@@ -444,6 +444,10 @@ export class LocalCaAcmeService {
       });
       if (!bean) {
         throw new ValidateException("EAB凭证不存在");
+      }
+      // 可注册账户数只能调高，不能低于已注册数，避免存量账户超出上限
+      if (patch.maxUses !== undefined && patch.maxUses > 0 && patch.maxUses < Number(bean.usedCount || 0)) {
+        throw new ValidateException(`可注册账户数不能低于已注册账户数（当前已注册 ${Number(bean.usedCount || 0)} 个）`);
       }
       // 只更新允许修改的业务字段（局部 UPDATE），绝不复写 disabled/revoked 等安全状态，
       // 防止并发泄漏处置写入的不可恢复标记被陈旧实体覆盖。行锁保证 PG/MySQL 下与泄漏处置串行。

@@ -15,9 +15,6 @@
         </div>
       </div>
       <a-tabs v-model:active-key="activeTab" class="ca-manage-dialog__tabs">
-        <a-tab-pane v-if="currentCa?.caType === 'intermediate'" key="permissions" :tab="t('certd.localCa.permissions')">
-          <LocalCaAccess v-if="caId" :key="'perm-' + caId" :ca-id="caId" :ca-type="currentCa?.caType" :run-step-up="openStepUp" />
-        </a-tab-pane>
         <a-tab-pane key="acme" :tab="t('certd.localCa.tabAcmeService')">
           <template v-if="caId && currentCa">
             <AcmeServiceInner v-if="currentCa.caType === 'intermediate' && currentCa.acmeEnabled" :key="'acme-' + caId" :ca-id="caId" />
@@ -26,6 +23,9 @@
         </a-tab-pane>
         <a-tab-pane key="certs" :tab="t('certd.localCa.tabIssuedCerts')">
           <IssuedCerts v-if="caId" :key="'certs-' + caId" :ca-id="caId" />
+        </a-tab-pane>
+        <a-tab-pane v-if="currentCa?.caType === 'intermediate'" key="permissions" :tab="t('certd.localCa.permissions')">
+          <LocalCaAccess v-if="caId" :key="'perm-' + caId" :ca-id="caId" :ca-type="currentCa?.caType" :run-step-up="openStepUp" />
         </a-tab-pane>
       </a-tabs>
     </div>
@@ -53,7 +53,7 @@ const { t } = useI18n();
 const { openStepUp } = useStepUp();
 const caId = ref<number | undefined>(props.caId);
 const currentCa = ref<any>();
-const activeTab = ref(props.tab || "permissions");
+const activeTab = ref(props.tab || "acme");
 
 watch(
   () => props.caId,

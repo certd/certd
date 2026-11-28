@@ -238,7 +238,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       rowHandle: {
-        width: 200,
+        width: 150,
         fixed: "right",
         dropdown: {
           show: true,
@@ -251,30 +251,35 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             text: null,
             tooltip: { title: t("certd.localCa.manage") },
             icon: "ph:sliders-horizontal",
+            show: compute(({ row }) => !row.rotatedToId),
             click: async ({ row }) => {
               await context.openManageDialog(row);
             },
           },
           view: {
-            order: 1,
+            order: 9,
             type: "link",
-            text: null,
-            tooltip: { title: t("certd.localCa.view") },
+            text: t("certd.localCa.view"),
             icon: "ph:certificate",
+            dropdown: true,
             click: async ({ row }) => {
               await openView(row);
             },
           },
           edit: {
-            order: 2,
-            show: hasActionPermission("write"),
+            order: 1,
+            type: "link",
+            text: null,
+            tooltip: { title: t("common.edit") },
+            icon: "ph:pencil-simple",
+            show: compute(({ row }) => hasActionPermission("write") && !row.rotatedToId),
           },
           intermediate: {
-            order: 10,
+            order: 2,
             type: "link",
-            text: t("certd.localCa.intermediate"),
+            text: null,
+            tooltip: { title: t("certd.localCa.intermediate") },
             icon: "ph:git-branch",
-            dropdown: true,
             show: compute(({ row }) => hasActionPermission("write") && row.caType === "root"),
             click: async ({ row }) => {
               await openIntermediate(row);

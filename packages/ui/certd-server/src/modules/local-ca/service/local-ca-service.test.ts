@@ -900,6 +900,31 @@ describe("LocalCaService", () => {
     assert.equal(bean.revoked, true, "不可恢复泄漏标记必须保留");
   });
 
+  it("updateAcmeEab 拒绝将可注册账户数降到已注册数以下", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "EAB Max Uses CA" });
+    const bean: any = { id: "eab-low", caId: id, name: "old", usedCount: 2, maxUses: 5, disabled: false, revoked: false, updateTime: 0 };
+    service.acmeEabRepository = {
+      async findOne({ where }: any) {
+        return where.id === bean.id ? { ...bean } : null;
+      },
+      async update(where: any, set: any) {
+        Object.assign(bean, set);
+        return { affected: 1 };
+      },
+      async save(entity: any) {
+        Object.assign(bean, entity);
+        return entity;
+      },
+    } as any;
+
+    await assert.rejects(() => service.updateAcmeEab({ caId: id, eabId: "eab-low", userId: 1, maxUses: 1 }), /不能低于已注册账户数/);
+    assert.equal(bean.maxUses, 5, "校验失败不得写入更低上限");
+
+    await service.updateAcmeEab({ caId: id, eabId: "eab-low", userId: 1, maxUses: 0 });
+    assert.equal(bean.maxUses, 0, "0 表示不限，允许调整");
+  });
+
   it("泄漏处置只影响该EAB下的账户与订单，混入的其他EAB账户不计入也不算订单", async () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "Leak Scope CA" });
@@ -2007,6 +2032,13 @@ describe("LocalCaService 直签开关/DNS继承/轮换防护回归", () => {
     await assert.rejects(() => service.rotateIntermediateCa({ id, userId: 1 }), /已轮换/);
   });
 
+  it("已轮换CA只读，禁止编辑", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa2(service, "Readonly Rotated CA");
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    await assert.rejects(() => service.updateMeta({ id, userId: 1, remark: "edit" }), /已轮换.*只读/);
+  });
+
   it("末端归档触发绝迹链祖先级联归档", async () => {
     const { service, store } = createService();
     const { id } = await createIssuingCa2(service, "Extinct Chain CA");
@@ -2017,5 +2049,44 @@ describe("LocalCaService 直签开关/DNS继承/轮换防护回归", () => {
     await service.archiveCa({ id: r2.id, userId: 1 });
     assert.equal(store.get(r1.id).deleted, true);
     assert.equal(store.get(id).deleted, true);
+  });
+
+  it("ACME访问控制保存后可完整回读客户端IP来源/请求头/可信代理CIDR", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({ userId: 1, name: "ACME Access CA Root", subject: { CN: "ACME Access CA Root" }, keyType: "rsa2048", validityYears: 2 });
+    await service.updateMeta({ id: root.id, userId: 1, baseUrl: "https://ca.example.com" });
+    const intermediate = await service.generateIntermediateCa({ rootId: root.id, maxValidityDays: 365, userId: 1, name: "ACME Access CA", subject: { CN: "ACME Access CA" }, keyType: "rsa2048", validityYears: 1 });
+    const id = intermediate.id;
+    await service.setAcmeAccess({
+      id,
+      caId: id,
+      userId: 1,
+      ipAllowlist: ["10.0.0.0/8", "192.168.1.0/24"],
+      basicAuth: { enabled: true, username: "ops", password: "secret" },
+      requiredHeaders: [{ name: "X-Gateway", value: "ok" }],
+      clientIpSource: "header",
+      clientIpHeader: "cf-connecting-ip",
+      trustProxyCidrs: ["172.16.0.0/12"],
+    });
+    const view = await service.getAcmeAccess({ id, caId: id, userId: 1 });
+    assert.deepEqual(
+      {
+        ipAllowlist: view.ipAllowlist,
+        requiredHeaders: view.requiredHeaders,
+        clientIpSource: view.clientIpSource,
+        clientIpHeader: view.clientIpHeader,
+        trustProxyCidrs: view.trustProxyCidrs,
+        basicAuth: view.basicAuth,
+      },
+      {
+        ipAllowlist: ["10.0.0.0/8", "192.168.1.0/24"],
+        requiredHeaders: [{ name: "X-Gateway", value: "ok" }],
+        clientIpSource: "header",
+        clientIpHeader: "cf-connecting-ip",
+        trustProxyCidrs: ["172.16.0.0/12"],
+        basicAuth: { enabled: true, username: "ops" },
+      }
+    );
+    assert.equal("password" in view.basicAuth, false);
   });
 });

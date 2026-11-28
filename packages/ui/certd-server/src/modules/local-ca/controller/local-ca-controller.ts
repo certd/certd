@@ -267,6 +267,9 @@ export class LocalCaController extends CrudController<LocalCaService> {
       ipAllowlist: body.ipAllowlist,
       basicAuth: body.basicAuth,
       requiredHeaders: body.requiredHeaders,
+      clientIpSource: body.clientIpSource,
+      clientIpHeader: body.clientIpHeader,
+      trustProxyCidrs: body.trustProxyCidrs,
     });
     this.auditLog({ content: `更新了本地CA的ACME访问控制(ID:${body.id})` });
     return this.ok(res);

@@ -1,6 +1,6 @@
 <template>
   <div class="local-ca-acme-service-inner">
-    <a-tabs v-model:active-key="innerTab" class="acme-service-tabs" @change="refreshInner">
+    <a-tabs v-model:active-key="innerTab" type="card" size="small" class="acme-service-tabs" @change="refreshInner">
       <a-tab-pane key="access" :tab="t('certd.localCa.acmeAccessTitle')">
         <LocalCaAcmeAccess
           v-if="innerTab === 'access'"

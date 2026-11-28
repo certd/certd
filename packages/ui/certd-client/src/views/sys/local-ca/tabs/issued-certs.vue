@@ -8,7 +8,7 @@
     <a-table :data-source="groups" :loading="loading" :pagination="{ pageSize: 20, showSizeChanger: true }" row-key="key" size="small">
       <a-table-column :title="t('certd.localCa.certType')" :width="110">
         <template #default="{ record }">
-          <a-tag :color="record.type === 'ca' ? 'purple' : 'blue'">{{ record.type === "ca" ? t("certd.localCa.certTypeCa") : t("certd.localCa.certTypeLeaf") }}</a-tag>
+          <a-tag :color="record.type === 'ca' ? 'blue' : 'green'">{{ record.type === "ca" ? t("certd.localCa.certTypeCa") : t("certd.localCa.certTypeLeaf") }}</a-tag>
         </template>
       </a-table-column>
       <a-table-column :title="t('certd.localCa.certDomain')" :width="260" ellipsis>
