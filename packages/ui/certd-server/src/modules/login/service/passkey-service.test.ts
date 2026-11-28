@@ -282,6 +282,28 @@ describe("PasskeyService 30天未使用停用与激活", () => {
     }
   });
 
+  it("自动停用与重新激活并发时不会产生错误状态", async () => {
+    const service = createService();
+    const oldAt = Date.now() - 31 * 24 * 60 * 60 * 1000;
+    const row: any = { id: 1, userId: 1, disabled: true, lastActiveAt: oldAt };
+    (service as any).find = async ({ where }: any) => {
+      if (where.disabled === false && row.disabled === false) {
+        return [{ ...row }];
+      }
+      return [];
+    };
+    (service.repository as any).update = async (where: any, set: any) => {
+      if (where.id !== row.id || (where.disabled !== undefined && where.disabled !== row.disabled)) {
+        return { affected: 0 };
+      }
+      Object.assign(row, set);
+      return { affected: 1 };
+    };
+    await Promise.all([service.autoDisableExpiredPasskeys(1), service.reactivatePasskey(1, 1)]);
+    assert.equal(row.disabled, false, "重新激活后的Passkey不应被自动停用为错误状态");
+    assert.ok(row.lastActiveAt > oldAt);
+  });
+
   it("重新激活后不再因停用状态被拒绝（后续WebAuthn校验继续）", async () => {
     const service = createService();
     let disabled = true;
