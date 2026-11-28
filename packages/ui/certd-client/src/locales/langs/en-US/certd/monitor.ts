@@ -81,8 +81,9 @@ export default {
   },
   domainList: {
     title: "Domain List",
-    helper: "Format: domain:port:name:remark, one per line. Port and name are optional.\nExamples:\nwww.baidu.com:443:Baidu:remarkText\nwww.taobao.com::Taobao\nwww.google.com",
+    helper:
+      "Format: domain:port:name:remark, one per line. Port, name and remark are optional. Addresses with http/https prefix are also supported.\nExamples:\nwww.baidu.com:443:Baidu:remarkText\nwww.taobao.com::Taobao\nwww.google.com\nhttps://www.baidu.com:443/",
     required: "Please enter domains to import",
-    placeholder: "www.baidu.com:443:Baidu\nwww.taobao.com::Taobao\nwww.google.com\n",
+    placeholder: "www.baidu.com:443:Baidu\nwww.taobao.com::Taobao\nwww.google.com\nhttps://www.baidu.com:443/\n",
   },
 };

@@ -2,6 +2,8 @@
   <div class="domain-select">
     <div class="flex flex-row">
       <a-select
+        ref="selectRef"
+        :key="selectKey"
         class="domain-select-input"
         :popup-class-name="popupClassName"
         :dropdown-style="dropdownStyle"
@@ -12,7 +14,11 @@
         :tag-render="tagRender"
         v-bind="attrs"
         @click="onClick"
-        @update:value="emit('update:value', $event)"
+        @blur="onSelectBlur"
+        @focusout="onSelectBlur"
+        @keydown.capture="onKeydownCapture"
+        @search="onSearchText"
+        @update:value="onValueChange"
       >
         <template #dropdownRender="{ menuNode }">
           <template v-if="search">
@@ -118,6 +124,14 @@ const popupClassName = computed(() => {
 
 const searchKeyRef = ref("");
 const optionsRef = ref([]);
+const selectRef = ref();
+const selectKey = ref(0);
+const searchText = ref("");
+const editOpen = ref(false);
+const editValue = ref("");
+const editOriginal = ref("");
+let lastValueChangeAt = 0;
+let blurTimer: ReturnType<typeof setTimeout> | null = null;
 const message = ref("");
 const hasError = ref(false);
 const loading = ref(false);
@@ -262,6 +276,7 @@ async function loadAllowedDomains(caId?: number) {
     allowedDomains.value = [];
   } finally {
     validationTick.value++;
+    // 强制重建，让已渲染的标签按最新允许域名范围重新着色
     selectKey.value++;
   }
 }
@@ -332,7 +347,6 @@ function onSelectBlur() {
       input.dispatchEvent(new Event("input", { bubbles: true }));
     }
     cleanValue();
-    validationTick.value++;
 
     const value = normalizeDomains([text]).join(",");
     // 刚通过下拉选择或分隔符新增过标签时，不把过滤词当成域名
@@ -416,6 +430,11 @@ const dropdownStyle = ref({
 });
 
 onMounted(() => {
+  // 兼容历史数据中带逗号、空项或重复的域名
+  const normalized = normalizeDomains(props.value);
+  if (normalized.length !== (props.value || []).length) {
+    emit("update:value", normalized);
+  }
   refreshOptions();
 });
 
@@ -432,8 +451,7 @@ function tagRender(tag: { value: string; label: string; closable: boolean; onClo
       onClick={async (event: MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
-        await copy(value);
-        notification.success({ message: "复制成功" });
+        await editTag(value);
       }}
     >
       {tag.label}
@@ -444,7 +462,7 @@ function tagRender(tag: { value: string; label: string; closable: boolean; onClo
 async function copySelectedDomains(event: MouseEvent) {
   event.preventDefault();
   event.stopPropagation();
-  const domains = (props.value || []).join(",");
+  const domains = normalizeDomains(props.value).join(",");
   if (!domains) {
     return;
   }

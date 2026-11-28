@@ -13,10 +13,17 @@ import { useSettingStore } from "/@/store/settings";
 import { useProjectStore } from "/@/store/project";
 import { useDicts } from "../../dicts";
 import { useUserStore } from "/@/store/user";
+import { useClipboard } from "@vueuse/core";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const api = certInfoApi;
+  const { copy } = useClipboard({ legacy: true });
+
+  async function copyDomain(domain: string) {
+    await copy(domain);
+    notification.success({ message: `已复制：${domain}` });
+  }
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -266,9 +273,23 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             width: 450,
             sorter: true,
-            component: {
-              name: "fs-values-format",
-              color: "auto",
+            cellRender({ value }) {
+              const domains = String(value || "")
+                .split(",")
+                .map(item => item.trim())
+                .filter(Boolean);
+              if (domains.length === 0) {
+                return "-";
+              }
+              return (
+                <div class="cert-domains-cell flex flex-wrap gap-1">
+                  {domains.map(domain => (
+                    <span key={domain} class="cert-domain pointer" title={`点击复制 ${domain}`} onClick={() => copyDomain(domain)}>
+                      {domain}
+                    </span>
+                  ))}
+                </div>
+              );
             },
           },
         },

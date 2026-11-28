@@ -85,6 +85,8 @@ function useTour() {
     steps: [],
     onClose: () => {
       tour.value.open = false;
+      // 点击关闭也视为不再提示，否则刷新后会再次弹出
+      LocalStorage.set("tour-off", true, 999999999);
     },
     onFinish: () => {
       tour.value.open = false;

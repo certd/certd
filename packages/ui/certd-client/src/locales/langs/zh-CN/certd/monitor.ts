@@ -81,8 +81,9 @@ export default {
   },
   domainList: {
     title: "域名列表",
-    helper: "格式【域名:端口:名称:备注】，一行一个，其中端口、名称、备注可以省略\n比如：\nwww.baidu.com:443:百度:备注文本\nwww.taobao.com::淘宝\nwww.google.com",
+    helper:
+      "格式【域名:端口:名称:备注】，一行一个，其中端口、名称、备注可以省略；也支持直接粘贴带 http/https 前缀的地址\n比如：\nwww.baidu.com:443:百度:备注文本\nwww.taobao.com::淘宝\nwww.google.com\nhttps://www.baidu.com:443/",
     required: "请输入要导入的域名",
-    placeholder: "www.baidu.com:443:百度:备注文本\nwww.taobao.com::淘宝\nwww.google.com\n",
+    placeholder: "www.baidu.com:443:百度:备注文本\nwww.taobao.com::淘宝\nwww.google.com\nhttps://www.baidu.com:443/\n",
   },
 };
