@@ -174,6 +174,7 @@ import { useRouter } from "vue-router";
 import { useUserStore } from "/@/store/user";
 import { useFormDialog } from "/@/use/use-dialog";
 import { TwoFactorSettingsGet } from "./security/api";
+import { isPasskeyCancelledError } from "/@/utils/util.passkey";
 
 const { t } = useI18n();
 
@@ -381,13 +382,15 @@ async function registerPasskey() {
       if (!deviceName) {
         return;
       }
-      await doRegisterPasskey(deviceName, verifyCode);
-      notification.success({ message: "Passkey注册成功" });
+      const ok = await doRegisterPasskey(deviceName, verifyCode);
+      if (ok) {
+        notification.success({ message: "Passkey注册成功" });
+      }
     },
   });
 }
 
-async function doRegisterPasskey(deviceName: string, verifyCode: string) {
+async function doRegisterPasskey(deviceName: string, verifyCode: string): Promise<boolean> {
   try {
     const res: any = await api.generatePasskeyRegistrationOptions(verifyCode);
     const options = res;
@@ -431,7 +434,7 @@ async function doRegisterPasskey(deviceName: string, verifyCode: string) {
     });
 
     if (!credential) {
-      throw new Error("Passkey注册失败");
+      throw new Error("Passkey注册已取消");
     }
 
     const response = {
@@ -448,9 +451,15 @@ async function doRegisterPasskey(deviceName: string, verifyCode: string) {
     const verifyRes: any = await api.verifyPasskeyRegistration(response, options.challenge, deviceName, verifyToken);
     console.log("verifyRes:", verifyRes, JSON.stringify(verifyRes));
     await loadPasskeys();
+    return true;
   } catch (e: any) {
+    if (isPasskeyCancelledError(e)) {
+      notification.info({ message: "已取消 Passkey 注册" });
+      return false;
+    }
     console.error("Passkey注册失败:", e);
     notification.error({ message: "错误", description: e.message || "Passkey注册失败" });
+    return false;
   }
 }
 

@@ -107,6 +107,7 @@ import { useI18n } from "/@/locales";
 import { LanguageToggle } from "/@/vben/layouts";
 import CaptchaInput from "/@/components/captcha/captcha-input.vue";
 import PasskeyVerifyButton from "/@/components/passkey-verify-button/index.vue";
+import { isPasskeyCancelledError } from "/@/utils/util.passkey";
 import { useRoute } from "vue-router";
 import OauthFooter from "/@/views/framework/oauth/oauth-footer.vue";
 import * as oauthApi from "../oauth/api";
@@ -261,7 +262,11 @@ const handleTwoFactorPasskeyLogin = async () => {
       notification.success({ message: "绑定第三方账号成功" });
     }
   } catch (e: any) {
-    notification.error({ message: e?.message || "Passkey验证失败" });
+    if (isPasskeyCancelledError(e)) {
+      notification.info({ message: "已取消 Passkey 验证" });
+    } else {
+      notification.error({ message: e?.message || "Passkey验证失败" });
+    }
   } finally {
     twoFactorPasskeyLoading.value = false;
   }
