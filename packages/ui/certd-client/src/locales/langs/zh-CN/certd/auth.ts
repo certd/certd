@@ -17,6 +17,8 @@ export default {
   passkeyTab: "Passkey登录",
   passkeyLogin: "Passkey登录",
   passkeyHelper: "使用您的生物识别或安全密钥登录",
+  passkeyVerify: "使用 Passkey 验证",
+  passkeyVerifyOr: "或使用 Passkey",
   passkeyNotSupported: "您的浏览器不支持Passkey",
   passkeyRegister: "注册Passkey",
   passkeyRegistered: "Passkey已注册",
