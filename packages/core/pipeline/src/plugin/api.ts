@@ -64,8 +64,6 @@ export type PluginDefine = Registrable & {
       form: any;
     };
   };
-  /** 插件声明可访问的 ServiceGetter 能力清单（能力最小化） */
-  serviceCapabilities?: string[];
   onlyAdmin?: boolean;
   needPlus?: boolean;
   showRunStrategy?: boolean;

@@ -460,9 +460,9 @@ export class Executor {
       user: this.options.user,
       emitter: pipelineEmitter,
       serviceGetter: (() => {
-        const base = this.options.serviceGetter;
-        const scoped = base?.forPlugin?.(step.type, define?.serviceCapabilities) || base;
-        // 只暴露受限get()，插件不能调用forPlugin自我提升能力，也拿不到appCtx
+        const base: any = this.options.serviceGetter;
+        // 按插件类型获取受限get()；不透出forPlugin/appCtx，插件无法自我提升能力
+        const scoped = base?.forPlugin?.(step.type) || base;
         return scoped ? { get: scoped.get.bind(scoped) } : undefined;
       })(),
       projectId: this.pipeline.projectId,

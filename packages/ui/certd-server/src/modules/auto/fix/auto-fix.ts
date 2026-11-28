@@ -9,6 +9,7 @@ import { CommonEabToAcmeAccountFix } from "./common-eab-to-acme-account-fix.js";
 import { ReverseProxyMigrateFix } from "./reverse-proxy-migrate-fix.js";
 import { LocalCaProviderAdoptFix } from "./local-ca-provider-adopt-fix.js";
 import { LocalCaAcmeAccountCaTypeFix } from "./local-ca-acme-account-catype-fix.js";
+import { BuiltinAcmeProviderFix } from "./builtin-acme-provider-fix.js";
 
 type AutoFixTask = {
   key: string;
@@ -50,6 +51,9 @@ export class AutoFix {
   @Inject()
   localCaAcmeAccountCaTypeFix: LocalCaAcmeAccountCaTypeFix;
 
+  @Inject()
+  builtinAcmeProviderFix: BuiltinAcmeProviderFix;
+
   async init() {
     const setting = await this.sysSettingsService.getSetting<SysAutoFixSetting>(SysAutoFixSetting);
     setting.fixed = setting.fixed || {};
@@ -89,6 +93,10 @@ export class AutoFix {
       {
         key: "local-ca-acme-account-catype",
         fix: this.localCaAcmeAccountCaTypeFix,
+      },
+      {
+        key: "builtin-acme-providers",
+        fix: this.builtinAcmeProviderFix,
       },
     ];
 

@@ -5,7 +5,7 @@ import { newAccess } from "@certd/pipeline";
 import { ApiTags } from "@midwayjs/swagger";
 import { LocalCaService } from "../service/local-ca-service.js";
 import { AcmeServerService } from "../../acme-server/service/acme-server-service.js";
-import { TaskServiceBuilder } from "../../pipeline/service/getter/task-service-getter.js";
+import { TaskServiceBuilder, restrictServiceGetter } from "../../pipeline/service/getter/task-service-getter.js";
 import { AuditType } from "../../sys/enterprise/service/audit-constants.js";
 
 type GrantEnsureResult = { changed: boolean; grantId?: number; created: boolean; revived: boolean };
@@ -371,8 +371,8 @@ export class LocalCaController extends CrudController<LocalCaService> {
       }
       const input = { caType: sslProvider, email, eabKid: secret.kid, eabHmacKey: secret.hmacKey };
       const accessGetter = new AccessGetter(scopeUserId, scopeProjectId, this.accessService.getById.bind(this.accessService));
-      const serviceGetter = this.taskServiceBuilder.create({ userId: scopeUserId, projectId: scopeProjectId, pluginType: "acmeAccount", capabilities: ["localCaGetter"] });
-      const accessContext = { http, logger, utils, accessService: accessGetter, serviceGetter, define: undefined } as any;
+      const serviceGetter = this.taskServiceBuilder.create({ userId: scopeUserId, projectId: scopeProjectId, pluginType: "acmeAccount" });
+      const accessContext = { http, logger, utils, accessService: accessGetter, serviceGetter: restrictServiceGetter(serviceGetter), define: undefined } as any;
       const access = await newAccess("acmeAccount", input, accessGetter, accessContext);
       accountJson = await access.onRequest({ typeName: "acmeAccount", action: "onGenerateAccount", input, record: { id: 0, type: "acmeAccount", title: "" }, data: {} });
       accountId = this.parseAssignedAccountId(accountJson);

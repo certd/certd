@@ -18,36 +18,28 @@ import { LocalCaSignerGetter } from "../../../local-ca/service/local-ca-signer-g
 import { LocalCaService } from "../../../local-ca/service/local-ca-service.js";
 
 const serviceNames = ["ocrService", "certInfoService", "customAcmeProviderService"];
-// 服务端可信插件类型白名单：仅这些插件类型可获取本地CA签发能力（不信任插件自声明）
-// acmeAccount为内置授权类型，仅经handle控制器授予只读localCaGetter（用于仅本地档账号生成携带内部凭证）
-const TRUSTED_LOCAL_CA_PLUGINS = new Set(["CertApplyLocalCa", "acmeAccount"]);
+// 服务端按插件类型硬编码本地CA能力白名单，不信任插件自声明
+const TRUSTED_LOCAL_CA_PLUGINS: Record<string, string[]> = {
+  CertApplyLocalCa: ["localCaGetter", "localCaSignerGetter"],
+  acmeAccount: ["localCaGetter"],
+};
 export class TaskServiceGetter implements IServiceGetter {
   private userId: number;
   private projectId: number;
   private appCtx: IMidwayContainer;
   private pluginType?: string;
-  private capabilities?: string[];
-  constructor(userId: number, projectId: number, appCtx: IMidwayContainer, pluginType?: string, capabilities?: string[]) {
+  constructor(userId: number, projectId: number, appCtx: IMidwayContainer, pluginType?: string) {
     this.userId = userId;
     this.projectId = projectId;
     this.appCtx = appCtx;
     this.pluginType = pluginType;
-    this.capabilities = capabilities;
   }
-  forPlugin(pluginType: string, capabilities?: string[]): IServiceGetter {
-    return new TaskServiceGetter(this.userId, this.projectId, this.appCtx, pluginType, capabilities);
+  forPlugin(pluginType: string): IServiceGetter {
+    return new TaskServiceGetter(this.userId, this.projectId, this.appCtx, pluginType);
   }
   private hasLocalCaCapability(name: string): boolean {
-    // 服务端可信插件类型白名单：本地CA签发能力仅授予可信插件类型，
-    // 第三方插件即使自行声明 serviceCapabilities 也不能获取CA签发能力。
-    if (!TRUSTED_LOCAL_CA_PLUGINS.has(this.pluginType || "")) {
-      return false;
-    }
-    // 可信插件内部再按能力清单细分；空数组表示显式无能力
-    if (this.capabilities) {
-      return this.capabilities.includes(name);
-    }
-    return true;
+    // 仅服务端白名单内插件类型可获取本地CA能力；第三方插件无法通过自声明提升
+    return TRUSTED_LOCAL_CA_PLUGINS[this.pluginType || ""]?.includes(name) === true;
   }
   async get<T>(serviceName: string): Promise<T> {
     if (serviceName === "subDomainsGetter") {
@@ -134,6 +126,11 @@ export class TaskServiceGetter implements IServiceGetter {
     return new DomainVerifierGetter(this.userId, this.projectId, domainService);
   }
 }
+/** 传给插件/外部回调时仅暴露get，避免调用forPlugin自我提升或访问appCtx */
+export function restrictServiceGetter(getter: IServiceGetter): IServiceGetter {
+  return { get: getter.get.bind(getter) };
+}
+
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class TaskServiceBuilder {
@@ -143,7 +140,7 @@ export class TaskServiceBuilder {
   create(req: TaskServiceCreateReq) {
     const userId = req.userId;
     const projectId = req.projectId;
-    return new TaskServiceGetter(userId, projectId, this.appCtx, req.pluginType, req.capabilities);
+    return new TaskServiceGetter(userId, projectId, this.appCtx, req.pluginType);
   }
 }
 
@@ -151,5 +148,4 @@ export type TaskServiceCreateReq = {
   userId: number;
   projectId?: number;
   pluginType?: string;
-  capabilities?: string[];
 };

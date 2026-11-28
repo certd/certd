@@ -39,7 +39,6 @@ const ACME_MODES: LocalCaApplyMode[] = ["local-acme"];
   icon: "ph:seal-check",
   title: "本地CA证书申请",
   group: pluginGroups.cert.key,
-  serviceCapabilities: ["localCaGetter", "localCaSignerGetter"],
   desc: "提供本地CA直接签发与本地ACME两种模式，适用于内部及测试环境；客户端须信任对应根CA。远程ACME请使用通用证书申请任务，并由管理员配置自定义颁发机构。",
   default: {
     strategy: {

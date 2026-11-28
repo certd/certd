@@ -6,5 +6,4 @@ export * from "./emit.js";
 export * from "./runtime.js";
 export type IServiceGetter = {
   get: <T>(name: string) => Promise<T>;
-  forPlugin?: (pluginType: string, capabilities?: string[]) => IServiceGetter;
 };

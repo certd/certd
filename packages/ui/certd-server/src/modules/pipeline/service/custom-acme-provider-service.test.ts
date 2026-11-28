@@ -17,7 +17,7 @@ describe("CustomAcmeProviderService", () => {
     return service;
   }
 
-  it("getAll 返回系统配置的全部自定义ACME", async () => {
+  it("getAll 返回系统配置的自定义ACME", async () => {
     const service = createService();
     const list = await service.getAll();
     assert.equal(list.length, 2);
