@@ -9,6 +9,8 @@ export default {
   caSelect: "Select CA",
   caSelectEmpty: "No CA available. Generate or import a CA in the CA Management tab first.",
   acmeCaSelectEmpty: "No intermediate CA with ACME enabled. Enable ACME for an intermediate CA in the CA Management tab first.",
+  acmeRootCaHint: "Root CAs do not provide an ACME service. Please select an intermediate CA.",
+  acmeNotEnabledHint: "This intermediate CA has not enabled ACME. Enable it in the CA list and try again.",
   permissionsTabHint: "Granted users or projects may use this intermediate CA to request certificates. Local CAs are maintained by system administrators; changes to grants require secondary identity verification.",
   generate: "Generate Root CA",
   intermediate: "New Intermediate CA",

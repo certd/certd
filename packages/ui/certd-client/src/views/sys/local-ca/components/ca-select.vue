@@ -8,7 +8,6 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "/src/locales";
 import { localCaApi } from "../api";
 
@@ -26,8 +25,6 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const route = useRoute();
-const router = useRouter();
 const loading = ref(false);
 const options = ref<{ label: string; value: number }[]>([]);
 const cas = ref<any[]>([]);
@@ -63,19 +60,10 @@ async function load() {
     }
     cas.value = list;
     options.value = list.map((ca: any) => ({ label: buildLabel(ca), value: Number(ca.id) }));
+    // 优先使用传入的当前选择；无效时默认选中间CA，避免根CA无ACME/授权页造成误解
     const current = props.modelValue;
-    if (current != null && list.some((ca: any) => Number(ca.id) === Number(current))) {
-      emit(
-        "change",
-        list.find((ca: any) => Number(ca.id) === Number(current))
-      );
-      return;
-    }
-    // 优先恢复URL中的CA选择，否则自动选中第一个，避免页签空白
-    const queryId = Number(route.query.caId);
-    let initial = list.find((ca: any) => Number(ca.id) === queryId);
-    if (!initial && list.length > 0) {
-      // 权限/ACME管理语义以中间CA为主：默认优先选中间CA，避免根CA无授权页造成"权限弱化"误解
+    let initial = current != null ? list.find((ca: any) => Number(ca.id) === Number(current)) : undefined;
+    if (!initial) {
       initial = list.find((ca: any) => ca.caType === "intermediate") || list[0];
     }
     if (initial) {
@@ -94,7 +82,6 @@ async function load() {
 function selectCa(id: number, ca: any) {
   emit("update:modelValue", id);
   emit("change", ca);
-  router.replace({ path: route.path, query: { ...route.query, caId: String(id) } });
 }
 
 function onChange(value: number) {

@@ -40,7 +40,7 @@
       </a-table-column>
     </a-table>
 
-    <a-modal v-model:open="detailVisible" :title="t('certd.localCa.certDetailsTitle')" :footer="null" width="1100px">
+    <a-modal v-model:open="detailVisible" :title="t('certd.localCa.certDetailsTitle')" :footer="null" width="1100px" :z-index="1300">
       <a-table :data-source="detailRecord?.items || []" :pagination="false" row-key="rowKey" size="small" :scroll="{ x: 1000 }">
         <a-table-column :title="t('certd.localCa.certSerial')" :width="240">
           <template #default="{ record: item }"><fs-copyable :model-value="item.serialNumber || '-'" /></template>
@@ -308,7 +308,7 @@ async function viewCert(item: any) {
     maskClosable: true,
     okText: t("certd.common.confirm"),
     width: 800,
-    zIndex: 1200,
+    zIndex: 1400,
     content: () => <CertView cert={cert} />,
   });
 }
@@ -320,6 +320,7 @@ function revokeCert(item: any) {
     okText: t("certd.localCa.revoke"),
     cancelText: t("certd.common.cancel"),
     okButtonProps: { danger: true },
+    zIndex: 1400,
     async onOk() {
       await openStepUp(t("certd.localCa.revokeCertStepUpTitle"), t("certd.localCa.revokeCertStepUpDesc"), async () => {
         await localCaApi.RevokeCert(props.caId as number, item.id);

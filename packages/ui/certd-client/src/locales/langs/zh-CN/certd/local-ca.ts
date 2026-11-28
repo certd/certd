@@ -9,6 +9,8 @@ export default {
   caSelect: "选择CA",
   caSelectEmpty: "暂无可用CA，请先在「CA管理」页签生成或导入CA",
   acmeCaSelectEmpty: "暂无已启用ACME的中间CA，请先在「CA管理」页签为中间CA开启ACME",
+  acmeRootCaHint: "根CA不具备ACME服务，请选择其他中间CA。",
+  acmeNotEnabledHint: "该中间CA尚未启用ACME服务，请在CA列表中开启后重试。",
   permissionsTabHint: "被授权的用户或项目可使用该中间CA申请证书。本地CA由系统管理员统一维护；授权变更须完成二次身份验证。",
   generate: "生成根CA",
   intermediate: "新建中间CA",

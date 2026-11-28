@@ -19,8 +19,10 @@
           <LocalCaAccess v-if="caId" :key="'perm-' + caId" :ca-id="caId" :ca-type="currentCa?.caType" :run-step-up="openStepUp" />
         </a-tab-pane>
         <a-tab-pane key="acme" :tab="t('certd.localCa.tabAcmeService')">
-          <AcmeServiceInner v-if="caId && currentCa?.caType === 'intermediate'" :key="'acme-' + caId" :ca-id="caId" />
-          <a-empty v-else-if="caId && currentCa" :description="t('certd.localCa.acmeCaSelectEmpty')" />
+          <template v-if="caId && currentCa">
+            <AcmeServiceInner v-if="currentCa.caType === 'intermediate' && currentCa.acmeEnabled" :key="'acme-' + caId" :ca-id="caId" />
+            <a-empty v-else :description="currentCa.caType === 'root' ? t('certd.localCa.acmeRootCaHint') : t('certd.localCa.acmeNotEnabledHint')" />
+          </template>
         </a-tab-pane>
         <a-tab-pane key="certs" :tab="t('certd.localCa.tabIssuedCerts')">
           <IssuedCerts v-if="caId" :key="'certs-' + caId" :ca-id="caId" />
