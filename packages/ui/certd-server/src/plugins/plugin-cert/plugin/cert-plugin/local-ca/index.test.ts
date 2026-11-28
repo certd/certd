@@ -242,6 +242,17 @@ describe("CertApplyLocalCa", () => {
     await plugin.onInit();
   });
 
+  it("表单选项请求（无pipeline上下文）不校验所选CA可用性", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "local-acme";
+    plugin.caId = 999;
+    plugin.sslProvider = undefined as any;
+    plugin.ctx.pipeline = undefined;
+    setProviderService(plugin, []);
+    await plugin.onInit();
+  });
+
   it("即使旧证书未到期，直接签发模式也会先拒绝已禁用的CA", async () => {
     const leaf = await createLeaf();
     const old = new CertReader({ crt: leaf.crt, key: leaf.key });

@@ -272,8 +272,8 @@ export class CertApplyLocalCa extends CertApplyPlugin {
       this.reverseProxy = "";
       this.useProxy = false;
       await this.ensureLocalAcmeCaId();
-      // 选项请求会先经过onInstance/onInit，此时表单尚未选CA；校验延后到实际执行
-      if (this.caId) {
+      // 选项/表单请求也会走onInstance，此时 ctx.pipeline 为空；校验延后到实际流水线执行
+      if (this.ctx?.pipeline && this.caId) {
         await this.prepareLocalCa(true);
       }
     }
