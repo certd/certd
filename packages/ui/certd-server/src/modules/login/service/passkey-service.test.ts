@@ -93,3 +93,35 @@ describe("PasskeyService 查看密钥 step-up", () => {
     );
   });
 });
+
+
+describe("PasskeyService challenge 一次性消费与绑定", () => {
+  it("同一challenge并发验证最多一个请求能取得challenge", async () => {
+    const service = createService();
+    const options: any = await service.generateAuthenticationOptions({} as any, {
+      userId: 1,
+      purpose: "secretAccess",
+      userVerification: "required",
+    });
+    const results = await Promise.allSettled([
+      service.verifyAuthenticationResponse({ id: "cred-1" }, options.challenge, {} as any, { expectedUserId: 1, purpose: "secretAccess" }),
+      service.verifyAuthenticationResponse({ id: "cred-1" }, options.challenge, {} as any, { expectedUserId: 1, purpose: "secretAccess" }),
+    ]);
+    const expired = results.filter(item => item.status === "rejected" && /已过期/.test(String(item.reason?.message))).length;
+    assert.equal(expired, 1, "同一challenge并发时只能有一个请求消费成功");
+  });
+
+  it("凭证不属于当前用户时拒绝", async () => {
+    const service = createService();
+    const options: any = await service.generateAuthenticationOptions({} as any, {
+      userId: 2,
+      purpose: "secretAccess",
+      userVerification: "required",
+    });
+    await assert.rejects(
+      () => service.verifyAuthenticationResponse({ id: "cred-1" }, options.challenge, {} as any, { expectedUserId: 2, purpose: "secretAccess" }),
+      /不属于当前用户/
+    );
+  });
+
+});

@@ -170,8 +170,6 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       requireUserVerification?: boolean;
     } = {}
   ) {
-    const { verifyAuthenticationResponse } = await import("@simplewebauthn/server");
-
     const challengeKey = `passkey:authentication:${challenge}`;
     const challengeData = cache.get(challengeKey);
     if (!challengeData) {
@@ -184,9 +182,15 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     if (opts.expectedUserId != null && challengeData.userId !== opts.expectedUserId) {
       throw new AuthException("Passkey验证用户不匹配");
     }
-    // 一次性使用，无论校验是否成功都需要重新生成 challenge
-    cache.delete(challengeKey);
-
+    // 校验绑定关系后原子take：同一challenge在同一进程内最多被一个请求消费（不依赖先GET后DELETE）
+    // 注意：当前cache为进程内LRU；多实例部署需共享缓存提供GETDEL/Lua等跨进程原子消费
+    const consumed = cache.take(challengeKey);
+    if (!consumed) {
+      throw new AuthException("Passkey验证已过期，请重试");
+    }
+    if (consumed.purpose !== purpose || consumed.userId !== challengeData.userId) {
+      throw new AuthException("Passkey验证场景或用户不匹配");
+    }
     const passkey = await this.repository.findOne({
       where: {
         passkeyId: credential.id,
@@ -207,6 +211,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     }
 
     const expectedRPID = passkey.rpId || rpId;
+    const { verifyAuthenticationResponse } = await import("@simplewebauthn/server");
 
     const verification = await verifyAuthenticationResponse({
       response: credential,

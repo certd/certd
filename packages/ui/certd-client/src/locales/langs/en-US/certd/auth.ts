@@ -17,6 +17,8 @@ export default {
   passkeyTab: "Passkey Login",
   passkeyLogin: "Passkey Login",
   passkeyHelper: "Login with your biometric or security key",
+  passkeyVerify: "Verify with Passkey",
+  passkeyVerifyOr: "or use Passkey",
   passkeyNotSupported: "Your browser does not support Passkey",
   passkeyRegister: "Register Passkey",
   passkeyRegistered: "Passkey Registered",

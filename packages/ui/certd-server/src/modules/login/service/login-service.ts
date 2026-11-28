@@ -208,7 +208,69 @@ export class LoginService {
       throw new AuthException("已超时，请返回重新登录");
     }
     await this.twoFactorService.verifyAuthenticatorCode(userId, req.verifyCode);
+    // 既有OTP流程同样存在重复使用风险：验证通过后原子消费会话，最多签发一次
+    const consumedUserId = cache.take(`login_2fa_code:${req.loginId}`);
+    if (consumedUserId == null || Number(consumedUserId) !== Number(userId)) {
+      throw new AuthException("登录会话已失效，请返回重新登录");
+    }
 
+    const user = await this.userService.info(userId);
+    if (!user) {
+      throw new AuthException("用户不存在");
+    }
+    return this.generateToken(user);
+  }
+
+  private getTwoFactorLoginUserId(loginId: string): number {
+    if (!loginId) {
+      throw new AuthException("登录会话已失效，请返回重新登录");
+    }
+    const userId = cache.get(`login_2fa_code:${loginId}`);
+    if (!userId) {
+      throw new AuthException("已超时，请返回重新登录");
+    }
+    return Number(userId);
+  }
+
+  private async assertPasskeyLoginEnabled() {
+    const settings = await this.sysSettingsService.getPublicSettings();
+    if (settings.passkeyEnabled !== true) {
+      throw new CommonException("当前站点未启用Passkey");
+    }
+  }
+
+  /** 两步验证阶段：生成绑定当前登录用户的Passkey验证选项。 */
+  async generateTwoFactorPasskeyOptions(loginId: string, ctx: any) {
+    if (!isPlus()) {
+      throw new CommonException("本功能需要开通Certd专业版");
+    }
+    await this.assertPasskeyLoginEnabled();
+    const userId = this.getTwoFactorLoginUserId(loginId);
+    return await this.passkeyService.generateAuthenticationOptions(ctx, {
+      userId,
+      purpose: "login2fa",
+      userVerification: "required",
+    });
+  }
+
+  /** 两步验证阶段：使用绑定该登录用户的Passkey完成登录。 */
+  async loginByTwoFactorPasskey(req: { loginId: string; credential: any; challenge: string }, ctx: any) {
+    if (!isPlus()) {
+      throw new CommonException("本功能需要开通Certd专业版");
+    }
+    await this.assertPasskeyLoginEnabled();
+    const userId = this.getTwoFactorLoginUserId(req.loginId);
+    await this.passkeyService.verifyAuthenticationResponse(req.credential, req.challenge, ctx, {
+      expectedUserId: userId,
+      purpose: "login2fa",
+      requireUserVerification: true,
+    });
+    // Passkey已验证：原子消费2FA会话，只有消费成功且userId一致才签发JWT。
+    // 当前cache为进程内LRU；多实例部署需共享缓存提供GETDEL/Lua等跨进程原子消费。
+    const consumedUserId = cache.take(`login_2fa_code:${req.loginId}`);
+    if (consumedUserId == null || Number(consumedUserId) !== Number(userId)) {
+      throw new AuthException("登录会话已失效，请返回重新登录");
+    }
     const user = await this.userService.info(userId);
     if (!user) {
       throw new AuthException("用户不存在");

@@ -108,6 +108,11 @@ export const useUserStore = defineStore({
       return await this.onLoginSuccess(loginRes);
     },
 
+    async loginByTwoFactorPasskey(form: any) {
+      const loginRes = await UserApi.loginByTwoFactorPasskey(form);
+      return await this.onLoginSuccess(loginRes);
+    },
+
     async registerPasskey(form: any) {
       return await UserApi.registerPasskey(form);
     },
