@@ -209,6 +209,9 @@ export class AcmeEabEntity {
   @Column({ comment: "特权EAB：跳过域名所有权验证直接签发（CA与EAB域名范围限制仍生效）", default: false })
   privileged: boolean;
 
+  @Column({ comment: "用途:local=管理员分配给用户/项目；standard=外部客户端交付", length: 20, default: "standard" })
+  mode: string;
+
   @Column({ length: 255, nullable: true })
   remark: string;
 

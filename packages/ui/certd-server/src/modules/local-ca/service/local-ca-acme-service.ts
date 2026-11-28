@@ -345,7 +345,9 @@ export class LocalCaAcmeService {
     logger.info(`[local-ca] ${disableAcme ? "acme disabled" : "direct orders invalidated"} ca=${ca.id}; unfinished direct orders invalidated`);
   }
 
-  async createAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; remark?: string; privileged?: boolean }) {
+  async createAcmeEab(
+    req: Omit<LocalCaScope, "id"> & { caId: number; name: string; maxUses?: number; expiresDays?: number; allowedDomains?: string[]; remark?: string; privileged?: boolean; mode?: "local" | "standard" }
+  ) {
     const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, req.privileged === true);
     if (ca.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以创建ACME凭证");
@@ -353,6 +355,7 @@ export class LocalCaAcmeService {
     if (!ca.acmeEnabled) {
       throw new ValidateException("请先启用该中间CA的ACME服务");
     }
+    const mode: "local" | "standard" = req.mode === "local" ? "local" : "standard";
     const id = randomId(16);
     const kid = `eab_${randomId(12)}`;
     const hmacKey = randomEabHmacKey();
@@ -371,6 +374,7 @@ export class LocalCaAcmeService {
       projectId: undefined,
       name: String(req.name || "").trim() || "ACME凭证",
       kid,
+      mode,
       allowedDomains: allowedDomains.length ? JSON.stringify(allowedDomains) : null,
       hmacKeyEncrypted: this.encryptService.encrypt(hmacKey),
       hmacKeyHash: sha256Hex(hmacKey),
@@ -383,13 +387,15 @@ export class LocalCaAcmeService {
     });
     // EAB 不再绑定用户/项目授权，直接保存（账户分配在后续“分配账户”中完成）
     await this.acmeEabRepository.save(bean);
-    logger.info(`[local-ca] eab created ca=${ca.id} eab=${bean.id} kid=${kid} privileged=${bean.privileged} maxUses=${maxUses} allowedDomains=${allowedDomains.length}`);
+    logger.info(`[local-ca] eab created ca=${ca.id} eab=${bean.id} kid=${kid} mode=${mode} privileged=${bean.privileged} maxUses=${maxUses} allowedDomains=${allowedDomains.length}`);
     return {
       id,
       caId: ca.id,
       name: bean.name,
       kid,
-      hmacKey,
+      // 本地EAB仅用于管理员分配账户，HMAC只保存在服务端，不下发
+      hmacKey: mode === "local" ? undefined : hmacKey,
+      mode,
       maxUses,
       allowedDomains,
       grantId: bean.grantId,
@@ -514,6 +520,7 @@ export class LocalCaAcmeService {
       caName: caNameMap.get(item.caId) || null,
       name: item.name,
       kid: item.kid,
+      mode: item.mode === "local" ? "local" : "standard",
       allowedDomains: item.allowedDomains,
       maxUses: item.maxUses,
       usedCount: item.usedCount,
@@ -711,40 +718,6 @@ export class LocalCaAcmeService {
         await this.invalidateDirectOrdersByEabIds(tx, eabIds, "用户授权已撤销，EAB凭证已禁用，请重新创建订单");
       }
     });
-  }
-
-  /** 变更EAB特权：升级需CA所有者；降级时失效该EAB未完成的直签订单。 */
-  async setAcmeEabPrivileged(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; privileged: boolean }) {
-    if (typeof req.privileged !== "boolean") {
-      throw new ValidateException("privileged必须是布尔值");
-    }
-    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, req.privileged === true);
-    if (ca.caType !== "intermediate") {
-      throw new ValidateException("只有中间CA可以管理ACME凭证");
-    }
-    const manager = this.repository.manager;
-    if (!manager?.transaction) {
-      throw new ValidateException("数据库事务不可用，无法变更EAB特权");
-    }
-    const result = await runTransaction(manager, async tx => {
-      const repository = tx.getRepository(AcmeEabEntity);
-      const driverType = String(tx.connection?.options?.type || "");
-      const useLock = !driverType.includes("sqlite");
-      const bean = await repository.findOne({ where: { id: req.eabId, caId: ca.id }, ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}) });
-      if (!bean) {
-        throw new ValidateException("ACME凭证不存在或无访问权限");
-      }
-      const downgraded = bean.privileged === true && req.privileged === false;
-      bean.privileged = req.privileged;
-      bean.updateTime = new Date();
-      await repository.save(bean);
-      if (downgraded) {
-        await this.invalidateDirectOrdersByEabIds(tx, [bean.id], "EAB特权已关闭，请重新创建订单");
-      }
-      return { id: bean.id, privileged: bean.privileged };
-    });
-    logger.info(`[local-ca] eab privileged=${result.privileged} ca=${ca.id} eab=${result.id} user=${req.userId}`);
-    return result;
   }
 
   /** 失效指定EAB关联账户的未完成直签订单（经account.eab_id子查询，订单不冗余存eabId）。 */

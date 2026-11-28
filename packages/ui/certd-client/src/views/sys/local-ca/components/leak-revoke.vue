@@ -85,6 +85,7 @@ function submit() {
     okText: t("certd.common.confirm"),
     cancelText: t("certd.common.cancel"),
     okButtonProps: { danger: true },
+    zIndex: 1400,
     async onOk() {
       await props.runStepUp(async () => {
         submitting.value = true;

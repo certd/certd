@@ -380,12 +380,20 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       notification.error({ message: t("certd.localCa.eabNoCa") });
       return;
     }
+    // 默认跟随当前CA的ACME模式：本地ACME → 本地EAB；标准ACME → 标准EAB
+    let defaultMode: "local" | "standard" = "standard";
+    try {
+      const access = await localCaApi.GetAcmeAccess(initialCaId);
+      defaultMode = access?.acmeMode === "local" ? "local" : "standard";
+    } catch {
+      defaultMode = "standard";
+    }
     await openFormDialog({
       title: t("certd.localCa.eabCreateTitle"),
       zIndex: 1200,
       wrapper: { width: 600 },
       body: () => <a-alert type="warning" show-icon message={t("certd.localCa.eabCreateWarning")} description={t("certd.localCa.eabCreateWarningDesc")} class="mb-4" />,
-      initialForm: { mode: "local", maxUses: 1, expiresDays: 3650, privileged: false },
+      initialForm: { mode: defaultMode, maxUses: 1, expiresDays: 3650, privileged: false },
       columns: {
         mode: {
           title: t("certd.localCa.eabMode"),
@@ -446,6 +454,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
         const verified = await openStepUp(t("certd.localCa.eabStepUpTitle"), t("certd.localCa.eabStepUpDesc"), async () => {
           res = await localCaApi.CreateEab({
             caId: initialCaId,
+            mode: form.mode === "standard" ? "standard" : "local",
             name: form.name,
             maxUses: form.maxUses || 0,
             expiresDays: form.expiresDays || 0,
@@ -897,6 +906,7 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
     const projectStore = useProjectStore();
     const isEnterprise = projectStore.isEnterprise.value;
     let targetOptions: { label: string; value: number }[] = [];
+    const userEmailMap = new Map<number, string>();
     if (isEnterprise) {
       try {
         const res: any = await request({ url: "/sys/enterprise/project/page", method: "post", data: { page: { current: 1, size: 1000 } }, showErrorNotify: false });
@@ -912,6 +922,9 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
       try {
         const users: any[] = await request({ url: "/sys/authority/user/getSimpleUsers", method: "POST", showErrorNotify: false });
         targetOptions = (users || []).map(u => ({ label: u.nickName || u.username || `#${u.id}`, value: Number(u.id) }));
+        for (const u of users || []) {
+          userEmailMap.set(Number(u.id), String(u.email || "").trim());
+        }
       } catch {
         targetOptions = [];
       }
@@ -936,7 +949,17 @@ export function useLocalCaDialogs(crudExpose: any, caViewRef?: any) {
           title: isEnterprise ? t("certd.localCa.eabAssignProject") : t("certd.localCa.eabAssignUser"),
           type: "dict-select",
           dict: dict({ data: targetOptions }),
-          form: { required: true, col: { span: 24 } },
+          form: {
+            required: true,
+            col: { span: 24 },
+            // 切换用户时用其绑定邮箱填充（可手动修改）；无邮箱则清空。项目模式不改动
+            valueChange({ form, value }: any) {
+              if (isEnterprise) {
+                return;
+              }
+              form.email = userEmailMap.get(Number(value ?? form.targetId)) || "";
+            },
+          },
         },
         email: {
           title: t("certd.localCa.eabAssignEmail"),

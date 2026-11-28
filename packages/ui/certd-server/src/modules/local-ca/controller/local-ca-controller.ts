@@ -60,11 +60,13 @@ export class LocalCaController extends CrudController<LocalCaService> {
           bq.andWhere("subject_cn like :subjectCn", { subjectCn: `%${subjectCn}%` });
         }
         if (status === "normal") {
-          bq.andWhere("main.disabled = 0 AND main.rotated_to_id IS NULL");
+          bq.andWhere("main.disabled = false AND main.rotated_to_id IS NULL AND main.revoked = false");
         } else if (status === "rotated") {
           bq.andWhere("main.rotated_to_id IS NOT NULL");
         } else if (status === "disabled") {
-          bq.andWhere("main.disabled = 1 AND main.rotated_to_id IS NULL");
+          bq.andWhere("main.disabled = true AND main.rotated_to_id IS NULL AND main.revoked = false");
+        } else if (status === "revoked") {
+          bq.andWhere("main.revoked = true");
         }
       },
     });
@@ -622,24 +624,6 @@ export class LocalCaController extends CrudController<LocalCaService> {
       disabled: body.disabled === true,
     });
     this.auditLog({ content: `${body.disabled ? "禁用" : "启用"}了本地CA的ACME EAB凭证(ID:${body.eabId})` });
-    return this.ok(res);
-  }
-
-  @Post("/eab/privileged", { description: Constants.per.authOnly, summary: "变更EAB特权（升级需CA所有者，需2FA/Passkey）" })
-  async setEabPrivileged(@Body(ALL) body: any) {
-    if (typeof body.privileged !== "boolean") {
-      throw new ValidateException("privileged必须是布尔值");
-    }
-    this.assertStepUp(body.verifyToken, "变更EAB特权");
-    const userId = this.getUserId();
-    await this.checkCaAccess(body.caId, "write", body.privileged === true);
-    const res = await this.service.setAcmeEabPrivileged({
-      caId: body.caId,
-      eabId: body.eabId,
-      userId,
-      privileged: body.privileged === true,
-    });
-    this.auditLog({ content: `${body.privileged ? "升级为特权" : "降级为普通"}EAB凭证(ID:${body.eabId})` });
     return this.ok(res);
   }
 

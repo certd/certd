@@ -236,14 +236,6 @@ export const localCaApi = {
     });
   },
 
-  async SetEabPrivileged(caId: number, eabId: string, privileged: boolean, verifyToken: string) {
-    return await req({
-      url: apiPrefix + "/eab/privileged",
-      method: "post",
-      data: { caId, eabId, privileged, verifyToken },
-    });
-  },
-
   async RotateIntermediate(data: any) {
     return await req({
       url: apiPrefix + "/intermediate/rotate",

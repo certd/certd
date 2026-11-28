@@ -1122,10 +1122,6 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
     return await this.acmeService.createAcmeEab(req);
   }
 
-  async setAcmeEabPrivileged(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; privileged: boolean }) {
-    return await this.acmeService.setAcmeEabPrivileged(req);
-  }
-
   async updateAcmeEab(req: Omit<LocalCaScope, "id"> & { caId: number; eabId: string; name?: string; remark?: string; allowedDomains?: string[]; maxUses?: number; expiresDays?: number }) {
     return await this.acmeService.updateAcmeEab(req);
   }

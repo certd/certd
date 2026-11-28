@@ -84,21 +84,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     await context.runStepUp(action);
   }
 
-  async function togglePrivileged(row: any) {
-    await context.runStepUp(async () => {
-      try {
-        await localCaApi.SetEabPrivileged(row.caId, row.id, !row.privileged, getSecretAccessToken());
-        notification.success({ message: t("certd.localCa.eabPrivilegedChanged") });
-      } catch (e: any) {
-        notification.error({ message: String(e?.message || e) });
-      } finally {
-        await crudExpose.doRefresh();
-      }
-    });
-  }
-
   return {
     crudOptions: {
+      // 不启用行选择（避免表格前方出现无用的勾选框）
+      settings: { plugins: { rowSelection: { enabled: false } } },
       request: { pageRequest },
       toolbar: { show: false },
       pagination: { show: false },
@@ -137,22 +126,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           remove: { show: false },
           copy: { show: false },
-          upgrade: {
-            type: "link",
-            text: t("certd.localCa.eabUpgrade"),
-            show: compute(({ row }) => !row.privileged),
-            click: async ({ row }) => {
-              await togglePrivileged(row);
-            },
-          },
-          downgrade: {
-            type: "link",
-            text: t("certd.localCa.eabDowngrade"),
-            show: compute(({ row }) => row.privileged === true),
-            click: async ({ row }) => {
-              await togglePrivileged(row);
-            },
-          },
           leakRevoke: {
             type: "link",
             text: t("certd.localCa.leakRevokeTitle"),
@@ -182,6 +155,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             data: [
               { label: t("certd.localCa.eabTypeNormal"), value: false, color: "default" },
               { label: t("certd.localCa.eabTypePrivileged"), value: true, color: "orange" },
+            ],
+          }),
+          column: { width: 90, align: "center", component: { color: "auto" } },
+        },
+        mode: {
+          title: t("certd.localCa.eabModeColumn"),
+          type: "dict-select",
+          dict: dict({
+            data: [
+              { label: t("certd.localCa.eabModeTagLocal"), value: "local", color: "blue" },
+              { label: t("certd.localCa.eabModeTagStandard"), value: "standard", color: "default" },
             ],
           }),
           column: { width: 90, align: "center", component: { color: "auto" } },

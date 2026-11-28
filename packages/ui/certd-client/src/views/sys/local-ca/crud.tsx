@@ -455,8 +455,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           dict: dict({
             data: [
               { label: t("certd.localCa.statusNormal"), value: "normal", color: "green" },
-              { label: t("certd.localCa.statusRotated"), value: "rotated", color: "default" },
               { label: t("certd.localCa.statusDisabled"), value: "disabled", color: "red" },
+              { label: t("certd.localCa.statusRevoked"), value: "revoked", color: "volcano" },
+              { label: t("certd.localCa.statusRotated"), value: "rotated", color: "default" },
             ],
           }),
           form: { show: false },

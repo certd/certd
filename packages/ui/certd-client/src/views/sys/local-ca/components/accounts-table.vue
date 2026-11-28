@@ -145,7 +145,7 @@ async function viewEab(row: any) {
     maskClosable: true,
     okText: t("certd.common.close"),
     width: 640,
-    zIndex: 1200,
+    zIndex: 1300,
     content: () => (
       <a-descriptions bordered column={1} size="small">
         <a-descriptions-item label="KID">{eab.kid}</a-descriptions-item>
@@ -195,7 +195,7 @@ async function viewOrders(row: any) {
     maskClosable: true,
     okText: t("certd.common.close"),
     width: 1000,
-    zIndex: 1200,
+    zIndex: 1300,
     content: () => (
       <a-table dataSource={orders} pagination={{ pageSize: 10 }} size="small" rowKey="id">
         <a-table-column title={t("certd.localCa.acmeOrderStatus")} width={110}>
@@ -244,7 +244,7 @@ async function viewOrderCert(order: any) {
     maskClosable: true,
     okText: t("certd.common.confirm"),
     width: 800,
-    zIndex: 1300,
+    zIndex: 1400,
     content: () => <CertView cert={{ crt: order.certPem, key: "", ic: "", detail: res.detail }} />,
   });
 }
@@ -257,6 +257,7 @@ function toggleStatus(row: any) {
     content: t("certd.localCa.acmeStatusConfirmHint"),
     okText: t("certd.common.confirm"),
     cancelText: t("certd.common.cancel"),
+    zIndex: 1400,
     async onOk() {
       const submit = async () => {
         await localCaApi.SetAcmeAccountStatus(props.caId, row.id, status, status === "valid" ? getSecretAccessToken() : undefined);
