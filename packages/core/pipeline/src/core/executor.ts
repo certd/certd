@@ -304,7 +304,15 @@ export class Executor {
     // @ts-ignore
     const define: PluginDefine = plugin?.define;
 
-    const { instance, result, skipped } = await this.executePlugin(step, currentLogger);
+    let executed: { instance: ITaskPlugin; result: any; skipped: boolean };
+    try {
+      executed = await this.executePlugin(step, currentLogger);
+    } catch (e: any) {
+      // 步骤日志简明记录失败原因，避免日志在“准备申请”后戛然而止、错误仅存于历史状态
+      currentLogger.error(`申请执行失败：${e?.message || e}`);
+      throw e;
+    }
+    const { instance, result, skipped } = executed;
     if (result === ResultType.skip && skipped) {
       // SkipWhenSucceed 跳过：状态与输出已在 executePlugin 内拷贝，无需结果处理
       return result;
@@ -451,7 +459,12 @@ export class Executor {
       utils,
       user: this.options.user,
       emitter: pipelineEmitter,
-      serviceGetter: this.options.serviceGetter,
+      serviceGetter: (() => {
+        const base: any = this.options.serviceGetter;
+        // 按插件类型获取受限get()；不透出forPlugin/appCtx，插件无法自我提升能力
+        const scoped = base?.forPlugin?.(step.type) || base;
+        return scoped ? { get: scoped.get.bind(scoped) } : undefined;
+      })(),
       projectId: this.pipeline.projectId,
     };
     await instance.setCtx(taskCtx);

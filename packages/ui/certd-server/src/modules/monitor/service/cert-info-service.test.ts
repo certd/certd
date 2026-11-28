@@ -56,6 +56,36 @@ describe("CertInfoService", () => {
       assert.deepEqual(deleted, { id: 1, userId: 2, projectId: 3 });
     });
 
+    it("阻止删除本地CA未过期且未吊销证书", async () => {
+      const service = new CertInfoService();
+      service.repository = {
+        async findOne() {
+          return { id: 1, userId: 2, projectId: 3, certInfo: "{}", localCaId: 9, status: CertStatus.active, expiresTime: Date.now() + 86400000 };
+        },
+        async delete() {
+          throw new Error("不应删除");
+        },
+      } as any;
+
+      await assert.rejects(() => service.deleteCertificate(1, 2, 3), /本地CA签发的未过期证书不能删除/);
+    });
+
+    it("允许删除本地CA已吊销证书", async () => {
+      const service = new CertInfoService();
+      let deleted = false;
+      service.repository = {
+        async findOne() {
+          return { id: 1, userId: 2, projectId: 3, certInfo: "{}", localCaId: 9, status: CertStatus.revoked, expiresTime: Date.now() + 86400000 };
+        },
+        async delete() {
+          deleted = true;
+        },
+      } as any;
+
+      await service.deleteCertificate(1, 2, 3);
+      assert.equal(deleted, true);
+    });
+
     it("deletes a certificate owned by the current user and project", async () => {
       const service = new CertInfoService();
       let findWhere: any;
@@ -100,6 +130,44 @@ describe("CertInfoService", () => {
       await service.updateCertByPipelineId({ pipelineId: 1, cert: createSelfSignedCert(), fromType: "pipeline", taskId: "apply-1", certPassword: "secret" });
 
       assert.equal(saved.certPassword, "secret");
+    });
+
+    it("本地CA流水线复用ACME finalize写入的证书记录，避免重复active", async () => {
+      const service = createCertInfoService();
+      service.repository = {
+        async findOne(args: any) {
+          const where = args?.where ?? {};
+          if (where.localCaId === 9 && where.serialNumber === "ABC123") {
+            return { id: 50, userId: 2, projectId: 3, localCaId: 9, serialNumber: "ABC123", pipelineId: null };
+          }
+          return null;
+        },
+        async update() {},
+      } as any;
+      service.pipelineRepository = {
+        async findOne() {
+          return { id: 1, userId: 2, projectId: 3, type: "cert_auto", content: null };
+        },
+      } as any;
+      let saved: any = null;
+      service.addOrUpdate = async (bean: any) => {
+        saved = bean;
+        return bean;
+      };
+
+      await service.updateCertByPipelineId({
+        pipelineId: 1,
+        cert: createSelfSignedCert(),
+        fromType: "pipeline",
+        taskId: "apply-1",
+        localCaId: 9,
+        serialNumber: "ABC123",
+      });
+
+      assert.equal(saved.id, 50);
+      assert.equal(saved.pipelineId, 1);
+      assert.equal(saved.localCaId, 9);
+      assert.equal(saved.serialNumber, "ABC123");
     });
 
     it("新建激活证书并绑定流水线id、继承已有记录来源", async () => {
@@ -188,6 +256,9 @@ describe("CertInfoService", () => {
       assert.equal(updateWhere.status, CertStatus.active);
       assert.equal(updateWhere.id._value, 100);
       assert.equal(updateSet.status, CertStatus.inactive);
+      // 续期替换只标记未激活，不写吊销时间，也不会命中已吊销记录
+      assert.equal(updateSet.revokeTime, undefined);
+      assert.equal(updateWhere.status, CertStatus.active);
     });
 
     it("无已有记录且流水线类型无对应来源时，使用传入来源", async () => {
@@ -590,6 +661,9 @@ describe("CertInfoService", () => {
       } as any;
       let updated: any = null;
       service.repository = {
+        async findOne() {
+          return { id: 1, status: CertStatus.inactive };
+        },
         async update(where: any, set: any) {
           updated = { where, set };
           return {} as any;
@@ -612,6 +686,18 @@ describe("CertInfoService", () => {
       assert.equal(updated.where.id, 1);
       assert.equal(updated.set.status, CertStatus.revoked);
       assert.ok(updated.set.revokeTime > 0);
+    });
+
+    it("本地CA吊销委托给local-ca模块处理", async () => {
+      const service = new CertInfoService();
+      const cert = createSelfSignedCert();
+      service.info = async () => ({ id: 1, userId: 2, projectId: null, status: CertStatus.inactive, certInfo: JSON.stringify(cert), localCaId: 3, serialNumber: "abc123" } as any);
+      let delegated: any = null;
+      service.certRevocationService = { async revokeCertInfo(req: any) { delegated = req; return Date.now(); } } as any;
+      await service.revoke(1, 2);
+      assert.equal(delegated.caId, 3);
+      assert.equal(delegated.certInfoId, 1);
+      assert.equal(delegated.serialNumber, "abc123");
     });
 
     it("吊销时优先使用记录上的ACME账号，不再解析流水线", async () => {

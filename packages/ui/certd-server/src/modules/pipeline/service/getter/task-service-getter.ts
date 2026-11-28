@@ -13,16 +13,33 @@ import { CertInfoGetter } from "./cert-info-getter.js";
 import { CertInfoService } from "../../../monitor/index.js";
 import { ICertInfoGetter } from "@certd/plugin-lib";
 import { CnameProviderService } from "../../../cname/service/cname-provider-service.js";
+import { LocalCaGetter } from "../../../local-ca/service/local-ca-getter.js";
+import { LocalCaSignerGetter } from "../../../local-ca/service/local-ca-signer-getter.js";
+import { LocalCaService } from "../../../local-ca/service/local-ca-service.js";
 
 const serviceNames = ["ocrService", "certInfoService", "customAcmeProviderService"];
+// 服务端按插件类型硬编码本地CA能力白名单，不信任插件自声明
+const TRUSTED_LOCAL_CA_PLUGINS: Record<string, string[]> = {
+  CertApplyLocalCa: ["localCaGetter", "localCaSignerGetter"],
+  acmeAccount: ["localCaGetter"],
+};
 export class TaskServiceGetter implements IServiceGetter {
   private userId: number;
   private projectId: number;
   private appCtx: IMidwayContainer;
-  constructor(userId: number, projectId: number, appCtx: IMidwayContainer) {
+  private pluginType?: string;
+  constructor(userId: number, projectId: number, appCtx: IMidwayContainer, pluginType?: string) {
     this.userId = userId;
     this.projectId = projectId;
     this.appCtx = appCtx;
+    this.pluginType = pluginType;
+  }
+  forPlugin(pluginType: string): IServiceGetter {
+    return new TaskServiceGetter(this.userId, this.projectId, this.appCtx, pluginType);
+  }
+  private hasLocalCaCapability(name: string): boolean {
+    // 仅服务端白名单内插件类型可获取本地CA能力；第三方插件无法通过自声明提升
+    return TRUSTED_LOCAL_CA_PLUGINS[this.pluginType || ""]?.includes(name) === true;
   }
   async get<T>(serviceName: string): Promise<T> {
     if (serviceName === "subDomainsGetter") {
@@ -38,6 +55,16 @@ export class TaskServiceGetter implements IServiceGetter {
       return (await this.getDomainVerifierGetter()) as T;
     } else if (serviceName === "certInfoGetter") {
       return (await this.getCertInfoGetter()) as T;
+    } else if (serviceName === "localCaGetter") {
+      if (!this.hasLocalCaCapability("localCaGetter")) {
+        throw new Error(`插件 ${this.pluginType || "unknown"} 无权获取本地CA读取能力`);
+      }
+      return (await this.getLocalCaGetter()) as T;
+    } else if (serviceName === "localCaSignerGetter") {
+      if (!this.hasLocalCaCapability("localCaSignerGetter")) {
+        throw new Error(`插件 ${this.pluginType || "unknown"} 无权获取本地CA签发能力`);
+      }
+      return (await this.getLocalCaSignerGetter()) as T;
     } else {
       if (!serviceNames.includes(serviceName)) {
         throw new Error(`${serviceName} not in whitelist`);
@@ -62,6 +89,22 @@ export class TaskServiceGetter implements IServiceGetter {
     return new CertInfoGetter(this.userId, this.projectId, certInfoService);
   }
 
+  async getLocalCaGetter(): Promise<LocalCaGetter> {
+    if (!this.hasLocalCaCapability("localCaGetter")) {
+      throw new Error(`插件 ${this.pluginType || "unknown"} 无权获取本地CA读取能力`);
+    }
+    const localCaService: LocalCaService = await this.appCtx.getAsync("localCaService");
+    return new LocalCaGetter(this.userId, this.projectId, localCaService);
+  }
+
+  async getLocalCaSignerGetter(): Promise<LocalCaSignerGetter> {
+    if (!this.hasLocalCaCapability("localCaSignerGetter")) {
+      throw new Error(`插件 ${this.pluginType || "unknown"} 无权获取本地CA签发能力`);
+    }
+    const localCaService: LocalCaService = await this.appCtx.getAsync("localCaService");
+    return new LocalCaSignerGetter(this.userId, this.projectId, localCaService);
+  }
+
   async getAccessService(): Promise<AccessGetter> {
     const accessService: AccessService = await this.appCtx.getAsync("accessService");
     const getAccessById = accessService.getById.bind(accessService);
@@ -83,6 +126,11 @@ export class TaskServiceGetter implements IServiceGetter {
     return new DomainVerifierGetter(this.userId, this.projectId, domainService);
   }
 }
+/** 传给插件/外部回调时仅暴露get，避免调用forPlugin自我提升或访问appCtx */
+export function restrictServiceGetter(getter: IServiceGetter): IServiceGetter {
+  return { get: getter.get.bind(getter) };
+}
+
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class TaskServiceBuilder {
@@ -92,11 +140,12 @@ export class TaskServiceBuilder {
   create(req: TaskServiceCreateReq) {
     const userId = req.userId;
     const projectId = req.projectId;
-    return new TaskServiceGetter(userId, projectId, this.appCtx);
+    return new TaskServiceGetter(userId, projectId, this.appCtx, req.pluginType);
   }
 }
 
 export type TaskServiceCreateReq = {
   userId: number;
   projectId?: number;
+  pluginType?: string;
 };

@@ -1,6 +1,5 @@
 {
   "extension": ["ts"],
   "node-option": ["no-warnings", "loader=ts-node/esm"],
-  "spec": ["test/**/*.test.ts"],
-  "require": ["test/setup.ts"]
+  "spec": ["src/**/*.test.ts", "test/**/*.test.ts"]
 }

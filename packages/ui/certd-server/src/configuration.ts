@@ -12,6 +12,7 @@ import cors from "@koa/cors";
 import { GlobalExceptionMiddleware } from "./middleware/global-exception.js";
 import { PreviewMiddleware } from "./middleware/preview.js";
 import { AuthorityMiddleware } from "./middleware/authority.js";
+import { AcmeAccessMiddleware } from "./middleware/acme-access.js";
 import { AuditLogMiddleware } from "./middleware/audit-log.js";
 import { logger } from "@certd/basic";
 import { ResetPasswdMiddleware } from "./middleware/reset-passwd/middleware.js";
@@ -116,6 +117,7 @@ export class MainConfiguration {
       PreviewMiddleware,
       //授权处理
       AuthorityMiddleware,
+      AcmeAccessMiddleware,
       ScanProtectionMiddleware,
       RiskRecognitionMiddleware,
       AuditLogMiddleware,

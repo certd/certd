@@ -211,6 +211,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             data: [
               { label: t("certd.monitor.sourcePipeline"), value: "pipeline" },
               { label: t("certd.monitor.sourceManualUpload"), value: "upload" },
+              { label: t("certd.monitor.sourceAcme"), value: "acme" },
             ],
           }),
           form: {

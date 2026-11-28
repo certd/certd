@@ -142,6 +142,22 @@ export class SysPrivateSettings extends BaseSettings {
     { sslProvider: "letsencrypt_staging", title: "Let's Encrypt测试环境(只能生成测试证书)", directoryUrl: "", needEAB: false, builtIn: true },
   ];
 
+  /** 补齐缺失的内置颁发机构（修复历史清库/旧版保存丢失内置项），并保持内置项在前。 */
+  static ensureBuiltInAcmeProviders(list?: CustomAcmeProvider[]): CustomAcmeProvider[] {
+    const defaults = new SysPrivateSettings().customAcmeProviders || [];
+    const existing = Array.isArray(list) ? list : [];
+    const merged = defaults.map(def => {
+      const saved = existing.find(item => item.sslProvider === def.sslProvider);
+      return saved ? { ...def, ...saved, builtIn: true } : { ...def };
+    });
+    for (const item of existing) {
+      if (!defaults.some(def => def.sslProvider === item.sslProvider)) {
+        merged.push(item);
+      }
+    }
+    return merged;
+  }
+
   removeSecret() {
     const clone = cloneDeep(this);
     delete clone.jwtKey;

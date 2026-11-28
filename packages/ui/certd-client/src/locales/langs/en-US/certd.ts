@@ -25,6 +25,7 @@ import nettest from "./certd/nettest";
 import audit from "./certd/audit";
 import applyTemplate from "./certd/apply-template";
 import dnsPersist from "./certd/dns-persist";
+import localCa from "./certd/local-ca";
 import auth from "./certd/auth";
 import guide from "./certd/guide";
 import vip from "./certd/vip";
@@ -62,6 +63,7 @@ export default {
   audit,
   applyTemplate,
   dnsPersist,
+  localCa,
   auth,
   guide,
   vip,

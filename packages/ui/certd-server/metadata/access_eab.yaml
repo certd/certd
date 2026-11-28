@@ -53,6 +53,9 @@ input:
         - value: sslcom
           label: SSL.com
           icon: la:expeditedssl
+        - value: custom
+          label: 自定义/本地CA
+          icon: ph:seal-check
     helper: 请选择EAB类型
     required: true
     encrypt: false

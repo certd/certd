@@ -1,0 +1,302 @@
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { EntityManager, In, Repository } from "typeorm";
+import { ValidateException } from "@certd/lib-server";
+import { LocalCaEntity } from "../entity/local-ca.js";
+import { LocalCaAdminEntity } from "../entity/local-ca-admin.js";
+import { LocalCaGrantEntity } from "../entity/local-ca-grant.js";
+
+export type LocalCaScope = {
+  id: number;
+  userId: number;
+  projectId?: number;
+};
+
+/**
+ * 本地CA访问控制：管理员ACL、用户授权与归属校验。
+ * 不依赖CRL/ACME子服务；签发与ACME视图共用的CA可用性校验也收敛在这里。
+ */
+@Provide()
+@Scope(ScopeEnum.Request, { allowDowngrade: true })
+export class LocalCaAccessService {
+  @Inject()
+  ctx: any;
+
+  @InjectEntityModel(LocalCaEntity)
+  repository: Repository<LocalCaEntity>;
+
+  @InjectEntityModel(LocalCaAdminEntity)
+  adminRepository: Repository<LocalCaAdminEntity>;
+
+  @InjectEntityModel(LocalCaGrantEntity)
+  grantRepository: Repository<LocalCaGrantEntity>;
+
+  // 移除授权时同步禁用绑定该授权的EAB，避免残留凭证继续可用
+
+
+  async findAdminAccess(caId: number, adminUserId: number) {
+    return await this.adminRepository.findOne({ where: { caId, adminUserId } });
+  }
+
+  async getAdminAccess(caId: number, adminUserId: number, requireOwner = false) {
+    // 系统管理员可管理任意本地CA，无需CA ACL行；普通用户的管理入口已在controller层收敛拒绝
+    if (this.ctx?.user?.roles?.includes(1)) {
+      return { role: "owner" } as LocalCaAdminEntity;
+    }
+    const access = await this.findAdminAccess(caId, adminUserId);
+    if (!access) {
+      throw new ValidateException("本地CA不存在或无访问权限");
+    }
+    if (requireOwner && access.role !== "owner") {
+      throw new ValidateException("仅本地CA的创建管理员可以执行该操作");
+    }
+    return access;
+  }
+
+  async addAdminAccess(caId: number, adminUserId: number, role = "owner", manager?: EntityManager) {
+    const repository = manager ? manager.getRepository(LocalCaAdminEntity) : this.adminRepository;
+    const existing = await repository.findOne({ where: { caId, adminUserId } });
+    if (existing) {
+      await repository.update({ id: existing.id }, { role, updateTime: new Date() });
+      return;
+    }
+    await repository.save(repository.create({ caId, adminUserId, role }));
+  }
+
+  async assertAdminCa(caId: number, adminUserId: number, requireOwner = false) {
+    return await this.getAdminAccess(caId, adminUserId, requireOwner);
+  }
+
+  async assertCaOwner(req: LocalCaScope) {
+    await this.getOwnedCa(req);
+  }
+
+  private async getAccessibleCa(req: LocalCaScope, requireOwner = false, includeDeleted = false) {
+    const ca = await this.repository.findOne({ where: includeDeleted ? { id: req.id } : { id: req.id, deleted: false } });
+    if (!ca) {
+      throw new ValidateException("本地CA不存在或无访问权限");
+    }
+    await this.getAdminAccess(ca.id, req.userId, requireOwner);
+    return ca;
+  }
+
+  async getOwnedCa(req: LocalCaScope, requireOwner = false, includeDeleted = false) {
+    return await this.getAccessibleCa(req, requireOwner, includeDeleted);
+  }
+
+  async getGrantedCa(req: LocalCaScope) {
+    const ca = await this.repository.findOne({ where: { id: req.id } });
+    // 已归档且未轮换的CA拒绝访问；已轮换的归档CA保留旧ID入口，由调用方沿rotatedToId指向新CA
+    if (!ca || (ca.deleted && !ca.rotatedToId)) {
+      throw new ValidateException("本地CA不存在或无访问权限");
+    }
+    if (req.userId > 0) {
+      const admin = await this.findAdminAccess(ca.id, req.userId);
+      if (admin) {
+        return ca;
+      }
+    }
+    const grants = await this.listApplicableGrants(req);
+    if (!grants.some(item => item.caId === ca.id)) {
+      throw new ValidateException("本地CA不存在或无访问权限");
+    }
+    return ca;
+  }
+
+  /**
+   * 企业模式下项目用户/流水线的userId固定为-1，此时按项目授权匹配；否则按真实用户匹配。
+   */
+  async listApplicableGrants(req: { userId: number; projectId?: number }) {
+    const result: LocalCaGrantEntity[] = [];
+    // 用户模式：授权给指定用户（projectId=0表示其全部项目；兼容历史用户+项目授权）
+    if (req.userId > 0) {
+      const grants = await this.grantRepository.find({ where: { userId: req.userId, disabled: false } });
+      result.push(...grants.filter(item => item.projectId === 0 || item.projectId === req.projectId));
+    }
+    // 项目模式：授权给指定项目（userId=0表示项目内全部用户），与用户模式互斥
+    if (req.projectId) {
+      const projectGrants = await this.grantRepository.find({ where: { projectId: req.projectId, userId: 0, disabled: false } });
+      result.push(...projectGrants);
+    }
+    return result;
+  }
+
+  async listGrants(req: LocalCaScope) {
+    const ca = await this.getOwnedCa(req, false, true);
+    const chain = await this.collectRotationChain(ca.id);
+    return await this.grantRepository.find({ where: { caId: In(chain) }, order: { id: "DESC" } });
+  }
+
+  /** 收集CA所在轮换链全部ID（祖先+自身+后继），visited守卫防环。 */
+  async collectRotationChain(caId: number): Promise<number[]> {
+    const chain: number[] = [];
+    const visited = new Set<number>();
+    let cursor: number | null = caId;
+    const ancestors: number[] = [];
+    while (cursor != null && !visited.has(cursor)) {
+      visited.add(cursor);
+      const parent = await this.repository.findOne({ where: { rotatedToId: cursor } as any });
+      if (!parent) {
+        break;
+      }
+      ancestors.push(parent.id);
+      cursor = parent.id;
+    }
+    chain.push(...ancestors.reverse(), caId);
+    cursor = caId;
+    const down = new Set<number>([caId]);
+    while (cursor != null) {
+      const current = await this.repository.findOne({ where: { id: cursor } });
+      const nextId = current?.rotatedToId;
+      if (nextId == null || down.has(nextId)) {
+        break;
+      }
+      down.add(nextId);
+      chain.push(nextId);
+      cursor = nextId;
+    }
+    return chain;
+  }
+
+  async findActiveGrant(caId: number, grantId: number) {
+    return await this.grantRepository.findOne({ where: { id: grantId, caId, disabled: false } });
+  }
+
+  async addGrant(req: { id: number; userId: number; grantUserId?: number; grantProjectId?: number }) {
+    // 用户模式与项目模式互斥：要么授权用户(全部项目)，要么授权项目(全部用户)
+    const projectMode = req.grantProjectId != null && req.grantProjectId !== 0;
+    let grantUserId: number;
+    let projectId: number;
+    if (projectMode) {
+      if (!Number.isInteger(req.grantProjectId) || req.grantProjectId <= 0) {
+        throw new ValidateException("项目ID不合法");
+      }
+      grantUserId = 0;
+      projectId = req.grantProjectId;
+    } else {
+      if (!Number.isInteger(req.grantUserId) || req.grantUserId <= 0) {
+        throw new ValidateException("请选择有效的用户");
+      }
+      grantUserId = req.grantUserId;
+      projectId = 0;
+    }
+    const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    if (ca.rotatedToId) {
+      throw new ValidateException("该CA已轮换，请在新一代CA上管理用户授权");
+    }
+    if (ca.caType !== "intermediate") {
+      throw new ValidateException("只能授权中间CA");
+    }
+    const existing = await this.grantRepository.findOne({
+      where: { caId: ca.id, userId: grantUserId, projectId },
+    });
+    if (existing) {
+      if (existing.disabled) {
+        await this.grantRepository.update({ id: existing.id }, { disabled: false, updateTime: new Date() });
+      }
+      return existing;
+    }
+    const bean = this.grantRepository.create({
+      caId: ca.id,
+      userId: grantUserId,
+      projectId,
+      createdByAdminId: req.userId,
+      disabled: false,
+    });
+    return await this.grantRepository.save(bean);
+  }
+
+  /** 分配账户失败补偿：把本次恢复启用的授权重新置为禁用（不删除原授权记录）。 */
+  async setGrantDisabled(req: { caId: number; grantId: number; disabled: boolean }) {
+    await this.grantRepository.update({ id: req.grantId, caId: req.caId }, { disabled: req.disabled, updateTime: new Date() });
+  }
+
+  async removeGrant(req: { id: number; userId: number; grantId: number }) {    const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    const grant = await this.grantRepository.findOne({ where: { id: req.grantId, caId: ca.id } });
+    if (!grant) {
+      throw new ValidateException("授权不存在");
+    }
+    // 同一(caId,userId,projectId)可能存在历史重复行，撤销时全部删除并禁用其EAB，避免残留授权
+    const duplicates = await this.grantRepository.find({
+      where: { caId: ca.id, userId: grant.userId, projectId: grant.projectId },
+    });
+    const grantIds = duplicates.map(item => item.id);
+    await this.grantRepository.delete({ id: In(grantIds) } as any);
+    return grantIds;
+  }
+
+  async listAdmins(req: LocalCaScope) {
+    const ca = await this.getOwnedCa(req, false, true);
+    return await this.adminRepository.find({ where: { caId: ca.id }, order: { id: "DESC" } });
+  }
+
+  async addCaAdmin(req: { id: number; userId: number; adminUserId: number; role?: string }) {
+    if (!Number.isInteger(req.adminUserId) || req.adminUserId <= 0) {
+      throw new ValidateException("请选择有效的管理员用户");
+    }
+    if (req.role === "owner") {
+      throw new ValidateException("本地CA仅允许创建者作为所有者，不能添加其他所有者");
+    }
+    const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    if (ca.rotatedToId) {
+      throw new ValidateException("该CA已轮换，请在新一代CA上管理管理员");
+    }
+    const existing = await this.findAdminAccess(ca.id, req.adminUserId);
+    if (existing?.role === "owner") {
+      return existing;
+    }
+    return await this.addAdminAccess(ca.id, req.adminUserId, "operator");
+  }
+
+  async removeCaAdmin(req: { id: number; userId: number; adminUserId: number }) {
+    const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+    const access = await this.findAdminAccess(ca.id, req.adminUserId);
+    if (!access) {
+      return;
+    }
+    if (access.role === "owner") {
+      throw new ValidateException("不能移除CA的创建管理员");
+    }
+    await this.adminRepository.delete({ id: access.id });
+    // 跨轮换链统一移除操作员：链上所有CA的复制记录一并删除
+    const chain = await this.collectRotationChain(ca.id);
+    for (const chainCaId of chain) {
+      if (chainCaId === ca.id) {
+        continue;
+      }
+      const chainAdmins = await this.adminRepository.find({ where: { caId: chainCaId, adminUserId: req.adminUserId, role: "operator" } });
+      for (const item of chainAdmins) {
+        await this.adminRepository.delete({ id: item.id });
+      }
+    }
+  }
+
+
+  /**
+   * 轮换中间CA时把旧CA的管理员（不含owner）与有效授权复制到新CA。
+   */
+  async copyAdminsAndGrants(fromCaId: number, toCaId: number, createdByAdminId: number, manager?: EntityManager) {
+    await this.addAdminAccess(toCaId, createdByAdminId, "owner", manager);
+    const adminRepository = manager ? manager.getRepository(LocalCaAdminEntity) : this.adminRepository;
+    const grantRepository = manager ? manager.getRepository(LocalCaGrantEntity) : this.grantRepository;
+    const oldAdmins = await adminRepository.find({ where: { caId: fromCaId } });
+    for (const admin of oldAdmins) {
+      if (admin.role !== "owner") {
+        await this.addAdminAccess(toCaId, admin.adminUserId, "operator", manager);
+      }
+    }
+    const oldGrants = await grantRepository.find({ where: { caId: fromCaId, disabled: false } });
+    for (const grant of oldGrants) {
+      await grantRepository.save(
+        grantRepository.create({
+          caId: toCaId,
+          userId: grant.userId,
+          projectId: grant.projectId,
+          createdByAdminId,
+          disabled: false,
+        })
+      );
+    }
+  }
+
+}

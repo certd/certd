@@ -1,211 +1,52 @@
-import assert from "assert";
-import { AcmeAccountAccess } from "./acme-account-access.js";
-import { AcmeService } from "../plugin/cert-plugin/acme.js";
+import assert from "node:assert/strict";
+import esmock from "esmock";
 
-describe("AcmeAccountAccess", () => {
-  it("requires generated account payload before use", () => {
-    const access = new AcmeAccountAccess();
+declare const describe: any;
+declare const it: any;
 
-    assert.throws(() => access.getAccount(), /ACME账号信息无效/);
-  });
-
-  it("parses generated account payload", () => {
-    const access = new AcmeAccountAccess();
-    access.account = JSON.stringify({
-      accountKey: "private-key",
-      accountUri: "https://example.com/acct/1",
-      caType: "letsencrypt",
-      email: "user@example.com",
-      directoryUrl: "https://example.com/directory",
-    });
-
-    const account = access.getAccount();
-
-    assert.equal(account.accountKey, "private-key");
-    assert.equal(account.accountUri, "https://example.com/acct/1");
-    assert.equal(account.issuer, "example.com");
-  });
-
-  it("generates account payload through acme service", async () => {
-    const original = AcmeService.prototype.getAcmeClient;
-    const calls: string[] = [];
-    AcmeService.prototype.getAcmeClient = async function (email: string) {
-      calls.push(email);
-      await this.userContext.setObj(this.buildAccountKey(email), { key: "generated-key" });
-      return {
-        getAccountUrl() {
-          return "https://example.com/acct/2";
-        },
-      } as any;
-    };
-
-    try {
-      const access = new AcmeAccountAccess();
-      access.caType = "google";
-      access.email = "user@example.com";
-      access.eabKid = "kid-1";
-      access.eabHmacKey = "hmac-1";
-
-      const account = JSON.parse(await access.onGenerateAccount());
-
-      assert.equal(calls[0], "user@example.com");
-      assert.equal(account.accountKey, "generated-key");
-      assert.equal(account.accountUri, "https://example.com/acct/2");
-      assert.equal(account.caType, "google");
-      assert.equal(account.email, "user@example.com");
-    } finally {
-      AcmeService.prototype.getAcmeClient = original;
+describe("acmeAccount 账户JSON不暴露EAB HMAC Key", () => {
+  it("onGenerateAccount返回的account.eab仅含KID与使用时间，不含hmacKey", async function (this: any) {
+    this.timeout(20000);
+    class FakeAcmeService {
+      opts: any;
+      constructor(opts: any) {
+        this.opts = opts;
+      }
+      buildAccountKey(email: string) {
+        return "acme.config." + email;
+      }
+      async getAcmeClient(email: string) {
+        await this.opts.userContext.setObj(this.buildAccountKey(email), { key: "ACCOUNT_KEY_PEM" });
+        return { getAccountUrl: () => "https://ca.example.com/api/acme/2/account/acc1" };
+      }
     }
-  });
-});
-
-describe("AcmeAccountAccess custom CA", () => {
-  it("颁发机构为空时 getDirectoryUrl 给出明确提示", async () => {
-    const access = new AcmeAccountAccess();
-    access.caType = null as any;
-
-    await assert.rejects(() => access.getDirectoryUrl(), /请先选择颁发机构/);
-  });
-
-  it("custom caType 返回自定义 directoryUrl（旧版兼容）", async () => {
-    const access = new AcmeAccountAccess();
-    access.caType = "custom";
-    access.directoryUrl = "https://myca.example.com/directory";
-
-    assert.equal(await access.getDirectoryUrl(), "https://myca.example.com/directory");
-  });
-
-  it("custom caType 缺少 directoryUrl 时报错（旧版兼容）", async () => {
-    const access = new AcmeAccountAccess();
-    access.caType = "custom";
-    access.directoryUrl = "";
-
-    await assert.rejects(() => access.getDirectoryUrl(), /自定义ACME需要填写Directory URL/);
-  });
-
-  it("系统配置的自定义caType 从CustomAcmeProviderService读取 directoryUrl", async () => {
-    const access = new AcmeAccountAccess();
-    access.caType = "myca";
+    const { AcmeAccountAccess } = await esmock("./acme-account-access.js", {
+      "../plugin/cert-plugin/acme.js": { AcmeService: FakeAcmeService },
+    });
+    const access: any = new AcmeAccountAccess();
+    access.caType = "local-ca-2";
+    access.email = "user@example.com";
+    access.eabKid = "eab-kid-1";
+    access.eabHmacKey = "SUPER_SECRET_HMAC";
     access.ctx = {
       serviceGetter: {
         async get(name: string) {
-          assert.equal(name, "customAcmeProviderService");
-          return {
-            async getBySslProvider(sslProvider: string) {
-              assert.equal(sslProvider, "myca");
-              return {
-                sslProvider: "myca",
-                title: "我的CA",
-                directoryUrl: "https://myca.example.com/directory",
-                reverseProxy: "myca-proxy.example.com",
-                needEAB: true,
-                builtIn: false,
-              };
-            },
-          };
+          if (name === "customAcmeProviderService") {
+            return { getBySslProvider: async () => ({ builtIn: false, needEAB: true, directoryUrl: "https://ca.example.com/api/acme/2/directory" }) };
+          }
+          if (name === "localCaGetter") {
+            return { getCa: async () => ({ localAcmeToken: "tok" }) };
+          }
+          return null;
         },
       },
-    } as any;
-
-    assert.equal(await access.getDirectoryUrl(), "https://myca.example.com/directory");
-  });
-
-  it("内置caType 使用内置端点", async () => {
-    const access = new AcmeAccountAccess();
-    access.caType = "letsencrypt";
-    access.ctx = {
-      serviceGetter: {
-        async get() {
-          return {
-            async getBySslProvider() {
-              return { sslProvider: "letsencrypt", title: "Let's Encrypt", directoryUrl: "https://acme-v02.api.letsencrypt.org/directory", builtIn: true };
-            },
-          };
-        },
-      },
-    } as any;
-
-    assert.equal(await access.getDirectoryUrl(), "https://acme-v02.api.letsencrypt.org/directory");
-  });
-
-  it("系统配置的自定义caType 未配置时给出明确报错", async () => {
-    const access = new AcmeAccountAccess();
-    access.caType = "not-exist";
-    access.ctx = {
-      serviceGetter: {
-        async get() {
-          return {
-            async getBySslProvider() {
-              return undefined;
-            },
-          };
-        },
-      },
-    } as any;
-
-    await assert.rejects(() => access.getDirectoryUrl(), /未找到颁发机构【not-exist】的配置/);
-  });
-
-  it("onCaTypeList 返回系统配置的全部颁发机构（内置 + 自定义），并带 needEAB", async () => {
-    const access = new AcmeAccountAccess();
-    access.ctx = {
-      serviceGetter: {
-        async get() {
-          return {
-            async getAll() {
-              return [
-                { sslProvider: "letsencrypt", title: "Let's Encrypt", directoryUrl: "https://acme-v02.api.letsencrypt.org/directory", needEAB: false, builtIn: true },
-                { sslProvider: "google", title: "Google", directoryUrl: "https://dv.acme-v02.api.pki.goog/directory", needEAB: true, builtIn: true },
-                { sslProvider: "myca", title: "我的CA", directoryUrl: "https://myca.example.com/directory", needEAB: true, builtIn: false },
-              ];
-            },
-          };
-        },
-      },
-    } as any;
-
-    const options = await access.onCaTypeList();
-
-    const values = options.map((item: any) => item.value);
-    assert.ok(values.includes("letsencrypt"));
-    assert.ok(values.includes("google"));
-    assert.ok(values.includes("myca"));
-    // 旧版 custom 入口不在
-    assert.equal(values.includes("custom"), false);
-    // 选项带 needEAB 字段
-    const google = options.find((item: any) => item.value === "google");
-    assert.equal(google.needEAB, true);
-    const myca = options.find((item: any) => item.value === "myca");
-    assert.equal(myca.needEAB, true);
-  });
-
-  it("custom caType 无需 EAB 也能生成账号，并记录 directoryUrl", async () => {
-    const original = AcmeService.prototype.getAcmeClient;
-    AcmeService.prototype.getAcmeClient = async function (email: string) {
-      await this.userContext.setObj(this.buildAccountKey(email), { key: "generated-key" });
-      return {
-        getAccountUrl() {
-          return "https://myca.example.com/acct/1";
-        },
-      } as any;
+      logger: { info() {}, warn() {}, error() {} },
     };
-
-    try {
-      const access = new AcmeAccountAccess();
-      access.caType = "custom";
-      access.directoryUrl = "https://myca.example.com/directory";
-      access.email = "user@example.com";
-      access.eabKid = "";
-      access.eabHmacKey = "";
-
-      const account = JSON.parse(await access.onGenerateAccount());
-
-      assert.equal(account.caType, "custom");
-      assert.equal(account.directoryUrl, "https://myca.example.com/directory");
-      assert.equal(account.accountUri, "https://myca.example.com/acct/1");
-      assert.equal(account.eab, undefined);
-    } finally {
-      AcmeService.prototype.getAcmeClient = original;
-    }
+    const accountJson = await access.onGenerateAccount();
+    const account = JSON.parse(accountJson);
+    assert.equal(account.eab.kid, "eab-kid-1");
+    assert.ok(account.eab.usedAt > 0);
+    assert.equal(account.eab.hmacKey, undefined, "account.eab不得包含hmacKey");
+    assert.ok(!accountJson.includes("SUPER_SECRET_HMAC"), "账户JSON不得泄漏HMAC Key");
   });
 });

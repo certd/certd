@@ -19,6 +19,7 @@ export default {
   dnsPersistRecord: "DNS Persist Records",
   certApplyTemplate: "Certificate Apply Templates",
   certApplyTemplateHelper: "Preset certificate application parameters. They are filled automatically when creating a pipeline (excluding domains and validation methods).",
+  localCa: "Local CA Management",
   subDomain: "Subdomain Delegation Settings",
   pipelineGroup: "Pipeline Group Management",
   pipelineGroupHelper: "Manage pipeline groups",
@@ -87,5 +88,6 @@ export default {
     auditLogHelper: "View all users' operation records",
     jobHistory: "Monitoring Execution History",
     domainMonitorSetting: "Domain Monitor Settings",
+    localCa: "Local CA Management",
   },
 };

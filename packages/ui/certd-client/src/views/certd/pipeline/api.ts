@@ -163,6 +163,12 @@ export type CertInfo = {
   der: string;
   pfx: string;
   detail: any;
+  localCaId?: number;
+  crlUrl?: string;
+  serialNumber?: string;
+  status?: string;
+  revokeTime?: number;
+  x509?: any;
 };
 
 export async function GetCert(pipelineId: number): Promise<CertInfo> {

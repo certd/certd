@@ -5,6 +5,7 @@
 
 import tls from 'tls';
 import dnsSdk from 'dns';
+import net from 'net';
 import { readCertificateInfo, splitPemChain }from './crypto/index.js'
 import { log } from './logger.js'
 
@@ -226,9 +227,9 @@ function formatResponseError(resp) {
  * @returns {Promise<string>} Root domain name
  */
 
-async function resolveDomainBySoaRecord(recordName, logger = log) {
+async function resolveDomainBySoaRecord(recordName, logger = log, resolver = dns) {
     try {
-        await dns.resolveSoa(recordName);
+        await resolver.resolveSoa(recordName);
         logger(`找到${recordName}的SOA记录`);
         return recordName;
     }
@@ -240,7 +241,7 @@ async function resolveDomainBySoaRecord(recordName, logger = log) {
             throw new Error('SOA record查找失败');
         }
 
-        return resolveDomainBySoaRecord(parentRecordName,logger);
+        return resolveDomainBySoaRecord(parentRecordName,logger,resolver);
     }
 }
 
@@ -251,20 +252,71 @@ async function resolveDomainBySoaRecord(recordName, logger = log) {
  * @returns {Promise<dns.Resolver>} DNS resolver
  */
 
-async function getAuthoritativeDnsResolver(recordName, logger = log) {
+
+/**
+ * 创建自定义DNS resolver，支持 ip:port / host:port（非标准端口）。
+ * host 会先通过系统DNS解析为IP，再交给 Resolver。
+ */
+async function createCustomResolver(servers, logger = log) {
+    const resolver = new dns.Resolver({ timeout: 2000, tries: 2 });
+    const normalized = [];
+    for (const item of servers || []) {
+        const value = String(item || "").trim();
+        if (!value) continue;
+        let host = value;
+        let port = "";
+        if (value.startsWith("[")) {
+            const match = value.match(/^\[([^\]]+)\](?::(\d+))?$/);
+            if (!match || !net.isIP(match[1])) throw new Error(`DNS服务器IPv6格式错误: ${value}`);
+            host = match[1];
+            port = match[2] || "";
+        } else if (net.isIP(value)) {
+            host = value; // 裸IPv4/IPv6，不猜测端口
+        } else {
+            const lastColon = value.lastIndexOf(":");
+            if (lastColon > 0) {
+                const maybePort = value.slice(lastColon + 1);
+                const maybeHost = value.slice(0, lastColon);
+                if (/^\d+$/.test(maybePort) && net.isIP(maybeHost) !== 6) {
+                    host = maybeHost;
+                    port = maybePort;
+                }
+            }
+        }
+        if (port && (Number(port) < 1 || Number(port) > 65535)) throw new Error(`DNS服务器端口超出范围: ${value}`);
+        let address = host;
+        if (!net.isIP(host)) {
+            const records = await dns.lookup(host, { all: true, verbatim: true });
+            if (!records.length) throw new Error(`DNS服务器域名解析失败: ${host}`);
+            address = records[0].address;
+        }
+        normalized.push(net.isIP(address) === 6 ? (port ? `[${address}]:${port}` : address) : (port ? `${address}:${port}` : address));
+    }
+    if (!normalized.length) return null;
+    resolver.setServers(normalized);
+    logger(`使用自定义DNS服务器: ${normalized.join(", ")}`);
+    return resolver;
+}
+
+async function getAuthoritativeDnsResolver(recordName, logger = log, customServers = undefined) {
     logger(`获取域名${recordName}的权威NS服务器: `);
-    const resolver = new dns.Resolver({timeout: 2000,tries: 2});
+    const resolver = (await createCustomResolver(customServers, logger)) || new dns.Resolver({timeout: 2000,tries: 2});
+    const baseResolver = customServers?.length ? resolver : dns;
 
     try {
         /* Resolve root domain by SOA */
-        const domain = await resolveDomainBySoaRecord(recordName,logger);
+        const domain = await resolveDomainBySoaRecord(recordName,logger,baseResolver);
 
         /* Resolve authoritative NS addresses */
         logger(`获取到权威NS服务器name: ${domain}`);
-        const nsRecords = await dns.resolveNs(domain);
+        const nsRecords = await baseResolver.resolveNs(domain);
         logger(`域名权威NS服务器：${nsRecords}`);
-        const nsAddrArray = await Promise.all(nsRecords.map(async (r) => dns.resolve4(r)));
-        const nsAddresses = [].concat(...nsAddrArray).filter((a) => a);
+        const nsAddrArray = await Promise.all(nsRecords.map(async (r) => baseResolver.resolve4(r)));
+        let nsAddresses = [].concat(...nsAddrArray).filter((a) => a);
+        // 权威NS默认仅接受公网地址；管理员显式配置的可信DNS除外
+        if (!customServers?.length) {
+            nsAddresses = nsAddresses.filter((a) => isPublicUnicastIp(a));
+        }
 
         if (!nsAddresses.length) {
             throw new Error(`Unable to locate any valid authoritative NS addresses for domain（获取权威服务器IP失败）: ${domain}`);
@@ -297,14 +349,26 @@ async function getAuthoritativeDnsResolver(recordName, logger = log) {
  */
 
 async function retrieveTlsAlpnCertificate(host, port, timeout = 30000) {
+    // 与HTTP-01一致：校验全部解析地址为公网单播，并固定到首个合格地址连接，防SSRF与DNS重绑定
+    const addresses = await dns.lookup(host, { all: true, verbatim: true });
+    if (!addresses.length) {
+        throw new Error(`[error] 域名解析失败：${host}`);
+    }
+    for (const item of addresses) {
+        if (!isPublicUnicastIp(item.address)) {
+            throw new Error(`[error] TLS-ALPN挑战目标指向非公网地址，已拒绝预检：${host} -> ${item.address}`);
+        }
+    }
+    const pinned = addresses[0];
     return new Promise((resolve, reject) => {
         let result;
 
-        /* TLS connection */
+        /* TLS connection（连接固定IP，SNI仍用原域名） */
         const socket = tls.connect({
-            host,
+            host: pinned.address,
             port,
             servername: host,
+            family: pinned.family,
             rejectUnauthorized: false,
             ALPNProtocols: ['acme-tls/1'],
         });
@@ -349,9 +413,47 @@ export {
     findCertificateChainForIssuer,
     formatResponseError,
     getAuthoritativeDnsResolver,
+    createCustomResolver,
     retrieveTlsAlpnCertificate,
     resolveDomainBySoaRecord
 };
 
-
-
+/** 判断IP是否为公网单播地址（拒绝私网/回环/链路本地/保留/文档/ULA等）。 */
+export function isPublicUnicastIp(ip) {
+    const addr = String(ip || '').trim().replace(/^\[|\]$/g, '').replace(/%.*$/, '');
+    const mapped = addr.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+    const v4 = mapped ? mapped[1] : addr;
+    if (net.isIP(v4) === 4) {
+        const p = v4.split('.').map(Number);
+        const [a, b] = p;
+        if (a === 0 || a === 10 || a === 127) return false;
+        if (a === 100 && b >= 64 && b <= 127) return false;
+        if (a === 169 && b === 254) return false;
+        if (a === 172 && b >= 16 && b <= 31) return false;
+        if (a === 192 && (b === 168 || b === 0)) return false;
+        if (a === 198 && (b === 18 || b === 19)) return false;
+        if (a === 192 && b === 0 && p[2] === 2) return false;
+        if (a === 198 && b === 51 && p[2] === 100) return false;
+        if (a === 203 && b === 0 && p[2] === 113) return false;
+        if (a >= 224) return false;
+        return true;
+    }
+    if (net.isIP(addr) === 6) {
+        const lower = addr.toLowerCase();
+        if (lower === '::' || lower === '::1') return false;
+        if (lower.startsWith('::ffff:')) return false; // IPv4-mapped（含hex形式），保守拒绝
+        if (/^::\d+\.\d+\.\d+\.\d+$/.test(lower)) return false; // IPv4-compatible（已废弃），保守拒绝
+        const parts = lower.split(':');
+        const g0 = parseInt(parts[0] || '0', 16);
+        const g1 = parseInt(parts[1] || '0', 16);
+        // 与服务端acme-network一致：仅允许2000::/3全球单播，其余（NAT64 64:ff9b::/96、组播ff00::/8、
+        // ULA fc00::/7、链路本地fe80::/10、站点本地fec0::/10等）一律拒绝
+        if ((g0 & 0xe000) !== 0x2000) return false;
+        if (g0 === 0x2001 && g1 <= 0x01ff) return false; // 2001::/23 IETF协议分配（含Teredo/ORCHID）
+        if (g0 === 0x2001 && g1 === 0x0db8) return false; // 2001:db8::/32 文档地址
+        if (g0 === 0x2002) return false; // 2002::/16 6to4（可映射私网IPv4）
+        if (g0 === 0x3fff && (g1 & 0xf000) === 0) return false; // 3fff::/20 保留
+        return true;
+    }
+    return false;
+}

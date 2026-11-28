@@ -1,4 +1,5 @@
 import { useProjectStore } from "/@/store/project";
+import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 
 export const certdResources = [

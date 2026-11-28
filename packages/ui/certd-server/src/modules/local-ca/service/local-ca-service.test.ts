@@ -1,0 +1,2285 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import crypto, { X509Certificate } from "node:crypto";
+import { Encryptor, EncryptService } from "@certd/lib-server";
+import { LocalCaService, leafCertNotAfterFromChain } from "./local-ca-service.js";
+import { LocalCaAccessService } from "./local-ca-access-service.js";
+import { LocalCaCrlService } from "./local-ca-crl-service.js";
+import { LocalCaAcmeService } from "./local-ca-acme-service.js";
+import { createCsr, createIntermediateCa, createRootCa, issueLeafCertificate, getCertSerialNumber } from "./local-ca-crypto.js";
+// @ts-ignore
+import * as x509 from "@peculiar/x509";
+
+async function makeLeafFullchain() {
+  const root = await createRootCa({ subject: { CN: "Leaf Test Root" }, keyType: "rsa2048", validityYears: 5 });
+  const inter = await createIntermediateCa({ rootCertPem: root.certPem, rootPrivateKeyPem: root.privateKeyPem, subject: { CN: "Leaf Test Intermediate" }, keyType: "rsa2048", validityYears: 3 });
+  const leaf = await issueLeafCertificate({ caCertPem: inter.certPem, caPrivateKeyPem: inter.privateKeyPem, domains: ["leaf.example.com"], keyType: "rsa2048", validityDays: 365 });
+  return leaf;
+}
+
+function createService() {
+  const store = new Map<number, any>();
+  let nextId = 1;
+  function matches(item: any, where: any) {
+    for (const key of Object.keys(where || {})) {
+      const value = where[key];
+      if (value === undefined) {
+        continue;
+      }
+      if (value && value._type === "in") {
+        if (!(value._value || []).includes(item[key])) {
+          return false;
+        }
+        continue;
+      }
+      if (item[key] !== value) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  const service = new LocalCaService();
+  service.repository = {
+    async findOne({ where }: any) {
+      for (const item of store.values()) {
+        if (matches(item, where)) {
+          return item;
+        }
+      }
+      return null;
+    },
+    async find({ where }: any) {
+      return Array.from(store.values()).filter(item => matches(item, where));
+    },
+    async save(entity: any) {
+      if (!entity.id) {
+        entity.id = nextId++;
+      }
+      store.set(entity.id, entity);
+      return entity;
+    },
+    async update(where: any, set: any) {
+      let affected = 0;
+      for (const item of store.values()) {
+        const match = Object.keys(where || {}).every(key => {
+          const w = where[key];
+          if (w && w._type === "isNull") {
+            return item[key] == null;
+          }
+          if (w && w._type === "in") {
+            return (w._value || []).includes(item[key]);
+          }
+          if (w === false) {
+            return !item[key];
+          }
+          if (w === true) {
+            return !!item[key];
+          }
+          return w === undefined || item[key] === w;
+        });
+        if (match) {
+          Object.assign(item, set);
+          affected++;
+        }
+      }
+      return { affected };
+    },
+    create(data: any) {
+      return data;
+    },
+    async delete({ id }: any) {
+      const ids = id?._value || [];
+      for (const itemId of ids) {
+        store.delete(itemId);
+      }
+    },
+    createQueryBuilder() {
+      let values: any;
+      let params: any;
+      return {
+        update() {
+          return this;
+        },
+        set(data: any) {
+          values = data;
+          return this;
+        },
+        where(_sql: string, data: any) {
+          params = data;
+          return this;
+        },
+        async execute() {
+          const item = store.get(params?.id);
+          if (item && (params?.crlNumber == null || Number(item.crlNumber) === Number(params.crlNumber))) {
+            if (typeof values?.crlNumber === "function") {
+              item.crlNumber = (Number(item.crlNumber) || 0) + 1;
+            } else {
+              Object.assign(item, values);
+            }
+            return { affected: 1 };
+          }
+          return { affected: 0 };
+        },
+      };
+    },
+  } as any;
+
+  function createSimpleRepo(keyField = "id") {
+    const map = new Map<any, any>();
+    let nextId = 1;
+    return {
+      async findOne({ where }: any) {
+        for (const item of map.values()) {
+          if (Object.keys(where || {}).every(key => where[key] === undefined || item[key] === where[key])) {
+            return item;
+          }
+        }
+        return null;
+      },
+      async find({ where }: any = {}) {
+        return Array.from(map.values()).filter(item => Object.keys(where || {}).every(key => where[key] === undefined || item[key] === where[key]));
+      },
+      async save(entity: any) {
+        if (entity.id == null) {
+          entity.id = nextId++;
+        }
+        map.set(entity.id, entity);
+        return entity;
+      },
+      create(data: any) {
+        return data;
+      },
+      async update(where: any, set: any) {
+        let affected = 0;
+        for (const item of map.values()) {
+          const match = Object.keys(where || {}).every(key => {
+            const w = where[key];
+            if (w && w._type === "isNull") {
+              return item[key] == null;
+            }
+            if (w && w._type === "in") {
+              return (w._value || []).includes(item[key]);
+            }
+            if (w === false) {
+              return !item[key];
+            }
+            if (w === true) {
+              return !!item[key];
+            }
+            return w === undefined || item[key] === w;
+          });
+          if (match) {
+            Object.assign(item, set);
+            affected++;
+          }
+        }
+        return { affected };
+      },
+      async delete(where: any) {
+        const value = where.id;
+        if (value && value._type === "in") {
+          for (const id of value._value || []) {
+            map.delete(id);
+          }
+          return;
+        }
+        map.delete(value);
+      },
+      map,
+    };
+  }
+  service.adminRepository = createSimpleRepo() as any;
+  service.grantRepository = createSimpleRepo() as any;
+  service.acmeEabRepository = createSimpleRepo() as any;
+  const encryptService = new EncryptService();
+  encryptService.encryptor = new Encryptor(Buffer.alloc(32, 1).toString("base64"));
+  service.encryptService = encryptService;
+  service.certInfoService = {
+    async find() {
+      return [];
+    },
+    async applyLocalRevocation(req: any) {
+      await service.certRevocationService.record(req);
+    },
+  } as any;
+  service.pipelineRepository = {
+    async find() {
+      return [];
+    },
+  } as any;
+  let acmeOrderUpdate: any = null;
+  (service as any).acmeOrderRepository = {
+    async find() {
+      return [];
+    },
+    async update(where: any, set: any) {
+      acmeOrderUpdate = { where, set };
+      return { affected: 1 };
+    },
+    getLastUpdate() {
+      return acmeOrderUpdate;
+    },
+  } as any;
+  const defaultAccountRepo = {
+    async find() {
+      return [];
+    },
+    async findOne() {
+      return null;
+    },
+    async save(entity: any) {
+      return entity;
+    },
+    async update() {
+      return { affected: 0 };
+    },
+  };
+  const defaultAccessRepo = {
+    async find() {
+      return [];
+    },
+    async findOne() {
+      return null;
+    },
+    async update() {
+      return { affected: 0 };
+    },
+    async delete() {
+      return { affected: 0 };
+    },
+  };
+  const resolveRepo = (entity: any) => {
+    if (entity?.name === "AcmeEabEntity") {
+      return service.acmeEabRepository;
+    }
+    if (entity?.name === "AcmeAccountEntity") {
+      return (service as any).acmeAccountRepository || defaultAccountRepo;
+    }
+    if (entity?.name === "AccessEntity") {
+      return (service as any).accessEntityRepository || defaultAccessRepo;
+    }
+    if (entity?.name === "AcmeOrderEntity") {
+      return (service as any).acmeOrderRepository;
+    }
+    if (entity?.name === "LocalCaGrantEntity") {
+      return service.grantRepository;
+    }
+    if (entity?.name === "LocalCaAdminEntity") {
+      return service.adminRepository;
+    }
+    return service.repository;
+  };
+  (service.repository as any).manager = {
+    connection: { options: { type: "better-sqlite3" } },
+    getRepository: (entity: any) => resolveRepo(entity),
+    async transaction(fn: any) {
+      return await fn({
+        connection: { options: { type: "better-sqlite3" } },
+        getRepository: (entity: any) => resolveRepo(entity),
+      });
+    },
+  };
+
+  const revocations = new Map<string, any>();
+  service.certRevocationService = {
+    async record(req: any) {
+      const key = `${req.caId}:${String(req.serialNumber).toUpperCase()}`;
+      if (!revocations.has(key)) {
+        revocations.set(key, { ...req, serialNumber: String(req.serialNumber).toUpperCase() });
+      }
+      return revocations.get(key);
+    },
+    async listByCa(caId: number) {
+      return [...revocations.values()].filter(item => item.caId === caId);
+    },
+    async findBySerial(caId: number, serialNumber: string) {
+      const key = `${caId}:${String(serialNumber || "").toUpperCase()}`;
+      return revocations.get(key) || null;
+    },
+  } as any;
+
+  // 子服务与facade共享同一套mock依赖：测试中对service.xxx的重新赋值会立即对子服务生效
+  const accessService = new LocalCaAccessService();
+  const crlService = new LocalCaCrlService();
+  const acmeService = new LocalCaAcmeService();
+  const sharedKeys = [
+    "repository",
+    "pipelineRepository",
+    "adminRepository",
+    "grantRepository",
+    "acmeEabRepository",
+    "acmeOrderRepository",
+    "encryptService",
+    "certInfoService",
+    "certRevocationService",
+    "sysSettingsService",
+    "providerSync",
+  ];
+  for (const sub of [accessService, crlService, acmeService]) {
+    for (const key of sharedKeys) {
+      Object.defineProperty(sub, key, {
+        configurable: true,
+        get: () => (service as any)[key],
+        set: value => {
+          (service as any)[key] = value;
+        },
+      });
+    }
+  }
+  crlService.accessService = accessService;
+  acmeService.accessService = accessService;
+  acmeService.crlService = crlService;
+  service.accessService = accessService;
+  service.crlService = crlService;
+  service.acmeService = acmeService;
+  // 颁发机构同步钩子为best-effort，单测用no-op mock（同步逻辑由local-ca-provider-sync-service.test.ts覆盖）
+  service.providerSync = {
+    async syncForCa() {},
+    async removeForCa() {},
+    async onRotated() {},
+    async reconcileAll() {},
+  } as any;
+
+  return { service, store, encryptService, revocations };
+}
+
+describe("LocalCaService", () => {
+  async function createIssuingCa(service: LocalCaService, opts: { name: string; allowedDomains?: string[] }) {
+    const root = await service.generateCa({
+      userId: 1,
+      name: `${opts.name} Root`,
+      subject: { CN: `${opts.name} Root` },
+      keyType: "rsa2048",
+      validityYears: 2,
+      allowedDomains: opts.allowedDomains,
+    });
+    const intermediate = await service.generateIntermediateCa({
+      rootId: root.id,
+      maxValidityDays: 365,
+      userId: 1,
+      name: opts.name,
+      subject: { CN: opts.name },
+      keyType: "rsa2048",
+      validityYears: 1,
+      allowedDomains: opts.allowedDomains,
+    });
+    // 既有签发用例默认开启本地直签（新默认关闭，直签须显式开启）
+    await service.updateMeta({ id: intermediate.id, userId: 1, allowDirectSign: true });
+    return { rootId: root.id, id: intermediate.id };
+  }
+
+  it("生成CA时私钥加密存储，接口返回脱敏", async () => {
+    const { service, store, encryptService } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Test Root CA",
+      subject: { CN: "Test Root CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+
+    const entity = store.get(id);
+    assert.ok(entity);
+    assert.match(entity.privateKeyEncrypted, /^[0-9a-f]+:[0-9a-f]+$/);
+    assert.equal(entity.privateKeyHash.length, 64);
+    const plain = encryptService.decrypt(entity.privateKeyEncrypted);
+    assert.match(plain, /BEGIN PRIVATE KEY/);
+    assert.notEqual(entity.privateKeyEncrypted, plain);
+
+    const info: any = await service.infoSafe({ id, userId: 1 });
+    assert.equal(info.name, "Test Root CA");
+    assert.equal(info.privateKeyEncrypted, undefined);
+    assert.equal(info.privateKeyHash, undefined);
+  });
+
+  it("创建中间CA并记录父子关系与 pathLength", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Hierarchy Root",
+      subject: { CN: "Hierarchy Root" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    const intermediate = await service.generateIntermediateCa({
+      rootId: root.id,
+      maxValidityDays: 365,
+      userId: 1,
+      name: "Hierarchy Intermediate",
+      subject: { CN: "Hierarchy Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    const rootInfo: any = await service.infoSafe({ id: root.id, userId: 1 });
+    const intermediateInfo: any = await service.infoSafe({ id: intermediate.id, userId: 1 });
+    assert.equal(rootInfo.caType, "root");
+    assert.equal(rootInfo.pathLength, 1);
+    assert.equal(intermediateInfo.caType, "intermediate");
+    assert.equal(intermediateInfo.parentId, root.id);
+    assert.equal(intermediateInfo.pathLength, 0);
+    assert.equal(intermediateInfo.parentName, undefined);
+  });
+
+  it("可导入中间CA并绑定上级根CA", async () => {
+    const { service, store, encryptService } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Import Root",
+      subject: { CN: "Import Root" },
+      keyType: "ecdsa256",
+      validityYears: 2,
+    });
+    const rootEntity = store.get(root.id);
+    const rootKey = encryptService.decrypt(rootEntity.privateKeyEncrypted);
+    const material = await createIntermediateCa({
+      rootCertPem: rootEntity.certPem,
+      rootPrivateKeyPem: rootKey,
+      subject: { CN: "Imported Intermediate" },
+      keyType: "ecdsa384",
+      validityYears: 1,
+      crlDistributionPoint: `http://127.0.0.1:7001/api/sys/local-ca/crl?id=${root.id}`,
+    });
+    const imported = await service.importCa({
+      userId: 1,
+      parentId: root.id,
+      name: "Imported Intermediate",
+      maxValidityDays: 365,
+      certPem: material.certPem,
+      privateKeyPem: material.privateKeyPem,
+    });
+    const info: any = await service.infoSafe({ id: imported.id, userId: 1 });
+    assert.equal(info.caType, "intermediate");
+    assert.equal(info.parentId, root.id);
+    assert.equal(info.keyType, "ecdsa384");
+    assert.equal(info.pathLength, 0);
+  });
+
+  it("同一管理范围不能重复导入相同CA证书", async () => {
+    const { service, store, encryptService } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Duplicate Root",
+      subject: { CN: "Duplicate Root" },
+      keyType: "ecdsa256",
+      validityYears: 2,
+    });
+    const rootEntity = store.get(root.id);
+    const material = await createIntermediateCa({
+      rootCertPem: rootEntity.certPem,
+      rootPrivateKeyPem: encryptService.decrypt(rootEntity.privateKeyEncrypted),
+      subject: { CN: "Duplicate Intermediate" },
+      keyType: "ecdsa256",
+      validityYears: 1,
+      crlDistributionPoint: `http://127.0.0.1:7001/api/sys/local-ca/crl?id=${root.id}`,
+    });
+    await service.importCa({
+      userId: 1,
+      parentId: root.id,
+      name: "Imported Once",
+      maxValidityDays: 365,
+      certPem: material.certPem,
+      privateKeyPem: material.privateKeyPem,
+    });
+    await assert.rejects(
+      () =>
+        service.importCa({
+          userId: 1,
+          parentId: root.id,
+          name: "Imported Twice",
+          maxValidityDays: 365,
+          certPem: material.certPem,
+          privateKeyPem: material.privateKeyPem,
+        }),
+      /无法妥善管理/
+    );
+
+    const duplicated = await service.importCa({
+      userId: 1,
+      parentId: root.id,
+      name: "Imported Twice Allowed",
+      maxValidityDays: 365,
+      certPem: material.certPem,
+      privateKeyPem: material.privateKeyPem,
+      allowDuplicate: true,
+    });
+    assert.ok(duplicated.id > 0);
+  });
+
+  it("已被上级CA吊销的中间CA不能重新导入", async () => {
+    const { service, store, encryptService } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Revoked Import CA" });
+    const entity = store.get(id);
+    const certPem = entity.certPem;
+    const privateKeyPem = encryptService.decrypt(entity.privateKeyEncrypted);
+    await service.revokeIntermediate({ id, userId: 1 });
+
+    await assert.rejects(
+      () =>
+        service.importCa({
+          userId: 1,
+          parentId: rootId,
+          name: "Revoked Reimport",
+          maxValidityDays: 365,
+          certPem,
+          privateKeyPem,
+        }),
+      /已被上级根CA吊销，不能导入/
+    );
+  });
+
+  it("父CA吊销记录存在时，即使记录未标记revoked也不能签发", async () => {
+    const { service, store } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Consistency CA" });
+    const serialNumber = getCertSerialNumber(store.get(id).certPem);
+    await service.certRevocationService.record({ caId: rootId, userId: 1, serialNumber, expiresTime: Date.now() + 86400000 });
+
+    const { csrPem } = await createCsr({ domains: ["consistency.example.com"], keyType: "rsa2048" });
+    await assert.rejects(() => service.signCsr({ id, userId: 1, csrPem, validityDays: 30 }), /已被上级根CA吊销/);
+  });
+
+  it("CA 级 Base URL 可保存、继承和修改", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Base URL Root",
+      subject: { CN: "Base URL Root" },
+      keyType: "ecdsa256",
+      validityYears: 2,
+      baseUrl: "https://ca.example.com/",
+    });
+    const rootInfo: any = await service.infoSafe({ id: root.id, userId: 1 });
+    assert.equal(rootInfo.baseUrl, "https://ca.example.com");
+    assert.equal(await service.getCaBaseUrl(root.id), "https://ca.example.com");
+
+    const intermediate = await service.generateIntermediateCa({
+      rootId: root.id,
+      maxValidityDays: 365,
+      userId: 1,
+      name: "Base URL Intermediate",
+      subject: { CN: "Base URL Intermediate" },
+      keyType: "ecdsa256",
+      validityYears: 1,
+    });
+    await service.updateMeta({ id: intermediate.id, userId: 1, allowDirectSign: true });
+    const intermediateInfo: any = await service.infoSafe({ id: intermediate.id, userId: 1 });
+    assert.equal(intermediateInfo.baseUrl, "https://ca.example.com");
+
+    await assert.rejects(() => service.updateMeta({ id: intermediate.id, userId: 1, baseUrl: "https://pki.example.com/" }), /不可修改/);
+    assert.equal(await service.getCaBaseUrl(intermediate.id), "https://ca.example.com");
+
+    const { csrPem } = await createCsr({ domains: ["baseurl.example.com"], keyType: "rsa2048" });
+    const signed = await service.signCsr({ id: intermediate.id, userId: 1, csrPem });
+    const certText = new x509.X509Certificate(signed.certPem).toString("text");
+    assert.match(certText, /https:\/\/ca\.example\.com\/api\/sys\/local-ca\/crl\?id=/);
+  });
+
+  it("CA 禁用后 ACME 入口统一拒绝", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Disabled ACME CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    await assert.rejects(() => service.getAcmeCa(id), /已禁用/);
+  });
+
+  it("allowedDomains JSON 损坏时拒绝签发", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Broken Scope CA" });
+    store.get(id).allowedDomains = "{not-json";
+    await assert.rejects(() => service.issueLeaf({ id, userId: 1, domains: ["broken.example.com"], keyType: "rsa2048" }), /allowedDomains配置损坏/);
+  });
+
+  it("中间CA允许域名必须继承且不能扩大根CA范围", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Scope Root CA",
+      subject: { CN: "Scope Root CA" },
+      keyType: "rsa2048",
+      validityYears: 2,
+      allowedDomains: ["example.com"],
+    });
+
+    await assert.rejects(
+      () =>
+        service.generateIntermediateCa({
+          rootId: root.id,
+          maxValidityDays: 365,
+          userId: 1,
+          name: "Bad Scope Intermediate",
+          subject: { CN: "Bad Scope Intermediate" },
+          keyType: "rsa2048",
+          validityYears: 1,
+          allowedDomains: ["evil.com"],
+        }),
+      /不在该CA允许签发的范围内/
+    );
+
+    const child = await service.generateIntermediateCa({
+      rootId: root.id,
+      maxValidityDays: 365,
+      userId: 1,
+      name: "Good Scope Intermediate",
+      subject: { CN: "Good Scope Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    const childInfo: any = await service.infoSafe({ id: child.id, userId: 1 });
+    assert.equal(JSON.parse(childInfo.allowedDomains)[0], "example.com");
+
+    await assert.rejects(() => service.updateMeta({ id: root.id, userId: 1, allowedDomains: ["other.com"] }), /子CA「Good Scope Intermediate」的允许域名超出新的根CA范围/);
+  });
+
+  it("EAB凭证可以单独禁用和启用", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "EAB Status CA" });
+    const bean: any = { id: "eab-1", caId: id, disabled: false, updateTime: null };
+    service.acmeEabRepository = {
+      async findOne({ where }: any) {
+        return where.id === bean.id && where.caId === bean.caId ? bean : null;
+      },
+      async save(item: any) {
+        Object.assign(bean, item);
+        return item;
+      },
+    } as any;
+
+    await service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: true });
+    assert.equal(bean.disabled, true);
+    await service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: false });
+    assert.equal(bean.disabled, false);
+    await assert.rejects(() => service.setAcmeEabDisabled({ caId: 999, eabId: "eab-1", userId: 1, disabled: true }), /不存在或无访问权限/);
+    await assert.rejects(() => service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: undefined as any }), /disabled必须是布尔值/);
+    await assert.rejects(() => service.setAcmeEabDisabled({ caId: id, eabId: "eab-1", userId: 1, disabled: "true" as any }), /disabled必须是布尔值/);
+  });
+
+  it("CA不再提供直签开关，直签由EAB特权控制", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "No CA Toggle" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    const info: any = await service.infoSafe({ id, userId: 1 });
+    assert.equal(info.acmeDirectIssue, undefined);
+  });
+
+  it("关闭ACME会失效未完成的直签订单（EAB级控制）", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Disable Direct Issue CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: false });
+
+    const last = (service as any).acmeOrderRepository.getLastUpdate();
+    assert.equal(last.where.caId, id);
+    assert.equal(last.where.directIssue, true);
+    assert.equal(last.set.status, "invalid");
+    assert.match(last.set.error, /ACME服务已关闭/);
+  });
+
+  it("finalize读取CA时在非SQLite数据库加行锁", async () => {
+    const { service } = createService();
+    let findArgs: any = null;
+    const manager: any = {
+      connection: { options: { type: "postgres" } },
+      getRepository() {
+        return {
+          async findOne(args: any) {
+            findArgs = args;
+            return { id: 2, caType: "intermediate", acmeEnabled: true, disabled: false, revoked: false, deleted: false };
+          },
+        };
+      },
+    };
+    const ca = await service.getAcmeCaForUpdate(2, manager);
+    assert.equal(ca.id, 2);
+    assert.equal(findArgs.lock.mode, "pessimistic_write");
+  });
+
+  it("Base URL 在签发后会锁定，避免历史 CRL 地址失效", async () => {
+    const { service } = createService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return { bindUrl: "https://certd.example.com" };
+      },
+    } as any;
+    const { rootId, id } = await createIssuingCa(service, { name: "Locked Base Url CA" });
+
+    const { csrPem } = await createCsr({ domains: ["lock.example.com"], keyType: "rsa2048" });
+    await service.signCsr({ id, userId: 1, csrPem, validityDays: 30 });
+
+    await assert.rejects(() => service.updateMeta({ id, userId: 1, baseUrl: "https://new.example.com" }), /不可修改/);
+    await assert.rejects(() => service.updateMeta({ id: rootId, userId: 1, baseUrl: "https://new-root.example.com" }), /已用于签发/);
+  });
+
+  it("signCsr 按CA策略签发并拒绝越界域名", async () => {
+    const { service } = createService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return { bindUrl: "https://certd.example.com/" };
+      },
+    } as any;
+    const { rootId, id } = await createIssuingCa(service, { name: "Restricted CA", allowedDomains: ["example.com"] });
+
+    const { csrPem } = await createCsr({ domains: ["foo.example.com"], keyType: "rsa2048" });
+    await assert.rejects(() => service.signCsr({ id: rootId, userId: 1, csrPem, validityDays: 30 }), /中间CA/);
+    const signed = await service.signCsr({ id, userId: 1, csrPem, validityDays: 30 });
+    const leaf = new X509Certificate(signed.certPem);
+    const ca = new X509Certificate(signed.chainPem);
+    assert.equal(leaf.verify(ca.publicKey), true);
+    assert.equal(signed.fullchainPem.split("BEGIN CERTIFICATE").length - 1, 2);
+    const x509Leaf = new x509.X509Certificate(signed.certPem);
+    assert.ok(
+      x509Leaf.extensions.find(ext => ext.type === "2.5.29.31"),
+      "证书应带CRL分发点"
+    );
+
+    const evil = await createCsr({ domains: ["evil.example.net"], keyType: "rsa2048" });
+    await assert.rejects(() => service.signCsr({ id, userId: 1, csrPem: evil.csrPem }), /不在该CA允许签发的范围内/);
+  });
+
+  it("禁用参数必须是布尔值，缺失或字符串不能启用CA", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Boolean Disable CA" });
+    await assert.rejects(() => service.setDisabled({ id, userId: 1, disabled: undefined as any }), /disabled必须是布尔值/);
+    await assert.rejects(() => service.setDisabled({ id, userId: 1, disabled: "false" as any }), /disabled必须是布尔值/);
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    assert.equal((await service.infoSafe({ id, userId: 1 })).disabled, true);
+  });
+
+  it("禁用CA后拒绝签发", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Disabled CA" });
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    const { csrPem } = await createCsr({ domains: ["foo.example.com"], keyType: "rsa2048" });
+    await assert.rejects(() => service.signCsr({ id, userId: 1, csrPem }), /已禁用/);
+  });
+
+  it("listOptions 返回后端解析后的访问地址", async () => {
+    const { service } = createService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return { bindUrl: "https://cert.example.com" };
+      },
+    } as any;
+    const { id } = await createIssuingCa(service, { name: "Base URL CA" });
+    const options = await service.listAdminOptions({ adminUserId: 1 });
+    const item = options.find((option: any) => option.id === id);
+    assert.equal(item.baseUrl, "https://cert.example.com");
+  });
+
+  it("getCrl 包含该CA已吊销证书的序列号", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "CRL CA" });
+    const { csrPem } = await createCsr({ domains: ["crl.example.com"], keyType: "rsa2048" });
+    const signed = await service.signCsr({ id, userId: 1, csrPem });
+    service.certRevocationService = {
+      async listByCa() {
+        return [{ serialNumber: signed.serialNumber, revokedTime: Date.now() - 1000, reason: "unspecified" }];
+      },
+    } as any;
+
+    const crl = await service.getCrl(id);
+    const parsed = new x509.X509Crl(crl.pem);
+    assert.ok(parsed.findRevoked(signed.serialNumber));
+    assert.match(crl.pem, /BEGIN X509 CRL/);
+    const info = await service.getCrlInfo({ id, userId: 1 });
+    assert.equal(info.entries.length, 1);
+    assert.ok(info.issuer);
+  });
+
+  it("getCrl 会清理已过期的吊销条目", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Expired CRL CA" });
+    service.certRevocationService = {
+      async listByCa() {
+        return [
+          { serialNumber: "0ABBCCDDEEFF00112233445566778899", revokedTime: Date.now(), expiresTime: Date.now() + 86400000, reason: "unspecified" },
+          { serialNumber: "0BAABBCCDDEEFF00112233445566778899", revokedTime: Date.now(), expiresTime: Date.now() - 86400000, reason: "unspecified" },
+        ];
+      },
+    } as any;
+
+    const crl = await service.getCrl(id);
+    const parsed = new x509.X509Crl(crl.pem);
+    assert.ok(parsed.findRevoked("0ABBCCDDEEFF00112233445566778899"));
+    assert.equal(parsed.findRevoked("0BAABBCCDDEEFF00112233445566778899"), null);
+  });
+
+  it("过期吊销记录不再进入 CRL，但吊销表记录仍保留", async () => {
+    const { service, revocations } = createService();
+    const { id } = await createIssuingCa(service, { name: "Expired Revocation CA" });
+    const now = Date.now();
+    await service.certRevocationService.record({ caId: id, userId: 1, serialNumber: "0A01", expiresTime: now + 86400000 });
+    await service.certRevocationService.record({ caId: id, userId: 1, serialNumber: "0A02", expiresTime: now - 86400000 });
+
+    const crl = await service.getCrl(id);
+    const parsed = new x509.X509Crl(crl.pem);
+    assert.ok(parsed.findRevoked("0A01"));
+    assert.equal(parsed.findRevoked("0A02"), null);
+    assert.equal(revocations.size, 2);
+    assert.equal((await service.certRevocationService.listByCa(id)).length, 2);
+  });
+
+  it("consumeAcmeEab 使用实体列名并带原子次数条件", async () => {
+    const { service } = createService();
+    let expression = "";
+    let condition = "";
+    let whereSql = "";
+    service.acmeEabRepository = {
+      metadata: {
+        findColumnWithPropertyName(name: string) {
+          return {
+            usedCount: { databaseName: "used_count" },
+            maxUses: { databaseName: "max_uses" },
+            disabled: { databaseName: "disabled" },
+            revoked: { databaseName: "revoked" },
+            expiresTime: { databaseName: "expires_time" },
+          }[name];
+        },
+      },
+      createQueryBuilder() {
+        return {
+          update() {
+            return this;
+          },
+          set(values: any) {
+            expression = values.usedCount();
+            return this;
+          },
+          where(value: string) {
+            whereSql = value;
+            return this;
+          },
+          andWhere(value: string) {
+            condition = value;
+            whereSql += ` AND ${value}`;
+            return this;
+          },
+          async execute() {
+            return { affected: 1 };
+          },
+        };
+      },
+    } as any;
+
+    assert.equal(await service.consumeAcmeEab("eab-1"), true);
+    assert.equal(expression, "used_count + 1");
+    assert.match(condition, /max_uses = 0 OR used_count < max_uses/);
+    assert.match(whereSql, /disabled = :disabled/);
+    assert.match(whereSql, /revoked = :revoked/);
+    assert.match(whereSql, /expires_time IS NULL OR expires_time > :now/);
+  });
+
+  it("updateAcmeEab 只更新业务字段，不覆盖泄漏处置写入的 revoked/disabled", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Update EAB CA" });
+    const bean: any = { id: "eab-1", caId: id, name: "old", disabled: true, revoked: true, updateTime: 0 };
+    let capturedSet: any = null;
+    service.acmeEabRepository = {
+      async findOne({ where }: any) {
+        if (where.id !== bean.id) {
+          return null;
+        }
+        return { ...bean };
+      },
+      async update(where: any, set: any) {
+        capturedSet = set;
+        Object.assign(bean, set);
+        return { affected: 1 };
+      },
+      async save(entity: any) {
+        Object.assign(bean, entity);
+        return entity;
+      },
+    } as any;
+
+    await service.updateAcmeEab({ caId: id, eabId: "eab-1", userId: 1, name: "new-name", allowedDomains: ["a.example.com"] });
+
+    assert.equal(capturedSet.name, "new-name");
+    assert.equal(capturedSet.disabled, undefined, "不得写入 disabled");
+    assert.equal(capturedSet.revoked, undefined, "不得写入 revoked");
+    assert.equal(bean.disabled, true, "不可恢复禁用标记必须保留");
+    assert.equal(bean.revoked, true, "不可恢复泄漏标记必须保留");
+  });
+
+  it("updateAcmeEab 拒绝将可注册账户数降到已注册数以下", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "EAB Max Uses CA" });
+    const bean: any = { id: "eab-low", caId: id, name: "old", usedCount: 2, maxUses: 5, disabled: false, revoked: false, updateTime: 0 };
+    service.acmeEabRepository = {
+      async findOne({ where }: any) {
+        return where.id === bean.id ? { ...bean } : null;
+      },
+      async update(where: any, set: any) {
+        Object.assign(bean, set);
+        return { affected: 1 };
+      },
+      async save(entity: any) {
+        Object.assign(bean, entity);
+        return entity;
+      },
+    } as any;
+
+    await assert.rejects(() => service.updateAcmeEab({ caId: id, eabId: "eab-low", userId: 1, maxUses: 1 }), /不能低于已注册账户数/);
+    assert.equal(bean.maxUses, 5, "校验失败不得写入更低上限");
+
+    await service.updateAcmeEab({ caId: id, eabId: "eab-low", userId: 1, maxUses: 0 });
+    assert.equal(bean.maxUses, 0, "0 表示不限，允许调整");
+  });
+
+  it("泄漏处置只影响该EAB下的账户与订单，混入的其他EAB账户不计入也不算订单", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Leak Scope CA" });
+    const eabs = new Map<string, any>([
+      ["eab-1", { id: "eab-1", caId: id, disabled: false, revoked: false }],
+      ["eab-2", { id: "eab-2", caId: id, disabled: false, revoked: false }],
+    ]);
+    const accounts = new Map<string, any>([
+      ["accA", { id: "accA", eabId: "eab-1", status: "valid", userId: 2 }],
+      ["accB", { id: "accB", eabId: "eab-2", status: "valid", userId: 3 }],
+    ]);
+    service.acmeEabRepository = {
+      async findOne({ where }: any) {
+        const item = eabs.get(where.id);
+        if (!item) return null;
+        if (where.caId != null && item.caId !== where.caId) return null;
+        return item;
+      },
+      async save(entity: any) {
+        eabs.set(entity.id, entity);
+        return entity;
+      },
+    } as any;
+    (service as any).acmeAccountRepository = {
+      async findOne({ where }: any) {
+        const item = accounts.get(where.id);
+        if (!item) return null;
+        if (where.eabId && item.eabId !== where.eabId) return null;
+        return item;
+      },
+      async save(entity: any) {
+        accounts.set(entity.id, entity);
+        return entity;
+      },
+    };
+    (service as any).acmeOrderRepository = {
+      async find({ where }: any) {
+        if (where.accountId === "accA") {
+          return [{ accountId: "accA", caId: id, status: "valid", serialNumber: "AAA", expiresTime: 1 }];
+        }
+        if (where.accountId === "accB") {
+          return [{ accountId: "accB", caId: id, status: "valid", serialNumber: "BBB", expiresTime: 2 }];
+        }
+        return [];
+      },
+    };
+
+    const result = await (service as any).acmeService.leakRevokeEab({ caId: id, eabId: "eab-1", accountIds: ["accA", "accB"], userId: 1 });
+
+    assert.equal(result.disabledAccounts, 1, "只应统计真正属于该EAB的账户");
+    assert.deepEqual(
+      result.orders.map((item: any) => item.serialNumber),
+      ["AAA"]
+    );
+    assert.equal(accounts.get("accA").status, "deactivated");
+    assert.equal(accounts.get("accB").status, "valid", "其他EAB账户不得被停用");
+    assert.equal(eabs.get("eab-1").revoked, true);
+  });
+
+  it("listEabAccounts 拒绝跨CA查询EAB账户", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "List EAB CA" });
+    service.acmeEabRepository = {
+      async findOne() {
+        return null;
+      },
+    } as any;
+    await assert.rejects(() => (service as any).acmeService.listEabAccounts({ caId: id, eabId: "other-ca-eab", userId: 1 }), /不存在或无访问权限/);
+  });
+
+  it("禁止导出的CA拒绝导出，但查看公钥仍可用", async () => {
+    const { service } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "No Export CA",
+      subject: { CN: "No Export CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+      exportDisabled: true,
+    });
+    const info: any = await service.infoSafe({ id, userId: 1 });
+    assert.equal(info.exportDisabled, true);
+    await assert.rejects(() => service.exportCa({ id, userId: 1 }), /已禁止导出/);
+    const publicKey = await service.getPublicKey({ id, userId: 1 });
+    assert.match(publicKey.pem, /BEGIN PUBLIC KEY/);
+  });
+
+  it("中间CA禁用后仍可提供CRL，存量证书可继续校验", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Retired Intermediate CA" });
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    const crl = await service.getCrl(id);
+    assert.match(crl.pem, /BEGIN X509 CRL/);
+  });
+
+  it("吊销后缓存失效，CRL立即包含新序列号", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Dirty CRL CA" });
+    await service.getCrl(id);
+    await service.certRevocationService.record({ caId: id, userId: 1, serialNumber: "0A99", expiresTime: Date.now() + 86400000 });
+    store.get(id).lastCrlTime = -1;
+    const crl = await service.getCrl(id);
+    const parsed = new x509.X509Crl(crl.pem);
+    assert.ok(parsed.findRevoked("0A99"));
+  });
+
+  it("CRL生成期间发生并发吊销时重试并返回最新CRL", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Concurrent CRL CA" });
+    await service.getCrl(id);
+    store.get(id).lastCrlTime = -1;
+
+    const serial = "0AC0FFEE00112233445566778899AABB";
+    const originalList = service.certRevocationService.listByCa.bind(service.certRevocationService);
+    let injected = false;
+    let listCalls = 0;
+    service.certRevocationService.listByCa = async (caId: number) => {
+      listCalls++;
+      const snapshot = await originalList(caId);
+      if (!injected) {
+        // 模拟：本次CRL已读取吊销快照后，另一个请求完成吊销并推进了CRL序号
+        injected = true;
+        await service.certRevocationService.record({ caId, userId: 1, serialNumber: serial, expiresTime: Date.now() + 86400000 });
+        const entity = store.get(caId);
+        entity.crlNumber = Number(entity.crlNumber) + 1;
+        entity.lastCrlTime = -1;
+      }
+      return snapshot;
+    };
+
+    const crl = await service.getCrl(id);
+    assert.ok(listCalls >= 2, "并发冲突后必须重新读取吊销快照");
+    assert.ok(new x509.X509Crl(crl.pem).findRevoked(serial), "响应CRL必须包含并发吊销的序列号");
+  });
+
+  it("旧CRL生成结果不能覆盖更高CRL Number的缓存", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "CAS Cache CA" });
+    const entity = store.get(id);
+    entity.crlNumber = 11;
+    entity.lastCrlPem = "newer-crl";
+    entity.lastCrlTime = 1;
+
+    await (service.crlService as any).storeCrlCache(id, 10, "older-crl");
+    assert.equal(entity.lastCrlPem, "newer-crl");
+    await (service.crlService as any).storeCrlCache(id, 11, "current-crl");
+    assert.equal(entity.lastCrlPem, "current-crl");
+  });
+
+  it("CRL Number 持久化单调递增，同一秒也不同", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "CRL Number CA" });
+    const first = await service.getCrlInfo({ id, userId: 1 });
+    store.get(id).lastCrlPem = null;
+    const second = await service.getCrlInfo({ id, userId: 1 });
+    assert.ok(Number(second.crlNumber) > Number(first.crlNumber));
+  });
+
+  it("Root私钥仅用于签中间CA和导出，不参与在线CRL签名", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Offline Root",
+      subject: { CN: "Offline Root" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    await assert.rejects(() => service.getCrl(root.id), /Root CRL尚未生成/);
+
+    const child = await service.generateIntermediateCa({
+      rootId: root.id,
+      maxValidityDays: 365,
+      userId: 1,
+      name: "Allowed Intermediate",
+      subject: { CN: "Allowed Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    assert.ok(child.id);
+    const rootCrl = await service.getCrl(root.id);
+    assert.match(rootCrl.pem, /BEGIN X509 CRL/);
+
+    const exported = await service.exportCa({ id: root.id, userId: 1 });
+    const exportedContent = await fs.promises.readFile(exported.path, "utf8");
+    const mode = (await fs.promises.stat(exported.path)).mode & 0o777;
+    assert.match(exportedContent, /BEGIN PRIVATE KEY/);
+    assert.equal(mode, 0o600);
+    await fs.promises.unlink(exported.path);
+  });
+
+  it("exportCa 返回证书和私钥", async () => {
+    const { service } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Export CA",
+      subject: { CN: "Export CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    const res = await service.exportCa({ id, userId: 1 });
+    assert.match(res.filename, /local-ca-/);
+    const content = await fs.promises.readFile(res.path, "utf8");
+    assert.match(content, /BEGIN CERTIFICATE/);
+    assert.match(content, /BEGIN PRIVATE KEY/);
+    await fs.promises.unlink(res.path);
+    const publicKey = await service.getPublicKey({ id, userId: 1 });
+    assert.match(publicKey.pem, /BEGIN PUBLIC KEY/);
+  });
+
+  it("listIssuedCerts 与 revokeIssuedCert 只处理该CA的证书", async () => {
+    const { service, revocations } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Issued CA",
+      subject: { CN: "Issued CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    service.certInfoService = {
+      async find() {
+        return [
+          {
+            id: 9,
+            domain: "a.example.com",
+            domains: "a.example.com",
+            serialNumber: "ABC",
+            status: "active",
+            effectiveTime: 1,
+            expiresTime: 2,
+            applyTime: 3,
+            fromType: "pipeline",
+          },
+        ];
+      },
+      async findOne({ where }: any) {
+        assert.equal(where.id, 9);
+        return { id: 9, localCaId: id, status: "active", serialNumber: "ABC", expiresTime: 2 };
+      },
+      async applyLocalRevocation(req: any) {
+        await service.certRevocationService.record(req);
+      },
+    } as any;
+
+    const list = await service.listIssuedCerts({ id, userId: 1 });
+    assert.equal(list.length, 1);
+    assert.equal(list[0].serialNumber, "ABC");
+    await service.revokeIssuedCert({ id, userId: 1, certId: 9 });
+    assert.equal(revocations.get(`${id}:ABC`).caId, id);
+  });
+
+  it("吊销中间CA会更新Root CRL并可验证", async () => {
+    const { service, store } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Revoke Intermediate CA" });
+    const serial = (await service.infoSafe({ id, userId: 1 })) as any;
+    const intermediateSerial = getCertSerialNumber(serial.certPem);
+    const result = await service.revokeIntermediate({ id, userId: 1, reason: "superseded" });
+    assert.equal(result.serialNumber, intermediateSerial);
+    assert.equal(store.get(id).disabled, true);
+
+    const rootCrl = await service.getCrlInfo({ id: rootId, userId: 1 });
+    assert.ok(rootCrl.entries.some((item: any) => item.serialNumber.toUpperCase() === intermediateSerial));
+  });
+
+  it("吊销时Root CRL生成失败也保持CA不可签发，并可重试", async () => {
+    const { service, store } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Fail Closed Intermediate" });
+    const originalStore = (service.crlService as any).storeCrlCache;
+    (service.crlService as any).storeCrlCache = async () => {
+      throw new Error("模拟CRL写入失败");
+    };
+    await assert.rejects(() => service.revokeIntermediate({ id, userId: 1 }), /模拟CRL写入失败/);
+    assert.equal(store.get(id).revoked, true);
+    assert.equal(store.get(id).disabled, true);
+    await assert.rejects(() => service.issueLeaf({ id, userId: 1, domains: ["x.example.com"], keyType: "rsa2048" }), /已被父CA吊销|已禁用/);
+
+    (service.crlService as any).storeCrlCache = originalStore;
+    const retried = await service.revokeIntermediate({ id, userId: 1 });
+    assert.ok(retried.crlNumber > 0);
+    const rootCrl = await service.getCrlInfo({ id: rootId, userId: 1 });
+    assert.ok(rootCrl.entries.some((item: any) => item.serialNumber.toUpperCase() === retried.serialNumber));
+  });
+
+  it("吊销中间CA时Root CRL持续写入冲突，保持吊销状态并标记缓存失效", async () => {
+    const { service, store } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Conflict Intermediate" });
+    (service.crlService as any).storeCrlCache = async () => false;
+
+    await assert.rejects(() => service.revokeIntermediate({ id, userId: 1 }), /并发变更/);
+
+    assert.equal(store.get(id).revoked, true);
+    assert.equal(store.get(id).disabled, true);
+    assert.equal(Number(store.get(rootId).lastCrlTime), -1);
+  });
+
+  it("Root CRL先生成序号再读取吊销快照，避免并发漏吊销", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Concurrent Root",
+      subject: { CN: "Concurrent Root" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    const sequence: string[] = [];
+    const crlService = service.crlService as any;
+    const originalNext = crlService.nextCrlNumber;
+    const originalEntries = crlService.getRevocationEntries;
+    crlService.nextCrlNumber = async function (caId: number) {
+      sequence.push("number");
+      return await originalNext.call(crlService, caId);
+    };
+    crlService.getRevocationEntries = async function (caId: number) {
+      sequence.push("entries");
+      return await originalEntries.call(crlService, caId);
+    };
+
+    await service.refreshRootCrl({ id: root.id, userId: 1 });
+    assert.deepEqual(sequence, ["number", "entries"]);
+  });
+
+  it("Root CRL条件写入冲突时重试，不误报刷新成功", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Retry Root",
+      subject: { CN: "Retry Root" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    const originalStore = (service.crlService as any).storeCrlCache.bind(service.crlService);
+    let storeCalls = 0;
+    (service.crlService as any).storeCrlCache = async (...args: any[]) => {
+      storeCalls++;
+      return storeCalls === 1 ? false : await originalStore(...args);
+    };
+    const result = await service.refreshRootCrl({ id: root.id, userId: 1 });
+    assert.ok(storeCalls >= 2, "条件写入失败后必须重试");
+    const info = await service.getCrlInfo({ id: root.id, userId: 1 });
+    assert.equal(Number(info.crlNumber), Number(result.crlNumber));
+  });
+
+  it("Root CRL持续写入冲突时返回错误而不是虚报成功", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Conflict Root",
+      subject: { CN: "Conflict Root" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    (service.crlService as any).storeCrlCache = async () => false;
+    await assert.rejects(() => service.refreshRootCrl({ id: root.id, userId: 1 }), /并发变更/);
+  });
+
+  it("创建新中间CA不会丢掉Root CRL中已有的吊销项", async () => {
+    const { service } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "First Intermediate" });
+    const firstInfo: any = await service.infoSafe({ id, userId: 1 });
+    const firstSerial = getCertSerialNumber(firstInfo.certPem);
+    await service.revokeIntermediate({ id, userId: 1, reason: "superseded" });
+
+    await service.generateIntermediateCa({
+      rootId,
+      userId: 1,
+      name: "Second Intermediate",
+      subject: { CN: "Second Intermediate" },
+      keyType: "rsa2048",
+      validityYears: 1,
+      maxValidityDays: 365,
+    });
+
+    const rootCrl = await service.getCrlInfo({ id: rootId, userId: 1 });
+    assert.ok(rootCrl.entries.some((item: any) => item.serialNumber.toUpperCase() === firstSerial));
+  });
+
+  it("根CA签发列表包含下级中间CA", async () => {
+    const { service } = createService();
+    const { rootId } = await createIssuingCa(service, { name: "Branch CA" });
+    service.certInfoService = {
+      async find() {
+        return [];
+      },
+    } as any;
+    const list = await service.listIssuedCerts({ id: rootId, userId: 1 });
+    assert.equal(list.length, 1);
+    assert.equal(list[0].type, "ca");
+    assert.equal(list[0].caType, "intermediate");
+    assert.ok(list[0].serialNumber);
+  });
+
+  it("被流水线引用的CA不能删除", async () => {
+    const { service } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Pipeline CA",
+      subject: { CN: "Pipeline CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    service.pipelineRepository = {
+      async find() {
+        return [
+          {
+            id: 5,
+            title: "内部证书自动化",
+            content: JSON.stringify({
+              stages: [{ tasks: [{ steps: [{ type: "CertApplyLocalCa", input: { caId: id } }] }] }],
+            }),
+          },
+        ];
+      },
+    } as any;
+
+    await assert.rejects(() => service.archiveCa({ id, userId: 1 }), /流水线「内部证书自动化」引用/);
+  });
+
+  it("跨用户不可访问，已签发证书的CA不能删除", async () => {
+    const { service } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Owned CA",
+      subject: { CN: "Owned CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+
+    await assert.rejects(() => service.infoSafe({ id, userId: 2 }), /不存在或无访问权限/);
+
+    service.certInfoService = {
+      async find() {
+        return [{ id: 99, status: "active", expiresTime: Date.now() + 86400000 }];
+      },
+    } as any;
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    await assert.rejects(() => service.archiveCa({ id, userId: 1 }), /未吊销且未过期/);
+  });
+
+  it("禁用且所有证书已吊销后允许删除CA", async () => {
+    const { service, store } = createService();
+    const { id } = await service.generateCa({
+      userId: 1,
+      name: "Deletable CA",
+      subject: { CN: "Deletable CA" },
+      keyType: "rsa2048",
+      validityYears: 1,
+    });
+    await service.setDisabled({ id, userId: 1, disabled: true });
+    service.certInfoService = {
+      async find() {
+        return [{ id: 99, status: "revoked", expiresTime: Date.now() + 86400000 }];
+      },
+    } as any;
+    await service.archiveCa({ id, userId: 1 });
+    assert.equal(store.get(id).deleted, true);
+  });
+
+  it("归档Root仍可通过维护接口刷新CRL", async () => {
+    const { service, store } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Archived Root Child" });
+    const childSerial = getCertSerialNumber(store.get(id).certPem);
+    await service.revokeIntermediate({ id, userId: 1 });
+    await service.archiveCa({ id, userId: 1 });
+    await service.setDisabled({ id: rootId, userId: 1, disabled: true });
+    await service.archiveCa({ id: rootId, userId: 1 });
+    assert.equal(store.get(rootId).deleted, true);
+
+    const res = await service.refreshArchivedRootCrl({ id: rootId, userId: 1 });
+    assert.ok(res.crlNumber > 0);
+    const crl = await service.getCrl(rootId);
+    assert.ok(new x509.X509Crl(crl.pem).findRevoked(childSerial));
+    await assert.rejects(() => service.refreshArchivedRootCrl({ id: rootId, userId: 2 }), /不存在或无访问权限/);
+  });
+
+  it("关闭ACME会失效未完成直签订单", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Disable Acme CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: false });
+
+    const last = (service as any).acmeOrderRepository.getLastUpdate();
+    assert.equal(last.where.caId, id);
+    assert.equal(last.where.directIssue, true);
+    assert.equal(last.set.status, "invalid");
+    assert.match(last.set.error, /ACME服务已关闭/);
+    const info: any = await service.infoSafe({ id, userId: 1 });
+    assert.equal(info.acmeEnabled, false);
+  });
+
+  it("Base URL 拒绝账号密码、查询参数和片段", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Strict Base Url CA" });
+    await assert.rejects(() => service.updateMeta({ id, userId: 1, baseUrl: "https://user:pass@ca.example.com" }), /不能包含用户名或密码/);
+    await assert.rejects(() => service.updateMeta({ id, userId: 1, baseUrl: "https://ca.example.com?a=1" }), /不能包含查询参数或片段/);
+    await assert.rejects(() => service.updateMeta({ id, userId: 1, baseUrl: "https://ca.example.com#x" }), /不能包含查询参数或片段/);
+  });
+
+  it("Base URL 为空时首次签发会固化有效地址", async () => {
+    const { service, store } = createService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return { bindUrl: "https://bind.example.com" };
+      },
+    } as any;
+    const { rootId } = await createIssuingCa(service, { name: "Locked Effective Base" });
+    assert.equal(store.get(rootId).baseUrl, "https://bind.example.com");
+    assert.equal(store.get(rootId).baseUrlLocked, true);
+  });
+
+  it("中间CA必须使用有限且不超过父CA的最大签发天数", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Validity Root",
+      subject: { CN: "Validity Root" },
+      keyType: "ecdsa256",
+      validityYears: 2,
+      maxValidityDays: 30,
+    });
+    await assert.rejects(
+      () =>
+        service.generateIntermediateCa({
+          rootId: root.id,
+          userId: 1,
+          name: "Too Long Intermediate",
+          subject: { CN: "Too Long Intermediate" },
+          keyType: "ecdsa256",
+          validityYears: 1,
+          maxValidityDays: 60,
+        }),
+      /不能超过上级CA/
+    );
+    const unlimitedRoot = await service.generateCa({
+      userId: 1,
+      name: "Unlimited Root",
+      subject: { CN: "Unlimited Root" },
+      keyType: "ecdsa256",
+      validityYears: 2,
+    });
+    await assert.rejects(
+      () =>
+        service.generateIntermediateCa({
+          rootId: unlimitedRoot.id,
+          userId: 1,
+          name: "Unlimited Intermediate",
+          subject: { CN: "Unlimited Intermediate" },
+          keyType: "ecdsa256",
+          validityYears: 1,
+        }),
+      /必须设置有限/
+    );
+  });
+
+  it("ACME三档：legacy缺省标准，显式local生成内部凭证并经getter下发", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Mode CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    let config = JSON.parse(store.get(id).acmeConfig || "{}");
+    assert.equal(config.acmeMode, undefined);
+    assert.equal(service.acmeService.resolveAcmeMode(config), "standard");
+
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true, mode: "local" });
+    config = JSON.parse(store.get(id).acmeConfig);
+    assert.equal(config.acmeMode, "local");
+    assert.ok(config.internalToken);
+
+    const safe: any = await service.getUserCa({ id, userId: 1 });
+    assert.equal(safe.localAcmeToken, config.internalToken);
+    assert.equal(safe.acmeMode, "local");
+    assert.equal(safe.acmeConfig, undefined);
+
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true, mode: "standard" });
+    const safe2: any = await service.getUserCa({ id, userId: 1 });
+    assert.equal(safe2.acmeMode, "standard");
+    assert.equal(safe2.localAcmeToken, undefined);
+  });
+
+  it("敏感更新会被识别为需要Step-up", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "StepUp CA" });
+    assert.equal(await service.requiresStepUpForUpdate({ id, userId: 1, remark: "x" } as any), false);
+    assert.equal(await service.requiresStepUpForUpdate({ id, userId: 1, allowedDomains: ["example.com"] }), true);
+    assert.equal(await service.requiresStepUpForUpdate({ id, userId: 1, maxValidityDays: 30 }), true);
+  });
+
+  it("连续写入失败且缓存过期时不能返回旧CRL", async () => {
+    const { service, store, encryptService } = createService();
+    const { id } = await createIssuingCa(service, { name: "Expired Crl CA" });
+    const caEntity = store.get(id);
+    const privateKeyPem = encryptService.decrypt(caEntity.privateKeyEncrypted);
+    const signingKey = await crypto.webcrypto.subtle.importKey("pkcs8", x509.PemConverter.decodeFirst(privateKeyPem), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+    const caCert = new x509.X509Certificate(caEntity.certPem);
+    const expired = await x509.X509CrlGenerator.create(
+      {
+        issuer: caCert.subjectName,
+        thisUpdate: new Date(Date.now() - 2 * 86400000),
+        nextUpdate: new Date(Date.now() - 86400000),
+        signingKey,
+        signingAlgorithm: { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      } as any,
+      crypto.webcrypto as any
+    );
+    caEntity.lastCrlPem = expired
+      .toString("pem")
+      .replace(/BEGIN CRL/g, "BEGIN X509 CRL")
+      .replace(/END CRL/g, "END X509 CRL");
+    caEntity.lastCrlTime = Date.now();
+    (service.crlService as any).storeCrlCache = async () => false;
+
+    await assert.rejects(() => service.getCrl(id), /没有可用缓存/);
+  });
+
+  it("管理员之间通过ACL隔离，操作员不能执行创建管理员专属操作", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "ACL CA" });
+
+    await assert.rejects(() => service.assertAdminCa(id, 2), /无访问权限/);
+    await assert.rejects(() => service.addCaAdmin({ id, userId: 1, adminUserId: 2, role: "owner" }), /所有者/);
+    await service.addCaAdmin({ id, userId: 1, adminUserId: 2, role: "operator" });
+    const access = await service.assertAdminCa(id, 2);
+    assert.equal(access.role, "operator");
+
+    await service.updateMeta({ id, userId: 2, remark: "operator updated" });
+    await assert.rejects(() => service.exportCa({ id, userId: 2 }), /创建管理员/);
+    await assert.rejects(() => service.addGrant({ id, userId: 2, grantUserId: 3 }), /创建管理员/);
+    await assert.rejects(() => service.removeCaAdmin({ id, userId: 2, adminUserId: 1 }), /创建管理员/);
+
+    const ownerList = await service.listAdminOptions({ adminUserId: 1 });
+    const operatorList = await service.listAdminOptions({ adminUserId: 2 });
+    assert.ok(ownerList.some(item => item.id === id));
+    assert.ok(operatorList.some(item => item.id === id));
+    assert.equal((await service.listAdminOptions({ adminUserId: 3 })).length, 0);
+  });
+
+  it("仅中间CA可授权，用户模式与项目模式互斥", async () => {
+    const { service } = createService();
+    const { rootId, id } = await createIssuingCa(service, { name: "Grant CA" });
+
+    await assert.rejects(() => service.addGrant({ id: rootId, userId: 1, grantUserId: 2 }), /中间CA/);
+    // 用户模式：授权用户2，其全部项目可用
+    const userGrant = await service.addGrant({ id, userId: 1, grantUserId: 2 });
+    assert.equal(userGrant.userId, 2);
+    assert.equal(userGrant.projectId, 0);
+    assert.deepEqual(
+      (await service.listOptions({ userId: 2, projectId: 10 })).map(item => item.id),
+      [id]
+    );
+    assert.deepEqual(
+      (await service.listOptions({ userId: 2, projectId: 11 })).map(item => item.id),
+      [id]
+    );
+    assert.equal((await service.listOptions({ userId: 3, projectId: 10 })).length, 0);
+
+    // 项目模式：授权项目10，项目内全部用户可用（userId=0）
+    const projGrant = await service.addGrant({ id, userId: 1, grantProjectId: 10 });
+    assert.equal(projGrant.userId, 0);
+    assert.equal(projGrant.projectId, 10);
+    assert.deepEqual(
+      (await service.listOptions({ userId: 9, projectId: 10 })).map(item => item.id),
+      [id]
+    );
+    assert.equal((await service.listOptions({ userId: 9, projectId: 11 })).length, 0);
+
+    const { csrPem } = await createCsr({ domains: ["grant.example.com"], keyType: "rsa2048" });
+    await assert.rejects(() => service.signCsr({ id, userId: 9, projectId: 11, csrPem }), /无访问权限/);
+    const signed = await service.signCsr({ id, userId: 9, projectId: 10, csrPem });
+    assert.ok(signed.certPem.includes("BEGIN CERTIFICATE"));
+
+    await service.removeGrant({ id, userId: 1, grantId: userGrant.id });
+    assert.equal((await service.listOptions({ userId: 2, projectId: 99 })).length, 0);
+  });
+
+  it("EAB不再绑定用户/项目授权，独立存在", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "EAB Grant CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    await service.addGrant({ id, userId: 1, grantUserId: 5 });
+
+    const eab = await service.createAcmeEab({
+      caId: id,
+      userId: 1,
+      name: "independent eab",
+      maxUses: 1,
+    });
+    assert.equal(eab.grantId, null);
+    assert.equal(Number(eab.userId || 0), 0);
+    assert.ok(!eab.projectId);
+
+    const stored: any = await (service.acmeEabRepository as any).findOne({ where: { kid: eab.kid } });
+    assert.equal(stored.grantId, null);
+    assert.equal(Number(stored.userId || 0), 0);
+  });
+
+  it("创建EAB保存用途模式，local模式不返回HMAC Key", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "EAB Mode CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    const local = await service.createAcmeEab({ caId: id, userId: 1, name: "local eab", mode: "local" });
+    assert.equal(local.mode, "local");
+    assert.equal(local.hmacKey, undefined);
+    const storedLocal: any = await (service.acmeEabRepository as any).findOne({ where: { id: local.id } });
+    assert.equal(storedLocal.mode, "local");
+    const standard = await service.createAcmeEab({ caId: id, userId: 1, name: "standard eab", mode: "standard" });
+    assert.equal(standard.mode, "standard");
+    assert.ok(standard.hmacKey);
+  });
+
+  it("内部Token轮换只返回成功状态，不向HTTP调用方返回Token", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Rotate Token CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true, mode: "local" });
+    const result = await service.rotateInternalToken({ id, caId: id, userId: 1 });
+    assert.deepEqual(result, { success: true });
+    assert.equal("internalToken" in result, false);
+  });
+
+  it("访问控制更新与内部Token轮换并发交错不丢配置", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Concurrent Acme Config CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true, mode: "local" });
+    const oldToken = JSON.parse(store.get(id).acmeConfig).internalToken;
+    await Promise.all([
+      service.setAcmeAccess({ id, caId: id, userId: 1, ipAllowlist: ["10.9.0.0/16"], requiredHeaders: [{ name: "x-gw", value: "ok" }], clientIpSource: "socket" }),
+      service.rotateInternalToken({ id, caId: id, userId: 1 }),
+    ]);
+    const config = JSON.parse(store.get(id).acmeConfig);
+    assert.notEqual(config.internalToken, oldToken, "Token轮换结果不得被旧配置覆盖");
+    assert.deepEqual(config.ipAllowlist, ["10.9.0.0/16"]);
+    assert.deepEqual(config.requiredHeaders, [{ name: "x-gw", value: "ok" }]);
+    assert.equal(config.clientIpSource, "socket");
+  });
+
+  it("ACME启停与元数据编辑并发交错不丢字段", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Concurrent Meta Acme CA" });
+    await Promise.all([
+      service.updateMeta({ id, userId: 1, remark: "meta-changed" }),
+      service.setAcmeEnabled({ id, userId: 1, enabled: true, mode: "local", validityDays: 90 }),
+    ]);
+    const config = JSON.parse(store.get(id).acmeConfig);
+    assert.equal(store.get(id).remark, "meta-changed");
+    assert.equal(store.get(id).acmeEnabled, true);
+    assert.equal(config.acmeMode, "local");
+    assert.equal(config.validityDays, 90);
+  });
+
+  it("updateMeta只更新明确字段，不覆盖并发写入的acmeConfig", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Meta Partial CA" });
+    const acmeConfig = JSON.stringify({ acmeMode: "standard", ipAllowlist: ["10.0.0.0/8"] });
+    store.get(id).acmeConfig = acmeConfig;
+    store.get(id).acmeEnabled = true;
+    await service.updateMeta({ id, userId: 1, remark: "changed" });
+    assert.equal(store.get(id).remark, "changed");
+    assert.equal(store.get(id).acmeConfig, acmeConfig);
+    assert.equal(store.get(id).acmeEnabled, true);
+  });
+
+  it("直接签发持有CA配置锁，策略更新不会在签发过程中交错", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Issue Lock CA" });
+    await service.updateMeta({ id, userId: 1, allowDirectSign: true });
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>(resolve => (release = resolve));
+    let started: () => void = () => undefined;
+    const startedP = new Promise<void>(resolve => (started = resolve));
+    (service as any).crlService.getCrlUrl = async () => {
+      started();
+      await gate;
+      return "http://crl.example.com/test.crl";
+    };
+    const issueP = service.issueLeaf({ id, userId: 1, domains: ["lock.example.com"], keyType: "rsa2048", validityDays: 30 });
+    await startedP;
+    let updated = false;
+    const updateP = service.updateMeta({ id, userId: 1, remark: "after-issue" }).then(() => {
+      updated = true;
+    });
+    await new Promise(resolve => setTimeout(resolve, 30));
+    assert.equal(updated, false, "策略更新必须等待签发锁释放");
+    release();
+    await issueP;
+    await updateP;
+    assert.equal(store.get(id).remark, "after-issue");
+  });
+
+  it("取锁前发生轮换时释放旧锁并按新CA策略重试", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Retry Lock CA" });
+    const originalGet = service.accessService.getGrantedCa.bind(service.accessService);
+    let first = true;
+    service.accessService.getGrantedCa = async (scope: any) => {
+      const res = await originalGet(scope);
+      if (first) {
+        first = false;
+        // 模拟竞态：返回轮换前的陈旧CA快照，随后完成轮换并收紧新CA域名范围
+        const stale = { ...res };
+        const rotated = await service.rotateIntermediateCa({ id, userId: 1 });
+        await service.updateMeta({ id: rotated.id, userId: 1, allowedDomains: ["allowed.example.com"] });
+        return stale;
+      }
+      return res;
+    };
+    await assert.rejects(() => service.issueLeaf({ id, userId: 1, domains: ["other.example.com"], keyType: "rsa2048", validityDays: 30 }), /允许签发|不在.*范围/);
+  });
+
+  it("直接签发与中间CA轮换共用旧CA锁", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Issue Rotate Lock CA" });
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>(resolve => (release = resolve));
+    let started: () => void = () => undefined;
+    const startedP = new Promise<void>(resolve => (started = resolve));
+    (service as any).crlService.getCrlUrl = async () => {
+      started();
+      await gate;
+      return "http://crl.example.com/rotate.crl";
+    };
+    const issueP = service.issueLeaf({ id, userId: 1, domains: ["rotate-lock.example.com"], keyType: "rsa2048", validityDays: 30 });
+    await startedP;
+    let rotated = false;
+    const rotateP = service.rotateIntermediateCa({ id, userId: 1 }).then(() => {
+      rotated = true;
+    });
+    await new Promise(resolve => setTimeout(resolve, 30));
+    assert.equal(rotated, false, "轮换必须等待直签锁释放");
+    release();
+    await issueP;
+    await rotateP;
+    assert.ok(store.get(id).rotatedToId, "轮换应完成并指向新CA");
+  });
+
+  it("直接签发与吊销中间CA共用CA锁", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Issue Revoke Lock CA" });
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>(resolve => (release = resolve));
+    let started: () => void = () => undefined;
+    const startedP = new Promise<void>(resolve => (started = resolve));
+    (service as any).crlService.getCrlUrl = async () => {
+      started();
+      await gate;
+      return "http://crl.example.com/revoke.crl";
+    };
+    const issueP = service.issueLeaf({ id, userId: 1, domains: ["revoke-lock.example.com"], keyType: "rsa2048", validityDays: 30 });
+    await startedP;
+    let revoked = false;
+    const revokeP = service.revokeIntermediate({ id, userId: 1 }).then(() => {
+      revoked = true;
+    });
+    await new Promise(resolve => setTimeout(resolve, 30));
+    assert.equal(revoked, false, "吊销必须等待直签锁释放");
+    release();
+    await issueP;
+    await revokeP;
+    assert.equal(store.get(id).revoked, true, "吊销应完成");
+  });
+
+  it("直接签发与禁用/归档链共用CA锁", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Issue Archive Lock CA" });
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>(resolve => (release = resolve));
+    let started: () => void = () => undefined;
+    const startedP = new Promise<void>(resolve => (started = resolve));
+    (service as any).crlService.getCrlUrl = async () => {
+      started();
+      await gate;
+      return "http://crl.example.com/archive.crl";
+    };
+    const issueP = service.issueLeaf({ id, userId: 1, domains: ["archive-lock.example.com"], keyType: "rsa2048", validityDays: 30 });
+    await startedP;
+    // 归档要求先禁用并吊销；禁用使用同一把CA锁，必须等待直签完成
+    let disabled = false;
+    const disableP = service.setDisabled({ id, userId: 1, disabled: true }).then(() => {
+      disabled = true;
+    });
+    await new Promise(resolve => setTimeout(resolve, 30));
+    assert.equal(disabled, false, "禁用必须等待直签锁释放");
+    release();
+    await issueP;
+    await disableP;
+    store.get(id).revoked = true;
+    await service.archiveCa({ id, userId: 1 });
+    assert.equal(store.get(id).deleted, true, "禁用后归档应完成");
+  });
+
+  it("撤销Grant不影响独立EAB（EAB不再绑定授权）", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Grant Revoke EAB CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    const grant = await service.addGrant({ id, userId: 1, grantUserId: 5 });
+    const eab = await service.createAcmeEab({ caId: id, userId: 1, name: "independent eab", maxUses: 0 });
+    await service.removeGrant({ id, userId: 1, grantId: grant.id });
+    const stored: any = await (service.acmeEabRepository as any).findOne({ where: { id: eab.id } });
+    assert.equal(stored.disabled, false, "独立EAB不因撤销授权而被禁用");
+  });
+
+  it("getAcmeEabForAssign 拒绝停用/泄漏/过期/不存在的EAB", async () => {
+    const { service } = createService();
+    for (const override of [{ disabled: true }, { revoked: true }, { expiresTime: Date.now() - 1000 }]) {
+      service.acmeEabRepository = {
+        async findOne() {
+          return { id: "eab-x", caId: 1, ...override };
+        },
+      } as any;
+      await assert.rejects(() => service.getAcmeEabForAssign("eab-x"));
+    }
+    service.acmeEabRepository = {
+      async findOne() {
+        return null;
+      },
+    } as any;
+    await assert.rejects(() => service.getAcmeEabForAssign("eab-x"), /不存在/);
+  });
+
+  it("assertEabAssignCapacity 达到上限时拒绝", () => {
+    const { service } = createService();
+    assert.throws(() => service.assertEabAssignCapacity({ maxUses: 1, usedCount: 1 } as any), /最大注册账户数/);
+    assert.doesNotThrow(() => service.assertEabAssignCapacity({ maxUses: 0, usedCount: 99 } as any));
+  });
+
+  it("updateAcmeAccountOwner 设置用户/项目归属并校验EAB匹配", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Assign Owner CA" });
+    const updates: any[] = [];
+    (service as any).acmeAccountRepository = {
+      async findOne() {
+        return { id: "acc-1", eabId: "eab-1", caId: id, userId: 0, projectId: null };
+      },
+      async update(where: any, set: any) {
+        updates.push({ where, set });
+        return { affected: 1 };
+      },
+    };
+    await service.updateAcmeAccountOwner({ accountId: "acc-1", eabId: "eab-1", eabCaId: id, userId: 7 });
+    assert.equal(updates[0].set.userId, 7);
+    assert.equal(updates[0].set.projectId, null);
+
+    await service.updateAcmeAccountOwner({ accountId: "acc-1", eabId: "eab-1", eabCaId: id, userId: -1, projectId: 3 });
+    assert.equal(updates[1].set.userId, -1);
+    assert.equal(updates[1].set.projectId, 3);
+
+    await assert.rejects(() => service.updateAcmeAccountOwner({ accountId: "acc-1", eabId: "other", eabCaId: id, userId: 7 }), /EAB不匹配/);
+  });
+
+  it("rollbackAcmeAccountAssignment 停用账户并清空归属", async () => {
+    const { service } = createService();
+    let captured: any;
+    (service as any).acmeAccountRepository = {
+      async update(where: any, set: any) {
+        captured = set;
+        return { affected: 1 };
+      },
+    };
+    await service.rollbackAcmeAccountAssignment("acc-1");
+    assert.equal(captured.status, "deactivated");
+    assert.equal(captured.userId, 0);
+    assert.equal(captured.projectId, null);
+  });
+
+  it("撤销授权并选择禁用账户：停用目标账户并给ACME授权加已停用标记", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Revoke Disable CA" });
+    const grant = await service.addGrant({ id, userId: 1, grantUserId: 5 });
+    const accounts = [
+      { id: "acc-target", caId: id, userId: 5, projectId: null, status: "valid" },
+      { id: "acc-other", caId: id, userId: 6, projectId: null, status: "valid" },
+    ];
+    (service as any).acmeAccountRepository = {
+      async find() {
+        return accounts;
+      },
+      async findOne(args: any) {
+        return accounts.find(a => a.id === args.where.id) || null;
+      },
+      async update(where: any, set: any) {
+        const ids = where.id?._type === "in" ? where.id._value : [where.id];
+        for (const item of accounts) {
+          if (ids.includes(item.id)) {
+            Object.assign(item, set);
+          }
+        }
+        return { affected: ids.length };
+      },
+    };
+    const accesses = [
+      { id: 1, type: "acmeAccount", subtype: `local-ca-${id}`, userId: 5, projectId: 0, name: "acc-5" },
+      { id: 2, type: "acmeAccount", subtype: `local-ca-${id}`, userId: 6, projectId: 0, name: "acc-6" },
+    ];
+    (service as any).accessEntityRepository = {
+      async find() {
+        return accesses;
+      },
+      async update(where: any, set: any) {
+        const item = accesses.find(a => a.id === where.id);
+        if (item) {
+          Object.assign(item, set);
+        }
+        return { affected: item ? 1 : 0 };
+      },
+    };
+
+    const res = await service.removeGrant({ id, userId: 1, grantId: grant.id, disableAccounts: true });
+    assert.equal(res.disabledAccounts, 1);
+    assert.equal(res.markedAccess, 1);
+    assert.equal(accounts[0].status, "deactivated");
+    assert.equal(accounts[1].status, "valid");
+    assert.equal(accesses[0].name, "acc-5（已停用）");
+    assert.equal(accesses[1].name, "acc-6");
+  });
+
+  it("撤销授权不勾选禁用账户时账户与授权名称不变", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Revoke Keep CA" });
+    const grant = await service.addGrant({ id, userId: 1, grantUserId: 5 });
+    const accounts = [{ id: "acc-target", caId: id, userId: 5, projectId: null, status: "valid" }];
+    (service as any).acmeAccountRepository = {
+      async find() {
+        return accounts;
+      },
+      async update() {
+        return { affected: 0 };
+      },
+    };
+    const accesses = [{ id: 1, type: "acmeAccount", subtype: `local-ca-${id}`, userId: 5, projectId: 0, name: "acc-5" }];
+    (service as any).accessEntityRepository = {
+      async find() {
+        return accesses;
+      },
+      async update() {
+        return { affected: 0 };
+      },
+    };
+    const res = await service.removeGrant({ id, userId: 1, grantId: grant.id });
+    assert.equal(res.disabledAccounts, 0);
+    assert.equal(accounts[0].status, "valid");
+    assert.equal(accesses[0].name, "acc-5");
+  });
+
+  it("账户启用后同步移除授权名称的已停用标记", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Sync Marker CA" });
+    const accounts = [{ id: "acc-1", caId: id, userId: 5, projectId: null, status: "valid" }];
+    (service as any).acmeAccountRepository = {
+      async find() {
+        return accounts;
+      },
+      async findOne(args: any) {
+        return accounts.find(a => a.id === args.where.id) || null;
+      },
+      async update() {
+        return { affected: 0 };
+      },
+    };
+    const accesses = [{ id: 1, type: "acmeAccount", subtype: `local-ca-${id}`, userId: 5, projectId: 0, name: "acc-5（已停用）" }];
+    (service as any).accessEntityRepository = {
+      async find() {
+        return accesses;
+      },
+      async update(where: any, set: any) {
+        const item = accesses.find(a => a.id === where.id);
+        if (item) {
+          Object.assign(item, set);
+        }
+        return { affected: item ? 1 : 0 };
+      },
+    };
+    await service.syncAccessDisabledMarker({ caId: id, accountId: "acc-1" });
+    assert.equal(accesses[0].name, "acc-5");
+  });
+
+  it("撤销Grant对Grant行加锁（非SQLite），与创建EAB串行化", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Grant Lock CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    const grant = await service.addGrant({ id, userId: 1, grantUserId: 5 });
+    const lockCalls: any[] = [];
+    const origTx = (service.repository as any).manager.transaction;
+    (service.repository as any).manager.transaction = async (fn: any) => {
+      const tx = {
+        connection: { options: { type: "postgres" } },
+        getRepository: (entity: any) => {
+          const repo: any = entity?.name === "LocalCaGrantEntity" ? service.grantRepository : entity?.name === "AcmeEabEntity" ? service.acmeEabRepository : service.repository;
+          return {
+            findOne: async (opts: any) => {
+              if (opts?.lock) lockCalls.push(opts.lock);
+              return repo.findOne(opts);
+            },
+            find: async (opts: any) => {
+              if (opts?.lock) lockCalls.push(opts.lock);
+              return repo.find(opts);
+            },
+            update: (w: any, s: any) => repo.update(w, s),
+            delete: (w: any) => repo.delete(w),
+            save: (e: any) => repo.save(e),
+          };
+        },
+      };
+      return fn(tx);
+    };
+    try {
+      await service.removeGrant({ id, userId: 1, grantId: grant.id });
+    } finally {
+      (service.repository as any).manager.transaction = origTx;
+    }
+    assert.ok(
+      lockCalls.some(l => l.mode === "pessimistic_write"),
+      "撤销Grant须对Grant行加pessimistic_write锁"
+    );
+  });
+
+  it("根CA不能授权、不能签发叶子，也不能创建EAB", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({
+      userId: 1,
+      name: "Root Only CA",
+      subject: { CN: "Root Only CA" },
+      keyType: "rsa2048",
+      validityYears: 2,
+    });
+    await assert.rejects(() => service.addGrant({ id: root.id, userId: 1, grantUserId: 2 }), /中间CA/);
+    await assert.rejects(() => service.createAcmeEab({ caId: root.id, userId: 1, name: "root eab" }), /中间CA/);
+
+    const { csrPem } = await createCsr({ domains: ["root.example.com"], keyType: "rsa2048" });
+    await assert.rejects(() => service.signCsr({ id: root.id, userId: 1, csrPem }), /根CA不能直接签发/);
+  });
+
+  it("企业模式项目流水线(userId=-1)按项目授权使用中间CA", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Enterprise Grant CA" });
+    await service.addGrant({ id, userId: 1, grantUserId: 2, grantProjectId: 10 });
+
+    const options = await service.listOptions({ userId: -1, projectId: 10 });
+    assert.deepEqual(
+      options.map(item => item.id),
+      [id]
+    );
+    assert.equal((await service.listOptions({ userId: -1, projectId: 11 })).length, 0);
+
+    const { csrPem } = await createCsr({ domains: ["enterprise.example.com"], keyType: "rsa2048" });
+    await assert.rejects(() => service.signCsr({ id, userId: -1, projectId: 11, csrPem }), /无访问权限/);
+    const signed = await service.signCsr({ id, userId: -1, projectId: 10, csrPem });
+    assert.ok(signed.certPem.includes("BEGIN CERTIFICATE"));
+  });
+  it("轮换保留原CA有效期/ACME配置，旧CA自动禁用并指向新CA", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Rotate CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    const old: any = await service.infoSafe({ id, userId: 1 });
+    const res = await service.rotateIntermediateCa({ id, userId: 1 });
+    const updatedOld: any = await service.infoSafe({ id, userId: 1 });
+    const newCa: any = await service.infoSafe({ id: res.id, userId: 1 });
+    assert.equal(updatedOld.disabled, true);
+    assert.equal(updatedOld.rotatedToId, res.id);
+    assert.equal(newCa.acmeEnabled, true);
+    const oldYears = Math.round((Number(old.notAfter) - Number(old.notBefore)) / (365 * 86400000));
+    const newYears = Math.round((Number(newCa.notAfter) - Number(newCa.notBefore)) / (365 * 86400000));
+    assert.equal(newYears, oldYears);
+    const effective: any = await service.getAcmeCa(id);
+    assert.equal(effective.id, res.id);
+  });
+});
+
+describe("LocalCaService 轮换生命周期与权限级联回归", () => {
+  async function createIssuingCa(service: any, opts: { name: string }) {
+    const root = await service.generateCa({ userId: 1, name: `${opts.name} Root`, subject: { CN: `${opts.name} Root` }, keyType: "rsa2048", validityYears: 2 });
+    const intermediate = await service.generateIntermediateCa({ rootId: root.id, maxValidityDays: 365, userId: 1, name: opts.name, subject: { CN: opts.name }, keyType: "rsa2048", validityYears: 1 });
+    // 既有签发用例默认开启本地直签（新默认关闭，直签须显式开启）
+    await service.updateMeta({ id: intermediate.id, userId: 1, allowDirectSign: true });
+    return { rootId: root.id, id: intermediate.id };
+  }
+
+  it("轮换继承baseUrlLocked，避免新CA首签事务外更新锁行", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Lock Rotate CA" });
+    store.get(id).baseUrlLocked = true;
+    const res = await service.rotateIntermediateCa({ id, userId: 1 });
+    assert.equal(store.get(res.id).baseUrlLocked, true);
+  });
+
+  it("旧CA撤销用户授权级联删除新CA复制授权，旧ID入口拒绝", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Grant Cascade CA" });
+    const grant = await service.addGrant({ id, userId: 1, grantUserId: 2 });
+    const res = await service.rotateIntermediateCa({ id, userId: 1 });
+    await service.removeGrant({ id, userId: 1, grantId: grant.id });
+    await assert.rejects(() => service.accessService.getGrantedCa({ id: res.id, userId: 2 }), /无访问权限/);
+    await assert.rejects(() => service.accessService.getGrantedCa({ id, userId: 2 }), /无访问权限/);
+  });
+
+  it("旧CA移除操作员级联移除新CA复制操作员", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Admin Cascade CA" });
+    await service.addCaAdmin({ id, userId: 1, adminUserId: 3, role: "operator" });
+    const res = await service.rotateIntermediateCa({ id, userId: 1 });
+    await service.removeCaAdmin({ id, userId: 1, adminUserId: 3 });
+    const remaining = await service.adminRepository.find({ where: { caId: res.id, adminUserId: 3 } });
+    assert.equal(remaining.length, 0);
+  });
+
+  it("已轮换CA禁止新增授权/管理员，须在新CA管理", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Rotated Add CA" });
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    await assert.rejects(() => service.addGrant({ id, userId: 1, grantUserId: 2 }), /已轮换/);
+    await assert.rejects(() => service.addCaAdmin({ id, userId: 1, adminUserId: 3 }), /已轮换/);
+  });
+
+  it("已轮换CA归档不豁免未过期ACME证书检查", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Rotated Archive CA" });
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    const leaf = await makeLeafFullchain();
+    (service as any).acmeOrderRepository.find = async () => [{ id: "order-rot-1", caId: id, status: "valid", serialNumber: "AABBCC", expiresTime: Date.now() + 86400000, certPem: leaf.fullchainPem }];
+    await assert.rejects(() => service.archiveCa({ id, userId: 1 }), /未吊销且未过期/);
+  });
+
+  it("订单已过期但证书仍有效时仍阻止归档（用证书NotAfter而非订单TTL）", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Expired Order Valid Cert CA" });
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    const leaf = await makeLeafFullchain();
+    // 订单TTL已过期，但证书NotAfter仍在未来
+    (service as any).acmeOrderRepository.find = async () => [{ id: "order-exp-1", caId: id, status: "valid", serialNumber: "DDEEFF", expiresTime: Date.now() - 86400000, certPem: leaf.fullchainPem }];
+    await assert.rejects(() => service.archiveCa({ id, userId: 1 }), /未吊销且未过期/);
+  });
+
+  it("有效订单缺少certPem时保守阻止归档", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Missing CertPem CA" });
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    (service as any).acmeOrderRepository.find = async () => [{ id: "order-nopem", caId: id, status: "valid", serialNumber: "112233", expiresTime: Date.now() - 86400000, certPem: null }];
+    await assert.rejects(() => service.archiveCa({ id, userId: 1 }), /无法解析有效期/);
+  });
+
+  it("leafCertNotAfterFromChain取叶子证书NotAfter而非中间CA", async () => {
+    const leaf = await makeLeafFullchain();
+    const parsed = leafCertNotAfterFromChain(leaf.fullchainPem);
+    const leafCert = new X509Certificate(leaf.certPem);
+    assert.equal(parsed, new Date(leafCert.validTo).getTime());
+    assert.equal(leafCertNotAfterFromChain(null), null);
+    assert.equal(leafCertNotAfterFromChain("not-a-pem"), null);
+  });
+
+  it("归档的已轮换CA仍沿旧ID指向新CA（ACME连续性）", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Archived Follow CA" });
+    const res = await service.rotateIntermediateCa({ id, userId: 1 });
+    store.get(id).deleted = true;
+    const effective = await service.acmeService.getAcmeAccessView(id);
+    assert.equal(effective?.id, res.id);
+    const revocationCa = await service.acmeService.getCaForAcmeRevocation(id);
+    assert.equal(revocationCa.id, id);
+  });
+});
+
+describe("LocalCaService 直签开关/DNS继承/轮换防护回归", () => {
+  async function createIssuingCa2(service: any, name: string) {
+    const root = await service.generateCa({ userId: 1, name: `${name} Root`, subject: { CN: `${name} Root` }, keyType: "rsa2048", validityYears: 2 });
+    const intermediate = await service.generateIntermediateCa({ rootId: root.id, maxValidityDays: 365, userId: 1, name, subject: { CN: name }, keyType: "rsa2048", validityYears: 1 });
+    return { rootId: root.id, id: intermediate.id };
+  }
+
+  it("默认关闭本地直签：issueLeaf拒绝，开启后允许", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa2(service, "Direct Sign CA");
+    assert.ok(!store.get(id).allowDirectSign);
+    await assert.rejects(() => service.issueLeaf({ id, userId: 1, domains: ["x.example.com"], keyType: "rsa2048", validityDays: 30 }), /未开启本地直签/);
+    await service.updateMeta({ id, userId: 1, allowDirectSign: true });
+    assert.equal(store.get(id).allowDirectSign, true);
+  });
+
+  it("开启本地直签须step-up敏感判定", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa2(service, "Direct StepUp CA");
+    assert.equal(await service.requiresStepUpForUpdate({ id, userId: 1, allowDirectSign: true }), true);
+    assert.equal(await service.requiresStepUpForUpdate({ id, userId: 1, allowDirectSign: false }), false);
+  });
+
+  it("根CA配置DNS后中间CA强制继承且不可修改", async () => {
+    const { service, store } = createService();
+    const { rootId, id } = await createIssuingCa2(service, "DNS Inherit CA");
+    await service.updateMeta({ id: rootId, userId: 1, dnsServer: "10.0.0.53:5353" });
+    assert.equal(await service.resolveEffectiveDnsServer(store.get(id)), "10.0.0.53:5353");
+    await assert.rejects(() => service.updateMeta({ id, userId: 1, dnsServer: "10.0.0.99" }), /强制继承/);
+    // 根无DNS时中间可自设；根后加DNS覆盖但保留中间记录
+    const { rootId: r2, id: i2 } = await createIssuingCa2(service, "DNS Override CA");
+    await service.updateMeta({ id: i2, userId: 1, dnsServer: "10.0.0.77" });
+    assert.equal(await service.resolveEffectiveDnsServer(store.get(i2)), "10.0.0.77");
+    await service.updateMeta({ id: r2, userId: 1, dnsServer: "10.0.0.53" });
+    assert.equal(await service.resolveEffectiveDnsServer(store.get(i2)), "10.0.0.53");
+    assert.equal(store.get(i2).dnsServer, "10.0.0.77");
+  });
+
+  it("已轮换CA禁止再次轮换", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa2(service, "ReRotate CA");
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    await assert.rejects(() => service.rotateIntermediateCa({ id, userId: 1 }), /已轮换/);
+  });
+
+  it("已轮换CA只读，禁止编辑", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa2(service, "Readonly Rotated CA");
+    await service.rotateIntermediateCa({ id, userId: 1 });
+    await assert.rejects(() => service.updateMeta({ id, userId: 1, remark: "edit" }), /已轮换.*只读/);
+  });
+
+  it("末端归档触发绝迹链祖先级联归档", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa2(service, "Extinct Chain CA");
+    const r1 = await service.rotateIntermediateCa({ id, userId: 1 });
+    const r2 = await service.rotateIntermediateCa({ id: r1.id, userId: 1, name: "Extinct Chain CA G3" });
+    await service.setDisabled({ id: r2.id, userId: 1, disabled: true });
+    store.get(r2.id).revoked = true;
+    await service.archiveCa({ id: r2.id, userId: 1 });
+    assert.equal(store.get(r1.id).deleted, true);
+    assert.equal(store.get(id).deleted, true);
+  });
+
+  it("ACME访问控制保存后可完整回读客户端IP来源/请求头/可信代理CIDR", async () => {
+    const { service } = createService();
+    const root = await service.generateCa({ userId: 1, name: "ACME Access CA Root", subject: { CN: "ACME Access CA Root" }, keyType: "rsa2048", validityYears: 2 });
+    await service.updateMeta({ id: root.id, userId: 1, baseUrl: "https://ca.example.com" });
+    const intermediate = await service.generateIntermediateCa({ rootId: root.id, maxValidityDays: 365, userId: 1, name: "ACME Access CA", subject: { CN: "ACME Access CA" }, keyType: "rsa2048", validityYears: 1 });
+    const id = intermediate.id;
+    await service.setAcmeAccess({
+      id,
+      caId: id,
+      userId: 1,
+      ipAllowlist: ["10.0.0.0/8", "192.168.1.0/24"],
+      basicAuth: { enabled: true, username: "ops", password: "secret" },
+      requiredHeaders: [{ name: "X-Gateway", value: "ok" }],
+      clientIpSource: "header",
+      clientIpHeader: "cf-connecting-ip",
+      trustProxyCidrs: ["172.16.0.0/12"],
+    });
+    const view = await service.getAcmeAccess({ id, caId: id, userId: 1 });
+    assert.deepEqual(
+      {
+        ipAllowlist: view.ipAllowlist,
+        requiredHeaders: view.requiredHeaders,
+        clientIpSource: view.clientIpSource,
+        clientIpHeader: view.clientIpHeader,
+        trustProxyCidrs: view.trustProxyCidrs,
+        basicAuth: view.basicAuth,
+      },
+      {
+        ipAllowlist: ["10.0.0.0/8", "192.168.1.0/24"],
+        requiredHeaders: [{ name: "X-Gateway", value: "ok" }],
+        clientIpSource: "header",
+        clientIpHeader: "cf-connecting-ip",
+        trustProxyCidrs: ["172.16.0.0/12"],
+        basicAuth: { enabled: true, username: "ops" },
+      }
+    );
+    assert.equal("password" in view.basicAuth, false);
+  });
+});

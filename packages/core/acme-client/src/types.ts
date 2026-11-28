@@ -43,6 +43,21 @@ export interface ClientOptions {
     urlMapping?: UrlMapping;
     signal?: AbortSignal;
     logger?: any;
+    /**
+     * 是否要求Directory返回的资源URL与Directory同源。
+     *
+     * 默认 true（安全推荐）：跨源资源URL会被拒绝，防止恶意目录把携带账户密钥签名的请求引导到其他主机。
+     * 仅当第三方ACME确实使用跨源资源且已确认可信时，可显式设为 false。
+     * 携带内部凭证（extraHeaders，如 x-certd-acme-token）的请求仍受同源/映射边界约束。
+     */
+    strictResourceOrigin?: boolean;
+    /**
+     * 单次ACME请求允许的最大重定向次数。
+     *
+     * 默认 0（不跟随重定向），防止凭证经重定向泄漏。
+     * 依赖重定向的第三方ACME可显式调大；携带内部凭证的请求始终强制为0，不受此配置覆盖。
+     */
+    maxRedirects?: number;
 }
 
 export interface ClientAutoOptions {
@@ -59,6 +74,7 @@ export interface ClientAutoOptions {
     signal?: AbortSignal;
     profile?: string;
     waitDnsDiffuseTime?: number;
+    dnsServers?: string[];
 }
 
 export interface CertificateDomains {

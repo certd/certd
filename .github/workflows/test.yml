@@ -1,0 +1,43 @@
+name: test
+
+# PR #844 安全测试纳入CI：构建核心包后执行 ACME Client 与 certd-server 全部单测，
+# 失败即阻止合并。certd-server 统一通过 test:unit 覆盖 src/**/*.test.ts 与 test/**/*.test.ts，
+# 避免手工维护 glob 列表遗漏新增测试。
+on:
+  push:
+    branches: ['v2-dev']
+  pull_request:
+    branches: ['v2-dev']
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        run: npm install -g pnpm@10.33.4
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build workspace packages
+        run: npx lerna run build
+
+      - name: ACME Client unit tests
+        run: pnpm --filter @certd/acme-client run test:unit
+
+      - name: certd-server unit tests
+        working-directory: packages/ui/certd-server
+        run: npm run test:unit

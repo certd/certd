@@ -4,10 +4,12 @@
  */
 
 import dnsSdk from "dns"
+import net from 'net'
 import https from 'https'
 import { log as defaultLog } from './logger.js'
 import axios from './axios.js'
 import * as util from './util.js'
+import { isPublicUnicastIp } from './util.js'
 import { isAlpnCertificateAuthorizationValid } from './crypto/index.js'
 import { utils } from '@certd/basic'
 
@@ -26,6 +28,7 @@ export function createChallengeFn(opts = {}) {
     const log = function (...args) {
         logger.info(...args)
     }
+
     /**
  * Verify ACME HTTP challenge
  *
@@ -40,18 +43,16 @@ export function createChallengeFn(opts = {}) {
 
     async function verifyHttpChallenge(authz, challenge, keyAuthorization, suffix = `/.well-known/acme-challenge/${challenge.token}`) {
 
-        async function doQuery(challengeUrl) {
+        async function doQuery(challengeUrl, pinned) {
             log(`正在测试请求 ${challengeUrl} `)
-            // const httpsPort = axios.defaults.acmeSettings.httpsChallengePort || 443;
-            // const challengeUrl = `https://${authz.identifier.value}:${httpsPort}${suffix}`;
-
             /* May redirect to HTTPS with invalid/self-signed cert - https://letsencrypt.org/docs/challenge-types/#http-01-challenge */
             const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
             log(`Sending HTTP query to ${authz.identifier.value}, suffix: ${suffix}, port: ${httpPort}`);
             let data = ""
             try {
-                const resp = await axios.get(challengeUrl, { httpsAgent });
+                // 固定到已校验的公网IP，防止DNS重绑定；拒绝私网/保留地址目标
+                const resp = await axios.get(challengeUrl, { httpsAgent, lookup: pinned });
                 data = (resp.data || '').replace(/\s+$/, '');
             } catch (e) {
                 log(`[error] HTTP request error from ${authz.identifier.value}`, e.message);
@@ -71,12 +72,13 @@ export function createChallengeFn(opts = {}) {
         if (utils.domain.isIpv6(host)) {
             host = `[${host}]`;
         }
+        const pinned = await resolvePublicPinnedLookup(authz.identifier.value, log);
         const challengeUrl = `http://${host}:${httpPort}${suffix}`;
 
-        if (!await doQuery(challengeUrl)) {
+        if (!await doQuery(challengeUrl, pinned)) {
             const httpsPort = axios.defaults.acmeSettings.httpsChallengePort || 443;
             const httpsChallengeUrl = `https://${host}:${httpsPort}${suffix}`;
-            const res = await doQuery(httpsChallengeUrl)
+            const res = await doQuery(httpsChallengeUrl, pinned)
             if (!res) {
                 throw new Error(`[error] 验证失败，请检查以上测试url是否可以正常访问`);
             }
@@ -140,8 +142,9 @@ export function createChallengeFn(opts = {}) {
         const txtRecords = []
         try {
             /* Default DNS resolver first */
+            const localResolver = opts.dnsServers?.length ? ((await util.createCustomResolver(opts.dnsServers, log)) || dns) : dns;
             log('从本地DNS服务器获取TXT解析记录');
-            const res = await walkDnsChallengeRecord(recordName, dns, deep);
+            const res = await walkDnsChallengeRecord(recordName, localResolver, deep);
             if (res && res.length > 0) {
                 for (const item of res) {
                     txtRecords.push(item)
@@ -156,7 +159,7 @@ export function createChallengeFn(opts = {}) {
             try {
                 /* Authoritative DNS resolver */
                 log(`从域名权威服务器获取TXT解析记录`);
-                const authoritativeResolver = await util.getAuthoritativeDnsResolver(recordName, log);
+                const authoritativeResolver = await util.getAuthoritativeDnsResolver(recordName, log, opts.dnsServers);
                 const res = await walkDnsChallengeRecord(recordName, authoritativeResolver, deep);
                 if (res && res.length > 0) {
                     for (const item of res) {
@@ -266,3 +269,22 @@ export function createChallengeFn(opts = {}) {
 
 
 // createChallengeFn({logger:{info:console.log}}).walkDnsChallengeRecord("handfree.work")
+
+
+/** 解析目标全部地址并校验公网性，返回固定到首个合格地址的lookup（防DNS重绑定）。 */
+export async function resolvePublicPinnedLookup(hostname, logger = defaultLog) {
+    const addresses = await dns.lookup(hostname, { all: true, verbatim: true });
+    if (!addresses.length) {
+        throw new Error(`[error] 域名解析失败：${hostname}`);
+    }
+    for (const item of addresses) {
+        if (!isPublicUnicastIp(item.address)) {
+            throw new Error(`[error] 挑战目标指向非公网地址，已拒绝预检：${hostname} -> ${item.address}`);
+        }
+    }
+    const first = addresses[0];
+    return (hostname2, options, callback) => {
+        const family = first.family;
+        callback(null, first.address, family);
+    };
+}

@@ -9,6 +9,8 @@ import dayjs from "dayjs";
 import { ApiTags } from "@midwayjs/swagger";
 import { CertReader } from "@certd/plugin-lib";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { getX509Summary } from "../../../modules/local-ca/service/local-ca-crypto.js";
+import { LocalCaService } from "../../../modules/local-ca/service/local-ca-service.js";
 
 /**
  */
@@ -22,6 +24,9 @@ export class CertInfoController extends CrudController<CertInfoService> {
   authService: AuthService;
   @Inject()
   pipelineService: PipelineService;
+
+  @Inject()
+  localCaService: LocalCaService;
 
   @Inject()
   sysSettingService: SysSettingsService;
@@ -120,6 +125,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
   @Post("/add", { description: Constants.per.authOnly, summary: "添加证书" })
   async add(@Body(ALL) bean: any) {
     const { projectId, userId } = await this.getProjectUserIdWrite();
+    this.stripServerManagedFields(bean);
     bean.projectId = projectId;
     bean.userId = userId;
     const res = await super.add(bean);
@@ -130,11 +136,22 @@ export class CertInfoController extends CrudController<CertInfoService> {
   @Post("/update", { description: Constants.per.authOnly, summary: "更新证书" })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service, bean.id, "write");
+    this.stripServerManagedFields(bean);
     delete bean.userId;
     delete bean.projectId;
     const res = await super.update(bean);
     this.auditLog({ content: `修改了证书(ID:${bean.id})` });
     return res;
+  }
+
+  /**
+   * 证书与本地CA的关联、序列号、吊销状态只能由签发/吊销流程写入。
+   * 手动新增/编辑接口若允许这些字段直传，用户可伪造本地CA关联或把已吊销证书改回有效状态。
+   */
+  private stripServerManagedFields(bean: any) {
+    for (const field of ["localCaId", "serialNumber", "status", "revokeTime", "acmeAccountAccessId"]) {
+      delete bean[field];
+    }
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询证书详情" })
   async info(@Query("id") id: number) {
@@ -175,9 +192,22 @@ export class CertInfoController extends CrudController<CertInfoService> {
     await this.checkOwner(this.getService(), id, "read");
     const certInfoEntity = await this.service.info(id);
     const certInfo = JSON.parse(certInfoEntity.certInfo);
+    certInfo.localCaId = certInfoEntity.localCaId;
+    certInfo.serialNumber = certInfoEntity.serialNumber;
+    certInfo.status = certInfoEntity.status;
+    certInfo.revokeTime = certInfoEntity.revokeTime;
     if (certInfo?.crt) {
       const certReader = new CertReader(certInfo);
       certInfo.detail = certReader.detail;
+      // ACME CSR可以不包含CN，查看页用第一个SAN作为主域名展示
+      if (certInfo.detail?.domains && !certInfo.detail.domains.commonName) {
+        certInfo.detail.domains.commonName = certInfo.detail.domains.altNames?.[0] || "";
+      }
+      if (certInfoEntity.localCaId) {
+        certInfo.x509 = getX509Summary(certInfo.crt);
+        const baseUrl = await this.localCaService.getCaBaseUrl(certInfoEntity.localCaId);
+        certInfo.crlUrl = `${baseUrl}/api/sys/local-ca/crl?id=${certInfoEntity.localCaId}`;
+      }
     }
     return this.ok(certInfo);
   }

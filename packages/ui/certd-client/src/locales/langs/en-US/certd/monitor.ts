@@ -53,6 +53,7 @@ export default {
   uploadCustomCert: "Upload Custom Certificate",
   sourcePipeline: "Cert Apply Pipeline",
   sourceManualUpload: "Hosted Pipeline",
+  sourceAcme: "ACME Service",
   domains: "Domains",
   enterDomain: "Please enter domain",
   revoke: {

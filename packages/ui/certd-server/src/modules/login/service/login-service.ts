@@ -216,6 +216,59 @@ export class LoginService {
     return this.generateToken(user);
   }
 
+  private getTwoFactorLoginUserId(loginId: string): number {
+    if (!loginId) {
+      throw new AuthException("登录会话已失效，请返回重新登录");
+    }
+    const userId = cache.get(`login_2fa_code:${loginId}`);
+    if (!userId) {
+      throw new AuthException("已超时，请返回重新登录");
+    }
+    return Number(userId);
+  }
+
+  private async assertPasskeyLoginEnabled() {
+    const settings = await this.sysSettingsService.getPublicSettings();
+    if (settings.passkeyEnabled !== true) {
+      throw new CommonException("当前站点未启用Passkey");
+    }
+  }
+
+  /** 两步验证阶段：生成绑定当前登录用户的Passkey验证选项。 */
+  async generateTwoFactorPasskeyOptions(loginId: string, ctx: any) {
+    if (!isPlus()) {
+      throw new CommonException("本功能需要开通Certd专业版");
+    }
+    await this.assertPasskeyLoginEnabled();
+    const userId = this.getTwoFactorLoginUserId(loginId);
+    return await this.passkeyService.generateAuthenticationOptions(ctx, {
+      userId,
+      purpose: "login2fa",
+      userVerification: "required",
+    });
+  }
+
+  /** 两步验证阶段：使用绑定该登录用户的Passkey完成登录。 */
+  async loginByTwoFactorPasskey(req: { loginId: string; credential: any; challenge: string }, ctx: any) {
+    if (!isPlus()) {
+      throw new CommonException("本功能需要开通Certd专业版");
+    }
+    await this.assertPasskeyLoginEnabled();
+    const userId = this.getTwoFactorLoginUserId(req.loginId);
+    await this.passkeyService.verifyAuthenticationResponse(req.credential, req.challenge, ctx, {
+      expectedUserId: userId,
+      purpose: "login2fa",
+      requireUserVerification: true,
+    });
+    // Passkey已验证，消费登录2FA会话，避免验证码重复使用
+    cache.delete(`login_2fa_code:${req.loginId}`);
+    const user = await this.userService.info(userId);
+    if (!user) {
+      throw new AuthException("用户不存在");
+    }
+    return this.generateToken(user);
+  }
+
   private async onLoginSuccess(info: UserEntity) {
     if (info.status === 0) {
       throw new CommonException("用户已被禁用");

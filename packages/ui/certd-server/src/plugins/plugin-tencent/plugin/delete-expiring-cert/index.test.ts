@@ -144,7 +144,7 @@ async function runPipelineFixture() {
     pluginConfigService: { getPluginConfig: async () => ({ sysSetting: { input: {} } }) } as any,
     urlService: { getPipelineDetailUrl: async () => "https://example.invalid/pipeline/1" } as any,
     user: { id: 1, role: "user" },
-    serviceGetter: {} as any,
+    serviceGetter: { get: async () => undefined } as any,
     fileRootDir: tmpdir(),
   });
   const result = await executor.run(1, "manual");

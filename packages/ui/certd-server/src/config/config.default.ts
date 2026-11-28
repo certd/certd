@@ -35,6 +35,15 @@ const development = {
     port: 7001,
     // 信任反向代理传递的 X-Forwarded-For，确保 ctx.ip 获取客户端 IP
     proxy: true,
+    // ACME门禁的可信代理网段：仅当TCP来源属于这些网段时才解析X-Forwarded-For（自右向左跳过可信跳），
+    // 防止客户端伪造XFF绕过IP边界；默认信任本机反代，跨机反代需显式配置其网段
+    trustProxyCidrs: ["127.0.0.0/8", "::1/128"],
+  },
+  bodyParser: {
+    enableTypes: ["json", "form"],
+    extendTypes: {
+      json: ["application/jose+json"],
+    },
   },
   https: {
     enabled: true,

@@ -141,6 +141,22 @@ export async function loginByPasskey(form: { credential: any; challenge: string 
   });
 }
 
+export async function generateTwoFactorPasskeyAuthentication(form: { loginId: string }) {
+  return await request({
+    url: "/twoFactor/passkey/generateAuthentication",
+    method: "post",
+    data: form,
+  });
+}
+
+export async function loginByTwoFactorPasskey(form: { loginId: string; credential: any; challenge: string }) {
+  return await request({
+    url: "/loginByPasskeyTwoFactor",
+    method: "post",
+    data: form,
+  });
+}
+
 export async function registerPasskey(form: { response: any; challenge: string }) {
   return await request({
     url: "/passkey/register",

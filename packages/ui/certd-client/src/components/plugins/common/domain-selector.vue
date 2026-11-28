@@ -61,6 +61,9 @@
     <div class="helper" :class="{ error: hasError }">
       {{ message }}
     </div>
+    <div v-if="invalidDomains.length" class="helper error">
+      {{ t("certd.common.pluginCommon.domainNotAllowed", { domains: invalidDomains.join(", ") }) }}
+    </div>
     <a-modal v-model:open="editOpen" title="编辑域名" :width="420" @ok="saveEdit">
       <a-input v-model:value="editValue" placeholder="请输入域名" @press-enter="saveEdit" />
     </a-modal>
@@ -101,6 +104,7 @@ const props = defineProps<{
   pager?: boolean;
   value?: any[];
   open?: boolean;
+  caId?: number;
 }>();
 
 const emit = defineEmits<{
@@ -131,6 +135,8 @@ let blurTimer: ReturnType<typeof setTimeout> | null = null;
 const message = ref("");
 const hasError = ref(false);
 const loading = ref(false);
+const allowedDomains = ref<string[]>([]);
+const validationTick = ref(0);
 const pagerRef: Ref = ref({
   pageNo: 1,
   total: 0,
@@ -219,6 +225,69 @@ function normalizeDomains(list: any[]) {
   }
   return result;
 }
+
+function isAllowedDomain(domain: string) {
+  if (!allowedDomains.value || allowedDomains.value.length === 0) {
+    return true;
+  }
+  const value = String(domain || "")
+    .trim()
+    .toLowerCase();
+  const host = value.startsWith("*.") ? value.slice(2) : value;
+  const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(host) || host.includes(":");
+  return allowedDomains.value.some(item => {
+    const prefix = String(item || "")
+      .trim()
+      .toLowerCase()
+      .replace(/^\*\./, "");
+    if (!prefix) {
+      return true;
+    }
+    return isIp ? host === prefix : host === prefix || host.endsWith(`.${prefix}`);
+  });
+}
+
+const invalidDomains = computed(() => {
+  const tick = validationTick.value;
+  return normalizeDomains(props.value || []).filter(domain => tick >= 0 && !isAllowedDomain(domain));
+});
+
+async function loadAllowedDomains(caId?: number) {
+  validationTick.value++;
+  if (!caId) {
+    allowedDomains.value = [];
+    return;
+  }
+  try {
+    const info: any = await request({
+      url: "/sys/local-ca/info",
+      method: "post",
+      params: { id: caId },
+    });
+    let list: string[] = [];
+    try {
+      const parsed = info?.allowedDomains ? JSON.parse(info.allowedDomains) : [];
+      list = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      list = [];
+    }
+    allowedDomains.value = list;
+  } catch (e) {
+    allowedDomains.value = [];
+  } finally {
+    validationTick.value++;
+    // 强制重建，让已渲染的标签按最新允许域名范围重新着色
+    selectKey.value++;
+  }
+}
+
+watch(
+  () => props.caId,
+  async caId => {
+    await loadAllowedDomains(caId);
+  },
+  { immediate: true }
+);
 
 function isChanged(list: string[], normalized: string[]) {
   return normalized.length !== list.length || normalized.some((item, index) => item !== list[index]);
@@ -376,7 +445,7 @@ function tagRender(tag: { value: string; label: string; closable: boolean; onClo
       closable={tag.closable}
       onClose={tag.onClose}
       type="primary"
-      color="green"
+      color={isAllowedDomain(value) ? "green" : "red"}
       title="点击编辑"
       class="domain-select-tag"
       onClick={async (event: MouseEvent) => {
@@ -404,6 +473,11 @@ async function copySelectedDomains(event: MouseEvent) {
 
 <style lang="less">
 .domain-select {
+  .domain-select-input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+  }
   .domain-select-tag {
     font-size: 14px;
     height: 24px;

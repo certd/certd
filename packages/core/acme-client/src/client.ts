@@ -39,6 +39,9 @@ const defaultOpts = {
     backoffAttempts: 10,
     backoffMin: 5000,
     backoffMax: 30000,
+    // 公共ACME Client默认保持严格出站策略；仅第三方ACME确有跨源/重定向需求时显式放宽
+    strictResourceOrigin: true,
+    maxRedirects: undefined,
 };
 
 /**
@@ -106,7 +109,7 @@ class AcmeClient {
 
         const cacheNonce = true
         // const cacheNonce = this.sslProvider === 'litessl';
-        this.http = new HttpClient(this.opts.directoryUrl, this.opts.accountKey, this.opts.externalAccountBinding, this.opts.urlMapping, opts.logger, cacheNonce);
+        this.http = new HttpClient(this.opts.directoryUrl, this.opts.accountKey, this.opts.externalAccountBinding, this.opts.urlMapping, opts.logger, cacheNonce, this.opts.extraHeaders, { strictResourceOrigin: this.opts.strictResourceOrigin, maxRedirects: this.opts.maxRedirects });
         this.api = new AcmeApi(this.http, this.opts.accountUrl);
         this.logger = opts.logger;
     }
@@ -270,6 +273,8 @@ class AcmeClient {
             this.opts.urlMapping,
             this.logger,
             true,
+            this.opts.extraHeaders,
+            { strictResourceOrigin: this.opts.strictResourceOrigin, maxRedirects: this.opts.maxRedirects },
         );
         const newApiClient = new AcmeApi(newHttpClient, accountUrl);
 
@@ -508,7 +513,7 @@ class AcmeClient {
             throw new Error('Unable to verify ACME challenge, URL not found');
         }
 
-        const {challenges} = createChallengeFn({logger:this.logger,walkFromAuthoritative: this.opts.walkFromAuthoritative});
+        const {challenges} = createChallengeFn({logger:this.logger,walkFromAuthoritative: this.opts.walkFromAuthoritative,dnsServers:this.opts.dnsServers});
  
         const verify = challenges
         if (typeof verify[challenge.type] === 'undefined') {

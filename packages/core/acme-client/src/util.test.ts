@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { formatResponseError, parseRetryAfterHeader, retry } from "./util.js";
+import { formatResponseError, parseRetryAfterHeader, retry, isPublicUnicastIp } from "./util.js";
 
 declare const describe: any;
 declare const it: any;
@@ -54,5 +54,25 @@ describe("util helpers", () => {
         } finally {
             (globalThis as any).setTimeout = originalSetTimeout;
         }
+    });
+});
+
+describe("isPublicUnicastIp", () => {
+    it("拒绝IPv4私网/特殊地址，放行公网", () => {
+        for (const ip of ["127.0.0.1", "10.0.0.1", "172.16.0.1", "192.168.1.1", "169.254.1.1", "100.64.0.1", "0.0.0.0", "224.0.0.1"]) {
+            assert.equal(isPublicUnicastIp(ip), false, ip);
+        }
+        assert.equal(isPublicUnicastIp("8.8.8.8"), true);
+    });
+    it("拒绝IPv6特殊用途范围，放行公网", () => {
+        for (const ip of [
+            "::1", "::", "fc00::1", "fd12::1", "fe80::1", "fec0::1", "ff02::1",
+            "2001::1", "2001:db8::1", "2001:0db8::1", "2002::1", "3fff::1",
+            "64:ff9b::c0a8:0101", "64:ff9b::808:808", "::ffff:10.0.0.1", "::ffff:0a00:0001", "::10.0.0.1",
+        ]) {
+            assert.equal(isPublicUnicastIp(ip), false, ip);
+        }
+        assert.equal(isPublicUnicastIp("2606:4700::1111"), true);
+        assert.equal(isPublicUnicastIp("2001:4860:4860::8888"), true);
     });
 });

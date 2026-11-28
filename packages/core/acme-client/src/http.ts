@@ -20,7 +20,7 @@ import { getJwk } from './crypto/index.js';
  */
 
 class HttpClient {
-    constructor(directoryUrl, accountKey, externalAccountBinding = {}, urlMapping = {}, logger, cacheNonce= false) {
+    constructor(directoryUrl, accountKey, externalAccountBinding = {}, urlMapping = {}, logger, cacheNonce= false, extraHeaders = {}, options = {}) {
         this.directoryUrl = directoryUrl;
         this.accountKey = accountKey;
         this.externalAccountBinding = externalAccountBinding;
@@ -35,6 +35,11 @@ class HttpClient {
         this.log = logger ? logger.info.bind(logger) : log;
         this.nonces = [];
         this.cacheNonce = cacheNonce;
+        // 每个请求附加的自定义头（如本地ACME内部凭证），调用方头优先
+        this.extraHeaders = extraHeaders || {};
+        // 公共ACME Client兼容性开关：默认严格（同源+不跟随重定向），第三方ACME可按需显式放宽
+        this.strictResourceOrigin = options.strictResourceOrigin !== false;
+        this.maxRedirects = options.maxRedirects;
     }
 
     pushNonce(nonce) {
@@ -73,16 +78,10 @@ class HttpClient {
 
     async request(url, method, opts = {}) {
         // 仅替换实际传输地址；signedRequest 已在映射前用 ACME 原始 URL 生成 JWS，协议要求两者保持一致。
-        if (this.urlMapping && this.urlMapping.enabled && this.urlMapping.mappings) {
-            // eslint-disable-next-line no-restricted-syntax
-            for (const key in this.urlMapping.mappings) {
-                const value = this.urlMapping.mappings[key];
-                if (url.includes(key)) {
-                    const newUrl = url.replace(key, value);
-                    this.log(`use reverse proxy: ${newUrl}`);
-                    url = newUrl;
-                }
-            }
+        const mappedUrl = this.mapUrl(url);
+        if (mappedUrl != null) {
+            this.log(`use reverse proxy: ${mappedUrl}`);
+            url = mappedUrl;
         }
         opts.url = url;
         opts.method = method;
@@ -92,8 +91,19 @@ class HttpClient {
         if (typeof opts.headers === 'undefined') {
             opts.headers = {};
         }
+        // 内部凭证头仅发往与目录同源的可信目标：经代理映射转发的跨源请求不附加，未匹配映射的跨源目标也不附加
+        opts.headers = { ...(this.isSameOriginAsDirectory(url) ? this.extraHeaders : {}), ...opts.headers };
 
         opts.headers['Content-Type'] = 'application/jose+json';
+
+        /* 重定向策略：默认0（不跟随），可由 acmeSettings.maxRedirects 覆盖以兼容依赖跳转的第三方ACME */
+        if (opts.maxRedirects == null) {
+            opts.maxRedirects = this.maxRedirects ?? axios.defaults.acmeSettings?.maxRedirects ?? 0;
+        }
+        // 携带内部凭证头（如x-certd-acme-token）的请求禁止跟随重定向，防止凭证经跨源重定向泄漏到非授权目标
+        if (Object.keys(this.extraHeaders || {}).length > 0 && this.isSameOriginAsDirectory(url)) {
+            opts.maxRedirects = 0;
+        }
 
         /* Request */
         this.log(`HTTP request: ${method} ${url}`);
@@ -199,7 +209,85 @@ class HttpClient {
             throw new Error(`Unable to locate API resource URL in ACME directory: "${resource}"，获取ACME接口地址信息失败，可能网络不稳定或该证书颁发机构服务器崩溃，目录地址：${this.directoryUrl}，请测试地址是否可以正常访问并显示json格式的URL地址列表`);
         }
 
-        return dir[resource];
+        const resourceUrl = dir[resource];
+        this.assertResourceSameOrigin(resource, resourceUrl);
+        return resourceUrl;
+    }
+
+    /**
+     * 出站策略：目录返回的资源URL须与管理员配置的目录地址同源，
+     * 防止被篡改/恶意的目录把携带账户密钥签名的请求引导至其它主机（凭证外泄/SSRF）。
+     * 仅当资源URL确实匹配可信反向代理映射规则时才允许跨源；未匹配映射仍执行同源检查，
+     * 避免“开启映射即整体放行”把内部凭证头发往非预期主机。
+     */
+    assertResourceSameOrigin(resource, resourceUrl) {
+        if (this.strictResourceOrigin === false) {
+            return;
+        }
+        if (this.matchesMapping(resourceUrl)) {
+            return;
+        }
+        if (!this.isSameOriginAsDirectory(resourceUrl)) {
+            throw new Error(`ACME目录资源「${resource}」与目录地址不同源，已拒绝出站：${resourceUrl}`);
+        }
+    }
+
+    /**
+     * 严格URL映射：用标准URL解析器比较origin（协议+主机+端口），路径按边界前缀匹配，
+     * 不以字符串包含关系判断（避免可信关键字出现在恶意URL的query/path中误命中）。
+     * 命中返回映射后的URL，未命中返回null。映射后目标由调用方重新校验。
+     */
+    mapUrl(url) {
+        if (!(this.urlMapping && this.urlMapping.enabled && this.urlMapping.mappings)) {
+            return null;
+        }
+        let target;
+        try {
+            target = new URL(url);
+        } catch {
+            return null;
+        }
+        // eslint-disable-next-line no-restricted-syntax
+        for (const key in this.urlMapping.mappings) {
+            const value = this.urlMapping.mappings[key];
+            let keyUrl;
+            let valueUrl;
+            try {
+                keyUrl = new URL(key);
+                valueUrl = new URL(value);
+            } catch {
+                continue;
+            }
+            if (target.origin !== keyUrl.origin) {
+                continue;
+            }
+            const keyPath = keyUrl.pathname;
+            if (keyPath !== "/" && target.pathname !== keyPath && !target.pathname.startsWith(keyPath + "/")) {
+                continue;
+            }
+            const mapped = new URL(target.toString());
+            mapped.protocol = valueUrl.protocol;
+            mapped.host = valueUrl.host;
+            if (keyPath !== "/") {
+                mapped.pathname = valueUrl.pathname.replace(/\/+$/, "") + target.pathname.slice(keyPath.length);
+            }
+            return mapped.toString();
+        }
+        return null;
+    }
+
+    /** 资源URL是否命中可信反向代理映射规则（严格origin+路径边界）。 */
+    matchesMapping(url) {
+        return this.mapUrl(url) != null;
+    }
+
+    /** 目标URL是否与目录地址同源（非法URL视为不同源）。 */
+    isSameOriginAsDirectory(url) {
+        try {
+            return new URL(url).origin === new URL(this.directoryUrl).origin;
+        } catch {
+            return false;
+        }
     }
 
     /**

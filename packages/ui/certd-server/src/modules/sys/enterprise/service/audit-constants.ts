@@ -11,6 +11,7 @@ export const AuditType = {
   project: { value: "project", label: "项目管理", color: "gold" },
   settings: { value: "settings", label: "系统设置", color: "magenta" },
   domain: { value: "domain", label: "域名管理", color: "blue" },
+  localCa: { value: "localCa", label: "本地CA", color: "volcano" },
   dnsPersist: { value: "dnsPersist", label: "持久验证记录", color: "purple" },
   certTemplate: { value: "certTemplate", label: "证书参数模版", color: "orange" },
   pipelineGroup: { value: "pipelineGroup", label: "流水线分组", color: "cyan" },

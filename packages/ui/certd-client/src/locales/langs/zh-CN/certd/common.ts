@@ -201,6 +201,7 @@ export default {
     domainSearchPlaceholder: "这里可以搜索域名（数据来自“设置->域名管理”），您也可以直接在上面输入框输入",
     importDomain: "导入域名",
     manageDomain: "管理域名",
+    domainNotAllowed: "以下域名不在所选CA允许范围内，签发时会跳过：{domains}",
     refreshMyDomains: "刷新我的域名列表",
     upload: "上传",
     uploadCert: "上传证书",

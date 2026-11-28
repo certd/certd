@@ -8,6 +8,7 @@ import DomainSelector from "./common/domain-selector.vue";
 import OutputSelector from "/@/components/plugins/common/output-selector/index.vue";
 import DnsProviderSelector from "/@/components/plugins/cert/dns-provider-selector/index.vue";
 import DomainsVerifyPlanEditor from "/@/components/plugins/cert/domains-verify-plan-editor/index.vue";
+import LocalCaSelector from "/@/components/plugins/cert/local-ca-selector/index.vue";
 import AccessSelector from "/@/views/certd/access/access-selector/index.vue";
 import InputPassword from "./common/input-password.vue";
 import CertInfoUpdater from "/@/views/certd/pipeline/cert-upload/index.vue";
@@ -21,6 +22,7 @@ export default {
     app.component("OutputSelector", OutputSelector);
     app.component("DnsProviderSelector", DnsProviderSelector);
     app.component("DomainsVerifyPlanEditor", DomainsVerifyPlanEditor);
+    app.component("LocalCaSelector", LocalCaSelector);
     app.component("AccessSelector", AccessSelector);
     app.component("CertInfoUpdater", CertInfoUpdater);
 

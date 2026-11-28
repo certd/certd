@@ -59,6 +59,7 @@ export class UserController extends CrudController<UserService> {
         nickName: true,
         mobile: true,
         phoneCode: true,
+        email: true,
       },
     });
     return this.ok(users);

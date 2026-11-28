@@ -1,6 +1,6 @@
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { http, logger, utils } from "@certd/basic";
-import { TaskServiceBuilder } from "./getter/task-service-getter.js";
+import { TaskServiceBuilder, restrictServiceGetter } from "./getter/task-service-getter.js";
 import { AddonService, newAddon, PermissionException, ValidateException } from "@certd/lib-server";
 
 /**
@@ -23,7 +23,7 @@ export class AddonGetterService {
       http,
       logger,
       utils,
-      serviceGetter,
+      serviceGetter: restrictServiceGetter(serviceGetter),
     };
 
     if (!id) {

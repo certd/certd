@@ -4,7 +4,7 @@ import { AccessRequestHandleReq, IAccessService, ITaskPlugin, newAccess, newNoti
 import { EmailService } from "../../../modules/basic/service/email-service.js";
 import { http, HttpRequestConfig, logger, mergeUtils, utils } from "@certd/basic";
 import { NotificationService } from "../../../modules/pipeline/service/notification-service.js";
-import { TaskServiceBuilder } from "../../../modules/pipeline/service/getter/task-service-getter.js";
+import { TaskServiceBuilder, restrictServiceGetter } from "../../../modules/pipeline/service/getter/task-service-getter.js";
 import { cloneDeep } from "lodash-es";
 import { ApiTags } from "@midwayjs/swagger";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
@@ -61,13 +61,20 @@ export class HandleController extends BaseController {
     }
     const getAccessById = this.accessService.getById.bind(this.accessService);
     const accessGetter = new AccessGetter(userId, projectId, getAccessById);
-    const serviceGetter = this.taskServiceBuilder.create({ userId, projectId });
+    // 内置acmeAccount授权生成local-ca账号时需读取CA内部凭证，仅授予只读能力
+    const isBuiltinAcmeAccount = body.typeName === "acmeAccount";
+    const serviceGetter = this.taskServiceBuilder.create({
+      userId,
+      projectId,
+      pluginType: isBuiltinAcmeAccount ? body.typeName : undefined,
+      
+    });
     const accessContext = {
       http,
       logger,
       utils,
       accessService: accessGetter,
-      serviceGetter,
+      serviceGetter: restrictServiceGetter(serviceGetter),
       define: undefined,
     } as any;
     const access = await newAccess(body.typeName, inputAccess, accessGetter, accessContext);
@@ -89,7 +96,7 @@ export class HandleController extends BaseController {
       logger,
       utils,
       emailService: this.emailService,
-      serviceGetter,
+      serviceGetter: restrictServiceGetter(serviceGetter),
     } as any);
 
     const res = await notification.onRequest(body);
@@ -120,7 +127,11 @@ export class HandleController extends BaseController {
       });
     };
 
-    const taskServiceGetter = this.taskServiceBuilder.create({ userId, projectId });
+    const taskServiceGetter = this.taskServiceBuilder.create({
+      userId,
+      projectId,
+      pluginType: body.typeName,
+    });
 
     const accessGetter = await taskServiceGetter.get<IAccessService>("accessService");
     //@ts-ignore
@@ -150,7 +161,7 @@ export class HandleController extends BaseController {
       // }),
       // signal: this.abort.signal,
       utils,
-      serviceGetter: taskServiceGetter,
+      serviceGetter: restrictServiceGetter(taskServiceGetter),
     } as any;
     await instance.setCtx(taskCtx);
     mergeUtils.merge(plugin, body.input);

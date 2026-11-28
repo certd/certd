@@ -32,6 +32,7 @@ export class UserTwoFactorSettingController extends BaseController {
   private issueSecretAccessToken(userId: number) {
     const token = utils.id.simpleNanoId(32);
     cache.set(`secret_access_2fa:${token}`, userId, { ttl: 10 * 60 * 1000 });
+    cache.set(`secret_access_2fa_ts:${token}`, Date.now(), { ttl: 10 * 60 * 1000 });
     return token;
   }
 
