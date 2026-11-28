@@ -165,6 +165,7 @@ CREATE TABLE `cd_acme_eab`
   `expires_time`       bigint,
   `disabled`           boolean      NOT NULL DEFAULT 0,
   `privileged`         boolean      NOT NULL DEFAULT 0,
+  `mode`               varchar(20)  NOT NULL DEFAULT 'standard',
   `revoked`            boolean      NOT NULL DEFAULT 0,
   `remark`             varchar(255),
   `create_time`        timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,

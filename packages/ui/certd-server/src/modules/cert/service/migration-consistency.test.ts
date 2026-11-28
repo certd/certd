@@ -123,6 +123,7 @@ describe("local CA migration consistency", () => {
       assert.ok(ca?.has("allow_direct_sign"), `${dialect} cd_local_ca 缺少 allow_direct_sign`);
       assert.ok(!ca?.has("acme_direct_issue"), `${dialect} cd_local_ca 仍包含已删除的 acme_direct_issue`);
       assert.ok(eab?.has("privileged"), `${dialect} cd_acme_eab 缺少 privileged`);
+      assert.ok(eab?.has("mode"), `${dialect} cd_acme_eab 缺少 mode`);
       assert.ok(eab?.has("revoked"), `${dialect} cd_acme_eab 缺少 revoked`);
     }
   });
