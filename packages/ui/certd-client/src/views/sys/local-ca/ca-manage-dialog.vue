@@ -15,7 +15,7 @@
         </div>
       </div>
       <a-tabs v-model:active-key="activeTab" class="ca-manage-dialog__tabs">
-        <a-tab-pane key="permissions" :tab="t('certd.localCa.permissions')">
+        <a-tab-pane v-if="currentCa?.caType === 'intermediate'" key="permissions" :tab="t('certd.localCa.permissions')">
           <LocalCaAccess v-if="caId" :key="'perm-' + caId" :ca-id="caId" :ca-type="currentCa?.caType" :run-step-up="openStepUp" />
         </a-tab-pane>
         <a-tab-pane key="acme" :tab="t('certd.localCa.tabAcmeService')">
@@ -76,6 +76,13 @@ watch(
 function onCaChange(ca: any) {
   currentCa.value = ca;
 }
+
+// 根CA没有权限管理页签，深链或切换后回退到ACME提示页
+watch(currentCa, ca => {
+  if (ca?.caType === "root" && activeTab.value === "permissions") {
+    activeTab.value = "acme";
+  }
+});
 </script>
 
 <style lang="less">
