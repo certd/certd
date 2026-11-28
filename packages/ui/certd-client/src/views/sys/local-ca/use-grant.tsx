@@ -125,6 +125,7 @@ export function useLocalCaGrantDialogs() {
           form: {
             show: compute(({ form }) => form.mode !== "project"),
             col: { span: 24 },
+            component: { showSearch: true, optionFilterProp: "label" },
           },
         },
         projectId: {
@@ -134,6 +135,7 @@ export function useLocalCaGrantDialogs() {
           form: {
             show: compute(({ form }) => form.mode === "project"),
             col: { span: 24 },
+            component: { showSearch: true, optionFilterProp: "label" },
           },
         },
       },
