@@ -334,12 +334,18 @@ export class LocalCaController extends CrudController<LocalCaService> {
     });
     let grantChange: GrantEnsureResult | null = null;
     if (existing) {
-      if (ensureGrant) {
-        grantChange = await this.ensureAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
-      } else {
-        await this.assertActiveAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
-      }
+      // 先查询本地Access（可能失败），再做授权变更，避免查询异常时遗留授权
       const accessId = await this.findAssignedAccessId(scopeUserId, scopeProjectId, existing.id);
+      try {
+        if (ensureGrant) {
+          grantChange = await this.ensureAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
+        } else {
+          await this.assertActiveAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
+        }
+      } catch (e: any) {
+        await this.rollbackAssignGrant(eab.caId, adminUserId, grantChange);
+        throw e;
+      }
       this.auditLog({ content: `重复分配ACME账户（EAB:${eab.kid}，账户:${existing.id}，目标:${targetLabel}），未重复注册` });
       return this.ok({ accountId: existing.id, accessId, caId: eab.caId, kid: eab.kid, eabName: eab.name, targetLabel, userId: scopeUserId, projectId: scopeProjectId, alreadyAssigned: true, grantAdded: grantChange?.changed === true });
     }
