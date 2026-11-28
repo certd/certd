@@ -26,7 +26,8 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
   }
 
   private lastActiveAt(passkey: any): number {
-    return Number(passkey.lastUsedAt || passkey.registeredAt || (passkey.createTime ? new Date(passkey.createTime).getTime() : 0)) || 0;
+    const updateTime = passkey.updateTime ? new Date(passkey.updateTime).getTime() : 0;
+    return Number(passkey.lastUsedAt || updateTime || passkey.registeredAt || (passkey.createTime ? new Date(passkey.createTime).getTime() : 0)) || 0;
   }
 
   private isUnusedTooLong(passkey: any): boolean {
