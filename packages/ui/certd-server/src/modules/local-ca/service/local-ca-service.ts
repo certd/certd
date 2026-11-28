@@ -197,6 +197,8 @@ function normalizeDnsServerInput(value: any): string | null {
 // 撤销CA授权并停用账户时，追加到 ACME 授权名称后的标记（用户可在“我的授权”中自行删除该授权）
 const ACCESS_DISABLED_SUFFIX = "（已停用）";
 
+class CaLockTargetChangedError extends Error {}
+
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class LocalCaService extends BaseService<LocalCaEntity> {
@@ -965,57 +967,70 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async issueLeaf(req: LocalCaIssueReq, manager?: EntityManager) {
-    const initial = await this.followRotation(await this.accessService.getGrantedCa(req), req, manager);
-    // 直接签发与CA策略更新共用同一把 per-CA 锁，锁内重新读取CA并校验全部签发策略，避免旧策略签发
-    return await localCaMutex.runExclusive(caConfigKey(initial.id), async () => {
-      const granted = await this.followRotation(await this.accessService.getGrantedCa(req), req, manager);
-      const repository = manager ? manager.getRepository(LocalCaEntity) : this.repository;
-      const ca = await repository.findOne({ where: { id: granted.id, deleted: false } });
-      if (!ca) {
-        throw new ValidateException("本地CA不存在或无访问权限");
+    // 轮换可能发生在“解析CA”和“取得锁”之间：锁内发现有效CA已变化时，释放旧锁并按新CA重新加锁校验
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const initial = await this.followRotation(await this.accessService.getGrantedCa(req), req, manager);
+      try {
+        return await localCaMutex.runExclusive(caConfigKey(initial.id), async () => {
+          const granted = await this.followRotation(await this.accessService.getGrantedCa(req), req, manager);
+          if (Number(granted.id) !== Number(initial.id)) {
+            throw new CaLockTargetChangedError();
+          }
+          const repository = manager ? manager.getRepository(LocalCaEntity) : this.repository;
+          const ca = await repository.findOne({ where: { id: granted.id, deleted: false } });
+          if (!ca) {
+            throw new ValidateException("本地CA不存在或无访问权限");
+          }
+          if (ca.caType !== "intermediate") {
+            throw new ValidateException("根CA不能直接签发叶子证书，请选择中间CA");
+          }
+          if (ca.rotatedToId) {
+            throw new ValidateException("该CA已轮换，旧一代CA只读，请使用最新一代CA签发");
+          }
+          if (ca.revoked) {
+            throw new ValidateException("该本地CA已被父CA吊销，不能签发");
+          }
+          if (ca.disabled) {
+            throw new ValidateException("该本地CA已禁用");
+          }
+          if (!ca.allowDirectSign) {
+            throw new ValidateException("该CA未开启本地直签，请改用本地ACME签发，或联系管理员开启本地直签");
+          }
+          await this.crlService.assertCaNotRevokedByParent(ca);
+          const maxValidityDays = await this.resolveEffectiveMaxValidityDays(ca);
+          if (maxValidityDays <= 0) {
+            throw new ValidateException("中间CA必须设置有限的最大签发天数");
+          }
+          const allowedDomains = parseAllowedDomains(ca.allowedDomains);
+          const privateKeyPem = this.decryptCaPrivateKey(ca);
+          const result = await issueLeafCertificate({
+            caCertPem: ca.certPem,
+            caPrivateKeyPem: privateKeyPem,
+            domains: req.domains,
+            keyType: req.keyType || (ca.keyType as LocalCaKeyType),
+            validityDays: req.validityDays,
+            maxValidityDays,
+            allowedDomains,
+            usage: (req.usage || ca.usage) as LocalCaUsage,
+            crlDistributionPoint: await this.crlService.getCrlUrl(ca),
+            notBefore: req.notBefore,
+            notAfter: req.notAfter,
+          });
+          await this.assertCaStillUsable(ca.id, manager);
+          if (!ca.baseUrlLocked) {
+            await this.markBaseUrlLocked(ca.id, manager);
+          }
+          logger.info(`[local-ca] leaf issued ca=${ca.id} serial=${result.serialNumber} domains=${req.domains.length} user=${req.userId} project=${req.projectId ?? "-"}`);
+          return result;
+        });
+      } catch (e: any) {
+        if (e instanceof CaLockTargetChangedError) {
+          continue;
+        }
+        throw e;
       }
-      if (ca.caType !== "intermediate") {
-        throw new ValidateException("根CA不能直接签发叶子证书，请选择中间CA");
-      }
-      if (ca.rotatedToId) {
-        throw new ValidateException("该CA已轮换，旧一代CA只读，请使用最新一代CA签发");
-      }
-      if (ca.revoked) {
-        throw new ValidateException("该本地CA已被父CA吊销，不能签发");
-      }
-      if (ca.disabled) {
-        throw new ValidateException("该本地CA已禁用");
-      }
-      if (!ca.allowDirectSign) {
-        throw new ValidateException("该CA未开启本地直签，请改用本地ACME签发，或联系管理员开启本地直签");
-      }
-      await this.crlService.assertCaNotRevokedByParent(ca);
-      const maxValidityDays = await this.resolveEffectiveMaxValidityDays(ca);
-      if (maxValidityDays <= 0) {
-        throw new ValidateException("中间CA必须设置有限的最大签发天数");
-      }
-      const allowedDomains = parseAllowedDomains(ca.allowedDomains);
-      const privateKeyPem = this.decryptCaPrivateKey(ca);
-      const result = await issueLeafCertificate({
-        caCertPem: ca.certPem,
-        caPrivateKeyPem: privateKeyPem,
-        domains: req.domains,
-        keyType: req.keyType || (ca.keyType as LocalCaKeyType),
-        validityDays: req.validityDays,
-        maxValidityDays,
-        allowedDomains,
-        usage: (req.usage || ca.usage) as LocalCaUsage,
-        crlDistributionPoint: await this.crlService.getCrlUrl(ca),
-        notBefore: req.notBefore,
-        notAfter: req.notAfter,
-      });
-      await this.assertCaStillUsable(ca.id, manager);
-      if (!ca.baseUrlLocked) {
-        await this.markBaseUrlLocked(ca.id, manager);
-      }
-      logger.info(`[local-ca] leaf issued ca=${ca.id} serial=${result.serialNumber} domains=${req.domains.length} user=${req.userId} project=${req.projectId ?? "-"}`);
-      return result;
-    });
+    }
+    throw new ValidateException("CA轮换状态频繁变化，请稍后重试");
   }
 
   /**

@@ -1709,6 +1709,26 @@ describe("LocalCaService", () => {
     assert.equal(store.get(id).remark, "after-issue");
   });
 
+  it("取锁前发生轮换时释放旧锁并按新CA策略重试", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Retry Lock CA" });
+    const originalGet = service.accessService.getGrantedCa.bind(service.accessService);
+    let first = true;
+    service.accessService.getGrantedCa = async (scope: any) => {
+      const res = await originalGet(scope);
+      if (first) {
+        first = false;
+        // 模拟竞态：返回轮换前的陈旧CA快照，随后完成轮换并收紧新CA域名范围
+        const stale = { ...res };
+        const rotated = await service.rotateIntermediateCa({ id, userId: 1 });
+        await service.updateMeta({ id: rotated.id, userId: 1, allowedDomains: ["allowed.example.com"] });
+        return stale;
+      }
+      return res;
+    };
+    await assert.rejects(() => service.issueLeaf({ id, userId: 1, domains: ["other.example.com"], keyType: "rsa2048", validityDays: 30 }), /允许签发|不在.*范围/);
+  });
+
   it("直接签发与中间CA轮换共用旧CA锁", async () => {
     const { service, store } = createService();
     const { id } = await createIssuingCa(service, { name: "Issue Rotate Lock CA" });
