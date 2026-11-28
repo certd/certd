@@ -720,24 +720,34 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
       throw new ValidateException("数据库事务不可用，无法安全轮换");
     }
     let newId = 0;
-    await runTransaction(manager, async tx => {
-      const repository = tx.getRepository(LocalCaEntity);
-      const driverType = String(tx.connection?.options?.type || "");
-      const useLock = !driverType.includes("sqlite");
-      const lockedOld = await repository.findOne({
-        where: { id: old.id },
-        ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+    // 与直接签发共用旧CA的per-CA锁；数据库事务/行锁仍保留，负责数据库层面的并发一致性
+    await localCaMutex.runExclusive(caConfigKey(old.id), async () => {
+      const fresh = await this.repository.findOne({ where: { id: old.id } });
+      if (!fresh || fresh.rotatedToId) {
+        throw new ValidateException("该中间CA已轮换，仅允许最新一代CA执行轮换");
+      }
+      if (fresh.revoked) {
+        throw new ValidateException("该中间CA已吊销，不能轮换");
+      }
+      await runTransaction(manager, async tx => {
+        const repository = tx.getRepository(LocalCaEntity);
+        const driverType = String(tx.connection?.options?.type || "");
+        const useLock = !driverType.includes("sqlite");
+        const lockedOld = await repository.findOne({
+          where: { id: old.id },
+          ...(useLock ? { lock: { mode: "pessimistic_write" as const } } : {}),
+        });
+        if (!lockedOld || lockedOld.rotatedToId) {
+          throw new ValidateException("该中间CA已轮换，仅允许最新一代CA执行轮换");
+        }
+        const res = await repository.save(bean);
+        newId = res.id;
+        await this.accessService.copyAdminsAndGrants(old.id, res.id, req.userId, tx);
+        const updated = await repository.update({ id: old.id, rotatedToId: IsNull() }, { disabled: true, rotatedToId: res.id, remark: `已轮换到新CA(ID:${res.id})，ACME自动指向新CA`, updateTime: new Date() });
+        if (!updated.affected) {
+          throw new ValidateException("该中间CA已轮换，仅允许最新一代CA执行轮换");
+        }
       });
-      if (!lockedOld || lockedOld.rotatedToId) {
-        throw new ValidateException("该中间CA已轮换，仅允许最新一代CA执行轮换");
-      }
-      const res = await repository.save(bean);
-      newId = res.id;
-      await this.accessService.copyAdminsAndGrants(old.id, res.id, req.userId, tx);
-      const updated = await repository.update({ id: old.id, rotatedToId: IsNull() }, { disabled: true, rotatedToId: res.id, remark: `已轮换到新CA(ID:${res.id})，ACME自动指向新CA`, updateTime: new Date() });
-      if (!updated.affected) {
-        throw new ValidateException("该中间CA已轮换，仅允许最新一代CA执行轮换");
-      }
     });
     await this.crlService.markBaseUrlLocked(root.id);
     await this.providerSync.onRotated(old.id, newId).catch(e => logger.error(`[local-ca] provider rotate sync failed ${old.id}->${newId}: ${e?.message || e}`));
@@ -1879,6 +1889,10 @@ export class LocalCaService extends BaseService<LocalCaEntity> {
   }
 
   async archiveCa(req: LocalCaScope & { force?: boolean }) {
+    return await localCaMutex.runExclusive(caConfigKey(req.id), () => this.archiveCaUnlocked(req));
+  }
+
+  private async archiveCaUnlocked(req: LocalCaScope & { force?: boolean }) {
     const ca = await this.accessService.getOwnedCa(req, true);
     const pipelines = await this.pipelineRepository.find({
       where: {

@@ -59,7 +59,9 @@ describe("ACME CSR reuse integration", () => {
     await assertCsrUsesKey(result.csr, result.key.toString());
   });
 
-  it("算法不匹配时不复用旧私钥", async () => {
+  it("算法不匹配时不复用旧私钥", async function (this: any) {
+    // RSA 4096 在低配 CI 上生成可能超过默认 2s
+    this.timeout(20000);
     const oldKey = rsaKey(2048);
     assert.equal(isPrivateKeyCompatible(oldKey, "rsa_4096"), false);
     const result = await createOrderCsr({ domains: ["rotate.example.com"], privateKeyType: "rsa_4096" });

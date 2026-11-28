@@ -354,35 +354,35 @@ export class LocalCaController extends CrudController<LocalCaService> {
     } else {
       await this.assertActiveAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
     }
-    const secret = await this.service.getAcmeEabSecret(eab.caId, eab.kid);
-    if (!secret) {
-      throw new ValidateException("EAB凭证密钥校验失败");
-    }
-
-    let accountJson: string;
+    let accountJson: string | undefined;
+    let accountId: string | undefined;
+    let saved: any;
+    // 从Grant变更开始到账户归属/访问保存统一补偿边界：任一异常都撤销本次Grant变更
     try {
+      const secret = await this.service.getAcmeEabSecret(eab.caId, eab.kid);
+      if (!secret) {
+        throw new ValidateException("EAB凭证密钥校验失败");
+      }
       const input = { caType: sslProvider, email, eabKid: secret.kid, eabHmacKey: secret.hmacKey };
       const accessGetter = new AccessGetter(scopeUserId, scopeProjectId, this.accessService.getById.bind(this.accessService));
       const serviceGetter = this.taskServiceBuilder.create({ userId: scopeUserId, projectId: scopeProjectId, pluginType: "acmeAccount", capabilities: ["localCaGetter"] });
       const accessContext = { http, logger, utils, accessService: accessGetter, serviceGetter, define: undefined } as any;
       const access = await newAccess("acmeAccount", input, accessGetter, accessContext);
       accountJson = await access.onRequest({ typeName: "acmeAccount", action: "onGenerateAccount", input, record: { id: 0, type: "acmeAccount", title: "" }, data: {} });
-    } catch (e: any) {
-      await this.rollbackAssignGrant(eab.caId, adminUserId, grantChange);
-      throw new ValidateException(`使用EAB注册ACME账户失败：${e?.message || e}`);
-    }
-
-    const accountId = this.parseAssignedAccountId(accountJson);
-    let saved: any;
-    try {
+      accountId = this.parseAssignedAccountId(accountJson);
       await this.service.updateAcmeAccountOwner({ accountId, eabId: eab.id, eabCaId: eab.caId, userId: scopeUserId, projectId: scopeProjectId });
       const setting = { caType: sslProvider, email, eabKid: secret.kid, account: accountJson };
       const name = String(body.name || `${eab.name}-${email}`).slice(0, 100);
       saved = await this.accessService.add({ type: "acmeAccount", name, setting: JSON.stringify(setting), userId: scopeUserId, projectId: scopeProjectId });
     } catch (e: any) {
-      await this.service.rollbackAcmeAccountAssignment(accountId).catch(() => undefined);
+      if (accountId) {
+        await this.service.rollbackAcmeAccountAssignment(accountId).catch(() => undefined);
+      }
       await this.rollbackAssignGrant(eab.caId, adminUserId, grantChange);
-      throw e;
+      if (/^使用EAB注册ACME账户失败/.test(String(e?.message || ""))) {
+        throw e;
+      }
+      throw new ValidateException(`使用EAB注册ACME账户失败：${e?.message || e}`);
     }
     this.auditLog({ content: `使用EAB「${eab.name}」(KID:${eab.kid})注册ACME账户(${accountId})并分配给${targetLabel}${grantChange?.changed ? "，已补充CA使用权" : ""}` });
     return this.ok({ accountId, accessId: saved.id, caId: eab.caId, kid: eab.kid, eabName: eab.name, targetLabel, userId: scopeUserId, projectId: scopeProjectId, alreadyAssigned: false, grantAdded: grantChange?.changed === true });

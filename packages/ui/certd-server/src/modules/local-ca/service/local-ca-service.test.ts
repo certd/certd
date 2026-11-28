@@ -1709,6 +1709,61 @@ describe("LocalCaService", () => {
     assert.equal(store.get(id).remark, "after-issue");
   });
 
+  it("直接签发与中间CA轮换共用旧CA锁", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Issue Rotate Lock CA" });
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>(resolve => (release = resolve));
+    let started: () => void = () => undefined;
+    const startedP = new Promise<void>(resolve => (started = resolve));
+    (service as any).crlService.getCrlUrl = async () => {
+      started();
+      await gate;
+      return "http://crl.example.com/rotate.crl";
+    };
+    const issueP = service.issueLeaf({ id, userId: 1, domains: ["rotate-lock.example.com"], keyType: "rsa2048", validityDays: 30 });
+    await startedP;
+    let rotated = false;
+    const rotateP = service.rotateIntermediateCa({ id, userId: 1 }).then(() => {
+      rotated = true;
+    });
+    await new Promise(resolve => setTimeout(resolve, 30));
+    assert.equal(rotated, false, "轮换必须等待直签锁释放");
+    release();
+    await issueP;
+    await rotateP;
+    assert.ok(store.get(id).rotatedToId, "轮换应完成并指向新CA");
+  });
+
+  it("直接签发与禁用/归档链共用CA锁", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Issue Archive Lock CA" });
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>(resolve => (release = resolve));
+    let started: () => void = () => undefined;
+    const startedP = new Promise<void>(resolve => (started = resolve));
+    (service as any).crlService.getCrlUrl = async () => {
+      started();
+      await gate;
+      return "http://crl.example.com/archive.crl";
+    };
+    const issueP = service.issueLeaf({ id, userId: 1, domains: ["archive-lock.example.com"], keyType: "rsa2048", validityDays: 30 });
+    await startedP;
+    // 归档要求先禁用并吊销；禁用使用同一把CA锁，必须等待直签完成
+    let disabled = false;
+    const disableP = service.setDisabled({ id, userId: 1, disabled: true }).then(() => {
+      disabled = true;
+    });
+    await new Promise(resolve => setTimeout(resolve, 30));
+    assert.equal(disabled, false, "禁用必须等待直签锁释放");
+    release();
+    await issueP;
+    await disableP;
+    store.get(id).revoked = true;
+    await service.archiveCa({ id, userId: 1 });
+    assert.equal(store.get(id).deleted, true, "禁用后归档应完成");
+  });
+
   it("撤销Grant不影响独立EAB（EAB不再绑定授权）", async () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "Grant Revoke EAB CA" });
