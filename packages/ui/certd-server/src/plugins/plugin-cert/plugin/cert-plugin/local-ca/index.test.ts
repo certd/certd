@@ -232,6 +232,16 @@ describe("CertApplyLocalCa", () => {
     assert.deepEqual(options, [{ value: "local-ca-1", label: "北京分公司中间CA G2 【local-ca-1】【中间CA】" }]);
   });
 
+  it("本地ACME表单加载选项时未选CA不阻断onInit", async () => {
+    const leaf = await createLeaf();
+    const { plugin } = createPlugin(leaf, { inputChanged: true } as any);
+    plugin.mode = "local-acme";
+    plugin.caId = undefined as any;
+    plugin.sslProvider = undefined as any;
+    setProviderService(plugin, []);
+    await plugin.onInit();
+  });
+
   it("即使旧证书未到期，直接签发模式也会先拒绝已禁用的CA", async () => {
     const leaf = await createLeaf();
     const old = new CertReader({ crt: leaf.crt, key: leaf.key });

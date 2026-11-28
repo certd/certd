@@ -81,6 +81,10 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     let newSetting: T = new type();
     const savedSettings = await this.getSettingByKey(key);
     newSetting = merge(newSetting, savedSettings);
+    if (type === SysPrivateSettings) {
+      // 内置颁发机构不允许删除；历史清库/旧版保存丢失时自动补回
+      (newSetting as any).customAcmeProviders = SysPrivateSettings.ensureBuiltInAcmeProviders((newSetting as any).customAcmeProviders);
+    }
     await this.saveSetting(newSetting);
     cache.set(cacheKey, newSetting);
     return newSetting;
@@ -90,6 +94,9 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     const type: any = bean.constructor;
     const key = type.__key__;
     const cacheKey = type.getCacheKey();
+    if (type === SysPrivateSettings) {
+      (bean as any).customAcmeProviders = SysPrivateSettings.ensureBuiltInAcmeProviders((bean as any).customAcmeProviders);
+    }
 
     const entity = await this.getByKey(key);
     if (entity) {
