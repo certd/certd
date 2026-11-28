@@ -206,8 +206,12 @@ export class LocalCaAccessService {
     return await this.grantRepository.save(bean);
   }
 
-  async removeGrant(req: { id: number; userId: number; grantId: number }) {
-    const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
+  /** 分配账户失败补偿：把本次恢复启用的授权重新置为禁用（不删除原授权记录）。 */
+  async setGrantDisabled(req: { caId: number; grantId: number; disabled: boolean }) {
+    await this.grantRepository.update({ id: req.grantId, caId: req.caId }, { disabled: req.disabled, updateTime: new Date() });
+  }
+
+  async removeGrant(req: { id: number; userId: number; grantId: number }) {    const ca = await this.getOwnedCa({ id: req.id, userId: req.userId }, true);
     const grant = await this.grantRepository.findOne({ where: { id: req.grantId, caId: ca.id } });
     if (!grant) {
       throw new ValidateException("授权不存在");

@@ -1617,6 +1617,98 @@ describe("LocalCaService", () => {
     assert.equal(Number(stored.userId || 0), 0);
   });
 
+  it("创建EAB保存用途模式，local模式不返回HMAC Key", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "EAB Mode CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true });
+    const local = await service.createAcmeEab({ caId: id, userId: 1, name: "local eab", mode: "local" });
+    assert.equal(local.mode, "local");
+    assert.equal(local.hmacKey, undefined);
+    const storedLocal: any = await (service.acmeEabRepository as any).findOne({ where: { id: local.id } });
+    assert.equal(storedLocal.mode, "local");
+    const standard = await service.createAcmeEab({ caId: id, userId: 1, name: "standard eab", mode: "standard" });
+    assert.equal(standard.mode, "standard");
+    assert.ok(standard.hmacKey);
+  });
+
+  it("内部Token轮换只返回成功状态，不向HTTP调用方返回Token", async () => {
+    const { service } = createService();
+    const { id } = await createIssuingCa(service, { name: "Rotate Token CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true, mode: "local" });
+    const result = await service.rotateInternalToken({ id, caId: id, userId: 1 });
+    assert.deepEqual(result, { success: true });
+    assert.equal("internalToken" in result, false);
+  });
+
+  it("访问控制更新与内部Token轮换并发交错不丢配置", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Concurrent Acme Config CA" });
+    await service.setAcmeEnabled({ id, userId: 1, enabled: true, mode: "local" });
+    const oldToken = JSON.parse(store.get(id).acmeConfig).internalToken;
+    await Promise.all([
+      service.setAcmeAccess({ id, caId: id, userId: 1, ipAllowlist: ["10.9.0.0/16"], requiredHeaders: [{ name: "x-gw", value: "ok" }], clientIpSource: "socket" }),
+      service.rotateInternalToken({ id, caId: id, userId: 1 }),
+    ]);
+    const config = JSON.parse(store.get(id).acmeConfig);
+    assert.notEqual(config.internalToken, oldToken, "Token轮换结果不得被旧配置覆盖");
+    assert.deepEqual(config.ipAllowlist, ["10.9.0.0/16"]);
+    assert.deepEqual(config.requiredHeaders, [{ name: "x-gw", value: "ok" }]);
+    assert.equal(config.clientIpSource, "socket");
+  });
+
+  it("ACME启停与元数据编辑并发交错不丢字段", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Concurrent Meta Acme CA" });
+    await Promise.all([
+      service.updateMeta({ id, userId: 1, remark: "meta-changed" }),
+      service.setAcmeEnabled({ id, userId: 1, enabled: true, mode: "local", validityDays: 90 }),
+    ]);
+    const config = JSON.parse(store.get(id).acmeConfig);
+    assert.equal(store.get(id).remark, "meta-changed");
+    assert.equal(store.get(id).acmeEnabled, true);
+    assert.equal(config.acmeMode, "local");
+    assert.equal(config.validityDays, 90);
+  });
+
+  it("updateMeta只更新明确字段，不覆盖并发写入的acmeConfig", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Meta Partial CA" });
+    const acmeConfig = JSON.stringify({ acmeMode: "standard", ipAllowlist: ["10.0.0.0/8"] });
+    store.get(id).acmeConfig = acmeConfig;
+    store.get(id).acmeEnabled = true;
+    await service.updateMeta({ id, userId: 1, remark: "changed" });
+    assert.equal(store.get(id).remark, "changed");
+    assert.equal(store.get(id).acmeConfig, acmeConfig);
+    assert.equal(store.get(id).acmeEnabled, true);
+  });
+
+  it("直接签发持有CA配置锁，策略更新不会在签发过程中交错", async () => {
+    const { service, store } = createService();
+    const { id } = await createIssuingCa(service, { name: "Issue Lock CA" });
+    await service.updateMeta({ id, userId: 1, allowDirectSign: true });
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>(resolve => (release = resolve));
+    let started: () => void = () => undefined;
+    const startedP = new Promise<void>(resolve => (started = resolve));
+    (service as any).crlService.getCrlUrl = async () => {
+      started();
+      await gate;
+      return "http://crl.example.com/test.crl";
+    };
+    const issueP = service.issueLeaf({ id, userId: 1, domains: ["lock.example.com"], keyType: "rsa2048", validityDays: 30 });
+    await startedP;
+    let updated = false;
+    const updateP = service.updateMeta({ id, userId: 1, remark: "after-issue" }).then(() => {
+      updated = true;
+    });
+    await new Promise(resolve => setTimeout(resolve, 30));
+    assert.equal(updated, false, "策略更新必须等待签发锁释放");
+    release();
+    await issueP;
+    await updateP;
+    assert.equal(store.get(id).remark, "after-issue");
+  });
+
   it("撤销Grant不影响独立EAB（EAB不再绑定授权）", async () => {
     const { service } = createService();
     const { id } = await createIssuingCa(service, { name: "Grant Revoke EAB CA" });

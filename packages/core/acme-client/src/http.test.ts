@@ -13,6 +13,13 @@ describe("acme-client directory egress policy", () => {
     assert.doesNotThrow(() => client.assertResourceSameOrigin("newNonce", "https://ca.example.com/api/acme/1/new-nonce"));
   });
 
+  it("第三方ACME可显式放宽跨源资源检查，默认仍严格", () => {
+    const strict = new HttpClient("https://ca.example.com/directory", "key", {}, {}, { info() {}, warn() {}, error() {}, debug() {} });
+    assert.throws(() => strict.assertResourceSameOrigin("newAccount", "https://cdn.example.net/new-account"), /不同源/);
+    const compatible = new HttpClient("https://ca.example.com/directory", "key", {}, {}, { info() {}, warn() {}, error() {}, debug() {} }, false, {}, { strictResourceOrigin: false });
+    assert.doesNotThrow(() => compatible.assertResourceSameOrigin("newAccount", "https://cdn.example.net/new-account"));
+  });
+
   it("跨源资源URL拒绝（防止凭证外泄/SSRF）", () => {
     const client = makeClient("https://ca.example.com/api/acme/1/directory");
     assert.throws(() => client.assertResourceSameOrigin("newAccount", "https://evil.example.com/new-account"), /不同源/);
@@ -81,7 +88,7 @@ describe("acme-client URL Mapping 严格同源", () => {
 });
 
 describe("acme-client 内部凭证重定向保护", () => {
-  async function loadClient(extraHeaders: any) {
+  async function loadClient(extraHeaders: any, options: any = {}) {
     const captured: any[] = [];
     const fakeAxios = {
       defaults: { acmeSettings: { maxRedirects: 5 } },
@@ -91,7 +98,7 @@ describe("acme-client 内部凭证重定向保护", () => {
       },
     };
     const { default: HttpClientMocked } = await esmock("./http.js", { "./axios.js": { default: fakeAxios } });
-    const client = new HttpClientMocked("https://ca.example.com/api/acme/1/directory", "key", {}, {}, { info() {}, warn() {}, error() {}, debug() {} }, false, extraHeaders);
+    const client = new HttpClientMocked("https://ca.example.com/api/acme/1/directory", "key", {}, {}, { info() {}, warn() {}, error() {}, debug() {} }, false, extraHeaders, options);
     return { client, captured };
   }
 
@@ -101,6 +108,13 @@ describe("acme-client 内部凭证重定向保护", () => {
     await client.request("https://ca.example.com/api/acme/1/new-nonce", "get");
     assert.equal(captured[0].maxRedirects, 0);
     assert.equal(captured[0].headers["x-certd-acme-token"], "tok");
+  });
+
+  it("第三方ACME可按客户端覆盖重定向配置", async function (this: any) {
+    this.timeout(20000);
+    const { client, captured } = await loadClient({}, { maxRedirects: 2 });
+    await client.request("https://ca.example.com/api/acme/1/new-nonce", "get");
+    assert.equal(captured[0].maxRedirects, 2);
   });
 
   it("跨源请求不附加内部凭证且保留重定向配置", async function (this: any) {

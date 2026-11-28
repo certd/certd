@@ -154,21 +154,21 @@ export class LocalCaAcmeService {
   }
 
   async setAcmeEnabled(req: LocalCaScope & { enabled: boolean; validityDays?: number; mode?: "local" | "standard" }) {
-    const ca = await this.accessService.getOwnedCa(req);
-    if (ca.caType !== "intermediate") {
+    const owned = await this.accessService.getOwnedCa(req);
+    if (owned.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以启用ACME服务");
     }
     if (!req.enabled) {
-      // 关闭ACME时原子关闭直签并失效未完成直签订单，避免重新启用后旧订单复活
-      await this.invalidateAllDirectOrders(ca, true);
-      ca.acmeEnabled = false;
-      await this.providerSync.removeForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync remove failed ca=${ca.id}: ${e?.message || e}`));
-      logger.info(`[local-ca] acme disabled ca=${ca.id} user=${req.userId} project=${req.projectId ?? "-"}`);
+      // 关闭ACME时在同一per-CA锁内原子关闭直签并失效未完成直签订单，避免重新启用后旧订单复活
+      await this.mutateAcmeConfig(owned.id, async fresh => {
+        await this.invalidateAllDirectOrders(fresh, true);
+        return { fields: { acmeEnabled: false } };
+      });
+      await this.providerSync.removeForCa(owned.id).catch(e => logger.error(`[local-ca] provider sync remove failed ca=${owned.id}: ${e?.message || e}`));
+      logger.info(`[local-ca] acme disabled ca=${owned.id} user=${req.userId} project=${req.projectId ?? "-"}`);
       return;
     }
-    ca.acmeEnabled = true;
-    await localCaMutex.runExclusive(caConfigKey(ca.id), async () => {
-      const config = this.readAcmeConfigObject(ca.acmeConfig);
+    const mode = await this.mutateAcmeConfig(owned.id, async (_fresh, config) => {
       if (req.validityDays) {
         config.validityDays = Math.max(1, Math.min(3650, req.validityDays));
       }
@@ -180,12 +180,10 @@ export class LocalCaAcmeService {
       if (this.resolveAcmeMode(config) === "local" && !config.internalToken) {
         config.internalToken = crypto.randomBytes(24).toString("base64url");
       }
-      ca.acmeConfig = JSON.stringify(config);
-      ca.updateTime = new Date();
-      await this.repository.save(ca);
+      return { result: this.resolveAcmeMode(config), fields: { acmeEnabled: true } };
     });
-    await this.providerSync.syncForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${ca.id}: ${e?.message || e}`));
-    logger.info(`[local-ca] acme enabled ca=${ca.id} mode=${this.resolveAcmeMode(this.readAcmeConfigObject(ca.acmeConfig))} user=${req.userId} project=${req.projectId ?? "-"}`);
+    await this.providerSync.syncForCa(owned.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${owned.id}: ${e?.message || e}`));
+    logger.info(`[local-ca] acme enabled ca=${owned.id} mode=${mode} user=${req.userId} project=${req.projectId ?? "-"}`);
   }
 
   /**
@@ -193,25 +191,21 @@ export class LocalCaAcmeService {
    * 旧凭证立即失效，正在使用旧凭证的流水线需重新获取；用于凭证泄露后的应急处置。
    */
   async rotateInternalToken(req: LocalCaScope & { caId: number }) {
-    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, true);
-    if (ca.caType !== "intermediate") {
+    const owned = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId }, true);
+    if (owned.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以轮换内部凭证");
     }
-    let token = "";
-    await localCaMutex.runExclusive(caConfigKey(ca.id), async () => {
-      const config = this.readAcmeConfigObject(ca.acmeConfig);
+    await this.mutateAcmeConfig(owned.id, async (_fresh, config) => {
       if (this.resolveAcmeMode(config) !== "local") {
         throw new ValidateException("仅本地模式才有内部凭证，标准模式无需轮换");
       }
-      token = crypto.randomBytes(24).toString("base64url");
-      config.internalToken = token;
-      ca.acmeConfig = JSON.stringify(config);
-      ca.updateTime = new Date();
-      await this.repository.save(ca);
+      // Token 仅通过服务端 LocalCaGetter 下发，绝不通过HTTP返回给浏览器
+      config.internalToken = crypto.randomBytes(24).toString("base64url");
+      return {};
     });
-    await this.providerSync.syncForCa(ca.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${ca.id}: ${e?.message || e}`));
-    logger.info(`[local-ca] acme internal token rotated ca=${ca.id} user=${req.userId}`);
-    return { internalToken: token };
+    await this.providerSync.syncForCa(owned.id).catch(e => logger.error(`[local-ca] provider sync failed ca=${owned.id}: ${e?.message || e}`));
+    logger.info(`[local-ca] acme internal token rotated ca=${owned.id} user=${req.userId}`);
+    return { success: true };
   }
 
   /** 读取ACME模式：缺省standard（legacy兼容），仅local为仅本地档。 */
@@ -235,6 +229,20 @@ export class LocalCaAcmeService {
     } catch {
       return {};
     }
+  }
+
+  /** 统一的CA配置写入：per-CA 锁内 fresh read、修改后仅更新 acmeConfig 与明确字段。 */
+  private async mutateAcmeConfig<T>(caId: number, fn: (fresh: LocalCaEntity, config: any) => Promise<{ result?: T; fields?: Record<string, any> }>): Promise<T> {
+    return await localCaMutex.runExclusive(caConfigKey(caId), async () => {
+      const fresh = await this.repository.findOne({ where: { id: caId, deleted: false } });
+      if (!fresh) {
+        throw new ValidateException("本地CA不存在");
+      }
+      const config = this.readAcmeConfigObject(fresh.acmeConfig);
+      const out = await fn(fresh, config);
+      await this.repository.update({ id: caId }, { acmeConfig: JSON.stringify(config), updateTime: new Date(), ...(out?.fields || {}) });
+      return out?.result as T;
+    });
   }
 
   /** 读取脱敏ACME访问控制配置（不回显密码哈希）。 */
@@ -265,12 +273,11 @@ export class LocalCaAcmeService {
       trustProxyCidrs?: any;
     }
   ) {
-    const ca = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
-    if (ca.caType !== "intermediate") {
+    const owned = await this.accessService.getOwnedCa({ id: req.caId, userId: req.userId, projectId: req.projectId });
+    if (owned.caType !== "intermediate") {
       throw new ValidateException("只有中间CA可以配置ACME访问控制");
     }
-    await localCaMutex.runExclusive(caConfigKey(ca.id), async () => {
-      const config = this.readAcmeConfigObject(ca.acmeConfig);
+    await this.mutateAcmeConfig(owned.id, async (fresh, config) => {
       if (req.ipAllowlist !== undefined) {
         config.ipAllowlist = normalizeIpAllowlist(req.ipAllowlist);
       }
@@ -303,7 +310,7 @@ export class LocalCaAcmeService {
             throw new ValidateException("启用Basic认证必须设置用户名");
           }
           // Basic认证凭证仅Base64编码非加密，HTTP下会明文传输：强制HTTPS访问地址（TLS反代对外地址）
-          const baseUrl = String((await this.crlService.resolveBaseUrl(ca)) || "").trim();
+          const baseUrl = String((await this.crlService.resolveBaseUrl(fresh)) || "").trim();
           if (baseUrl && !/^https:\/\//i.test(baseUrl)) {
             throw new ValidateException(
               "启用Basic认证要求HTTPS访问地址：HTTP下用户名密码会明文传输（Base64不是加密）。请将Base URL配置为https对外地址（TLS反向代理场景填外部https地址），或改用IP白名单/自定义头控制访问。"
@@ -317,11 +324,9 @@ export class LocalCaAcmeService {
         }
         config.basicAuth = { enabled, username: enabled ? username : "", passwordHash: enabled ? passwordHash : "" };
       }
-      ca.acmeConfig = JSON.stringify(config);
-      ca.updateTime = new Date();
-      await this.repository.save(ca);
+      return {};
     });
-    logger.info(`[local-ca] acme access updated ca=${ca.id} user=${req.userId}`);
+    logger.info(`[local-ca] acme access updated ca=${owned.id} user=${req.userId}`);
     return await this.getAcmeAccess({ id: req.caId, userId: req.userId, projectId: req.projectId, caId: req.caId });
   }
 

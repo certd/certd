@@ -8,6 +8,8 @@ import { AcmeServerService } from "../../acme-server/service/acme-server-service
 import { TaskServiceBuilder } from "../../pipeline/service/getter/task-service-getter.js";
 import { AuditType } from "../../sys/enterprise/service/audit-constants.js";
 
+type GrantEnsureResult = { changed: boolean; grantId?: number; created: boolean; revived: boolean };
+
 @Provide()
 @Controller("/api/sys/local-ca")
 @ApiTags(["cert"])
@@ -330,14 +332,16 @@ export class LocalCaController extends CrudController<LocalCaService> {
       }
       return !acc.projectId;
     });
-    let grantAdded = false;
+    let grantChange: GrantEnsureResult | null = null;
     if (existing) {
       if (ensureGrant) {
-        grantAdded = await this.ensureAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
+        grantChange = await this.ensureAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
+      } else {
+        await this.assertActiveAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
       }
       const accessId = await this.findAssignedAccessId(scopeUserId, scopeProjectId, existing.id);
       this.auditLog({ content: `重复分配ACME账户（EAB:${eab.kid}，账户:${existing.id}，目标:${targetLabel}），未重复注册` });
-      return this.ok({ accountId: existing.id, accessId, caId: eab.caId, kid: eab.kid, eabName: eab.name, targetLabel, userId: scopeUserId, projectId: scopeProjectId, alreadyAssigned: true, grantAdded });
+      return this.ok({ accountId: existing.id, accessId, caId: eab.caId, kid: eab.kid, eabName: eab.name, targetLabel, userId: scopeUserId, projectId: scopeProjectId, alreadyAssigned: true, grantAdded: grantChange?.changed === true });
     }
 
     this.service.assertEabAssignCapacity(eab);
@@ -346,7 +350,9 @@ export class LocalCaController extends CrudController<LocalCaService> {
       throw new ValidateException("该凭证对应的颁发机构不可用，请联系管理员");
     }
     if (ensureGrant) {
-      grantAdded = await this.ensureAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
+      grantChange = await this.ensureAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
+    } else {
+      await this.assertActiveAssignGrant(eab.caId, adminUserId, targetType, targetUserId, scopeProjectId);
     }
     const secret = await this.service.getAcmeEabSecret(eab.caId, eab.kid);
     if (!secret) {
@@ -362,33 +368,65 @@ export class LocalCaController extends CrudController<LocalCaService> {
       const access = await newAccess("acmeAccount", input, accessGetter, accessContext);
       accountJson = await access.onRequest({ typeName: "acmeAccount", action: "onGenerateAccount", input, record: { id: 0, type: "acmeAccount", title: "" }, data: {} });
     } catch (e: any) {
+      await this.rollbackAssignGrant(eab.caId, adminUserId, grantChange);
       throw new ValidateException(`使用EAB注册ACME账户失败：${e?.message || e}`);
     }
 
     const accountId = this.parseAssignedAccountId(accountJson);
-    await this.service.updateAcmeAccountOwner({ accountId, eabId: eab.id, eabCaId: eab.caId, userId: scopeUserId, projectId: scopeProjectId });
-
     let saved: any;
     try {
+      await this.service.updateAcmeAccountOwner({ accountId, eabId: eab.id, eabCaId: eab.caId, userId: scopeUserId, projectId: scopeProjectId });
       const setting = { caType: sslProvider, email, eabKid: secret.kid, account: accountJson };
       const name = String(body.name || `${eab.name}-${email}`).slice(0, 100);
       saved = await this.accessService.add({ type: "acmeAccount", name, setting: JSON.stringify(setting), userId: scopeUserId, projectId: scopeProjectId });
     } catch (e: any) {
       await this.service.rollbackAcmeAccountAssignment(accountId).catch(() => undefined);
+      await this.rollbackAssignGrant(eab.caId, adminUserId, grantChange);
       throw e;
     }
-    this.auditLog({ content: `使用EAB「${eab.name}」(KID:${eab.kid})注册ACME账户(${accountId})并分配给${targetLabel}${grantAdded ? "，已补充CA使用权" : ""}` });
-    return this.ok({ accountId, accessId: saved.id, caId: eab.caId, kid: eab.kid, eabName: eab.name, targetLabel, userId: scopeUserId, projectId: scopeProjectId, alreadyAssigned: false, grantAdded });
+    this.auditLog({ content: `使用EAB「${eab.name}」(KID:${eab.kid})注册ACME账户(${accountId})并分配给${targetLabel}${grantChange?.changed ? "，已补充CA使用权" : ""}` });
+    return this.ok({ accountId, accessId: saved.id, caId: eab.caId, kid: eab.kid, eabName: eab.name, targetLabel, userId: scopeUserId, projectId: scopeProjectId, alreadyAssigned: false, grantAdded: grantChange?.changed === true });
   }
 
-  private async ensureAssignGrant(caId: number, adminUserId: number, targetType: string, targetUserId: number, projectId?: number): Promise<boolean> {
+  private findAssignGrant(grants: any[], targetType: string, targetUserId: number, projectId?: number) {
+    return (grants || []).find(g => (targetType === "project" ? Number(g.projectId) === Number(projectId) && Number(g.userId) === 0 : Number(g.userId) === targetUserId && Number(g.projectId) === 0));
+  }
+
+  private async getAssignGrant(caId: number, adminUserId: number, targetType: string, targetUserId: number, projectId?: number) {
     const grants = await this.service.listGrants({ id: caId, userId: adminUserId });
-    const exists = (grants || []).some(g => (targetType === "project" ? Number(g.projectId) === Number(projectId) && Number(g.userId) === 0 : Number(g.userId) === targetUserId && Number(g.projectId) === 0));
-    if (exists) {
-      return false;
+    return this.findAssignGrant(grants || [], targetType, targetUserId, projectId);
+  }
+
+  private async assertActiveAssignGrant(caId: number, adminUserId: number, targetType: string, targetUserId: number, projectId?: number) {
+    const grant = await this.getAssignGrant(caId, adminUserId, targetType, targetUserId, projectId);
+    if (!grant || grant.disabled) {
+      throw new ValidateException("目标尚未获得该CA的有效授权，请勾选自动授权或先添加授权");
     }
-    await this.service.addGrant({ id: caId, userId: adminUserId, ...(targetType === "project" ? { grantProjectId: projectId } : { grantUserId: targetUserId }) });
-    return true;
+  }
+
+  private async ensureAssignGrant(caId: number, adminUserId: number, targetType: string, targetUserId: number, projectId?: number): Promise<GrantEnsureResult> {
+    const existing = await this.getAssignGrant(caId, adminUserId, targetType, targetUserId, projectId);
+    if (existing && !existing.disabled) {
+      return { changed: false, grantId: existing.id, created: false, revived: false };
+    }
+    const grant = await this.service.addGrant({ id: caId, userId: adminUserId, ...(targetType === "project" ? { grantProjectId: projectId } : { grantUserId: targetUserId }) });
+    return { changed: true, grantId: grant?.id ?? existing?.id, created: !existing, revived: existing?.disabled === true };
+  }
+
+  /** 分配流程失败时撤销本次新增授权；若只是恢复了历史禁用授权，则重新置为禁用。 */
+  private async rollbackAssignGrant(caId: number, adminUserId: number, change: GrantEnsureResult | null) {
+    if (!change?.changed || !change.grantId) {
+      return;
+    }
+    try {
+      if (change.created) {
+        await this.service.removeGrant({ id: caId, userId: adminUserId, grantId: change.grantId, disableAccounts: false });
+      } else if (change.revived) {
+        await this.service.setGrantDisabledForCompensation({ caId, grantId: change.grantId, disabled: true });
+      }
+    } catch (e: any) {
+      logger.error(`[local-ca] rollback assign grant failed ca=${caId} grant=${change.grantId}: ${e?.message || e}`);
+    }
   }
 
   private async findAssignedAccessId(userId: number, projectId: number | undefined, accountId: string): Promise<number | null> {
@@ -588,6 +626,7 @@ export class LocalCaController extends CrudController<LocalCaService> {
       allowedDomains: body.allowedDomains,
       remark: body.remark,
       privileged: body.privileged === true,
+      mode: body.mode === "local" || body.mode === "standard" ? body.mode : undefined,
     });
     this.auditLog({ content: `创建本地ACME EAB凭证「${res.name}」(KID:${res.kid}, 类型:${body.privileged ? "特权" : "普通"})` });
     return this.ok(res);

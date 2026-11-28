@@ -433,10 +433,18 @@ describe("AcmeServerService ACME三档门禁", () => {
     await assert.rejects(() => standard.assertAccess(createCtx("203.0.113.9"), 2), /白名单/);
   });
 
-  it("仅本地档与IP白名单叠加生效", async () => {
-    const service = createGateService({ acmeMode: "local", internalToken: "tok", ipAllowlist: ["10.0.0.0/8"] });
-    // 回环来源不在白名单内仍被拒绝
+  it("仅本地档：内部凭证不受标准门禁影响，无凭证回环仍受白名单约束", async () => {
+    const service = createGateService({
+      acmeMode: "local",
+      internalToken: "tok",
+      ipAllowlist: ["10.0.0.0/8"],
+      basicAuth: { enabled: true, username: "u", passwordHash: "$2a$10$abcdefghijklmnopqrstuv" },
+      requiredHeaders: [{ name: "x-gateway", value: "ok" }],
+    });
+    // 回环但无内部凭证：仍受显式白名单/Basic/自定义头约束
     await assert.rejects(() => service.assertAccess(createCtx("127.0.0.1"), 2), /白名单/);
+    // 标准模式遗留的门禁配置不阻断本地流水线的内部凭证请求
+    await service.assertAccess(createCtx("203.0.113.9", { "x-certd-acme-token": "tok" }), 2);
     await service.assertAccess(createCtx("10.1.2.3", { "x-certd-acme-token": "tok" }), 2);
   });
 });

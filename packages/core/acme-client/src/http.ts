@@ -20,7 +20,7 @@ import { getJwk } from './crypto/index.js';
  */
 
 class HttpClient {
-    constructor(directoryUrl, accountKey, externalAccountBinding = {}, urlMapping = {}, logger, cacheNonce= false, extraHeaders = {}) {
+    constructor(directoryUrl, accountKey, externalAccountBinding = {}, urlMapping = {}, logger, cacheNonce= false, extraHeaders = {}, options = {}) {
         this.directoryUrl = directoryUrl;
         this.accountKey = accountKey;
         this.externalAccountBinding = externalAccountBinding;
@@ -37,6 +37,9 @@ class HttpClient {
         this.cacheNonce = cacheNonce;
         // 每个请求附加的自定义头（如本地ACME内部凭证），调用方头优先
         this.extraHeaders = extraHeaders || {};
+        // 公共ACME Client兼容性开关：默认严格（同源+不跟随重定向），第三方ACME可按需显式放宽
+        this.strictResourceOrigin = options.strictResourceOrigin !== false;
+        this.maxRedirects = options.maxRedirects;
     }
 
     pushNonce(nonce) {
@@ -95,7 +98,7 @@ class HttpClient {
 
         /* 重定向策略：默认0（不跟随），可由 acmeSettings.maxRedirects 覆盖以兼容依赖跳转的第三方ACME */
         if (opts.maxRedirects == null) {
-            opts.maxRedirects = axios.defaults.acmeSettings?.maxRedirects ?? 0;
+            opts.maxRedirects = this.maxRedirects ?? axios.defaults.acmeSettings?.maxRedirects ?? 0;
         }
         // 携带内部凭证头（如x-certd-acme-token）的请求禁止跟随重定向，防止凭证经跨源重定向泄漏到非授权目标
         if (Object.keys(this.extraHeaders || {}).length > 0 && this.isSameOriginAsDirectory(url)) {
@@ -218,6 +221,9 @@ class HttpClient {
      * 避免“开启映射即整体放行”把内部凭证头发往非预期主机。
      */
     assertResourceSameOrigin(resource, resourceUrl) {
+        if (this.strictResourceOrigin === false) {
+            return;
+        }
         if (this.matchesMapping(resourceUrl)) {
             return;
         }

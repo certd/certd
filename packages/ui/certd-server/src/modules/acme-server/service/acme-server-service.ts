@@ -1112,9 +1112,14 @@ export class AcmeServerService {
         throw new AcmeProblem("unauthorized", "该CA的ACME服务为仅本地模式，禁止外部访问", 403);
       }
     }
-    // 未配置白名单时默认仅允许内网访问；内部凭证已鉴别Certd自身，不受默认限制（显式白名单仍生效）
+    // 内部凭证由服务端签发，仅本地模式认可；本地模式下标准门禁配置（IP/Basic/自定义头）不作用于内部流水线。
+    // 外部请求无内部凭证，仍会被上面的仅本地模式检查或回环+下列门禁约束。
+    if (internalTrusted) {
+      return;
+    }
+    // 未配置白名单时默认仅允许内网访问
     let allowlist = config.ipAllowlist;
-    if (!allowlist.length && !internalTrusted) {
+    if (!allowlist.length) {
       allowlist = DEFAULT_INTRANET_RULES;
     }
     if (allowlist.length && !matchIpAllowlist(ip, allowlist)) {

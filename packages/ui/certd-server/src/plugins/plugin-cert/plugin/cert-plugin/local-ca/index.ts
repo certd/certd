@@ -57,7 +57,7 @@ const ACME_MODES: LocalCaApplyMode[] = ["local-acme"];
             "local-direct": "Local Direct Signing",
             "local-acme": "Local ACME",
           },
-          helper: "Direct signing bypasses the ACME protocol and domain validation. Local ACME follows the standard ACME protocol; only privileged EAB credentials bypass domain validation.",
+          helper: "Direct signing bypasses ACME challenge ownership validation but remains subject to the CA allowed domains, maximum validity and CA status. Local ACME follows the standard ACME protocol; only privileged EAB credentials bypass ownership validation.",
         },
         caId: { title: "CA", helper: "Direct signing requires an intermediate CA. In local ACME mode the CA is derived from the selected provider. Clients must trust the corresponding root CA." },
         keyType: { title: "Key Type" },
@@ -82,7 +82,7 @@ export class CertApplyLocalCa extends CertApplyPlugin {
     },
     required: true,
     order: -10000,
-    helper: "直接签发不经过ACME协议与域名校验；本地ACME遵循标准ACME协议，仅特权EAB凭证可跳过域名校验。远程ACME请使用通用证书申请任务。",
+    helper: "直接签发绕过ACME Challenge所有权验证，但仍受CA域名范围、最大有效期及CA状态限制；本地ACME遵循标准ACME协议，仅特权EAB凭证可跳过域名所有权验证。远程ACME请使用通用证书申请任务。",
   })
   mode: LocalCaApplyMode = "local-direct";
 
@@ -584,7 +584,7 @@ if (localCaInput.caId) localCaInput.caId.mergeScript = `return {
 if (localCaInput.mode) localCaInput.mode.mergeScript = `return {
   helper: ctx.compute(({ form }) => form.mode === 'local-direct' && form.caId && form.caAllowDirectSign !== true
     ? '所选CA未开启本地直签，该方式不可用；请改用本地ACME服务，或联系管理员在CA设置中开启本地直签。'
-    : '直接签发不经过ACME协议与域名校验，须CA开启本地直签；本地ACME遵循标准ACME协议，仅特权EAB凭证可跳过域名校验。远程ACME请使用通用证书申请任务。')
+    : '直接签发绕过ACME Challenge所有权验证，但仍受CA域名范围、最大有效期及CA状态限制，且须CA开启本地直签；本地ACME遵循标准ACME协议，仅特权EAB凭证可跳过域名所有权验证。远程ACME请使用通用证书申请任务。')
 }`;
 if (localCaInput.keyType) localCaInput.keyType.mergeScript = `return {
   show: ctx.compute(({ form }) => form.mode === 'local-direct'),
