@@ -3,9 +3,11 @@ import { AuthException, BaseService, SysSettingsService, SysSiteInfo } from "@ce
 import { isComm } from "@certd/plus-core";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { UserService } from "../../sys/authority/service/user-service.js";
 import { PasskeyEntity } from "../entity/passkey.js";
+
+const PASSKEY_UNUSED_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -21,6 +23,24 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
 
   getRepository(): Repository<PasskeyEntity> {
     return this.repository;
+  }
+
+  private lastActiveAt(passkey: any): number {
+    return Number(passkey.lastUsedAt || passkey.registeredAt || (passkey.createTime ? new Date(passkey.createTime).getTime() : 0)) || 0;
+  }
+
+  private isUnusedTooLong(passkey: any): boolean {
+    const last = this.lastActiveAt(passkey);
+    return last > 0 && Date.now() - last > PASSKEY_UNUSED_TTL_MS;
+  }
+
+  /** 30天未使用的Passkey自动停用；需TOTP 2FA重新激活。 */
+  async autoDisableExpiredPasskeys(userId: number) {
+    const list = await this.find({ where: { userId, disabled: false } });
+    const ids = list.filter(item => this.isUnusedTooLong(item)).map(item => item.id);
+    if (ids.length > 0) {
+      await this.repository.update({ id: In(ids) }, { disabled: true, updateTime: new Date() } as any);
+    }
   }
 
   async getRpInfo(ctx: any) {
@@ -79,6 +99,10 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     if (!storedUserId || storedUserId !== userId) {
       throw new AuthException("注册验证失败");
     }
+    const consumedUserId = cache.take(`passkey:registration:${challenge}`);
+    if (consumedUserId == null || consumedUserId !== userId) {
+      throw new AuthException("注册验证已过期，请重新发起");
+    }
 
     const { rpId, origin } = await this.getRpInfo(ctx);
 
@@ -101,8 +125,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       throw new AuthException("注册验证失败");
     }
 
-    cache.delete(`passkey:registration:${challenge}`);
-
+    // challenge已在上方原子take消费
     return {
       credentialId: verification.registrationInfo.credential.id,
       credentialPublicKey: verification.registrationInfo.credential.publicKey,
@@ -123,9 +146,10 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
 
     const allowCredentials: any[] = [];
     if (opts.userId != null) {
+      await this.autoDisableExpiredPasskeys(opts.userId);
       const passkeys = await this.find({
         select: ["passkeyId", "transports"],
-        where: { userId: opts.userId },
+        where: { userId: opts.userId, disabled: false },
       });
       for (const passkey of passkeys) {
         const credential: any = { id: passkey.passkeyId, type: "public-key" };
@@ -203,6 +227,13 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     if (opts.expectedUserId != null && passkey.userId !== opts.expectedUserId) {
       throw new AuthException("Passkey不属于当前用户");
     }
+    if (passkey.disabled) {
+      throw new AuthException("Passkey已停用，请先通过TOTP 2FA验证重新激活");
+    }
+    if (this.isUnusedTooLong(passkey)) {
+      await this.repository.update({ id: passkey.id }, { disabled: true, updateTime: new Date() } as any);
+      throw new AuthException("Passkey超过30天未使用已自动停用，请先通过TOTP 2FA验证重新激活");
+    }
 
     const { rpId, origin } = await this.getRpInfo(ctx);
 
@@ -231,10 +262,12 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       throw new AuthException("认证验证失败");
     }
 
+    passkey.lastUsedAt = Date.now();
+    passkey.counter = verification.authenticationInfo.newCounter;
     if (!passkey.rpId) {
       passkey.rpId = rpId;
-      await this.repository.save(passkey);
     }
+    await this.repository.save(passkey);
 
     return {
       credentialId: verification.authenticationInfo.credentialID,
@@ -256,8 +289,20 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       deviceName,
       rpId: rpInfo.rpId,
       registeredAt: Date.now(),
+      lastUsedAt: Date.now(),
+      disabled: false,
     });
 
+    return { success: true };
+  }
+
+  /** TOTP验证通过后重新激活已停用Passkey。 */
+  async reactivatePasskey(userId: number, passkeyId: number) {
+    const passkey = await this.repository.findOne({ where: { id: passkeyId, userId } });
+    if (!passkey) {
+      throw new AuthException("Passkey不存在");
+    }
+    await this.repository.update({ id: passkey.id }, { disabled: false, lastUsedAt: Date.now(), updateTime: new Date() } as any);
     return { success: true };
   }
 

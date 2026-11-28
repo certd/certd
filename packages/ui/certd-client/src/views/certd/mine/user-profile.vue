@@ -105,7 +105,10 @@
                   <fs-icon icon="ion:finger-print" class="icon" />
                 </div>
                 <div class="passkey-info">
-                  <div class="passkey-name">{{ passkey.deviceName }}</div>
+                  <div class="passkey-name">
+                    {{ passkey.deviceName }}
+                    <a-tag v-if="passkey.disabled" color="red" class="ml-2">已停用（30天未使用）</a-tag>
+                  </div>
                   <div class="passkey-meta flex items-center">
                     <span class="meta-item flex items-center">
                       <fs-icon icon="ion:globe-outline" class="meta-icon" />
@@ -117,11 +120,15 @@
                     </span>
                     <span class="meta-item flex items-center">
                       <fs-icon icon="ion:time-outline" class="meta-icon" />
-                      最近使用：<fs-time-humanize :model-value="passkey.updateTime" />
+                      最近使用：<fs-time-humanize :model-value="passkey.lastUsedAt || passkey.updateTime" />
                     </span>
                   </div>
                 </div>
-                <a-button type="primary" danger class="remove-btn" @click="unbindPasskey(passkey.id)">
+                <a-button v-if="passkey.disabled" type="primary" class="reactivate-btn mr-2" @click="reactivatePasskey(passkey)">
+                  <template #icon><fs-icon icon="ion:refresh-outline" /></template>
+                  激活
+                </a-button>
+                <a-button type="primary" danger class="remove-btn" @click="unbindPasskey(passkey)">
                   <template #icon><fs-icon icon="ion:trash-outline" /></template>
                   移除
                 </a-button>
@@ -135,10 +142,14 @@
               <fs-icon icon="ion:warning-outline" class="warning-icon" />
               <span>{{ t("certd.auth.passkeyNotSupported") }}</span>
             </div>
-            <a-button v-if="passkeySupported" type="primary" class="add-btn" @click="registerPasskey">
+            <a-button v-if="passkeySupported" type="primary" class="add-btn" :disabled="!totpEnabled" @click="registerPasskey">
               <template #icon><fs-icon icon="ion:add-circle-outline" /></template>
               注册新的Passkey
             </a-button>
+            <div v-if="!totpEnabled" class="warning-box mt-3">
+              <fs-icon icon="ion:warning-outline" class="warning-icon" />
+              <span>请先开启并验证 TOTP 2FA 后才能注册 Passkey，<a @click="goSecuritySetting">去设置</a></span>
+            </div>
             <pre class="helper pre">{{ t("certd.auth.passkeyRegisterHelper") }}</pre>
           </div>
         </div>
@@ -161,6 +172,8 @@ import { dict } from "@fast-crud/fast-crud";
 import dayjs from "dayjs";
 import { useRouter } from "vue-router";
 import { useUserStore } from "/@/store/user";
+import { useFormDialog } from "/@/use/use-dialog";
+import { TwoFactorSettingsGet } from "./security/api";
 
 const { t } = useI18n();
 
@@ -173,6 +186,8 @@ const settingStore = useSettingStore();
 const userInfo: Ref = ref({});
 const passkeys = ref([]);
 const passkeySupported = ref(false);
+const totpEnabled = ref(false);
+const { openFormDialog } = useFormDialog();
 const contactCapability = ref({
   smsEnabled: false,
 });
@@ -249,6 +264,50 @@ async function bind(item: any) {
   window.location.href = loginUrl;
 }
 
+async function loadTwoFactorSetting() {
+  try {
+    const setting = await TwoFactorSettingsGet();
+    totpEnabled.value = setting.authenticator?.enabled === true && setting.authenticator?.verified === true;
+  } catch (e) {
+    totpEnabled.value = false;
+  }
+}
+
+async function promptTotp(title: string): Promise<string | undefined> {
+  return await new Promise(resolve => {
+    let settled = false;
+    openFormDialog({
+      title,
+      zIndex: 1200,
+      wrapper: {
+        width: 420,
+        onClosed() {
+          if (!settled) {
+            settled = true;
+            resolve(undefined);
+          }
+        },
+      },
+      initialForm: { verifyCode: "" },
+      columns: {
+        verifyCode: {
+          title: "动态验证码",
+          type: "text",
+          form: {
+            col: { span: 24 },
+            component: { placeholder: "请输入身份验证器中的 6 位验证码" },
+            rules: [{ required: true, message: "请输入动态验证码" }],
+          },
+        },
+      },
+      async onSubmit(form: any) {
+        settled = true;
+        resolve(String(form.verifyCode || ""));
+      },
+    });
+  });
+}
+
 async function loadPasskeys() {
   try {
     const res = await api.GetPasskeys();
@@ -275,16 +334,23 @@ async function openBindContact(type: "mobile" | "email") {
   });
 }
 
-async function unbindPasskey(id: number) {
-  Modal.confirm({
-    title: "确认解绑吗？",
-    okText: "确认",
-    okType: "danger",
-    onOk: async () => {
-      await api.UnbindPasskey(id);
-      await loadPasskeys();
-    },
-  });
+async function unbindPasskey(passkey: any) {
+  const verifyCode = await promptTotp(`验证后移除 Passkey「${passkey.deviceName}」`);
+  if (!verifyCode) {
+    return;
+  }
+  await api.UnbindPasskey(passkey.id, verifyCode);
+  await loadPasskeys();
+}
+
+async function reactivatePasskey(passkey: any) {
+  const verifyCode = await promptTotp(`验证后重新激活 Passkey「${passkey.deviceName}」`);
+  if (!verifyCode) {
+    return;
+  }
+  await api.ReactivatePasskey(passkey.id, verifyCode);
+  notification.success({ message: "Passkey 已重新激活" });
+  await loadPasskeys();
 }
 
 const toBase64Url = (buffer: ArrayBuffer) => {
@@ -301,21 +367,29 @@ async function registerPasskey() {
     Modal.error({ title: "错误", content: "浏览器不支持Passkey" });
     return;
   }
+  if (!totpEnabled.value) {
+    notification.warning({ message: "请先开启并验证 TOTP 2FA 后再注册 Passkey" });
+    return;
+  }
+  const verifyCode = await promptTotp("验证后注册新的 Passkey");
+  if (!verifyCode) {
+    return;
+  }
   await openRegisterDialog({
     onSubmit: async (ctx: any) => {
       const deviceName = ctx.form.deviceName;
       if (!deviceName) {
         return;
       }
-      await doRegisterPasskey(deviceName);
+      await doRegisterPasskey(deviceName, verifyCode);
       notification.success({ message: "Passkey注册成功" });
     },
   });
 }
 
-async function doRegisterPasskey(deviceName: string) {
+async function doRegisterPasskey(deviceName: string, verifyCode: string) {
   try {
-    const res: any = await api.generatePasskeyRegistrationOptions();
+    const res: any = await api.generatePasskeyRegistrationOptions(verifyCode);
     const options = res;
 
     // navigator.credentials.query({
@@ -424,6 +498,7 @@ onMounted(async () => {
   await loadOauthBounds();
   await loadOauthProviders();
   await loadPasskeys();
+  await loadTwoFactorSetting();
   checkPasskeySupport();
 });
 </script>

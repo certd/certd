@@ -29,6 +29,12 @@ export class PasskeyEntity {
   @Column({ name: "registered_at", comment: "注册时间" })
   registeredAt: number;
 
+  @Column({ name: "last_used_at", comment: "最近一次验证成功时间", type: "bigint", nullable: true })
+  lastUsedAt: number;
+
+  @Column({ name: "disabled", comment: "是否停用（30天未使用自动停用，需TOTP重新激活）", default: false })
+  disabled: boolean;
+
   @Column({ name: "create_time", comment: "创建时间", default: () => "CURRENT_TIMESTAMP" })
   createTime: Date;
 

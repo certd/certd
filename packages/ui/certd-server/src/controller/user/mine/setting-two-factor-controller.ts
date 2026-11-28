@@ -107,12 +107,13 @@ export class UserTwoFactorSettingController extends BaseController {
   @Post("/passkey/generateAuthentication", { description: Constants.per.authOnly, summary: "生成查看密钥的Passkey验证选项" })
   async passkeyGenerateAuthentication() {
     const userId = this.getUserId();
+    await this.passkeyService.autoDisableExpiredPasskeys(userId);
     const passkeys = await this.passkeyService.find({
       select: ["id"],
-      where: { userId },
+      where: { userId, disabled: false },
     });
     if (passkeys.length === 0) {
-      throw new Error("当前账号未注册 Passkey，请先在个人中心注册");
+      throw new Error("当前账号没有可用 Passkey（未注册或已停用），请先在个人中心使用TOTP验证重新激活");
     }
     const options = await this.passkeyService.generateAuthenticationOptions(this.ctx, {
       userId,
