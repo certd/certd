@@ -105,11 +105,19 @@ export async function GetPasskeys() {
   });
 }
 
-export async function UnbindPasskey(id: number) {
+export async function UnbindPasskey(id: number, verifyCode: string) {
   return await request({
     url: "/mine/passkey/unbind",
     method: "POST",
-    data: { id },
+    data: { id, verifyCode },
+  });
+}
+
+export async function ReactivatePasskey(id: number, verifyCode: string) {
+  return await request({
+    url: "/mine/passkey/reactivate",
+    method: "POST",
+    data: { id, verifyCode },
   });
 }
 
@@ -150,18 +158,19 @@ export interface PasskeyCredential {
   };
 }
 
-export async function generatePasskeyRegistrationOptions() {
+export async function generatePasskeyRegistrationOptions(verifyCode: string) {
   return await request({
     url: "/mine/passkey/generateRegistration",
     method: "post",
+    data: { verifyCode },
   });
 }
 
-export async function verifyPasskeyRegistration(response: any, challenge: string, deviceName: string) {
+export async function verifyPasskeyRegistration(response: any, challenge: string, deviceName: string, verifyToken: string) {
   return await request({
     url: "/mine/passkey/verifyRegistration",
     method: "post",
-    data: { response, challenge, deviceName },
+    data: { response, challenge, deviceName, verifyToken },
   });
 }
 

@@ -1,8 +1,14 @@
 ﻿import { importRuntime } from "@certd/pipeline";
+import { cache } from "@certd/basic";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { UserSettingsService } from "./user-settings-service.js";
 import { UserTwoFactorSetting } from "./models.js";
 import { UserService } from "../../sys/authority/service/user-service.js";
+
+const TFA_FAIL_WINDOW_MS = 5 * 60 * 1000;
+const TFA_MAX_FAILURES = 5;
+const TFA_LOCK_MS = 15 * 60 * 1000;
+const TFA_USED_CODE_TTL_MS = 90 * 1000;
 
 /**
  * 授权
@@ -36,9 +42,49 @@ export class TwoFactorService {
     return { qrcode: qrcodeBase64, link: qrcodeContent, secret };
   }
 
+  async assertAuthenticatorEnabled(userId: number) {
+    const setting = await this.getSetting(userId);
+    if (!setting.authenticator.enabled || !setting.authenticator.verified || !setting.authenticator.secret) {
+      throw new Error("请先开启并验证TOTP 2FA");
+    }
+  }
+
+  private async verifyTokenWithGuard(userId: number, token: string, secret: string, requireEnabled: boolean, setting: any) {
+    const lockKey = `two_factor_lock:${userId}`;
+    const lockUntil = cache.get(lockKey);
+    if (lockUntil && Number(lockUntil) > Date.now()) {
+      throw new Error("验证失败次数过多，请15分钟后再试");
+    }
+    if (requireEnabled && !setting.authenticator.enabled) {
+      throw new Error("authenticator 未开启");
+    }
+    // TOTP时间步防重放：按用户+验证码原子占位，同一进程内并发提交最多一个成功
+    const usedKey = `two_factor_used_code:${userId}:${String(token)}`;
+    if (cache.has(usedKey)) {
+      throw new Error("验证码已使用，请等待下一个验证码");
+    }
+    const { authenticator } = await importRuntime("otplib");
+    const isValid = authenticator.verify({ token, secret });
+    if (!isValid) {
+      // 并发失败计数使用同步原子自增，避免丢失计数绕过锁定
+      const failKey = `two_factor_fail:${userId}`;
+      const failures = cache.increment(failKey, { ttl: TFA_FAIL_WINDOW_MS });
+      if (failures >= TFA_MAX_FAILURES) {
+        cache.set(lockKey, Date.now() + TFA_LOCK_MS, { ttl: TFA_LOCK_MS });
+        cache.delete(failKey);
+        throw new Error("验证失败次数过多，请15分钟后再试");
+      }
+      throw new Error("验证码错误");
+    }
+    if (!cache.setIfAbsent(usedKey, true, { ttl: TFA_USED_CODE_TTL_MS })) {
+      throw new Error("验证码已使用，请等待下一个验证码");
+    }
+    cache.delete(`two_factor_fail:${userId}`);
+    return true;
+  }
+
   async saveAuthenticator(req: { userId: any; verifyCode: any }) {
     const userId = req.userId;
-    const { authenticator } = await importRuntime("otplib");
     const setting = await this.getSetting(userId);
 
     const authenticatorSetting = setting.authenticator;
@@ -48,10 +94,7 @@ export class TwoFactorService {
     const secret = authenticatorSetting.secret;
     const token = req.verifyCode;
 
-    const isValid = authenticator.verify({ token, secret });
-    if (!isValid) {
-      throw new Error("authenticator 校验错误");
-    }
+    await this.verifyTokenWithGuard(userId, token, secret, false, setting);
 
     //校验成功，保存开启状态
     authenticatorSetting.enabled = true;
@@ -87,14 +130,10 @@ export class TwoFactorService {
   }
 
   async verifyAuthenticatorCode(userId: any, verifyCode: string) {
-    const { authenticator } = await importRuntime("otplib");
     const setting = await this.getSetting(userId);
-    if (!setting.authenticator.enabled) {
+    if (!setting.authenticator.secret) {
       throw new Error("authenticator 未开启");
     }
-    if (!authenticator.verify({ token: verifyCode, secret: setting.authenticator.secret })) {
-      throw new Error("验证码错误");
-    }
-    return true;
+    return await this.verifyTokenWithGuard(userId, verifyCode, setting.authenticator.secret, true, setting);
   }
 }

@@ -13,6 +13,7 @@ import { notification } from "ant-design-vue";
 import { request } from "/src/api/service";
 import * as UserApi from "/src/store/user/api.user";
 import { useUserStore } from "/src/store/user";
+import { isPasskeyCancelledError } from "/@/utils/util.passkey";
 
 const { t } = useI18n();
 const settingStore = useSettingStore();
@@ -72,6 +73,10 @@ const handlePasskeyLogin = async () => {
 
     await userStore.onLoginSuccess(loginRes);
   } catch (e: any) {
+    if (isPasskeyCancelledError(e)) {
+      notification.info({ message: "已取消 Passkey 登录" });
+      return;
+    }
     console.error("Passkey登录失败:", e);
     notification.error({ message: e.message || "Passkey登录失败" });
   } finally {

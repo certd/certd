@@ -87,6 +87,9 @@
       <a-form-item>
         <loading-button type="primary" size="large" html-type="button" class="login-button" :click="handleTwoFactorSubmit">OTP验证登录</loading-button>
       </a-form-item>
+      <a-form-item v-if="twoFactorPasskeyAvailable">
+        <PasskeyVerifyButton :loading="twoFactorPasskeyLoading" @click="handleTwoFactorPasskeyLogin" />
+      </a-form-item>
 
       <a-form-item class="mt-10">
         <a class="register" @click="twoFactor.loginId = null"> 返回 </a>
@@ -103,6 +106,8 @@ import SmsCode from "/@/views/framework/login/sms-code.vue";
 import { useI18n } from "/@/locales";
 import { LanguageToggle } from "/@/vben/layouts";
 import CaptchaInput from "/@/components/captcha/captcha-input.vue";
+import PasskeyVerifyButton from "/@/components/passkey-verify-button/index.vue";
+import { isPasskeyCancelledError } from "/@/utils/util.passkey";
 import { useRoute } from "vue-router";
 import OauthFooter from "/@/views/framework/oauth/oauth-footer.vue";
 import * as oauthApi from "../oauth/api";
@@ -120,6 +125,8 @@ const queryOauthOnly = route.query.oauthOnly as string;
 const urlLoginType = route.query.loginType as string | undefined;
 const verifyCodeInputRef = ref();
 const loading = ref(false);
+const twoFactorPasskeyLoading = ref(false);
+const passkeySupported = typeof window !== "undefined" && "PublicKeyCredential" in window && "credentials" in navigator;
 
 const settingStore = useSettingStore();
 const formRef = ref();
@@ -212,6 +219,57 @@ const handleFinish = async () => {
 
 const handleFinishFailed = (errors: any) => {
   utils.logger.log(errors);
+};
+
+const twoFactorPasskeyAvailable = computed(() => settingStore.sysPublic.passkeyEnabled === true && settingStore.isPlus && passkeySupported);
+
+function base64UrlToUint8Array(value: string) {
+  const base64 = String(value || "")
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+  return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+}
+
+const handleTwoFactorPasskeyLogin = async () => {
+  if (!twoFactor.loginId) {
+    return;
+  }
+  twoFactorPasskeyLoading.value = true;
+  try {
+    const options: any = await UserApi.generateTwoFactorPasskeyAuthentication({ loginId: twoFactor.loginId });
+    const credential = await (navigator.credentials as any).get({
+      publicKey: {
+        challenge: base64UrlToUint8Array(options.challenge),
+        rpId: options.rpId,
+        allowCredentials: (options.allowCredentials || []).map((item: any) => ({
+          ...item,
+          id: base64UrlToUint8Array(item.id),
+        })),
+        timeout: options.timeout || 60000,
+        userVerification: "required",
+      },
+    });
+    if (!credential) {
+      throw new Error("Passkey验证已取消");
+    }
+    await userStore.loginByTwoFactorPasskey({
+      loginId: twoFactor.loginId,
+      credential,
+      challenge: options.challenge,
+    });
+    if (queryBindCode.value) {
+      await oauthApi.BindUser(queryBindCode.value);
+      notification.success({ message: "绑定第三方账号成功" });
+    }
+  } catch (e: any) {
+    if (isPasskeyCancelledError(e)) {
+      notification.info({ message: "已取消 Passkey 验证" });
+    } else {
+      notification.error({ message: e?.message || "Passkey验证失败" });
+    }
+  } finally {
+    twoFactorPasskeyLoading.value = false;
+  }
 };
 
 const handleTwoFactorSubmit = async () => {

@@ -104,6 +104,32 @@ export class LoginController extends BaseController {
     }
   }
 
+  @Post("/twoFactor/passkey/generateAuthentication", { description: Constants.per.guest, summary: "两步验证：生成当前登录用户的Passkey验证选项" })
+  public async generateTwoFactorPasskeyAuthentication(@Body(ALL) body: any) {
+    const options = await this.loginService.generateTwoFactorPasskeyOptions(body.loginId, this.ctx);
+    return this.ok(options);
+  }
+
+  @Post("/loginByPasskeyTwoFactor", { description: Constants.per.guest, summary: "两步验证：Passkey登录" })
+  public async loginByPasskeyTwoFactor(@Body(ALL) body: any) {
+    try {
+      const token = await this.loginService.loginByTwoFactorPasskey(
+        {
+          loginId: body.loginId,
+          credential: body.credential,
+          challenge: body.challenge,
+        },
+        this.ctx
+      );
+      this.writeTokenCookie(token);
+      this.auditLog({ userId: token.userId, username: token.username, content: `用户「${body.loginId}」两步验证Passkey登录成功` });
+      return this.ok(token);
+    } catch (err: any) {
+      this.auditLog({ userId: err.userId, username: body.loginId, content: `用户「${body.loginId}」两步验证Passkey登录失败：${err.message}` });
+      throw err;
+    }
+  }
+
   @Post("/passkey/generateAuthentication", { description: Constants.per.guest })
   public async generateAuthentication() {
     const options = await this.passkeyService.generateAuthenticationOptions(this.ctx);

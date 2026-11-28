@@ -7,6 +7,8 @@
 import { computed, inject, ref } from "vue";
 import { notification } from "ant-design-vue";
 import { useFormDialog } from "/@/use/use-dialog";
+import PasskeyVerifyButton from "/@/components/passkey-verify-button/index.vue";
+import { isPasskeyCancelledError } from "/@/utils/util.passkey";
 defineOptions({
   name: "SecretPlainGetter",
 });
@@ -71,7 +73,11 @@ async function handlePasskeyVerify() {
     // 直接关闭弹窗，避免被动态验证码的必填校验卡住
     closeVerifyDialog?.();
   } catch (e: any) {
-    notification.error({ message: e.message || "Passkey 验证失败" });
+    if (isPasskeyCancelledError(e)) {
+      notification.info({ message: "已取消 Passkey 验证" });
+    } else {
+      notification.error({ message: e.message || "Passkey 验证失败" });
+    }
   } finally {
     passkeyLoading.value = false;
   }
@@ -89,16 +95,7 @@ async function showPlain() {
       width: 420,
       slots: {
         "form-body-bottom": () => {
-          if (!passkeySupported) {
-            return null;
-          }
-          return (
-            <div class="mt-2 text-center">
-              <a-button type="link" loading={passkeyLoading.value} onClick={() => handlePasskeyVerify()}>
-                使用 Passkey 验证
-              </a-button>
-            </div>
-          );
+          return <PasskeyVerifyButton loading={passkeyLoading.value} onClick={() => handlePasskeyVerify()} />;
         },
       },
     },
