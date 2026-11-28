@@ -208,6 +208,11 @@ export class LoginService {
       throw new AuthException("已超时，请返回重新登录");
     }
     await this.twoFactorService.verifyAuthenticatorCode(userId, req.verifyCode);
+    // 既有OTP流程同样存在重复使用风险：验证通过后原子消费会话，最多签发一次
+    const consumedUserId = cache.take(`login_2fa_code:${req.loginId}`);
+    if (consumedUserId == null || Number(consumedUserId) !== Number(userId)) {
+      throw new AuthException("登录会话已失效，请返回重新登录");
+    }
 
     const user = await this.userService.info(userId);
     if (!user) {
@@ -260,8 +265,12 @@ export class LoginService {
       purpose: "login2fa",
       requireUserVerification: true,
     });
-    // Passkey已验证，消费登录2FA会话，避免验证码重复使用
-    cache.delete(`login_2fa_code:${req.loginId}`);
+    // Passkey已验证：原子消费2FA会话，只有消费成功且userId一致才签发JWT。
+    // 当前cache为进程内LRU；多实例部署需共享缓存提供GETDEL/Lua等跨进程原子消费。
+    const consumedUserId = cache.take(`login_2fa_code:${req.loginId}`);
+    if (consumedUserId == null || Number(consumedUserId) !== Number(userId)) {
+      throw new AuthException("登录会话已失效，请返回重新登录");
+    }
     const user = await this.userService.info(userId);
     if (!user) {
       throw new AuthException("用户不存在");
